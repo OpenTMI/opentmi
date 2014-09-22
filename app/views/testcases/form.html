@@ -1,0 +1,68 @@
+{% extends '../layouts/default.html' %}
+
+{% block main %}
+  <h1>{{ title }}</h1>
+  <hr>
+{% endblock %}
+
+{% block content %}
+  {% if testcase.isNew %}
+    {% set action = '/testcases' %}
+  {% else %}
+    {% set action = '/testcases/' + testcase._id %}
+  {% endif %}
+
+  <div class="row">
+    <div class="col-md-8">
+      <form method="post" action="{{ action }}" enctype="multipart/form-data" role="form" class="form-horizontal">
+        
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+        {% if not testcase.isNew %}
+          <input type="hidden" name="_method" value="PUT">
+        {% endif %}
+
+        <div class="form-group">
+          <label for="title" class="col-sm-2 control-label">Title</label>
+          <div class="col-sm-10">
+            <input type="text" name="title" value="{{ testcase.title }}" placeholder="Enter the title" class="form-control" id="title">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="file" class="col-sm-2 control-label">Image</label>
+          <div class="col-sm-10">
+            <input type="file" name="image" class="form-control" id="file">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="desc" class="col-sm-2 control-label">Body</label>
+          <div class="col-sm-10">
+            <textarea rows="5" name="body" placeholder="Enter the testcase description" id="desc" cols="30" rows="10" class="form-control">{{ testcase.body }}</textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tags" class="col-sm-2 control-label">Tags</label>
+          <div class="col-sm-10">
+            <input type="text" name="tags" value="{{ testcase.tags }}" placeholder="Enter the tags" class="form-control" id="tags">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <button class="btn btn-primary" type="submit">Save</button>
+            &nbsp;
+            <a href="/testcases" class="btn btn-link">Cancel</a>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-4">
+      {% if (!testcase.isNew && testcase.image && testcase.image.files && testcase.image.files.length) %}
+        <img src="{{ testcase.image.cdnUri + '/mini_' + testcase.image.files[0] }}" alt="">
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
