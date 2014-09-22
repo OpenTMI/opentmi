@@ -10,7 +10,7 @@
 ## Install
 
 ```sh
-$ git clone git://github.com/madhums/node-express-mongoose-demo.git
+$ git clone https://bitbucket.org/_tmt_/core.git
 $ npm install
 ```
 
