@@ -12,10 +12,13 @@ Test Management Framework
 
 * Summary of set up
 * Configuration
+`npm install`
 * Dependencies
 * Database configuration
 * How to run tests
+`npm test`
 * Deployment instructions
+`supervisor -wa . -n exit server.js`
 
 ### Contribution guidelines ###
 

@@ -7,7 +7,7 @@ var Route = function(app, passport){
     res.send("API v0");
   });
   app.get('/v0/routes', function(req, res){
-    res.json( app.routes );
+    res.json( app._router.stack );
   });
 }
 
