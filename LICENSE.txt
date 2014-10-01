@@ -1,5 +1,0 @@
-..?
-
-Copyright (c) 2014 Jussi Vatjus-Anttila <jussiva@gmail.com>
-
-
