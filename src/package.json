@@ -1,0 +1,44 @@
+{
+  "name": "TestManagementSolution",
+  "description": "A boilerplate application for express mongoose",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jussi Vatjus-Anttila",
+    "email": "jussiva@gmail.com"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "scripts": {
+    "start": "NODE_PATH=./config:./app/controllers NODE_ENV=development ./node_modules/.bin/nodemon server.js",
+    "test": "make test"
+  },
+  "dependencies": {
+    "body-parser": "*",
+    "compression": "*",
+    "connect-flash": "*",
+    "connect-mongo": "*",
+    "cookie-parser": "*",
+    "cookie-session": "*",
+    "express": "*",
+    "express-session": "*",
+    "method-override": "*",
+    "mongoose": "*",
+    "passport": "*",
+    "passport-local": "*",
+    "winston": "*"
+  },
+  "devDependencies": {
+    "mocha": "latest",
+    "should": "latest",
+    "supertest": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://bitbucket.org/_tmt_/core.git"
+  },
+  "keywords": [
+    "mvc",
+    "boilerplate"
+  ]
+}
