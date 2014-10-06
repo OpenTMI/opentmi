@@ -1,35 +1,111 @@
 <!DOCTYPE html>
 
 <!-- define angular app -->
-<html ng-app="scotchApp">
+<html lang="en" ng-app="tmtApp">
 
 <head>
+
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+  <meta charset="utf-8">
+  <meta name="generator" content="Bootply" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
   <!-- SCROLLS -->
-  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
 
   <!-- SPELLS -->
-  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.js"></script>
-  <script src="script.js"></script>
+  <script type='text/javascript' src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type='text/javascript' src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-resource.min.js"></script>
+  <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.2.js"></script>
+
+
+  
+  <!--[if lt IE 9]>
+  <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  
+  <script src="js/app.js"></script>
+  <!-- <script src="js/services.js"></script> -->
+  <script src="js/controllers.js"></script>
+  <script src="js/controllers/homeController.js"></script>
+  <script src="js/controllers/menuController.js"></script>
+  
+  <script src="js/filters.js"></script>
+  <script src="js/directives.js"></script>
+  
 </head>
 
 <!-- define angular controller -->
-<body ng-controller="mainController">
+<body>
 
-  <nav class="navbar navbar-default">
+  <div class="navbar navbar-default" ng-controller="MenuController">
+    
     <div class="container">
       <div class="navbar-header">
-        <a class="navbar-brand" href="/">Test Management Tool</a>
+        <a class="navbar-brand" href="/"><i class="fa fa-home"></i>Home</a>
       </div>
-
+      <ul class="nav navbar-nav navbar-left">
+        <li ng-repeat="menu in menus" ng-class="{dropdown: menu.menus}">
+          <a href="{{menu.action}}" ng-class="{'dropdown-toggle': menu.menus}" data-toggle="dropdown" title="{{menu.tooltip}}">
+          <!-- <i ng-if="menu.icon" class="fa fa-{{menu.icon}}" />  -->
+          {{menu.title}} <span class="caret"></span></a>
+          <ul ng-if="menu.menus" class="dropdown-menu">
+            <li ng-repeat="submenu in menu.menus">
+              <a href="{{submenu.action}}" title="{{submenu.tooltip}}">{{submenu.title}}</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#"><i class="fa fa-home"></i> Home</a></li>
-        <li><a href="#about"><i class="fa fa-shield"></i> About</a></li>
-        <li><a href="#contact"><i class="fa fa-comment"></i> Contact</a></li>
+        
+        <!-- <li><a href="#configure"><i class="fa fa-cogs"></i></a></li> -->
+        
+        <li ng-class="{dropdown: cmenu.menus}">
+          <a href="{{cmenu.action}}" ng-class="{'dropdown-toggle': cmenu.menus}" data-toggle="dropdown" title="{{cmenu.tooltip}}">
+          <i class="fa fa-cogs"></i><span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li ng-repeat="submenu in cmenu.menus">
+              <a href="{{submenu.action}}" title="{{submenu.tooltip}}">{{submenu.title}}</a>
+            </li>
+          </ul>
+          
+          
+        </li>
+        
+        <!-- <i class="fa fa-cogs" /> 
+        <li ng-class="{dropdown: cmenu}">
+          <i class="fa fa-cogs" />
+          <!-- <ul class="dropdown-menu">
+            <li ng-repeat="submenu in cmenu">
+              <a href="{{submenu.action}}" title="{{submenu.tooltip}}">{{submenu.title}}</a>
+            </li>
+          </ul> 
+        </li>-->
+        
+        
+        <li><a href="#about"><i class="fa fa-info"></i></a></li>
+        <li><a href="#contact"><i class="fa fa-comment"></i></a></li>
       </ul>
     </div>
-  </nav>
+  </div>
+  <!--
+  <div class="navbar navbar-default ">
+    <ul class="nav navbar-nav">
+      <li ng-repeat="menu in menus" ng-class="{dropdown: menu.menus}">
+        <a href="{{menu.action}}" ng-class="{'dropdown-toggle': menu.menus}" data-toggle="dropdown">{{menu.title}} <span class="caret"></span></a>
+        <ul ng-if="menu.menus" class="dropdown-menu">
+          <li ng-repeat="submenu in menu.menus">
+            <a href="{{submenu.action}}">{{submenu.title}}</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div> -->
 
   <div id="main">
   
