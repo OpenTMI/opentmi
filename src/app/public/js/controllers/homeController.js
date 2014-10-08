@@ -1,4 +1,6 @@
-angular.module('tmt.controllers')
+'use strict';	
+
+angular.module('tmtControllers')
   .controller('slideCtrl', function ($scope) {
     $scope.myInterval = 5000;
     var slides = $scope.slides = [];

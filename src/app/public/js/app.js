@@ -1,7 +1,9 @@
 'use strict';	
 
 // create the module and name it scotchApp
-var tmtApp = angular.module('tmtApp', ['ui.bootstrap', 'ngRoute', 'tmt.controllers'/*, 'tmt.services'*/]);
+var tmtApp = angular.module('tmtApp', [
+  'ui.bootstrap', 'ngRoute',
+  'tmtControllers', 'tmtServices' ]);
 
 // configure our routes
 tmtApp.config(function($routeProvider) {
@@ -11,6 +13,12 @@ tmtApp.config(function($routeProvider) {
     .when('/', {
       templateUrl : 'pages/home.html',
       controller  : 'mainController'
+    })
+    
+    // route for the tc page
+    .when('/testcases', {
+      templateUrl : 'pages/testcases.html',
+      controller  : 'TcCtrl'
     })
 
     // route for the about page

@@ -11,7 +11,11 @@ var Schema = mongoose.Schema;
  */
 
 var TestCaseSchema = new Schema({
-  name: { type: String, default: '' }
+  name: { type: String, default: '' },
+  enable: { type: Boolean, default: true },
+  specs: { type: String, default: '' },
+  duration: {type: Number, default: 0},
+  user: {type: String, default: ''},
 });
 
 
