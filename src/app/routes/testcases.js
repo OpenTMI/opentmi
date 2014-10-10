@@ -6,6 +6,14 @@ var Route = function(app, passport){
 
   var Testcase = mongoose.model('Testcase');
   
+  router.param('format', function(req, res, next, id){
+    if( req.params.format == 'html' ) {
+      var redirurl = '/#'+req.url.match(/\/api\/v0(.*)\.html/)[1];
+      res.redirect( redirurl );
+    } else {
+      next();
+    }
+  });
   router.param('testcase', function(req, res, next, id){
     //find from db
     Testcase.findOne( {_id: req.params.testcase}, function(error, tc){
@@ -17,7 +25,7 @@ var Route = function(app, passport){
       }
     })
   });
-  router.route('/api/v0/testcases')
+  router.route('/api/v0/testcases.:format?')
     .all( function(req, res, next){
       req.doQuery = function(){
         Testcase.find( req.query, function(error, list){
@@ -39,7 +47,7 @@ var Route = function(app, passport){
         res.json(req.body);
       });
     });
-  router.route('/api/v0/testcases/:testcase')
+  router.route('/api/v0/testcases/:testcase.:format?')
     .all( function(req, res, next){
       req.doUpdate = function(){
         delete req.body._id;

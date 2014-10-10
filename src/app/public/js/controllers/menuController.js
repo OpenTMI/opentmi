@@ -6,7 +6,7 @@ angular.module('tmtControllers')
     $scope.menus = [
     {
       title: "Test Management", tooltip: 'test',  
-      action: "", icon: 'cogs',
+      action: "#", icon: 'cogs',
       menus: [
         {  title: "Testcases", tooltip: 'test', action: "#/testcases" },
         {  title: "Campaigns", tooltip: '', action: "#/campaigns" },
@@ -50,7 +50,7 @@ angular.module('tmtControllers')
       title: "Builds", tooltip: 'Build informations',
       action: "#",
       menus: [
-        { title: "List of Builds", action: "#/builds" },
+        { title: "Builds", action: "#/builds" },
         { title: "Tree", action: "#/builds-tree" }
       ]
     },
@@ -58,7 +58,7 @@ angular.module('tmtControllers')
       title: "Results", tooltip: 'Test Results',
       action: "#",
       menus: [
-        { title: "All", action: "#/results" },
+        { title: "Results", action: "#/results" },
         { title: "Analyse", action: "#/results-analyse" }
       ]
     },
@@ -66,7 +66,7 @@ angular.module('tmtControllers')
       title: "Reports", tooltip: 'Test Reports',
       action: "#",
       menus: [
-        { title: "All", action: "#/reports?news" },
+        { title: "Reports", action: "#/reports?news" },
         { title: "Templates", action: "#/reports-templates" }
       ]
     }

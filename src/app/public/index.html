@@ -20,11 +20,12 @@
   <script type='text/javascript' src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-resource.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-resource.min.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-touch.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.js"></script>
-  <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.2.js"></script>
+  <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.2.js"></script>
+  <!-- <script src="http://angular-ui.github.io/ui-router/release/angular-ui-router.min.js"></script> -->
   <script src="/js/lib/ui-grid/3.0.0-rc.11/ui-grid.min.js"></script>
 
 
@@ -63,8 +64,9 @@
       <ul class="nav navbar-nav navbar-left">
         <li ng-repeat="menu in menus" ng-class="{dropdown: menu.menus}">
           <a href="{{menu.action}}" ng-class="{'dropdown-toggle': menu.menus}" data-toggle="dropdown" title="{{menu.tooltip}}">
-          <!-- <i ng-if="menu.icon" class="fa fa-{{menu.icon}}" />  -->
-          {{menu.title}} <span class="caret"></span></a>
+            <!-- <i ng-if="menu.icon" class="fa fa-{{menu.icon}}" />  -->
+            {{menu.title}} <span class="caret"></span>
+          </a>
           <ul ng-if="menu.menus" class="dropdown-menu">
             <li ng-repeat="submenu in menu.menus">
               <a href="{{submenu.action}}" title="{{submenu.tooltip}}">{{submenu.title}}</a>
@@ -88,35 +90,11 @@
           
         </li>
         
-        <!-- <i class="fa fa-cogs" /> 
-        <li ng-class="{dropdown: cmenu}">
-          <i class="fa fa-cogs" />
-          <!-- <ul class="dropdown-menu">
-            <li ng-repeat="submenu in cmenu">
-              <a href="{{submenu.action}}" title="{{submenu.tooltip}}">{{submenu.title}}</a>
-            </li>
-          </ul> 
-        </li>-->
-        
-        
         <li><a href="#about"><i class="fa fa-info"></i></a></li>
         <li><a href="#contact"><i class="fa fa-comment"></i></a></li>
       </ul>
     </div>
   </div>
-  <!--
-  <div class="navbar navbar-default ">
-    <ul class="nav navbar-nav">
-      <li ng-repeat="menu in menus" ng-class="{dropdown: menu.menus}">
-        <a href="{{menu.action}}" ng-class="{'dropdown-toggle': menu.menus}" data-toggle="dropdown">{{menu.title}} <span class="caret"></span></a>
-        <ul ng-if="menu.menus" class="dropdown-menu">
-          <li ng-repeat="submenu in menu.menus">
-            <a href="{{submenu.action}}">{{submenu.title}}</a>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </div> -->
 
   <div id="main">
   
