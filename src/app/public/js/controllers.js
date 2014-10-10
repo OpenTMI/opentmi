@@ -5,7 +5,7 @@
 angular.module('tmtControllers', [
   'ui.grid', 
   'ui.grid.edit', 
-  'ui.grid.pinning'
+  'ui.grid.pinning',
   /*, 'ui.grid.exporter', 'ui.grid.selection'*/
 ])
 
