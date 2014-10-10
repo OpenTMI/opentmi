@@ -18,18 +18,13 @@
 }
 </style>
 
-<div class="row">
-
-    <div class="col-sm-2">
-        <div ui-view="tcFilters">filters..</div>
-    </div>
-    
-    <div class="col-sm-8">
-        <div ui-view="tcBody">tc-table</div>
-    </div>
-    
-    <div class="col-sm-1">
-        <div ui-view="tcStatus">status..</div>
+<div>
+    <div ui-view="columnTwo">
+      <div class="jumbotron text-center">
+        <div ng-controller="tcController">
+          <div id="grid1" ui-grid="gridOptions" ui-grid-pinning ui-grid-edit ui-grid-exporter ui-grid-selection class="grid"></div>
+        </div>
+      </div>
     </div>
 </div>
 

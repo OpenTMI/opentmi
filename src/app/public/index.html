@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" />
   <link rel="stylesheet" href="/js/lib/ui-grid/3.0.0-rc.11/ui-grid.min.css" />
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/ng-tags-input/2.0.1/ng-tags-input.min.css" />
 
   <!-- SPELLS -->
   <script type='text/javascript' src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -26,6 +27,7 @@
   <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.2.js"></script>
   <script src="http://angular-ui.github.io/ui-router/release/angular-ui-router.min.js"></script>
   <script src="/js/lib/ui-grid/3.0.0-rc.11/ui-grid.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/ng-tags-input/2.0.1/ng-tags-input.min.js"></script>
 
 
   
@@ -33,16 +35,15 @@
   <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
   
- 
+ <script src="js/app.js"></script>
   
   
   <!-- Controllers -->
   <script src="js/controllers.js"></script>
   <script src="js/controllers/homeController.js"></script>
-  
-   
-  <script src="js/controllers/menuController.js"></script
   <script src="js/controllers/tcController.js"></script>
+  <script src="js/controllers/menuController.js"></script
+  
   
   <!-- Services -->
   <script src="js/services.js"></script>
@@ -51,7 +52,7 @@
   <script src="js/filters.js"></script>
   <script src="js/directives.js"></script>
   
-   <script src="js/app.js"></script>
+   
   
 </head>
 
@@ -73,6 +74,16 @@
           <ul ng-if="menu.menus" class="dropdown-menu">
             <li ng-repeat="submenu in menu.menus">
               <a href="{{submenu.action}}" title="{{submenu.tooltip}}">{{submenu.title}}</a>
+              
+              <!-- extra menu.. -->
+              <!--
+              <ul ng-if="submenu.menus" class="dropdown-menu">
+                <li ng-repeat="subsubmenu in submenu.menus">
+                  <a href="{{subsubmenu.action}}" title="{{subsubmenu.tooltip}}">{{subsubmenu.title}}</a>
+                </li>
+              </ul>
+              -->
+              
             </li>
           </ul>
         </li>
@@ -103,14 +114,15 @@
   
     <!-- angular templating -->
 		<!-- this is where content will be injected -->
-    <!-- <div ng-view></div> -->
-    
     <div ui-view></div>
     
   </div>
   
   <footer class="text-center">
-    <p>Test Management Tool (R) Jussi Vatjus-Anttila</p>
+    <p>Test Management Tool &copy; Jussi Vatjus-Anttila</p>
+    <a href="http://www.linkedin.com/in/jussiva"><i class="fa fa-linkedin"></i></a>
+    <a href="http://www.bitbucket.com/_tmt_/core"><i class="fa fa-bitbucket"></i></a>
+    </p>
   </footer>
   
 </body>

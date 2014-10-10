@@ -1,30 +1,78 @@
 'use strict';	
 
 // create the module and name it scotchApp
-var tmtApp = angular.module('tmtApp', [
-  'ui.bootstrap', 'ui.router',
-  'tmtControllers', 'tmtServices' ]);
+angular.module('tmtApp', [
+  'ui.bootstrap', 'ui.router', 'ngTagsInput', 'ngAnimate',
+  'tmtControllers', 'tmtServices' ])
 
+.run(
+  [          '$rootScope', '$state', '$stateParams',
+    function ($rootScope,   $state,   $stateParams) {
+    $rootScope.$state = $state;
+    $rootScope.$stateParams = $stateParams;
+    }
+  ]
+)
 // configure our routes
-tmtApp.config(['$stateProvider', '$urlRouterProvider', 
+.config(['$stateProvider', '$urlRouterProvider', 
   function($stateProvider, $urlRouterProvider) {
 
-    $urlRouterProvider.otherwise('/');
+      
+    // Redirects and Otherwise //
+
+    // Use $urlRouterProvider to configure any redirects (when) and invalid urls (otherwise).
+    $urlRouterProvider
+
+      // The `when` method says if the url is ever the 1st param, then redirect to the 2nd param
+      // Here we are just setting up some convenience urls.
+      .when('/tc?id', '/testcases/:id')
+      .when('/testcases/:id', '/testcases/:id')
+
+      // If the url is ever invalid, e.g. '/asdf', then redirect to '/' aka the home state
+      .otherwise('/');
+    
     
     // route for the home page
     $stateProvider
-      .state('main', {
+      
+      
+    
+      .state('home', {
         url: '/',
         templateUrl: 'pages/home.html',
-        controller: 'mainController'
+        controller: 'homeController'
       })
+      
       
       .state('testcase', {
         url: '/testcases',
-        templateUrl: 'pages/testcases.html',
-        controller: 'TcCtrl'
+        controller: 'tcController',
+        views: {
+            '': { templateUrl: 'pages/testcases.html' },
+            'tcFilters@testcase': { 
+              templateUrl: 'pages/testcases.filters.html',
+            },
+            'tcBody@testcase': { 
+              templateUrl: 'pages/testcases.body.html'
+            },
+            'tcStatus@testcase': { 
+              templateUrl: 'pages/testcases.status.html'
+            }
+        }
       })
-
+      .state('campaigns', {
+        url: '/campaigns',
+        templateUrl: 'pages/campaigns.html',
+        //controller: 'campaignsController'
+      })
+      
+      .state('resources', {
+        url: '/resources',
+        templateUrl: 'pages/resources.html',
+        //controller: 'resourcesController'
+      })
+      
+      
       .state('about', {
         url: '/about',
         templateUrl: 'pages/about.html',

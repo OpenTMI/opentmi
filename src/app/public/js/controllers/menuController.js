@@ -11,7 +11,7 @@ angular.module('tmtControllers')
         {  title: "Testcases", tooltip: 'test', action: "#/testcases" },
         {  title: "Campaigns", tooltip: '', action: "#/campaigns" },
         {  title: "Plans", tooltip: '', action: "#/plans" },
-        {  title: "Automation", tooltip: '', action: "#/automation" },
+        {  title: "Automation", tooltip: '', action: "#/automation" }
         /*{
           title: "Submenu 1b",
           action: "moreStuff",
@@ -30,7 +30,7 @@ angular.module('tmtControllers')
     },
     {
       title: "DUT", tooltip: 'Device Under Test',
-      action: "", 
+      action: "#", 
       menus: [
         { title: "Devices", action: "#/resources?type=dut" },
         { title: "Specifications", action: "#/dut-specifications" },
@@ -39,7 +39,7 @@ angular.module('tmtControllers')
     },
     {
       title: "Resources", tooltip: 'Test rets',
-      action: "", 
+      action: "#", 
       menus: [
         { title: "List of Resources", action: "#/resources" },
         { title: "Specifications", action: "#/specifications" },
@@ -74,7 +74,7 @@ angular.module('tmtControllers')
     
     $scope.cmenu = {
       title: "", tooltip: 'test',  
-      action: "", icon: 'cogs',
+      action: "#", icon: 'cogs',
       menus: [
         {  title: "Accounts", tooltip: 'test', action: "#/accounts" },
         {  title: "Groups", action: "#/groups" },
