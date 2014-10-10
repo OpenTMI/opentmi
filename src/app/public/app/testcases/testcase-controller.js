@@ -1,7 +1,9 @@
 'use strict';
 
 angular.module('tmtControllers')
-  .controller('tcController', ['$scope', 'Testcase', '$log', function ($scope, Testcase, $log) {
+  .controller('tcController', 
+             ['$scope', 'Testcase', '$stateParams', '$log', 
+    function ($scope,   Testcase,   $stateParams,    $log) {
   
     $log.info('init tcController')
     
@@ -16,19 +18,20 @@ angular.module('tmtControllers')
     
     $scope.columns = [ 
       { field: 'id', width:300, enableCellEdit: true, pinnedLeft:true }, 
+      { field: 'tcid', width:300, enableCellEdit: true }, 
       /*{ field: 'specs', enableCellEdit: true },
       { field: 'duration', width:100, enableCellEdit: true, cellTemplate: '<div class="ui-grid-cell-contents"><span>{{COL_FIELD}}</span></div>' },
       { field: 'owner.user', enableCellEdit: true },*/
     ];
     $scope.gridOptions = { 
-      //columnDefs: $scope.columns,
+      columnDefs: $scope.columns,
       enableColumnResizing: true,
       //enableFiltering: true,
       //exporterMenuCsv: true,
       enableGridMenu: true
     };
     
-    $scope.testcaseService = Testcase.query({fl: true});
+    $scope.testcaseService = Testcase.query({fl: true, _id: $stateParams.testcaseId});
     $scope.dataTestcases = {};
     $scope.gridOptions.data = 'dataTestcases';
     

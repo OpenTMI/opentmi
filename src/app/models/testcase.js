@@ -7,6 +7,7 @@
 
 /* 3rd party libraries */
 var mongoose = require('mongoose');
+var QueryPlugin = require('mongoose-query');
 
 /* Implementation */   
 var Schema = mongoose.Schema;
@@ -18,7 +19,7 @@ var ObjectId = Types.ObjectId;
  */
 
 var TestCaseSchema = new Schema({
-  id: {type: String, required: true, index: true, title: 'TC ID'},
+  tcid: {type: String, required: true, index: true, title: 'TC ID'},
   archive: {
     value: {type: Boolean, default: false,  //true when tc is archived
             title: 'Archived'},             
@@ -34,7 +35,7 @@ var TestCaseSchema = new Schema({
     user: {type: String}
   },
   owner: {
-    author: {type: String, default: "", title: 'Author' },
+    name: {type: String, default: "", title: 'User' },
     group: {type: String, default: "", title: 'Group' },
     site: {type: String, title: 'Site'  }
   },
@@ -117,5 +118,5 @@ TestCaseSchema.static({
 /**
  * Register
  */
-
+TestCaseSchema.plugin( QueryPlugin ); //install QueryPlugin
 mongoose.model('Testcase', TestCaseSchema);

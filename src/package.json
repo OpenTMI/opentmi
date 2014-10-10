@@ -28,7 +28,8 @@
     "passport-local": "*",
     "winston": "*",
     "csurf": "latest",
-    "morgan": "~1.3.2"
+    "morgan": "~1.3.2",
+    "mongoose-query": "~0.1.7"
   },
   "devDependencies": {
     "mocha": "latest",

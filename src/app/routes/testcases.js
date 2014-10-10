@@ -28,7 +28,7 @@ var Route = function(app, passport){
   router.route('/api/v0/testcases.:format?')
     .all( function(req, res, next){
       req.doQuery = function(){
-        Testcase.find( req.query, function(error, list){
+        Testcase.query( req.query, function(error, list){
           if( error ) {
             res.status(300).json({error: error});
           } else {

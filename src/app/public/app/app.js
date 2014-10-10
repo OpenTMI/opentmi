@@ -2,8 +2,14 @@
 
 // create the module and name it scotchApp
 angular.module('tmtApp', [
-  'ui.bootstrap', 'ui.router', 'ngTagsInput', 'ngAnimate',
-  'tmtControllers', 'tmtServices' ])
+  'tmtApp.testcases',
+  'tmtControllers', 
+  'tmtServices',
+  'ui.bootstrap', 
+  'ui.router', 
+  'ngTagsInput', 
+  'ngAnimate'
+])
 
 .run(
   [          '$rootScope', '$state', '$stateParams',
@@ -27,65 +33,40 @@ angular.module('tmtApp', [
       // Here we are just setting up some convenience urls.
       .when('/tc?id', '/testcases/:id')
       .when('/testcases/:id', '/testcases/:id')
-
       // If the url is ever invalid, e.g. '/asdf', then redirect to '/' aka the home state
       .otherwise('/');
     
-    
-    // route for the home page
+    // State Configurations 
     $stateProvider
-      
-      
-    
+     
       .state('home', {
         url: '/',
-        templateUrl: 'pages/home.html',
+        templateUrl: 'app/pages/home.html',
         controller: 'homeController'
-      })
-      
-      
-      .state('testcase', {
-        url: '/testcases',
-        controller: 'tcController',
-        views: {
-            '': { templateUrl: 'pages/testcases.html' },
-            'tcFilters@testcase': { 
-              templateUrl: 'pages/testcases.filters.html',
-            },
-            'tcBody@testcase': { 
-              templateUrl: 'pages/testcases.body.html'
-            },
-            'tcStatus@testcase': { 
-              templateUrl: 'pages/testcases.status.html'
-            }
-        }
       })
       .state('campaigns', {
         url: '/campaigns',
-        templateUrl: 'pages/campaigns.html',
+        templateUrl: 'app/pages/campaigns.html',
         //controller: 'campaignsController'
       })
-      
       .state('resources', {
         url: '/resources',
-        templateUrl: 'pages/resources.html',
+        templateUrl: 'app/pages/resources.html',
         //controller: 'resourcesController'
       })
-      
-      
       .state('about', {
         url: '/about',
-        templateUrl: 'pages/about.html',
+        templateUrl: 'app/pages/about.html',
         controller: 'aboutController'
       })
       .state('settings', {
         url: '/settings',
-        templateUrl: 'pages/configure.html',
+        templateUrl: 'app/pages/configure.html',
         controller: 'configController'
       })
       .state('contact', {
         url: '/contact',
-        templateUrl: 'pages/contact.html',
+        templateUrl: 'app/pages/contact.html',
         controller: 'contactController'
       });
 }]);
