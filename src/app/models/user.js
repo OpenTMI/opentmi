@@ -6,13 +6,15 @@
 var mongoose = require('mongoose');
 //var userPlugin = require('mongoose-user');
 var Schema = mongoose.Schema;
-
+var QueryPlugin = require('mongoose-query');
 /**
  * User schema
  */
 
 var UserSchema = new Schema({
   name: { type: String, default: '' },
+  registered: { type: Date, default: Date.now },
+  lastVisited: { type: Date, default: Date.now },
   email: { type: String, default: '' },
   hashed_password: { type: String, default: '' },
   salt: { type: String, default: '' }
@@ -50,5 +52,5 @@ UserSchema.static({
 /**
  * Register
  */
-
+UserSchema.plugin( QueryPlugin ); //install QueryPlugin
 mongoose.model('User', UserSchema);
