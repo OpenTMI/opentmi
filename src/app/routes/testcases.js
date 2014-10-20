@@ -28,6 +28,7 @@ var Route = function(app, passport){
   router.route('/api/v0/testcases.:format?')
     .all( function(req, res, next){
       req.doQuery = function(){
+        console.log(req.query);
         Testcase.query( req.query, function(error, list){
           if( error ) {
             res.status(300).json({error: error});
@@ -52,6 +53,7 @@ var Route = function(app, passport){
       req.doUpdate = function(){
         delete req.body._id;
         delete req.body.__v;
+        console.log(req.body);
         Testcase.findByIdAndUpdate( req.params.testcase, req.body, function(error, doc){
           if( error ) {
             res.status(300).json({error: error});
