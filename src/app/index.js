@@ -41,8 +41,8 @@ fs.readdirSync(__dirname + '/routes').forEach(function (file) {
 });
 
 
-var AddonManager = require('./addons/');
-AddonManager.RegisterAddons(app, passport);
+GLOBAL.AddonManager = require('./addons/');
+GLOBAL.AddonManager.RegisterAddons(app, passport);
 
 require(__dirname + '/routes/error.js')(app, passport);
 

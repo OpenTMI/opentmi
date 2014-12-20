@@ -10,7 +10,7 @@ var Route = function(app, passport){
       next();
     })
     .get( function(req, res){
-      res.json({});
+      res.json( GLOBAL.AddonManager.AvailableModules() );
     })
     
     app.use( router );

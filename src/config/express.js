@@ -42,7 +42,7 @@ module.exports = function (app, passport) {
       }
     };
   } else */{
-    log = 'dev';
+    log = 'dev'; //'combined' - standard apache format
   }
   
   // Don't log during tests
