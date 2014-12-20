@@ -20,8 +20,15 @@ AddonManager.prototype.RegisterAddons = function(app, passport) {
 AddonManager.prototype.AvailableModules = function() {
   return this.addons;
 };
+
+UnregisterModule = function(i, cb){
+  if( this.addons.length < i ) return false;
+  this.addons[i].unregister(cb);
+  this.addons.splice(i, 1);
+}
+
 AddonManager.prototype.UnregisterModule = function(i) {
-  console.log("not implemented");
+  UnregisterModule(i);
 };
 
 exports = module.exports = new AddonManager();
