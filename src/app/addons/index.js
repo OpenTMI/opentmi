@@ -5,13 +5,13 @@ function AddonManager (){
 
   var _privilegedMethod = function (){};
 }
-AddonManager.prototype.RegisterAddons = function(app, passport) {
+AddonManager.prototype.RegisterAddons = function(app, server, io, passport) {
   var self = this;
   fs.readdirSync(__dirname).forEach(function (file) {
-    if (file.indexOf('.js')<0) {
+    if (!file.match(/\.js$/) && !file.match(/^\./) ) {
        console.log("-RegisterAddon: '"+file+"'");
        var Addon = require(__dirname + '/' + file);
-       var addon = new Addon(app, passport);
+       var addon = new Addon(app, server, io, passport);
        addon.register();
        self.addons.push( addon  );
     }

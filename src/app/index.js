@@ -1,4 +1,5 @@
 var fs = require('fs');
+var http = require('http');
 
 var express = require('express');
 var mongoose = require('mongoose');
@@ -7,6 +8,8 @@ var passport = require('passport');
 var config = require('./../config/config.js');
 
 var app = express();
+var server = http.createServer(app);
+var io = require('socket.io')(server);
 var port = 3000;
 
 // Connect to mongodb
@@ -21,7 +24,7 @@ mongoose.connection.on('error', console.log);
 mongoose.connection.on('disconnected', connect);
 
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
-  if (~file.indexOf('.js')){
+  if (file.indexOf('.js$')){
     require(__dirname + '/models/' + file);
   }
 });
@@ -34,7 +37,8 @@ require('../config/express')(app, passport);
 
 // Bootstrap routes
 fs.readdirSync(__dirname + '/routes').forEach(function (file) {
-  if ( file.match(/.*\.js$/) && !file.match(/error\.js$/) ) {
+  if ( file.match(/\.js$/) && 
+      !file.match(/error\.js$/)) {
     console.log('-AddRoute: '+file);
     require(__dirname + '/routes/' + file)(app, passport);
   }
@@ -42,9 +46,10 @@ fs.readdirSync(__dirname + '/routes').forEach(function (file) {
 
 
 GLOBAL.AddonManager = require('./addons/');
-GLOBAL.AddonManager.RegisterAddons(app, passport);
+GLOBAL.AddonManager.RegisterAddons(app, server, io, passport);
 
 require(__dirname + '/routes/error.js')(app, passport);
 
-app.listen(port);
-console.log('Express app started on port ' + port);
+server.listen(port, function(){
+  console.log('Express app started on port ' + port);
+});
