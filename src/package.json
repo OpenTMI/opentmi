@@ -1,6 +1,6 @@
 {
   "name": "TestManagementSolution",
-  "description": "A boilerplate application for express mongoose",
+  "description": "Test Management Solution for IoT",
   "version": "1.0.0",
   "author": {
     "name": "Jussi Vatjus-Anttila",
@@ -41,7 +41,7 @@
     "url": "git://bitbucket.org/_tmt_/core.git"
   },
   "keywords": [
-    "mvc",
-    "boilerplate"
+    "IoT",
+    "mbed"
   ]
 }
