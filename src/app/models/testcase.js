@@ -75,6 +75,9 @@ var TestCaseSchema = new Schema({
       ue_build: {type: String},
     }
   },
+  history: {
+    durationAvg: {type: Number, default: 60}
+  },
   compatible: {
     automation: {
       yes: {type: Boolean, default: false, index: true},

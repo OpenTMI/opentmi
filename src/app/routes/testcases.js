@@ -1,11 +1,35 @@
 var express = require('express');
 var mongoose = require('mongoose');
+var _ = require('underscore');
 var router = express.Router();
 
 var Route = function(app, passport){
 
   var Testcase = mongoose.model('Testcase');
-  
+
+
+  Testcase.count({}, function(error, count){
+    if( count === 0 ){
+      var tcTemplate = {
+        tcid: 'Testcase-',
+        cre: { user: 'tmt'},
+        owner: { user: 'nobody'},
+        other_info: { title: 'Example case', purpose: 'dummy' },
+        status: {value: 'unknown'},
+      }
+      var statuses =  ['unknown', 'released','development', 'broken'];
+      for(var i=0;i<10;i++){
+        var newTc = {};
+        _.extend(newTc, tcTemplate)
+        newTc.tcid += i;
+        newTc.status.value = statuses[i%statuses.length];
+        var TC = new Testcase(newTc);
+        TC.save( function(error){
+          if(error) console.log(error);
+        });
+      }
+    }
+  });  
   router.param('format', function(req, res, next, id){
     if( req.params.format == 'html' ) {
       var redirurl = '/#'+req.url.match(/\/api\/v0(.*)\.html/)[1];

@@ -30,6 +30,7 @@
     "passport": "*",
     "passport-local": "*",
     "socket.io": "^1.2.1",
+    "underscore": "^1.7.0",
     "winston": "*"
   },
   "devDependencies": {
