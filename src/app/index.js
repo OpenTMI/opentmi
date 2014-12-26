@@ -25,6 +25,7 @@ mongoose.connection.on('disconnected', connect);
 
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
   if (file.indexOf('.js$')){
+    console.log('-RegisterModel: '+file);
     require(__dirname + '/models/' + file);
   }
 });

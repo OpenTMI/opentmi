@@ -25,6 +25,10 @@ var UserSchema = new Schema({
  */
 
 //UserSchema.plugin(userPlugin, {});
+/**
+ * Query Plugin 
+ */
+UserSchema.plugin( QueryPlugin ); //install QueryPlugin
 
 /**
  * Add your
@@ -52,5 +56,4 @@ UserSchema.static({
 /**
  * Register
  */
-UserSchema.plugin( QueryPlugin ); //install QueryPlugin
 mongoose.model('User', UserSchema);

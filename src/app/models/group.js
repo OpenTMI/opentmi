@@ -8,7 +8,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var QueryPlugin = require('mongoose-query');
 /**
- * User schema
+ * Group schema
  */
 
 var GroupSchema = new Schema({
@@ -17,7 +17,7 @@ var GroupSchema = new Schema({
 });
 
 /**
- * User plugin
+ * Group plugin
  */
 GroupSchema.plugin( QueryPlugin ); //install QueryPlugin
 
@@ -33,7 +33,7 @@ GroupSchema.plugin( QueryPlugin ); //install QueryPlugin
  */
 
 GroupSchema.method({
-
+  
 });
 
 /**
