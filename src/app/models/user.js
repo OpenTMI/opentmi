@@ -9,16 +9,34 @@ var bcrypt = require('bcryptjs'),
     SALT_WORK_FACTOR = 10;
 
 var Schema = mongoose.Schema;
+
+var validateEmail = function(email) {
+    var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    return re.test(email)
+};
+
 /**
  * User schema
  */
-
 var UserSchema = new Schema({
-  username: { type: String, require: true, unique: true },
+  name: { type: String },
+  
+  username: { type: String, required: true, unique: true },
+
+  provider: {type: String},
+  ldapId: {type: String},
+
+  email: {
+    type: String,
+    trim: true,
+    unique: true,
+    required: 'Email address is required',
+    validate: [validateEmail, 'Please fill a valid email address'],
+  },
+
   registered: { type: Date, default: Date.now },
   lastVisited: { type: Date, default: Date.now },
-  email: { type: String, default: '' },
-  password: { type: String, require: true },
+  password: { type: String, required: true },
   loggedIn: { type: Boolean, default: false }
 });
 
@@ -38,6 +56,7 @@ UserSchema.plugin( QueryPlugin ); //install QueryPlugin
  * - validations
  * - virtuals
  */
+
  UserSchema.pre('save', function(next) {
     var user = this;
 
@@ -64,7 +83,6 @@ UserSchema.plugin( QueryPlugin ); //install QueryPlugin
  * Methods
  */
 UserSchema.methods.authenticate = function(candidatePassword) {
-    console.log('authenticate')
     return bcrypt.compareSync(candidatePassword, this.password);
 };
 

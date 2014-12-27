@@ -18,10 +18,8 @@ module.exports = new FacebookStrategy({
     callbackURL: config.facebook.callbackURL
   },
   function(accessToken, refreshToken, profile, done) {
-    var options = {
-      criteria: { 'facebook.id': profile.id }
-    };
-    User.load(options, function (err, user) {
+    var criteria = { 'facebook.id': profile.id };
+    User.find(criteria, function (err, user) {
       if (err) return done(err);
       if (!user) {
         user = new User({

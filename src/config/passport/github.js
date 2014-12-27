@@ -18,10 +18,8 @@ module.exports = new GithubStrategy({
     callbackURL: config.github.callbackURL
   },
   function(accessToken, refreshToken, profile, done) {
-    var options = {
-      criteria: { 'github.id': profile.id }
-    };
-    User.load(options, function (err, user) {
+    var criteria = { 'github.id': profile.id } ;
+    User.load(criteria, function (err, user) {
       if (err) return done(err);
       if (!user) {
         user = new User({

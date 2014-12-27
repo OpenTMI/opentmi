@@ -1,32 +1,31 @@
-
 /**
  * Module dependencies.
  */
 
 var mongoose = require('mongoose');
-var TwitterStrategy = require('passport-twitter').Strategy;
+var LdapStrategy = require('passport-ldapauth').Strategy;
 var config = require('config');
 var User = mongoose.model('User');
 
 /**
  * Expose
  */
-
-module.exports = new TwitterStrategy({
-    consumerKey: config.twitter.clientID,
-    consumerSecret: config.twitter.clientSecret,
-    callbackURL: config.twitter.callbackURL
+//https://www.npmjs.com/package/passport-ldapauth
+module.exports = new LdapStrategy({
+    server: config.ldap
   },
   function(accessToken, refreshToken, profile, done) {
-    var criteria = { 'twitter.id': profile.id };
+    var criteria = { 'ldapId': profile.id } ;
     User.findOne(criteria, function (err, user) {
       if (err) return done(err);
       if (!user) {
+        console.log(user);
         user = new User({
           name: profile.displayName,
+          email: profile.emails[0].value,
           username: profile.username,
-          provider: 'twitter',
-          twitter: profile._json
+          provider: 'ldap',
+          ldap: profile._json
         });
         user.save(function (err) {
           if (err) console.log(err);

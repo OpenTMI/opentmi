@@ -22,16 +22,20 @@ var Route = function(app, passport){
   });
 
   Account.count( {}, function(err, count){
-    if(count===0) (new Account({username: 'admin', password: 'admin'})).save(); 
+    if(count===0 ) (new Account({
+        username: 'admin', password: 'admin'
+        ,email: 'admin@tmt.tmt'
+      })).save( function(err, user){
+        console.log(user);
+        if(err)console.log(err);
+    }); 
   });
 
   //create authentication routes:
   var controller = require('./../controllers/authentication')();
   
   app.post('/api/v0/login', 
-      passport.authenticate('local', {
-        //failureRedirect: 'hello'
-      }), controller.login );
+      passport.authenticate('local'), controller.login );
   app.get('/api/v0/logout', controller.logout )
 }
 

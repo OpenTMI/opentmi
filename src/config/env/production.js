@@ -5,6 +5,9 @@
 
 module.exports = {
   db: 'mongodb://localhost/tmt_prod',
+  ldap: {
+    url: process.env.LDAP_URL
+  },
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
     clientSecret: process.env.FACEBOOK_SECRET,

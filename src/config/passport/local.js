@@ -16,20 +16,23 @@ module.exports = new LocalStrategy({
     passwordField: 'password'
   },
   function(username, password, done) {
-    console.log('logining..');
     User.findOne({username: username}).select('username password').exec( function (err, user) {
       if (err) return done(err);
       if (!user) {
-        console.log('')
-        return done(null, false, { message: 'Unknown user' });
+        user = new User({
+          username: username,
+          password: password
+        });
+        user.save(function (err) {
+          if (err) console.log(err);
+          return done(err, user);
+        });
+        //return done(null, false, { message: 'Unknown user' });
       }
       if (!user.authenticate(password)) {
         return done(null, false, { message: 'Invalid password' });
       }
-      user.loggedIn = true;
-      user.save( function(error, user){
-        return done(null, user);
-      });
+      return done(null, user);
     });
   }
 );
