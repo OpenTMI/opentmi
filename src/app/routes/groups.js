@@ -1,23 +1,24 @@
 var express = require('express');
+var mongoose = require('mongoose');
+var restify = require('express-restify-mongoose');
 
 var Route = function(app, passport){
 
-  var router = express.Router();
-  var controller = require('./../controllers/groups.js')();
-  
-  router.param('group', controller.paramGroup );
+  //easy way, but not support format -functionality..
+  var Group = mongoose.model('Group');
+  restify.serve(app, Group, {
+    version: '/v0',
+    name: 'groups',
+    idProperty: '_id',
+    protected: '__v',
+  });
 
-  router.route('/api/v0/groups.:format?')
-    .all( controller.all )
-    .get( controller.find )
-    .post(controller.create );
-
-  router.route('/api/v0/groups/:group.:format?')
-    .all( controller.all )
-    .get( controller.get )
-    .put( controller.update )
-    .delete( controller.remove );
-    app.use( router );
+  Group.count( {}, function(err, count){
+    if(count===0){ 
+      (new Group({name: 'admins', users: ['admin']})).save(); 
+      (new Group({name: 'users', users: ['admin']})).save(); 
+    }
+  });
 }
 
 module.exports = Route;

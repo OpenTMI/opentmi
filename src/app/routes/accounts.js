@@ -1,24 +1,38 @@
+//3rd party modules
 var express = require('express');
+var mongoose = require('mongoose');
+var restify = require('express-restify-mongoose');
+
+var auth = require('./../../config/middlewares/authorization');
+
+/**
+ * Route middlewares
+ */
+
+var adminAuth = [auth.requiresLogin, auth.user.hasAuthorization];
 
 var Route = function(app, passport){
 
-  var router = express.Router();
-  var controller = require('./../controllers/account.js')();
-  
-  router.param('account', controller.paramAccount );
+  var Account = mongoose.model('User');
+  restify.serve(app, Account, {
+    version: '/v0',
+    name: 'accounts',
+    idProperty: 'username',
+    protected: '__v,salt,hashed_password',
+  });
 
-  router.route('/api/v0/accounts.:format?')
-    .all( controller.all )
-    .get( controller.find )
-    .post(controller.create );
-  
-  router.route('/api/v0/accounts/:account.:format?')
-    .all( controller.all )
-    .get( controller.get )
-    .put( controller.update )
-    .delete( controller.remove );
+  Account.count( {}, function(err, count){
+    if(count===0) (new Account({username: 'admin', password: 'admin'})).save(); 
+  });
 
-  app.use( router );
+  //create authentication routes:
+  var controller = require('./../controllers/authentication')();
+  
+  app.post('/api/v0/login', 
+      passport.authenticate('local', {
+        //failureRedirect: 'hello'
+      }), controller.login );
+  app.get('/api/v0/logout', controller.logout )
 }
 
 module.exports = Route;

@@ -12,6 +12,7 @@ var server = http.createServer(app);
 var io = require('socket.io')(server);
 var port = 3000;
 
+
 // Connect to mongodb
 var connect = function () {
   var options = { server: { socketOptions: { keepAlive: 1 } } };
@@ -31,7 +32,8 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
 });
 
 // Bootstrap passport config
-//require('./config/passport')(passport, config);
+require('../config/passport')(passport, config);
+
 
 // Bootstrap application settings
 require('../config/express')(app, passport);
@@ -52,5 +54,5 @@ GLOBAL.AddonManager.RegisterAddons(app, server, io, passport);
 require(__dirname + '/routes/error.js')(app, passport);
 
 server.listen(port, function(){
-  console.log('Express app started on port ' + port);
+  console.log('TMT started on port ' + port);
 });

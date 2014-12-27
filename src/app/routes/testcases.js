@@ -1,5 +1,4 @@
 var express = require('express');
-var mongoose = require('mongoose');
 
 var Route = function(app, passport){
 
