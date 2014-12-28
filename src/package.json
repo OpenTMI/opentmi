@@ -14,7 +14,6 @@
     "test": "make test"
   },
   "dependencies": {
-    "bcryptjs": "^2.1.0",
     "body-parser": "*",
     "compression": "*",
     "connect-flash": "*",
@@ -22,6 +21,7 @@
     "cookie-parser": "*",
     "cookie-session": "*",
     "cors": "^2.5.2",
+    "crypto": "0.0.3",
     "csurf": "latest",
     "express": "*",
     "express-restify-mongoose": "^0.7.0",

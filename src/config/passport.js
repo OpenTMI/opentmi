@@ -30,11 +30,11 @@ var Passport = function( passport, config ){
   })
 
   passport.deserializeUser(function(id, done) {
-    User.findOne({ _id: id }, function (err, user) {
-      if(err) done(err);
-      else {
+    User.load({ criteria: { _id: id } }, function (err, user) {
+      done(err, user);
+      if(user) {
         console.log('logout: '+user.username);
-        user.update( {loggedIn: false}, done );
+        user.update( {loggedIn: false} );
       }
     })
   })
