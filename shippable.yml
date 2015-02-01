@@ -1,6 +1,10 @@
 # language setting
 language: node_js
 
+# Mongo binds to 127.0.0.1 by default
+services:
+  - mongodb
+
 # version numbers, testing against two versions of node
 node_js:
   - 0.10.25
