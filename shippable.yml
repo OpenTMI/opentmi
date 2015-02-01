@@ -9,6 +9,10 @@ services:
 node_js:
   - 0.10.25
 
+# for public modules use
+git:
+ submodules: false
+
 # Running npm test to run your test cases
 script:
  - npm test
