@@ -62,7 +62,8 @@ var DefaultController = function(Model, defaultModelName){
       } else {
         if(res){
           req.query = req.body;
-          req.doQuery();
+          //req.find(req, res);
+          res.json(item);
         }
       }
     });
