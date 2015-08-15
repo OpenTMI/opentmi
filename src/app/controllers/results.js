@@ -23,8 +23,9 @@ var Controller = function(){
     if( yes === true ){
       var Template = {
           tcid: 'Result-',
-          cre: { user: 'tmt'},
-          verdict: 'fail'
+          cre: { name: 'tmt'},
+          verdict: { fail: 'pass', retcode: 0 },
+          exec: { framework: { name: 'clitest', ver: '0.0'} }
         }
       var _ = require('underscore');
       defaultCtrl.generateDummyData( function(i){

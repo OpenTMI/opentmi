@@ -24,7 +24,7 @@ var ResultSchema = new Schema({
   exec: {
     duration: {type: Number}, //seconds
     framework: {
-      name: {type: String, enum: ['clitest', 'comero'], required: true},
+      name: {type: String, enum: ['clitest'], required: true},
       ver: {type: String, required: true},
     }
   }
