@@ -1,7 +1,7 @@
 {
   "name": "TestManagementSolution",
   "description": "Test Management Solution for IoT",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": {
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "NODE_PATH=./config:./app/controllers NODE_ENV=development ./node_modules/.bin/nodemon server.js",
-    "test": "make test"
+    "test": "grunt"
   },
   "dependencies": {
     "body-parser": "*",
@@ -38,13 +38,18 @@
     "winston": "^0.8.3"
   },
   "devDependencies": {
-    "mocha": "latest",
-    "should": "latest",
-    "supertest": "latest"
+    "chai": "^1.9.1",
+    "grunt": "^0.4.5",
+    "grunt-express-server": "^0.4.17",
+    "grunt-simple-mocha": "^0.4.0",
+    "istanbul": "^0.2.9",
+    "mocha": "^1.18.2",
+    "superagent": "^0.18.0",
+    "xunit-file": "0.0.5"
   },
   "repository": {
     "type": "git",
-    "url": "git://bitbucket.org/_tmt_/core.git"
+    "url": "git://bitbucket.org/jussiva/core.git"
   },
   "keywords": [
     "IoT",

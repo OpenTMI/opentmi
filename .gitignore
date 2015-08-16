@@ -1,3 +1,5 @@
 /src/node_modules
 /tmp
 *.dia~
+node_modules
+xunit.xml
