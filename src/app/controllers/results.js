@@ -31,15 +31,24 @@ var Controller = function(){
       var Template = {
           tcid: 'Result-',
           cre: { name: 'tmt'},
-          verdict: { final: 'pass' },
-          exec: { framework: { name: 'clitest', ver: '0.0'} }
+          exec: { 
+            verdict: 'pass', 
+            framework: { name: 'clitest', ver: '0.0'},
+            dut: {
+              vendor: 'atmel',
+              build: {
+                branch: 'master',
+                commitId: 'abc12345678901234567'
+              }
+            }
+          }
         }
       var _ = require('underscore');
       defaultCtrl.generateDummyData( function(i){
          var _new = {};
          _.extend(_new, Template)
           _new.tcid += i;
-          _new.verdict.final = randomText(['pass','fail']);
+          _new.exec.verdict = randomText(['pass','fail']);
           _new.exec.duration = randomIntInc(0, 500);
           return _new;
       }, 10, function(err){

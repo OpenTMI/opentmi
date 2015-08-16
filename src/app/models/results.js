@@ -26,12 +26,6 @@ var ResultSchema = new Schema({
       name: {type: String, enum: ['clitest'], required: true},
       ver: {type: String, required: true},
     },
-    sw: {
-      ref: {type: Schema.Types.ObjectId, ref: 'Build' },
-      branch: {type: String},
-      commitId: {type: String},
-      href: {type: String}
-    },
     env: {
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
       rackId: {type: String},
@@ -41,7 +35,14 @@ var ResultSchema = new Schema({
       vendor: {type: String},
       model: {type: String},
       ver: {type: String},
-      sn: {type: String}
+      sn: {type: String},
+      build: {
+        ref: {type: Schema.Types.ObjectId, ref: 'Build' },
+        branch: {type: String},
+        commitId: {type: String},
+        tag: [{type: String}],
+        href: {type: String}
+      },
     },
     logs: [
       {
