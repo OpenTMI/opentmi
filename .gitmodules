@@ -1,3 +1,6 @@
 [submodule "src/app/addons/gui"]
 	path = src/app/addons/gui
 	url = https://bitbucket.org/jussiva/gui.git
+[submodule "app/addons/gui"]
+	path = app/addons/gui
+	url = https://bitbucket.org/jussiva/gui.git

@@ -13,7 +13,6 @@ node_js:
 git:
  submodules: false
 
-before_install: cd src
 # Running npm test to run your test cases
 script:
  - npm test

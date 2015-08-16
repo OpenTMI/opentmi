@@ -5,7 +5,7 @@ module.exports = function (grunt) {
     express: {
       test: {
         options: {
-          script: "./src/server.js",
+          script: "server.js",
           timeout: 3000
         }
       }
@@ -26,7 +26,7 @@ module.exports = function (grunt) {
         ui: "bdd",
         reporter: "xunit-file"
       },
-      all: { src: ["./src/test/app.init.js"] }
+      all: { src: ["test/app.init.js"] }
     }
   });
   grunt.loadNpmTasks('grunt-wait-server');

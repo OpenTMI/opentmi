@@ -6,11 +6,13 @@
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
   },
+  "copyright": "Copyright (c) 2015 Jussi Vatjus-Anttila! Inc. All rights reserved.",
+  "license" : "",
   "engines": {
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "NODE_PATH=./config:./app/controllers NODE_ENV=development ./node_modules/.bin/nodemon server.js",
+    "start": "NODE_PATH=./config:./app/controllers NODE_ENV=production node server.js",
     "test": "grunt"
   },
   "dependencies": {
@@ -42,8 +44,10 @@
     "grunt": "^0.4.5",
     "grunt-express-server": "^0.4.17",
     "grunt-simple-mocha": "^0.4.0",
+    "grunt-wait-server": "*",
     "istanbul": "^0.2.9",
     "mocha": "^1.18.2",
+    "should": "*",
     "superagent": "^0.18.0",
     "xunit-file": "0.0.5"
   },
