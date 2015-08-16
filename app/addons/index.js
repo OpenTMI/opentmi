@@ -10,10 +10,14 @@ AddonManager.prototype.RegisterAddons = function(app, server, io, passport) {
   fs.readdirSync(__dirname).forEach(function (file) {
     if (!file.match(/\.js$/) && !file.match(/^\./) ) {
        console.log("-RegisterAddon: '"+file+"'");
-       var Addon = require(__dirname + '/' + file);
-       var addon = new Addon(app, server, io, passport);
-       addon.register();
-       self.addons.push( addon  );
+       try {
+         var Addon = require(__dirname + '/' + file);
+         var addon = new Addon(app, server, io, passport);
+         addon.register();
+         self.addons.push( addon  );
+       } catch(e) {
+         console.log(e);
+       }
     }
   });  
 };
