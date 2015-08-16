@@ -20,7 +20,7 @@ before_script:
 
 # for public modules use
 git:
- submodules: true
+ submodules: false
 
 # Running npm test to run your test cases
 script:
