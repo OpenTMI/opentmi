@@ -13,20 +13,28 @@ var QueryPlugin = require('mongoose-query');
 
 var ResultSchema = new Schema({
   tcid: { type: String, required: true },
+  tcRef: {type: String },
   cre: {
     time: {type: Date, default: Date.now},
     user: {type: String}
   },
   verdict: {
-    final: {type: String, enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'] },
-    retcode: {type: Number},
+    final: {type: String, required: true, enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'] }
   },
   exec: {
     duration: {type: Number}, //seconds
     framework: {
       name: {type: String, enum: ['clitest'], required: true},
       ver: {type: String, required: true},
-    }
+    },
+    logs: [
+      {
+        filename: {type: String},
+        filesize: {type: Number},
+        refs: {type: String},
+        data: {type: Buffer},
+      }
+    ]
   }
   //...
 });

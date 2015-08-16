@@ -17,6 +17,13 @@ var Controller = function(){
   var Result = mongoose.model('Result');
   var defaultCtrl = new DefaultController(Result, 'Result');
 
+  function randomIntInc (low, high) {
+      return Math.floor(Math.random() * (high - low + 1) + low);
+  }
+  function randomText( list ){
+    i = randomIntInc( 0, list.length-1 )
+    return list[i]
+  }
 
   //create dummy testcases when db is empty ->
   defaultCtrl.isEmpty( function(yes){
@@ -24,7 +31,7 @@ var Controller = function(){
       var Template = {
           tcid: 'Result-',
           cre: { name: 'tmt'},
-          verdict: { fail: 'pass', retcode: 0 },
+          verdict: { final: 'pass' },
           exec: { framework: { name: 'clitest', ver: '0.0'} }
         }
       var _ = require('underscore');
@@ -32,6 +39,8 @@ var Controller = function(){
          var _new = {};
          _.extend(_new, Template)
           _new.tcid += i;
+          _new.verdict.final = randomText(['pass','fail']);
+          _new.exec.duration = randomIntInc(0, 500);
           return _new;
       }, 10, function(err){
         //done
