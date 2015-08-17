@@ -19,7 +19,7 @@ var ObjectId = Types.ObjectId;
  */
 
 var TestCaseSchema = new Schema({
-  tcid: {type: String, required: true, index: true, title: 'TC ID'},
+  tcid: {type: String, unique: true, required: true, index: true, title: 'TC ID'},
   archive: {
     value: {type: Boolean, default: false,  //true when tc is archived
             title: 'Archived'},             
@@ -65,7 +65,8 @@ var TestCaseSchema = new Schema({
   status: {     //Current status
     value: { type: String, default: "unknown", 
       enum: [ 'unknown', 'released', 'development', 'maintenance', 'broken' ], 
-      index: true, title: 'Status' },
+      index: true, title: 'Status' 
+    },
     verification: {  //verification details, if any
       value: {type: Boolean },
       user: {type: String},
