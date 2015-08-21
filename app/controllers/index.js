@@ -58,6 +58,7 @@ var DefaultController = function(Model, defaultModelName){
     var item = new Model(req.body);
     item.save( function(error){
       if(error) {
+        console.log(error);
         if(res) res.status(300).json({error: error});
       } else {
         if(res){

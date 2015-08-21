@@ -101,7 +101,6 @@ TestCaseSchema.set('toJSON', {
   getters: true, 
   minimize: true,
   transform: function(doc, ret, options) {
-    console.log('tojson...');
     if(!ret.id)ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
