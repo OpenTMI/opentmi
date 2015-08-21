@@ -17,11 +17,11 @@ var ResourceSchema = new Schema({
   name: {type: String, unique: true, required: true}, // Resource Name (more like nickname)
   status: { 
     value: { type: String, enum: ["active", "maintenance", "storage", "broken"], default: "active"}, 
-    timestamp: {type: Date, default: Date.now } 
+    time: {type: Date, default: Date.now } 
   },
   cre: {
       user: {type: String, default: ""},              // Resource creator
-      timestamp: { type: Date, default: Date.now },   // Create timestamp
+      time: { type: Date, default: Date.now },   // Create timestamp
   },
   mod: {
       user: {type: String, default: ""},              // Resource modifier
@@ -68,7 +68,7 @@ var ResourceSchema = new Schema({
         sn: { type: String },
       }
   },
-  /*
+    /*
     configurations: {
       
       defaults: {
@@ -87,17 +87,18 @@ var ResourceSchema = new Schema({
         }],
       }
     },
+   */    
     device: {
         manufacturer: { type: String},
         model: { type: String, default: 'unknown'},
         type: { type: String,  enum: ['', 'other', 'R&D', 'CT', 'OperatorAcceptance']},
-        sn: { type: String, default: '', index: true},  // ue PSN
+        sn: { type: String, default: '', index: true, unique: true},  // ue PSN
         imei:{type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
         description: { type: String},
         hwid:{type: String},
         build: {type: String},
     },
-    shield: {
+    /*shield: {
         rf: { type: Boolean }, // RF shield rack
     },
     events: [ResourceEventSchema],      //Events
@@ -107,7 +108,7 @@ var ResourceSchema = new Schema({
             sn: {type: String}, 
             mac: {type: String},
         }],
-    },
+    },*/
     platform: {
       hw: {
         memory: {
@@ -135,7 +136,7 @@ var ResourceSchema = new Schema({
           type: {type: String, enum: ['win', 'linux', 'android', 'unknown']},          // optional
           architecture: {type: String, enum: ['32', '64', 'unknown']}, // e.g. 32 / 64 / unknown
           version: {type: String},      // Windows 7 Service Pack 1 32-bit
-      },
+      },/*
       app: [{
           
           type: {type: String, enum: ['application', 'plugin','library']},  // optional
@@ -148,13 +149,13 @@ var ResourceSchema = new Schema({
           version: {type: String},
           href: {type: String},                                              // http url to file
           uuid: {type: String}                                               // or uuid to file
-      }]
+      }]*/
     },
     ownership: {
-        corporation: {type: String, default: 'RMC'},
-        unit: {type: String, default: 'WM'},
-        division: {type: String, default: 'MSW'},
-        department: {type: String, default: 'MSWO'},
+        corporation: {type: String},
+        unit: {type: String},
+        division: {type: String},
+        department: {type: String},
         cost_center: { type: String},
         author: { type: String},
         purchased: {
@@ -163,18 +164,17 @@ var ResourceSchema = new Schema({
         },
     },
     user_info: {
-        corporation: {type: String, default: 'RMC'},
-        unit: {type: String, default: 'WM'},
-        division: {type: String, default: 'MSW'},
-        department: {type: String, default: 'unknown'},
-        author: { type: String, default: 'unknown'},
+        corporation: {type: String},
+        unit: {type: String},
+        division: {type: String},
+        department: {type: String},
+        author: { type: String},
         cost_center: { type: String},
     },
     //user_history: []
     specifications :{
         system_unit:  {type: String, enum: ['SI', 'BIS'], default: 'SI'}, // SI-system-unit or British Imperial System 
         electrical: {
-            
             acceptable_input_voltage: { 
                 min: { type: Number },
                 max: { type: Number },
@@ -229,10 +229,6 @@ var ResourceSchema = new Schema({
     SubResources: [ {type: String} ],    // Attached sub resources uuid list
     partOf: {type: String, default: ""}              // part of other Resource
 }, {toObject: { virtuals: true }
-
-*/
-
-
 
 });
 
