@@ -35,9 +35,13 @@ var ResultSchema = new Schema({
       branch: {type: String},
       commitId: {type: String},
       tag: [{type: String}],
-      href: {type: String}
+      href: {type: String},
+      cut: [{type: String}], // Component Under Test
+      fut: [{type: String}], // Feature Under Test
     },
     dut: {  //device under test
+      count: {type: Number},
+      type: {type: String, enum: ['hw','simulator', 'process'], default: 'simulator'},
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
       vendor: {type: String},
       model: {type: String},
