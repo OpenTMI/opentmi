@@ -43,6 +43,16 @@ var UserSchema = new Schema({
   provider: {type: String},
   ldapId: {type: String},
 
+})
+.post('save', function(){
+  if( this.isNew ) {
+    db.groups.findOneAndUpdate(
+      {'name': 'default'},
+      {$push: {users: this.username}},
+      function(error, doc){
+      }
+    );
+  }
 });
 
 /**
