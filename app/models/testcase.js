@@ -46,6 +46,7 @@ var TestCaseSchema = new Schema({
     layer: {type: String, 
       enum: [ 'L1', 'L2', 'L3', 'unknown'],
       defaut: 'unknown', title: 'Layer'},
+    components: [{type: String, title: 'Component'}],
     features: [{type: String, title: 'Feature'}],
     keywords: [ {type: String, title: 'Keyword'} ],
     tags: [{
