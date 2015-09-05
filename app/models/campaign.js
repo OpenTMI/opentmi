@@ -78,7 +78,8 @@ CampaignSchema.method({
         }
       }
     }
-    db.testcases.query( query, cb );
+    testcases = mongoose.model('Testcase')
+    testcases.query( query, cb );
   }
 });
 
