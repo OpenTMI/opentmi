@@ -20,8 +20,16 @@ var BuildSchema = new Schema({
       url: { type: String }
     })
   ],
-  commit_id: {type: String, required: true }, //sha-1
+  commitId: {type: String }, //sha-1
   branch: { type: String },
+  compiledBy: {type: String, enum: ['CI', 'manual']},
+  changeId: {type: String}, // e.g. when gerrit build
+  pullRequest: {type: String}, // e.g. when github
+  meta_info: {
+    compiler: {type: String},
+    version: {type: String},
+    machine: {type: String},
+  },
   file: {
     //buffer limit 16MB when attached to document!
     name: { type: String },
@@ -39,11 +47,19 @@ var BuildSchema = new Schema({
   ],
   // build target device
   target: {
-    simulator: { type: Boolean, default: false },
-    hw: { type: String },
-    rev: { type: String },
-    rf: {
-      // ??
+    type: { type: String, enum: ['simulate','hardware'], required: true},
+    os: { type: String, enum: ['win32', 'win64', 'linux32', 'linux64', 'mbedOS', 'unknown'] },
+    simulator: {
+      bt: {type: String},
+      network: {type: String},
+    },
+    hw: {
+      vendor: { type: String },
+      platform: {type: String},
+      rev: { type: String },
+      rf: {
+        // ??
+      }
     }
   }
 });
@@ -51,8 +67,7 @@ var BuildSchema = new Schema({
 /**
  * Build plugin
  */
-
-//BuildSchema.plugin(userPlugin, {});
+BuildSchema.plugin( QueryPlugin ); //install QueryPlugin
 
 /**
  * Add your
@@ -61,26 +76,24 @@ var BuildSchema = new Schema({
  * - virtuals
  */
 
+/*
 BuildSchema.path('location').validate(function (value, respond) {
     if( value.length === 0 ) respond(false);
     else  respond(true);
  }, '{PATH} missing');
 
-
 BuildSchema.pre('validate', true, function (next, done) {
-  next();
 
-  if( this.target ){
-    if( this.target.simulator === false ) 
-      done();
-    else { 
-      if( this.target.hw ) next();
-      else done( 'target missing' );
-    }
+  if( this.target.type === 'simulate' ){ 
+      next();
+  } else if( this.target.type === 'hardware' ){ 
+    if( this.target.hw ) next();
+    else next( 'target missing' );
   } else {
-    done( 'target missing' );
+    next( 'target missing' );
   }
  }, '{PATH}: invalid');
+*/
 
 /**
  * Methods
@@ -101,5 +114,4 @@ BuildSchema.static({
 /**
  * Register
  */
-BuildSchema.plugin( QueryPlugin ); //install QueryPlugin
 mongoose.model('Build', BuildSchema);
