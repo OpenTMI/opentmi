@@ -20,16 +20,22 @@ describe("Index", function () {
       .type('json')
       .end( function(e, res){
         res.should.be.json
-        res.body.should.be.instanceof('Array');
         done();
       })
-  });/*
+  });
+  it("get campaigns", function(done){
+    superagent.get(api+"/campaigns")
+      .type('json')
+      .end( function(e, res){
+        res.should.be.json
+        done();
+      })
+  });
   it("get resources", function(done){
     superagent.get(api+"/resources")
       .type('json')
       .end( function(e, res){
         res.should.be.json
-        res.body.should.be.instanceof('Array');
         done();
       })
   });
@@ -38,8 +44,15 @@ describe("Index", function () {
       .type('json')
       .end( function(e, res){
         res.should.be.json
-        res.body.should.be.instanceof('Array');
         done();
       })
-  });*/
+  });
+  it("get builds", function(done){
+    superagent.get(api+"/builds")
+      .type('json')
+      .end( function(e, res){
+        res.should.be.json
+        done();
+      })
+  });
 });
