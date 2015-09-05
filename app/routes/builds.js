@@ -1,37 +1,26 @@
 var express = require('express');
-var mongoose = require('mongoose');
-var restify = require('express-restify-mongoose');
 
 var Route = function(app, passport){
 
-  //easy way, but not support format -functionality..
-  var Build = mongoose.model('Build');
-  restify.serve(app, Build, {
-    version: '/v0',
-    name: 'builds',
-    idProperty: '_id',
-    protected: '__v',
-  });
+  var router = express.Router();
+  var controller = require('./../controllers/builds')();
 
-  //dummy data if db is empty
-  Build.count( {}, function(err, count){
-    if(count===0){ 
-      
-      (new Build({
-          name: 'build-1',
-          commit_id: '123', 
-          location: [{url: 'http://server/mybuild.zip'}],
-          target: { simulator: true}
-        })).save(); 
+  router.param('Build', controller.paramBuild );
+  router.param('format', controller.paramFormat );
 
-      (new Build({
-          name: 'build-2', 
-          commit_id: '456',
-          location: [{url: 'http://server/mybuild2.zip'}],
-          target: { simulator: true}
-        })).save(); 
-    }
-  });
+  
+  router.route('/api/v0/builds.:format?')
+    .all( controller.all )
+    .get( controller.find )
+    .post(controller.create );
+  
+  router.route('/api/v0/builds/:Build.:format?')
+    .all( controller.all )
+    .get( controller.get )
+    .put( controller.update )
+    .delete( controller.remove );
+  
+  app.use( router );
 }
 
 module.exports = Route;

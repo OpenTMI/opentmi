@@ -26,7 +26,7 @@ var ResultSchema = new Schema({
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
       rackId: {type: String},
       framework: {
-        name: {type: String, enum: ['clitest'], default: ''},
+        name: {type: String, default: ''},
         ver: {type: String, default: ''},
       },
     },

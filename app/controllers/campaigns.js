@@ -27,7 +27,6 @@ var Controller = function(){
 
   //create dummy campaigns when db is empty ->
   defaultCtrl.isEmpty( function(yes){
-    console.log('create dummy campaigns..');
     if( yes === true ){
       var Template = {
           name: 'Campaign-',
