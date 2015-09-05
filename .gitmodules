@@ -4,3 +4,6 @@
 [submodule "app/addons/gui"]
 	path = app/addons/gui
 	url = https://bitbucket.org/jussiva/gui.git
+[submodule "app/addons/suite_generator"]
+	path = app/addons/suite_generator
+	url = https://jussiva@bitbucket.org/jussiva/suite-generator.git
