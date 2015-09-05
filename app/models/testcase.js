@@ -81,6 +81,13 @@ var TestCaseSchema = new Schema({
     durationAvg: {type: Number, default: 60}
   },
   compatible: {
+    simulation: {
+      yes: {type: Boolean, default: true}
+    },
+    hardware: {
+      yes: {type: Boolean, default: true},
+      //platforms: []
+    },
     automation: {
       yes: {type: Boolean, default: false, index: true},
       system: {type: String},
