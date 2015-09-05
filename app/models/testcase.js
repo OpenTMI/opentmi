@@ -58,7 +58,12 @@ var TestCaseSchema = new Schema({
       timestamp: {type: Date, default: Date.now},
       user: {type: String},
     }]
-  }, 
+  },
+  requirements: {
+    node: {
+      count: {type: Number, default: 1},
+    }
+  },
   specification: {
     inline: {type: String, default: ""},  //inline specs
     href: {type: String },              //or external

@@ -26,8 +26,8 @@ var ResultSchema = new Schema({
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
       rackId: {type: String},
       framework: {
-        name: {type: String, enum: ['clitest'], required: true},
-        ver: {type: String, required: true},
+        name: {type: String, enum: ['clitest'], default: ''},
+        ver: {type: String, default: ''},
       },
     },
     sut: { // software under test
