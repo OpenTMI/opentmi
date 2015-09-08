@@ -1,4 +1,6 @@
-
+'use strict';
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
 /*
   General ontrollers for "Restfull" services 
 */
@@ -38,8 +40,10 @@ var DefaultController = function(Model, defaultModelName){
   }
 
   this.get = function(req, res){
-    if( req[defaultModelName] ) res.json( req[defaultModelName] );
-    else { 
+    if( req[defaultModelName] ) {
+      self.emit('get', req[defaultModelName].toObject());
+      res.json( req[defaultModelName] );
+    } else { 
       console.log('should not be there!');
       res.status(300).json( {error: 'some strange problemo'} );
     }
@@ -50,6 +54,7 @@ var DefaultController = function(Model, defaultModelName){
       if( error ) {
         res.status(300).json({error: error});
       } else {
+        self.emit('find', list.toObject());
         res.json(list);
       }
     });
@@ -63,7 +68,7 @@ var DefaultController = function(Model, defaultModelName){
       } else {
         if(res){
           req.query = req.body;
-          //req.find(req, res);
+          self.emit('create', item.toObject());
           res.json(item);
         }
       }
@@ -78,6 +83,7 @@ var DefaultController = function(Model, defaultModelName){
         if( error ) {
           res.status(300).json({error: error});
         } else {
+          self.emit('update', doc.toObject());
           res.json(doc);
         } 
       });
@@ -88,6 +94,7 @@ var DefaultController = function(Model, defaultModelName){
         if( error ) {
           res.status(300).json({error: error});
         } else {
+          self.emit('remove', req.params[defaultModelName]);
           res.json({});
         } 
       });
@@ -113,7 +120,11 @@ var DefaultController = function(Model, defaultModelName){
       done()
     }
   }
+  EventEmitter.call(this);
   return this;
 }
+
+// Inherit functions from `EventEmitter`'s prototype
+util.inherits(DefaultController, EventEmitter);
 
 module.exports = DefaultController;

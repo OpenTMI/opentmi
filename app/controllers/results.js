@@ -72,6 +72,16 @@ var Controller = function(){
   this.create = defaultCtrl.create;
   this.update = defaultCtrl.update;
   this.remove = defaultCtrl.remove;
+
+  defaultCtrl.on('create', function(data){
+    if( data.verdict.final === 'pass' ) {
+      //data.exec.duration
+      console.log("Got new PASS result: "+data.tcid);
+    } else {
+      console.log("Got new FAIL result: "+data.tcid);
+    }
+    
+  });
   
 
   //util.inherits(this, defaultCtrl);
