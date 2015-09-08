@@ -14,6 +14,8 @@ var QueryPlugin = require('mongoose-query');
 var ResultSchema = new Schema({
   tcid: { type: String, required: true },
   tcRef: {type: Schema.Types.ObjectId, ref: 'Testcase' },
+  campaign: {type: String, default: ''},
+  campaignRef: {type: Schema.Types.ObjectId, ref: 'Campaign' },
   cre: {
     time: {type: Date, default: Date.now},
     user: {type: String},
@@ -32,8 +34,11 @@ var ResultSchema = new Schema({
     },
     sut: { // software under test
       ref: {type: Schema.Types.ObjectId, ref: 'Build' },
-      branch: {type: String},
-      commitId: {type: String},
+      gitUrl: {type: String, default: ''},
+      buildDate: {type: Date},
+      buildUrl: {type: String, default: ''},
+      branch: {type: String, default: ''},
+      commitId: {type: String, default: ''},
       tag: [{type: String}],
       href: {type: String},
       cut: [{type: String}], // Component Under Test
