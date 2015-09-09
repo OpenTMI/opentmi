@@ -54,7 +54,7 @@ var DefaultController = function(Model, defaultModelName){
       if( error ) {
         res.status(300).json({error: error});
       } else {
-        self.emit('find', list.toObject());
+        self.emit('find', list);
         res.json(list);
       }
     });
