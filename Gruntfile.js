@@ -5,7 +5,7 @@ module.exports = function (grunt) {
     express: {
       test: {
         options: {
-          script: "server.js",
+          script: "index.js",
           timeout: 3000
         }
       }
