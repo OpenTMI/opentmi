@@ -13,10 +13,11 @@ var server = http.createServer(app);
 var io = require('socket.io')(server);
 var port = 3000;
 
-winston.add(winston.transports.File, {
+winston.add(winston.transports.DailyRotateFile, {
     filename: 'log/app.log',
     json: false,
-    handleExceptions: true
+    handleExceptions: true,
+    datePatter: '.yyyy-MM-dd_HH-mm'
   });
 
 
