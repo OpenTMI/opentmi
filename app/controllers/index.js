@@ -1,5 +1,6 @@
 'use strict';
 var util = require('util');
+var winston = require('winston');
 var EventEmitter = require('events').EventEmitter;
 /*
   General ontrollers for "Restfull" services 
@@ -23,7 +24,7 @@ var DefaultController = function(Model, defaultModelName){
     if( !modelname ) modelname = defaultModelName;
 
     return function(req, res, next, id){
-      console.log('do param '+JSON.stringify(req.params) );
+      winston.debug('do param '+JSON.stringify(req.params) );
       Model.findOne( {_id: req.params[modelname]}, function(error, data){
         if( error ) {
           if( errorCb ) errorCb(error);
@@ -44,7 +45,7 @@ var DefaultController = function(Model, defaultModelName){
       self.emit('get', req[defaultModelName].toObject());
       res.json( req[defaultModelName] );
     } else { 
-      console.log('should not be there!');
+      winston.warn('should not be there!');
       res.status(300).json( {error: 'some strange problemo'} );
     }
   }
@@ -63,7 +64,7 @@ var DefaultController = function(Model, defaultModelName){
     var item = new Model(req.body);
     item.save( function(error){
       if(error) {
-        console.log(error);
+        winston.warn(error);
         if(res) res.status(300).json({error: error});
       } else {
         if(res){
@@ -78,7 +79,7 @@ var DefaultController = function(Model, defaultModelName){
   this.update = function(req, res){
       delete req.body._id;
       delete req.body.__v;
-      console.log(req.body);
+      winston.debug(req.body);
       Model.findByIdAndUpdate( req.params[defaultModelName], req.body, function(error, doc){
         if( error ) {
           res.status(300).json({error: error});

@@ -7,7 +7,7 @@
     "email": "jussiva@gmail.com"
   },
   "copyright": "Copyright (c) 2015 Jussi Vatjus-Anttila! Inc. All rights reserved.",
-  "license" : "",
+  "license": "",
   "engines": {
     "node": "0.10.x"
   },
@@ -31,13 +31,13 @@
     "method-override": "*",
     "mongoose": "*",
     "mongoose-query": "~0.1.7",
-    "morgan": "~1.3.2",
     "multer": "^0.1.6",
     "passport": "*",
     "passport-local": "^1.0.0",
     "socket.io": "^1.2.1",
     "underscore": "^1.7.0",
-    "winston": "^0.8.3"
+    "winston": "^0.8.3",
+    "winston-express-middleware": "^0.1.0"
   },
   "devDependencies": {
     "chai": "^1.9.1",

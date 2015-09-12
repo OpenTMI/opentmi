@@ -1,4 +1,5 @@
 var fs = require('fs');
+var winston = require('winston')
 
 function AddonManager (app, server, io, passport){
   var self = this;
@@ -8,14 +9,14 @@ function AddonManager (app, server, io, passport){
     
     fs.readdirSync(__dirname).forEach(function (file) {
       if (!file.match(/\.js$/) && !file.match(/^\./) ) {
-         console.log("-RegisterAddon: '"+file+"'");
+         winston.info("-RegisterAddon: '"+file+"'");
          try {
            var Addon = require(__dirname + '/' + file);
            var addon = new Addon(app, server, io, passport);
            addon.register();
            addons.push( addon  );
          } catch(e) {
-           console.log(e);
+           winston.error(e);
          }
       }
     });  

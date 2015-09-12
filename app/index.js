@@ -4,6 +4,7 @@ var http = require('http');
 var express = require('express');
 var mongoose = require('mongoose');
 var passport = require('passport');
+var winston = require('winston');
 
 var config = require('./../config/config.js');
 
@@ -11,6 +12,12 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 var port = 3000;
+
+winston.add(winston.transports.File, {
+    filename: 'log/app.log',
+    json: false,
+    handleExceptions: true
+  });
 
 
 // Connect to mongodb
@@ -21,12 +28,14 @@ var connect = function () {
 
 connect();
 
-mongoose.connection.on('error', console.log);
+mongoose.connection.on('error', function(error){
+  setTimeout( connet, 1000 );
+});
 mongoose.connection.on('disconnected', connect);
 
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
   if (file.indexOf('.js$')){
-    console.log('-RegisterModel: '+file);
+    winston.info('-RegisterModel: '+file);
     require(__dirname + '/models/' + file);
   }
 });
@@ -42,7 +51,7 @@ require('../config/express')(app, passport);
 fs.readdirSync(__dirname + '/routes').forEach(function (file) {
   if ( file.match(/\.js$/) && 
       !file.match(/error\.js$/)) {
-    console.log('-AddRoute: '+file);
+    winston.info('-AddRoute: '+file);
     require(__dirname + '/routes/' + file)(app, passport);
   }
 });
@@ -55,5 +64,5 @@ GLOBAL.AddonManager.RegisterAddons();
 require(__dirname + '/routes/error.js')(app, passport);
 
 server.listen(port, function(){
-  console.log('TMT started on port ' + port);
+  winston.info('TMT started on port ' + port);
 });
