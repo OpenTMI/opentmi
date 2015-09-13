@@ -7,3 +7,6 @@
 [submodule "app/addons/suite_generator"]
 	path = app/addons/suite_generator
 	url = https://jussiva@bitbucket.org/jussiva/suite-generator.git
+[submodule "app/addons/slack"]
+	path = app/addons/slack
+	url = https://jussiva@bitbucket.org/jussiva/slack.git
