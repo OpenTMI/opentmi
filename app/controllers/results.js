@@ -17,14 +17,6 @@ var Controller = function(){
   var Result = mongoose.model('Result');
   var defaultCtrl = new DefaultController(Result, 'Result');
 
-  function randomIntInc (low, high) {
-      return Math.floor(Math.random() * (high - low + 1) + low);
-  }
-  function randomText( list ){
-    i = randomIntInc( 0, list.length-1 )
-    return list[i]
-  }
-
   //create dummy testcases when db is empty ->
   defaultCtrl.isEmpty( function(yes){
     if( yes === true ){
@@ -48,8 +40,8 @@ var Controller = function(){
          var _new = {};
          _.extend(_new, Template)
           _new.tcid += i;
-          _new.exec.verdict = randomText(['pass','fail']);
-          _new.exec.duration = randomIntInc(0, 500);
+          _new.exec.verdict = defaultCtrl.randomText(['pass','fail']);
+          _new.exec.duration = defaultCtrl.randomIntInc(0, 500);
           return _new;
       }, 10, function(err){
         //done

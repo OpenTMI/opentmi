@@ -121,6 +121,14 @@ var DefaultController = function(Model, defaultModelName){
       done()
     }
   }
+  this.randomIntInc = function(low, high) {
+      return Math.floor(Math.random() * (high - low + 1) + low);
+  }
+  this.randomText = function ( list ){
+    var i = self.randomIntInc( 0, list.length-1 )
+    return list[i]
+  }
+
   EventEmitter.call(this);
   return this;
 }

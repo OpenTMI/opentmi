@@ -23,18 +23,25 @@ var Controller = function(){
     if( yes === true ){
       var Template = {
           tcid: 'Testcase-',
-          cre: { user: 'tmt'},
-          owner: { user: 'nobody'},
-          other_info: { title: 'Example case', purpose: 'dummy' },
-          status: {value: 'unknown'}
+          cre: { name: 'tmt'},
+          owner: { name: 'nobody'},
+          other_info: { 
+            title: 'Example case', 
+            purpose: 'dummy' }
         }
       var _ = require('underscore');
       defaultCtrl.generateDummyData( function(i){
-         var _new = {};
-         _.extend(_new, Template)
+          var _new = {execution: { estimation: {} }};
+          _.extend(_new, Template);
+          _new.other_info.type =  defaultCtrl.randomText(['smoke','regression']),
+          _new.other_info.components = [defaultCtrl.randomText(['ALU1','ALU2'])],
+          _new.status = {
+            value: defaultCtrl.randomText(['unknown', 'released', 'maintenance'])
+          };
+          _new.execution.estimation.duration = defaultCtrl.randomIntInc(10, 120)
           _new.tcid += i;
           return _new;
-      }, 10, function(err){
+      }, defaultCtrl.randomIntInc(100, 124), function(err){
         //done
         if(err)console.log(err);
         else console.log('dummy testcases generated');

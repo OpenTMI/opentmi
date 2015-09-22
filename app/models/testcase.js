@@ -41,6 +41,20 @@ var TestCaseSchema = new Schema({
   },
   other_info: {
     title: {type: String, default:  "", title: 'Title' },
+    type: {type: String, enum: [
+        "installation",
+        "compatibility",
+        "smoke",
+        "regression",
+        "acceptance",
+        "alpha",
+        "beta",
+        "stability",
+        "functional",
+        "destructive",
+        "performance",
+        "reliability"
+    ]},
     purpose: {type: String, title: 'Purpose' },               
     description: {type: String, title: 'Description' },   //Short description
     layer: {type: String, 
@@ -59,6 +73,18 @@ var TestCaseSchema = new Schema({
       user: {type: String},
     }]
   },
+  execution: {
+    skip: {
+      value: {type: Boolean, default: false, index: true}, 
+      reason: { type: String },
+      time: {type: Date}
+    },
+    estimation: {
+      duration: {type: Number, default: 0},
+      passrate: {type: Number, default: 0},
+    },
+    note: {type: String }, //execution notes (e.g. when manual configurations needed)
+  },
   requirements: {
     node: {
       count: {type: Number, default: 1},
@@ -76,10 +102,10 @@ var TestCaseSchema = new Schema({
     verification: {  //verification details, if any
       value: {type: Boolean },
       user: {type: String},
-      timestamp: {type: Date},
+      time: {type: Date},
       ss_resource: {type: String},
-      ue_resoruce: {type: String},
-      ue_build: {type: String},
+      dut_resource: {type: String},
+      dut_build: {type: String},
     }
   },
   history: {
@@ -91,7 +117,9 @@ var TestCaseSchema = new Schema({
     },
     hardware: {
       yes: {type: Boolean, default: true},
-      //platforms: []
+      target: [ 
+        { type: String, enum: [ "K64F" ] } 
+      ]
     },
     automation: {
       yes: {type: Boolean, default: false, index: true},
@@ -102,8 +130,8 @@ var TestCaseSchema = new Schema({
     }
   },
   
-  versions: {
-    previous: {type: ObjectId},
+  ver: {
+    prev: {type: ObjectId},
     next: {type: ObjectId}
   }
 });
