@@ -1,5 +1,7 @@
 var fs = require('fs');
+var _ = require('underscore')
 var winston = require('winston')
+var async = require('async');
 
 function AddonManager (app, server, io, passport){
   var self = this;
@@ -20,7 +22,17 @@ function AddonManager (app, server, io, passport){
          }
       }
     });  
+
+    app.get('/addons', listAddons);
+
   };
+  var listAddons = function(req, res){
+    var list = []
+    _.each(addons, function(addon){
+      lis.push( addon );
+    })
+    res.json(list);
+  }
   this.AvailableModules = function() {
     return addons;
   };

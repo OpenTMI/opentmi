@@ -30,7 +30,7 @@ var connect = function () {
 connect();
 
 mongoose.connection.on('error', function(error){
-  setTimeout( connet, 1000 );
+  setTimeout( connect, 1000 );
 });
 mongoose.connection.on('disconnected', connect);
 
