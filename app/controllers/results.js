@@ -21,7 +21,7 @@ var Controller = function(){
   var doDummy = function() {
     //create dummy testcases when db is empty ->
     defaultCtrl.isEmpty( function(yes){
-      if( yes === false ){
+      if( yes === true ){
         var Template = {
             tcid: 'Result-',
             cre: { name: 'tmt'},
@@ -66,7 +66,7 @@ var Controller = function(){
   this.find = defaultCtrl.find;
   this.create = defaultCtrl.create;
   this.update = defaultCtrl.update;
-  this.remove = defaultCtrl.remove;
+  this.remove = defaultCtrl.remove;  
 
   Object.resolve = function(path, obj, safe) {
         return path.split('.').reduce(function(prev, curr) {
@@ -87,7 +87,6 @@ var Controller = function(){
     }
   });
   
-
   //util.inherits(this, defaultCtrl);
 
   doDummy();
