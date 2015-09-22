@@ -162,7 +162,12 @@ TestCaseSchema.set('toJSON', {
  */
 
 TestCaseSchema.method({
-
+  addNewDuration: function(duration){
+    this.execution.estimation.duration += duration;
+    this.execution.estimation.duration /= 2;
+    this.save();
+    console.log('saved new duration');
+  }
 });
 
 /**
@@ -170,7 +175,21 @@ TestCaseSchema.method({
  */
 
 TestCaseSchema.static({
-
+  findByTcid: function (tcid, cb) {
+    return this.findOne({ tcid: new RegExp(tcid, 'i') }, cb);
+  },
+  updateTcDuration: function(tcid, duration){
+    this.findByTcid(tcid, function(error, tc){
+      if( error ){
+        console.log(error);
+      } else if( tc ){
+        console.log('find tc: '+tcid);
+        tc.addNewDuration(duration);
+      } else {
+        console.log('didnt find tc: '+tcid);
+      }
+    });
+  }
 });
 
 /**
