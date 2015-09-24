@@ -31,14 +31,20 @@ var Controller = function(){
       var Template = {
         name: 'Build-',
         target: {
-          type: 'simulate'
+          type: 'simulate',
+          hw: {
+            platform: ''
+          }
         }     
       }
       var _ = require('underscore');
       defaultCtrl.generateDummyData( function(i){
-         var _new = {};
-         _.extend(_new, Template)
+          var _new = {};
+          _.extend(_new, Template)
           _new.name += i;
+          _new.target.type = defaultCtrl.randomText(['simulate', 'hardware']);
+          _new.target.hw.platform = 
+            defaultCtrl.randomText(['K84F', 'nRF123', 'XBoard'])
           return _new;
       }, 10, function(err){
         //done

@@ -14,6 +14,7 @@ var Schema = mongoose.Schema;
 var BuildSchema = new Schema({
   
   name: {type: String, required: true },
+  uuid: {type: String },
   v_ctrl: {type: String, enum: ['git','SVN', 'CSV']},
   repository: [
     new Schema({ 

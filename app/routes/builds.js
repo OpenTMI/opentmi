@@ -9,12 +9,12 @@ var Route = function(app, passport){
   router.param('format', controller.paramFormat );
 
   
-  router.route('/api/v0/builds.:format?')
+  router.route('/api/v0/duts/builds.:format?')
     .all( controller.all )
     .get( controller.find )
     .post(controller.create );
   
-  router.route('/api/v0/builds/:Build.:format?')
+  router.route('/api/v0/duts/builds/:Build.:format?')
     .all( controller.all )
     .get( controller.get )
     .put( controller.update )
