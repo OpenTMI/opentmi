@@ -83,7 +83,7 @@ var Controller = function(){
     }
     duration =  Object.resolve('exec.duration', data, null);
     if( duration ) {
-      Testcase.updateTcDuration(duration);
+      Testcase.updateTcDuration(data.tcid, duration);
     }
   });
   
