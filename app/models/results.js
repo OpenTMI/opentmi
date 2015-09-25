@@ -23,6 +23,7 @@ var ResultSchema = new Schema({
   },  
   exec: {
     verdict: { type: String, required: true, enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'] },
+    note: {type: String, default: ''},
     duration: {type: Number}, //seconds
     env: { //environment information
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },

@@ -8,6 +8,7 @@ var util = require("util");
 //3rd party modules
 var express = require('express');
 var mongoose = require('mongoose');
+var colors = require('colors');
 
 //own modules
 var DefaultController = require('./');
@@ -75,11 +76,12 @@ var Controller = function(){
     }
 
   defaultCtrl.on('create', function(data){
-    if( data.verdict && data.verdict.final === 'pass' ) {
+    if( data.exec && data.exec.verdict === 'pass' ) {
       //data.exec.duration
-      console.log("Got new PASS result: "+data.tcid);
+      console.log("Got new "+"PASS".green+" result: "+data.tcid);
     } else {
-      console.log("Got new FAIL result: "+data.tcid);
+      console.log(data);
+      console.log("Got new "+"FAIL".red+" result: "+data.tcid + "("+data._id+")");
     }
     duration =  Object.resolve('exec.duration', data, null);
     if( duration ) {
