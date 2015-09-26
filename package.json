@@ -35,6 +35,7 @@
     "mongoose": "*",
     "mongoose-query": "~0.1.7",
     "multer": "^0.1.6",
+    "nconf": "^0.8.0",
     "passport": "*",
     "passport-local": "^1.0.0",
     "socket.io": "^1.2.1",

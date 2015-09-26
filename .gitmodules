@@ -10,3 +10,6 @@
 [submodule "app/addons/slack"]
 	path = app/addons/slack
 	url = https://jussiva@bitbucket.org/jussiva/slack.git
+[submodule "app/addons/jenkins"]
+	path = app/addons/jenkins
+	url = https://jussiva@bitbucket.org/jussiva/jenkins.git

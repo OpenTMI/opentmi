@@ -5,13 +5,20 @@ var express = require('express');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var winston = require('winston');
-
-var config = require('./../config/config.js');
+var nconf = require('nconf');
 
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
-var port = 3000;
+
+nconf.argv()
+   .env()
+   .file({ file: './../config/config.json' })
+   .defaults({
+    db: 'mongodb://localhost/tmt',
+    port: 3000
+  });
+
 
 winston.add(winston.transports.DailyRotateFile, {
     filename: 'log/app.log',
@@ -24,7 +31,7 @@ winston.add(winston.transports.DailyRotateFile, {
 // Connect to mongodb
 var connect = function () {
   var options = { server: { socketOptions: { keepAlive: 1 } } };
-  mongoose.connect(config.db);
+  mongoose.connect(nconf.get('db'));
 };
 
 connect();
@@ -42,7 +49,7 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
 });
 
 // Bootstrap passport config
-require('../config/passport')(passport, config);
+require('../config/passport')(passport, nconf.get());
 
 
 // Bootstrap application settings
@@ -64,6 +71,6 @@ GLOBAL.AddonManager.RegisterAddons();
 
 require(__dirname + '/routes/error.js')(app, passport);
 
-server.listen(port, function(){
-  winston.info('TMT started on port ' + port);
+server.listen(nconf.get('port'), function(){
+  winston.info('TMT started on port ' + nconf.get('port'));
 });

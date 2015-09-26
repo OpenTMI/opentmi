@@ -27,6 +27,9 @@ module.exports = {
   ldap: {
     url: process.env.LDAP_URL
   },
+  jenkins: {
+    url: process.env.JENKINS_URL
+  },
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
     clientSecret: process.env.FACEBOOK_SECRET,
