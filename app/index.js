@@ -1,5 +1,6 @@
 var fs = require('fs');
 var http = require('http');
+var EventEmitter = require('events').EventEmitter
 
 var express = require('express');
 var mongoose = require('mongoose');
@@ -10,6 +11,9 @@ var nconf = require('nconf');
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
+
+
+global.pubsub = new EventEmitter();
 
 nconf.argv()
    .env()

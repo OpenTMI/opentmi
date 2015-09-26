@@ -18,7 +18,8 @@ function AddonManager (app, server, io, passport){
            addon.register();
            addons.push( addon  );
          } catch(e) {
-           winston.error(e);
+            console.log(e);
+            winston.error(e);
          }
       }
     });  

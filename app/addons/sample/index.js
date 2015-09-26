@@ -9,7 +9,6 @@ function AddonSample (app, server, io, passport){
 		  res.json({ok: 1});
 		});
 
-
     io.on('connection', function (socket) {
       console.log('someone are there! :)');
       socket.emit('test', 'hello client');
@@ -17,15 +16,9 @@ function AddonSample (app, server, io, passport){
         console.log(data);
       });
       socket.broadcast.emit('test', 'broadcast msg!');
-      var i=0;
-      setInterval(function(){
-        socket.emit('test', 'test-'+i++);
-      }, 1000);
+      socket.emit('test', 'hello-world');
     });
 	}
-
-
-
   return this;
 }
 
