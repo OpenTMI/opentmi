@@ -31,6 +31,7 @@
     "express-restify-mongoose": "^0.7.0",
     "express-session": "*",
     "method-override": "*",
+    "moment": "^2.10.6",
     "mongoose": "*",
     "mongoose-query": "~0.1.7",
     "multer": "^0.1.6",
