@@ -5,6 +5,7 @@
 
 module.exports = {
   db: 'mongodb://localhost/tmt_test',
+  port: 3000,
   ldap: {
     url: process.env.LDAP_URL
   },

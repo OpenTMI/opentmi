@@ -17,11 +17,7 @@ global.pubsub = new EventEmitter();
 
 nconf.argv()
    .env()
-   .file({ file: './../config/config.json' })
-   .defaults({
-    db: 'mongodb://localhost/tmt',
-    port: 3000
-  });
+   .defaults( require( './../config/config.js' ) );
 
 
 winston.add(winston.transports.DailyRotateFile, {

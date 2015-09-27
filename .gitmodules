@@ -13,3 +13,6 @@
 [submodule "app/addons/jenkins"]
 	path = app/addons/jenkins
 	url = https://jussiva@bitbucket.org/jussiva/jenkins.git
+[submodule "app/addons/github"]
+	path = app/addons/github
+	url = https://jussiva@bitbucket.org/jussiva/github.git

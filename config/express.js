@@ -18,7 +18,7 @@ var winston = require('winston');
 expressWinston = require('winston-express-middleware');
 
 /* Project libraries */
-var config = require('./config');
+var nconf = require('nconf');
 var pkg = require('../package.json');
 var env = process.env.NODE_ENV || 'development';
 
@@ -33,7 +33,7 @@ module.exports = function (app, passport) {
     threshold: 512
   }));
   
-  app.use( express.static( config.root + '/public') );
+  app.use( express.static( nconf.get('root') + '/public') );
   
   // Logging middleware
   app.use(expressWinston.logger({
@@ -88,7 +88,7 @@ module.exports = function (app, passport) {
     saveUninitialized: true,
     secret: pkg.name,
     store: new mongoStore({
-      url: config.db,
+      url: nconf.get('db'),
       collection : 'sessions'
     })
   }));
