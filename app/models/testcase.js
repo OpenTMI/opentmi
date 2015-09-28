@@ -19,7 +19,8 @@ var ObjectId = Types.ObjectId;
  */
 
 var TestCaseSchema = new Schema({
-  tcid: {type: String, unique: true, required: true, index: true, title: 'TC ID'},
+  tcid: {type: String, unique: true, 
+  minlength: 4, required: true, index: true, title: 'TC ID'},
   archive: {
     value: {type: Boolean, default: false,  //true when tc is archived
             title: 'Archived'},             
