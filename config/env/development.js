@@ -29,10 +29,10 @@ module.exports = {
     url: process.env.LDAP_URL
   },
   jenkins: {
-    url: 'https://jupe:420432eb1ed713e5ede49107c858fd14@jenkins-internal.mbed.com/'
+    //url: 'my@host.jenkins.com/'
   },
   slack: {
-    token: 'xoxp-2987443183-9694241206-10619586020-44aa8be661'
+    //token: 'my-token'
   },
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
@@ -48,10 +48,12 @@ module.exports = {
     clientID: process.env.GITHUB_CLIENTID,
     clientSecret: process.env.GITHUB_SECRET,
     callbackURL: 'http://localhost:3000/auth/github/callback',
-    authentication: {
+    /*authentication: {
       type: 'oauth',
-      token: '8690ce99ff8d0243b0ecc491995ebe0937ee5199'
-    }
+      token: 'my-token'
+    },
+    orgId: 'my-organization'
+    */
   },
   linkedin: {
     clientID: process.env.LINKEDIN_CLIENTID,
