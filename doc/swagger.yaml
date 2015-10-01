@@ -1,0 +1,125 @@
+swagger: '2.0'
+info:
+  version: 0.0.1
+  title: 'Test Management Service'
+host: localhost:3000
+schemes:
+  - http
+basePath: /api/v0
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+### Testcases ###
+  /testcases:
+    get:
+      description: |
+        Gets `Testcase` objects.
+        Optional query params can be use to filter  items.
+      #parameters:
+      #  - name: l
+      #    in: query
+      #    description: number of test cases to return
+      #    type: integer
+      #    default: 100
+      #    minimum: 1
+      #    maximum: 10000
+      #  - name: s
+      #    in: query
+      #    description: Limit size of array
+      #    required: false
+      #    type: object
+      #    schema: 
+      #      $ref: '#/definitions/Sort'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: Array Of Testcases
+            type: array
+            items:
+              $ref: '#/definitions/Testcase'
+    post:
+      description: |
+        Create new `Testcase` Objects
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Testcase'
+
+  '/testcases/{Testcase}':
+    get:
+      description: |
+        Get `Testcase` Object
+      parameters:
+        - name: Testcase
+          in: path
+          type: string
+          description: ID of the Testcase
+          required: true
+      responses:
+        '200':
+          description: Successful response
+  
+### Campaigns ###
+  '/campaigns':
+    get:
+      description: |
+        Get array of `Campaign` Objects
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: Array Of Campaigns
+            type: array
+            items:
+              $ref: '#/definitions/Campaign'
+    post:
+      description: |
+        Create new `Campaign` Objects
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Campaign'
+  
+  '/campaigns/{Campaign}':
+    get:
+      description: |
+        Get `Campaign` Object
+      parameters:
+        - name: Campaign
+          in: path
+          type: string
+          description: ID of the Campaign
+          required: true
+      responses:
+        '200':
+          description: Successful response
+              
+definitions:
+
+  #Sort:
+  #  type: object
+  #  properties:
+  #    key:
+  #      type: string
+  #      format: int
+  
+  Testcase:
+    type: object
+    properties:
+      tcid:
+        type: string
+      type:
+        type: string
+  
+  Campaign:
+    type: object
+    properties:
+      name: 
+        type: string
+      #title: Campaign Name
