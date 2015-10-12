@@ -97,11 +97,9 @@ module.exports = function (app, passport) {
   app.use(passport.initialize());
   app.use(passport.session());
   
-  
-  
-  // adds CSRF support
-  /*
-  if (process.env.NODE_ENV !== 'test') {
+  // adds CSRF support when production mode
+  if ( process.env.NODE_ENV === 'production') {
+    // Add CSRF support only for production mode app
     app.use(csrf());
 
     // This could be moved to view-helpers :-)
@@ -110,10 +108,8 @@ module.exports = function (app, passport) {
       console.log( res.locals.csrf_token )
       next();
     });
-  }*/
+  }
 
-  
-  
   /*
   app.on('mount', function (parent) {
     console.log(parent); // refers to the parent app

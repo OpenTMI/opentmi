@@ -23,7 +23,7 @@ nconf.argv()
 winston.add(winston.transports.DailyRotateFile, {
     filename: 'log/app.log',
     json: false,
-    handleExceptions: true,
+    handleExceptions: false,
     datePatter: '.yyyy-MM-dd_HH-mm'
   });
 
@@ -31,15 +31,17 @@ winston.add(winston.transports.DailyRotateFile, {
 // Connect to mongodb
 var connect = function () {
   var options = { server: { socketOptions: { keepAlive: 1 } } };
-  mongoose.connect(nconf.get('db'));
+  mongoose.connect(nconf.get('db'), options);
 };
+mongoose.connection.on('error', function(error){
+  winston.error(error.toString());
+});
+mongoose.connection.on('disconnected', function(){
+    winston.error('disconnected');
+    setTimeout( connect, 1000 );
+});
 
 connect();
-
-mongoose.connection.on('error', function(error){
-  setTimeout( connect, 1000 );
-});
-mongoose.connection.on('disconnected', connect);
 
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
   if (file.indexOf('.js$')){
@@ -72,5 +74,5 @@ GLOBAL.AddonManager.RegisterAddons();
 require(__dirname + '/routes/error.js')(app, passport);
 
 server.listen(nconf.get('port'), function(){
-  winston.info('TMT started on port ' + nconf.get('port'));
+  winston.info('TMT started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
 });
