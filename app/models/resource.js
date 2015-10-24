@@ -6,6 +6,10 @@
 var mongoose = require('mongoose');
 //var userPlugin = require('mongoose-user');
 var Schema = mongoose.Schema;
+var Types = Schema.Types;
+var ObjectId = Types.ObjectId;
+var _ = require('underscore');
+
 var QueryPlugin = require('mongoose-query');
 /**
  * User schema
@@ -226,17 +230,18 @@ var ResourceSchema = new Schema({
     },
     
     // Linked resources
-    SubResources: [ {type: String} ],    // Attached sub resources uuid list
-    partOf: {type: String, default: ""}              // part of other Resource
+
+    // Child resources
+    childs: [ {type: ObjectId, ref: 'Resource'} ],
+    // Parent Resource
+    parent: {type: ObjectId, ref: 'Testcase'}
 }, {toObject: { virtuals: true }
 
 });
 
-/**
- * User plugin
- */
 
-//ResourceSchema.plugin(userPlugin, {});
+/** install QueryPlugin */
+ResourceSchema.plugin( QueryPlugin ); 
 
 /**
  * Add your
@@ -250,7 +255,26 @@ var ResourceSchema = new Schema({
  */
 
 ResourceSchema.method({
+  // find route from this resource to HEAD
+  solveRoute: function (cb) {
+    var route = []
+    var Resource = mongoose.model('Resource');
+    var loop = function(error, resource){
 
+      if( resource && resource.parent ) {
+        route.push(resource.parent);
+        Resource.find( {_id: resource.parent}, loop);
+      } else {
+        cb(error, route);
+      } 
+    }
+    loop(null, this);
+  },
+  setDeviceBuild: function(build){
+    this.device.build = build;
+    this.save();
+    console.log('new build in resource');
+  }
 });
 
 /**
@@ -258,11 +282,9 @@ ResourceSchema.method({
  */
 
 ResourceSchema.static({
-
 });
 
 /**
  * Register
  */
-ResourceSchema.plugin( QueryPlugin ); //install QueryPlugin
 mongoose.model('Resource', ResourceSchema);

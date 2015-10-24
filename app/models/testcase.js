@@ -18,7 +18,7 @@ var ObjectId = Types.ObjectId;
 var FileSchema = new Schema({
   filename: {type: String},
   ref: {type: String},
-  size: {type: Numer}
+  size: {type: Number}
 });
 /**
  * Testcase schema
@@ -139,8 +139,8 @@ var TestCaseSchema = new Schema({
   },
   
   ver: {
-    prev: {type: ObjectId},
-    next: {type: ObjectId}
+    prev: {type: ObjectId, ref: 'Testcase'},
+    next: {type: ObjectId, ref: 'Testcase'}
   }
 });
 

@@ -23,8 +23,10 @@ if (fs.existsSync(envFile)) {
  */
 
 module.exports = {
-  db: 'mongodb://localhost/tmt_dev',
+  name: 'TMT',
+  host: '0.0.0.0',
   port: 3000,
+  db: 'mongodb://localhost/tmt_dev',
   admin: {
     //default values
     'user': 'admin',

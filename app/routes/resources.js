@@ -8,7 +8,7 @@ var Route = function(app, passport){
   router.param('Resource', controller.paramResource );
   router.param('format', controller.paramFormat );
 
-  
+
   router.route('/api/v0/resources.:format?')
     .all( controller.all )
     .get( controller.find )
@@ -19,6 +19,11 @@ var Route = function(app, passport){
     .get( controller.get )
     .put( controller.update )
     .delete( controller.remove );
+
+  router.route('/api/v0/resources/:Resource/device/build')
+    .put( controller.setDeviceBuild )
+  router.route('/api/v0/resources/:Resource/route')
+    .get( controller.solveRoute )
   
   app.use( router );
 }

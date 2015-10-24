@@ -70,7 +70,16 @@ var Controller = function(){
   this.create = defaultCtrl.create;
   this.update = defaultCtrl.update;
   this.remove = defaultCtrl.remove;
-  
+
+  this.setDeviceBuild = function(req, res){
+    req.Resource.setDeviceBuild(req.body.build);
+    res.redirect('/api/v0/resources/'+req.params.Resource);
+  }
+  this.solveRoute = function(req, res){
+    req.Resource.solveRoute(function(error, route){
+      res.json(route);
+    });
+  }
 
   //util.inherits(this, defaultCtrl);
 
