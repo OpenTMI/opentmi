@@ -14,9 +14,15 @@ var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
 
+
+var FileSchema = new Schema({
+  filename: {type: String},
+  ref: {type: String},
+  size: {type: Numer}
+});
 /**
- * User schema
- */
+ * Testcase schema
+ */ 
 
 var TestCaseSchema = new Schema({
   tcid: {type: String, unique: true, 
@@ -91,6 +97,7 @@ var TestCaseSchema = new Schema({
       count: {type: Number, default: 1},
     }
   },
+  files: [ FileSchema ],
   specification: {
     inline: {type: String, default: ""},  //inline specs
     href: {type: String },              //or external

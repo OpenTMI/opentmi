@@ -25,6 +25,11 @@ if (fs.existsSync(envFile)) {
 module.exports = {
   db: 'mongodb://localhost/tmt_dev',
   port: 3000,
+  admin: {
+    //default values
+    'user': 'admin',
+    'pwd': 'admin',
+  },
   ldap: {
     url: process.env.LDAP_URL
   },

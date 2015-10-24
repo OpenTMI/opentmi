@@ -8,7 +8,6 @@ var Route = function(app, passport){
   router.param('testcase', controller.paramTestcase );
   router.param('format', controller.paramFormat );
 
-  
   router.route('/api/v0/testcases.:format?')
     .all( controller.all )
     .get( controller.find )
