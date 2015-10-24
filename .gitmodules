@@ -16,3 +16,6 @@
 [submodule "app/addons/github"]
 	path = app/addons/github
 	url = https://jussiva@bitbucket.org/jussiva/github.git
+[submodule "app/addons/mbed-daemon"]
+	path = app/addons/mbed-daemon
+	url = https://jussiva@bitbucket.org/jussiva/daemon.git

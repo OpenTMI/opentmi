@@ -4,6 +4,7 @@
 
 //native modules
 var util = require("util");
+var request = require('request');
 
 //3rd party modules
 var express = require('express');
@@ -63,6 +64,23 @@ var Controller = function(){
   this.update = defaultCtrl.update;
   this.remove = defaultCtrl.remove;
   
+  this.download = function(req, res) {
+    tc = req.testcase.toObject();
+    if( tc.files.length > 0 ){
+      res.attachment();
+      var url = tc.files[0].href;
+      request({
+        followAllRedirects: true,
+        url: url
+      }, function (error, response, body) {
+        if (!error) {
+          response.pipe(res );
+        }
+      });
+    } else {
+      res.status(404).json({error: 'nothing to download'});
+    }  
+  }
 
   //util.inherits(this, defaultCtrl);
 

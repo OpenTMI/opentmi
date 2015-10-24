@@ -38,6 +38,7 @@
     "nconf": "^0.8.0",
     "passport": "*",
     "passport-local": "^1.0.0",
+    "request": "^2.65.0",
     "socket.io": "^1.2.1",
     "underscore": "^1.7.0",
     "winston": "^0.8.3",

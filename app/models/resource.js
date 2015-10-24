@@ -13,7 +13,7 @@ var QueryPlugin = require('mongoose-query');
 
 var ResourceSchema = new Schema({
   type: {type: String, required: true,                // Resource type
-      enum: ['system', 'dut', 'sim', 'instrument','accessorie', 'computer', 'room']},   
+      enum: ['system', 'dut', 'sim', 'instrument','accessorie', 'computer', 'room', 'daemon']},   
   name: {type: String, unique: true, required: true}, // Resource Name (more like nickname)
   status: { 
     value: { type: String, enum: ["active", "maintenance", "storage", "broken"], default: "active"}, 

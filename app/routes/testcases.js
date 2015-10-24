@@ -19,6 +19,10 @@ var Route = function(app, passport){
     .get( controller.get )
     .put( controller.update )
     .delete( controller.remove );
+
+  router.route('/api/v0/testcases/:testcase/download')
+    .all( controller.all )
+    .get( controller.download );
   
   app.use( router );
 }
