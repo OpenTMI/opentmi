@@ -5,9 +5,10 @@ var EventEmitter = require('events').EventEmitter;
 /*
   General ontrollers for "Restfull" services 
 */
-var DefaultController = function(Model, defaultModelName){
+var DefaultController = function(Model, defaultModelName, docId){
 
   var self = this;
+  var docId = docId || '_id';
 
   this.format = function(){
     return function(req, res, next, id){
@@ -21,11 +22,15 @@ var DefaultController = function(Model, defaultModelName){
   }
   this.modelParam = function(modelname, errorCb, successCb){
     //find from db
-    if( !modelname ) modelname = defaultModelName;
+    modelname = modelname || defaultModelName
 
     return function(req, res, next, id){
       winston.debug('do param '+JSON.stringify(req.params) );
-      Model.findOne( {_id: req.params[modelname]}, function(error, data){
+      var find = {};
+      find[docId] = req.params[modelname];
+      console.log(find);
+
+      Model.findOne( find, function(error, data){
         if( error ) {
           if( errorCb ) errorCb(error);
           else res.status(300).json( {error: error} );
@@ -91,7 +96,9 @@ var DefaultController = function(Model, defaultModelName){
   }
   
   this.remove = function(req, res){
-    Model.findByIdAndRemove( {_id: req.params[defaultModelName] }, function(error, ok){
+    var find = {};
+    find[docId] = req.params[defaultModelName];
+    Model.findByIdAndRemove( find, function(error, ok){
         if( error ) {
           res.status(300).json({error: error});
         } else {

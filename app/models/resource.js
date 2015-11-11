@@ -260,7 +260,6 @@ ResourceSchema.method({
     var route = []
     var Resource = mongoose.model('Resource');
     var loop = function(error, resource){
-
       if( resource && resource.parent ) {
         route.push(resource.parent);
         Resource.find( {_id: resource.parent}, loop);
