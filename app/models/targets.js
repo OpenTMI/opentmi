@@ -30,6 +30,101 @@ var TargetSchema = new Schema({
   },
   reset: {
     method: {type: String, required: true}
+  },
+  meta_info: {
+    manufacturer: { type: String},
+    model: { type: String, default: 'unknown'},
+    type: { type: String,  enum: ['', 'other', 'R&D', 'CT', 'OperatorAcceptance']},
+    description: { type: String},
+    components: [{
+        type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
+        sn: {type: String}, 
+        mac: {type: String},
+    }],
+    hw: {
+      picture: {type: String}, // link
+      sn: { type: String, index: true},  // ue PSN
+      imei:{type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
+      hwid:{type: String},
+      memory: {
+        size: {type: Number},
+        score: {type: Number},
+      },
+      cpu: {
+        vendor: {type: String}, 
+        model:  {type: String},
+        count: {type: Number},
+        freq:   {type: Number},
+        score: {type: Number},
+      },/*
+      disk: {
+        score: {type: Number},
+      },
+      system: {
+        score: {type: Number},
+      },
+      components:[{
+        
+      }]*/
+    },
+    /*
+    os: {
+        type: {type: String, enum: ['win', 'linux', 'android', 'mbed', unknown']},          // optional
+        architecture: {type: String, enum: ['32', '64', 'unknown']}, // e.g. 32 / 64 / unknown
+        version: {type: String},      // Windows 7 Service Pack 1 32-bit
+    },
+    specifications :{
+        system_unit:  {type: String, enum: ['SI', 'BIS'], default: 'SI'}, // SI-system-unit or British Imperial System 
+        electrical: {
+            acceptable_input_voltage: { 
+                min: { type: Number },
+                max: { type: Number },
+            },  //Volts
+            power: { //Watts
+                standby: {type: Number},
+                max: {type: Number},
+            },
+            current: {
+                max: { type: Number },              //Ampere
+            }
+        },
+        physical: {
+            size: {
+                height: {type: Number},
+                width:  {type: Number},
+                depth:  {type: Number},
+            },
+            weight:  {type: Number},
+            shipping_weight: {type: Number},
+        },
+        approvals: {
+        },
+        environmental: {
+            temperature: {
+                operating: {
+                    min: {type: Number},
+                    max: {type: Number},
+                },
+                storage: {
+                    min: {type: Number},
+                    max: {type: Number},
+                }
+            },
+            humidity: {
+                operating: {
+                    min: {type: Number},
+                    max: {type: Number},
+                },
+                storage: {
+                    min: {type: Number},
+                    max: {type: Number},
+                }
+            }
+        },
+        calibration: {
+            intervall: { type: Number },
+        },
+    },*/
   }
 }, {toObject: { virtuals: true }
 });
