@@ -25,7 +25,7 @@ var ResourceSchema = new Schema({
     installed: {
       os: {
         name: {type: String},
-        id: {type: ObjectId, ref: 'Target'}
+        id: {type: ObjectId, ref: 'Build'}
       }
     },
     time: {type: Date, default: Date.now } 
