@@ -44,7 +44,7 @@ mongoose.connection.on('disconnected', function(){
 connect();
 
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
-  if (file.indexOf('.js$')){
+  if (file.match(/\.js$/) && !file.match(/^\./)){
     winston.info('-RegisterModel: '+file);
     require(__dirname + '/models/' + file);
   }

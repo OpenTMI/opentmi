@@ -8,6 +8,7 @@ var util = require("util");
 //3rd party modules
 var express = require('express');
 var mongoose = require('mongoose');
+var async = require('async');
 
 //own modules
 var DefaultController = require('./');
@@ -79,6 +80,73 @@ var Controller = function(){
     req.Resource.solveRoute(function(error, route){
       res.json(route);
     });
+  }
+
+  this.paramAlloc = function(req, res, next, id){
+    Resource.find( {'status.allocId': req.params.Alloc}, function(error, docs){
+      if(error) {
+        res.status(404).json({error: error});
+      } else if( docs.length > 0 ){
+        console.log("found many devices: "+docs.length);
+        req.allocated = docs;
+        next();
+      } else {
+        console.log('not found allocated resources with id: '+req.params.Alloc);
+        res.status(404).json({error: 'not found'});
+      }
+    })
+  }
+  this.getToBody = function(req, res, next) {
+    try{
+      req.body = JSON.parse( req.query.alloc );
+    } catch(err){
+      res.status(500).json({error: err});
+      return;
+    }
+    next();
+  }
+  this.alloc = function(re, res){
+    req.Resource.alloc( function(error, doc){
+      if( error ) {
+        res.status(500).json(error);
+      } else {
+        res.json(allocated);
+      }
+    })
+  }
+  this.release = function(re, res){
+    req.Resource.release( function(error, doc){
+      if( error ) {
+        res.status(500).json(error);
+      } else {
+        res.json(allocated);
+      }
+    })
+  }
+  this.allocMultiple = function(req, res){
+    Resource.allocateResources(req.body, function(error, allocated){
+      if( error ) {
+        res.status(404).json(error);
+      } else {
+        res.json(allocated);
+      }
+    })
+  }
+  this.releaseMultiple = function(req, res){
+    console.log('Releasing: '+req.allocated.length);
+    async.map( req.allocated, 
+      function(resource, cb){
+        console.log('try to release: '+resource._id);
+        resource.release(cb)
+      },
+      function(error, results){
+        if(error){
+
+        } else {
+          res.json(results);
+        }
+      }
+    )
   }
 
   //util.inherits(this, defaultCtrl);

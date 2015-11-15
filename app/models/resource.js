@@ -11,6 +11,7 @@ var ObjectId = Types.ObjectId;
 var _ = require('underscore');
 
 var QueryPlugin = require('mongoose-query');
+var ResourceAllocationPlugin = require('./plugins/resource-allocator');
 /**
  * User schema
  */
@@ -142,7 +143,8 @@ var ResourceSchema = new Schema({
 
 
 /** install QueryPlugin */
-ResourceSchema.plugin( QueryPlugin ); 
+ResourceSchema.plugin( QueryPlugin );
+ResourceSchema.plugin( ResourceAllocationPlugin );
 
 /**
  * Add your
@@ -174,7 +176,7 @@ ResourceSchema.method({
     this.device.build = build;
     this.save();
     console.log('new build in resource');
-  }
+  },
 });
 
 /**
