@@ -1,0 +1,35 @@
+
+{
+  "name": "tmt-sample",
+  "version": "0.1.0",
+  "description": "TMT sample addon",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://bitbucket.com/_tmt_/tmt-sample.git"
+  },
+  "keywords": [
+    "test",
+    "automation",
+    "management",
+    "sample"
+  ],
+  "author": "Jussi Vatjus-Anttila <jussiva@gmail.com>",
+  "license": "MIT",
+  "readmeFilename": "Readme.md",
+  "tmt": {
+    "id": "sample",
+    "title": "Sample",
+    "type": "provider",
+    "hosted": true,
+    "config": {
+      "controller": "SampleCtrl"
+    }
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}
