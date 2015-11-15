@@ -3,19 +3,19 @@
 	url = https://bitbucket.org/jussiva/gui.git
 [submodule "app/addons/gui"]
 	path = app/addons/gui
-	url = https://bitbucket.org/jussiva/gui.git
+url=https://bitbucket.org/_tmt_/tmt-gui.git
 [submodule "app/addons/suite_generator"]
 	path = app/addons/suite_generator
-	url = https://jussiva@bitbucket.org/jussiva/suite-generator.git
+url=https://bitbucket.org/_tmt_/tmt-suite-generator.git
 [submodule "app/addons/slack"]
 	path = app/addons/slack
-	url = https://jussiva@bitbucket.org/jussiva/slack.git
+url=https://bitbucket.org/_tmt_/tmt-slack.git
 [submodule "app/addons/jenkins"]
 	path = app/addons/jenkins
-	url = https://jussiva@bitbucket.org/jussiva/jenkins.git
+url=https://bitbucket.org/_tmt_/tmt-jenkins.git
 [submodule "app/addons/github"]
 	path = app/addons/github
-	url = https://jussiva@bitbucket.org/jussiva/github.git
+url=https://bitbucket.org/_tmt_/tmt-github.git
 [submodule "app/addons/mbed-daemon"]
 	path = app/addons/mbed-daemon
-	url = https://jussiva@bitbucket.org/jussiva/daemon.git
+url=https://bitbucket.org/_tmt_/tmt-daemon.git
