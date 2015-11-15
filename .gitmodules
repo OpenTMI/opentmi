@@ -19,3 +19,6 @@ url=https://bitbucket.org/_tmt_/tmt-github.git
 [submodule "app/addons/mbed-daemon"]
 	path = app/addons/mbed-daemon
 url=https://bitbucket.org/_tmt_/tmt-daemon.git
+[submodule "app/addons/scheduler"]
+	path = app/addons/scheduler
+	url = https://bitbucket.org/_tmt_/tmt-scheduler
