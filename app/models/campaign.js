@@ -8,6 +8,10 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var QueryPlugin = require('mongoose-query');
 var _ = require('underscore')
+
+var Schema = mongoose.Schema;
+var Types = Schema.Types;
+var ObjectId = Types.ObjectId;
 /**
  * User schema
  */
@@ -39,7 +43,10 @@ var CampaignSchema = new Schema({
       exe: {type: Boolean, default: false}
     }
   },
-  tcs: {type: String, default: ""},
+  tcs: {type: String, required: true},
+  linkedCampaigns: [
+    { type: ObjectId, ref: "Campaign" }
+  ]
 });
 
 /**
@@ -78,17 +85,30 @@ CampaignSchema.method({
         }
       }
     }
-    testcases = mongoose.model('Testcase')
-    testcases.query( query, cb );
+    Testcase = mongoose.model('Testcase')
+    Testcase.query( query, cb );
+
   }
 });
+
+/**
+ * Add your
+ * - pre-save hooks
+ * - validations
+ * - virtuals
+ */
+
+/**
+ * Methods
+ */
+
+CampaignSchema.method({});
 
 /**
  * Statics
  */
 
 CampaignSchema.static({
-
 });
 
 /**

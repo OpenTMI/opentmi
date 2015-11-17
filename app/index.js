@@ -1,9 +1,10 @@
+'use strict';
+
 var fs = require('fs');
 var http = require('http');
 var EventEmitter = require('events').EventEmitter
 
 var express = require('express');
-var mongoose = require('mongoose');
 var passport = require('passport');
 var winston = require('winston');
 var nconf = require('nconf');
@@ -12,14 +13,15 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 
-
+// Create public event channel
 global.pubsub = new EventEmitter();
 
+// read configurations
 nconf.argv()
    .env()
    .defaults( require( './../config/config.js' ) );
 
-
+// Add winston file logger, which rotate daily
 winston.add(winston.transports.DailyRotateFile, {
     filename: 'log/app.log',
     json: false,
@@ -27,22 +29,10 @@ winston.add(winston.transports.DailyRotateFile, {
     datePatter: '.yyyy-MM-dd_HH-mm'
   });
 
+// Initialize database connetion
+require('./db');
 
-// Connect to mongodb
-var connect = function () {
-  var options = { server: { socketOptions: { keepAlive: 1 } } };
-  mongoose.connect(nconf.get('db'), options);
-};
-mongoose.connection.on('error', function(error){
-  winston.error(error.toString());
-});
-mongoose.connection.on('disconnected', function(){
-    winston.error('disconnected');
-    setTimeout( connect, 1000 );
-});
-
-connect();
-
+// Connect models
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
   if (file.match(/\.js$/) && !file.match(/^\./)){
     winston.info('-RegisterModel: '+file);
@@ -52,7 +42,6 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
 
 // Bootstrap passport config
 require('../config/passport')(passport, nconf.get());
-
 
 // Bootstrap application settings
 require('../config/express')(app, passport);
@@ -66,13 +55,15 @@ fs.readdirSync(__dirname + '/routes').forEach(function (file) {
   }
 });
 
-var Addons = require('./addons');
-GLOBAL.AddonManager = new Addons(app, server, io, passport);
+// Bootsrap addons, like default webGUI
+var AddonManager = require('./addons');
+GLOBAL.AddonManager = new AddonManager(app, server, io, passport);
 GLOBAL.AddonManager.RegisterAddons();
 
-
+// Add error router
 require(__dirname + '/routes/error.js')(app, passport);
 
+// Start listen socket
 server.listen(nconf.get('port'), function(){
   winston.info('TMT started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
 });

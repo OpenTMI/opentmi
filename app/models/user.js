@@ -40,6 +40,8 @@ var UserSchema = new Schema({
   lastVisited: { type: Date, default: Date.now },
   loggedIn: { type: Boolean, default: false },
 
+   // 0 = normal user, 1 = admin
+  account_level: {type: Number, default: 0},
   provider: {type: String},
   ldapId: {type: String},
 
@@ -217,6 +219,15 @@ UserSchema.static({
     this.findOne(options.criteria)
       .select(options.select)
       .exec(cb);
+  },
+
+  admins: function (done) {
+    var query = { 'account_level': 1 };
+    this.find(query, done);
+  },
+
+  findByEmail: function(email, cb) {
+    this.find({ email : email }, cb);
   }
 });
 

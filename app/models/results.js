@@ -6,6 +6,7 @@
 var mongoose = require('mongoose');
 //var userPlugin = require('mongoose-user');
 var Schema = mongoose.Schema;
+
 var QueryPlugin = require('mongoose-query');
 
 /**
@@ -45,7 +46,7 @@ var ResultSchema = new Schema({
       cut: [{type: String}], // Component Under Test
       fut: [{type: String}], // Feature Under Test
     },
-    dut: {  //device under test
+    dut: {  //device(s) under test
       count: {type: Number},
       type: {type: String, enum: ['hw','simulator', 'process'], default: 'simulator'},
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },

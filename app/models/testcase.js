@@ -13,6 +13,7 @@ var QueryPlugin = require('mongoose-query');
 var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
+var Mixed = Types.Mixed;
 
 
 var FileSchema = new Schema({
@@ -20,13 +21,31 @@ var FileSchema = new Schema({
   ref: {type: String},
   size: {type: Number}
 });
+var FeatureSchema = new Schema({
+  name: {type: String},
+  SubFeas: [Mixed]
+});
+var ComponentSchema = new Schema({
+  name: {type: String, required: true},
+  supported_versions: {
+    type: String, 
+    match: /[*\d]{1,}\.?[*\d]{1,}?\.?[*\d]{1,}?/,
+    default: "*"
+  },
+  features: [FeatureSchema]    
+});
 /**
  * Testcase schema
  */ 
 
 var TestCaseSchema = new Schema({
-  tcid: {type: String, unique: true, 
-  minlength: 4, required: true, index: true, title: 'TC ID'},
+  tcid: {
+    type: String,     
+    minlength: 6, 
+    required: true, 
+    index: true, 
+    title: 'TC ID'
+  },
   archive: {
     value: {type: Boolean, default: false,  //true when tc is archived
             title: 'Archived'},             
@@ -67,6 +86,7 @@ var TestCaseSchema = new Schema({
     layer: {type: String, 
       enum: [ 'L1', 'L2', 'L3', 'unknown'],
       defaut: 'unknown', title: 'Layer'},
+    sut: [ ComponentSchema ],
     components: [{type: String, title: 'Component'}],
     features: [{type: String, title: 'Feature'}],
     keywords: [ {type: String, title: 'Keyword'} ],
@@ -137,8 +157,9 @@ var TestCaseSchema = new Schema({
       yes: {type: Boolean, default: false},
     }
   },
-  
+
   ver: {
+    cur: {type: Number, default: 0 },
     prev: {type: ObjectId, ref: 'Testcase'},
     next: {type: ObjectId, ref: 'Testcase'}
   }
@@ -157,6 +178,8 @@ TestCaseSchema.set('toJSON', {
   }
 });
 
+TestCaseSchema.index({ tcid: 1, 'ver.cur': -1 }, {unique: true});
+
 
 /**
  * Add your
@@ -170,11 +193,21 @@ TestCaseSchema.set('toJSON', {
  */
 
 TestCaseSchema.method({
-  addNewDuration: function(duration){
+  updateDuration: function(duration){
     this.execution.estimation.duration += duration;
     this.execution.estimation.duration /= 2;
     this.save();
     console.log('saved new duration');
+  },
+  isLatest: function(){
+    return( !this.ver.next );
+  },
+  getPrev: function(cb){
+    if( this.ver.prev ){
+      this.populate(this.ver.prev).exec(cb);
+    } else {
+      cb("no previous version")
+    }
   }
 });
 
@@ -192,11 +225,15 @@ TestCaseSchema.static({
         console.log(error);
       } else if( tc ){
         console.log('find tc: '+tcid);
-        tc.addNewDuration(duration);
+        tc.updateDuration(duration);
       } else {
         console.log('didnt find tc: '+tcid);
       }
     });
+  },
+  getDurationAverage: function(tcid, cb){
+    var Result = mongoose.model("Result");
+    Result.getDuration(tcid, cb);
   }
 });
 
@@ -204,4 +241,7 @@ TestCaseSchema.static({
  * Register
  */
 TestCaseSchema.plugin( QueryPlugin ); //install QueryPlugin
-mongoose.model('Testcase', TestCaseSchema);
+var Testcase = mongoose.model('Testcase', TestCaseSchema);
+Testcase.ensureIndexes(function (err) {
+  if (err) return handleError(err);
+});

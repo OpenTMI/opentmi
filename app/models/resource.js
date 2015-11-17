@@ -17,11 +17,24 @@ var ResourceAllocationPlugin = require('./plugins/resource-allocator');
  */
 
 var ResourceSchema = new Schema({
-  type: {type: String, required: true,                // Resource type
-      enum: ['system', 'dut', 'sim', 'instrument','accessorie', 'computer', 'room', 'daemon']},   
   name: {type: String, unique: true, required: true}, // Resource Name (more like nickname)
+  type: {type: String, required: true, enum: [        // Resource type
+        'system', 
+        'dut', 
+        'sim', 
+        'instrument',
+        'accessorie', 
+        'computer', 
+        'room', 
+        'daemon'
+      ]},
   status: { 
-    value: { type: String, enum: ["active", "maintenance", "storage", "broken"], default: "active"}, 
+    value: { type: String, enum: [
+      "active", 
+      "maintenance", 
+      "storage", 
+      "broken"], 
+      default: "active"}, 
     availability: {type: String, enum: ['free', 'reserved']},
     installed: {
       os: {
@@ -60,15 +73,23 @@ var ResourceSchema = new Schema({
       cost_center: { type: String},
   },
   usage: {
-    type: {type: String, enum: ['automation', 'shared', 'manual', 'unknown'], default: 'unknown' },
-    group: {type: String, enum: ['global', 'department', 'unknown'], default: 'unknown' },
+    type: {type: String, enum: [
+      'automation', 
+      'shared', 
+      'manual', 
+      'unknown'], 
+      default: 'unknown' },
+    group: {type: String, enum: [
+      'global', 
+      'department', 
+      'unknown'], 
+      default: 'unknown' },
     automation: {
       system: {type: String, enum: ['default']},
     }
   },
   //resource details - target details
   target: {type: ObjectId, ref: 'Target'},  
-
   ip: {
     hostname: {type: String, unique: true, sparse: true},
     domain: {type: String},
@@ -137,12 +158,25 @@ var ResourceSchema = new Schema({
   childs: [ {type: ObjectId, ref: 'Resource'} ],
   // Parent Resource
   parent: {type: ObjectId, ref: 'Resource'}
-}, {toObject: { virtuals: true }
-
 });
 
+ResourceSchema.set('toJSON', { 
+  virtuals: true,
+  getters: true, 
+  minimize: true,
+  transform: function(doc, ret, options) {
+    if(!ret.id)ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+    if( ret.ip && 
+        ret.ip.remote_connection &&
+        ret.ip.remote_connection.authentication )
+      delete ret.ip.remote_connection.authentication;
+    return ret;
+  }
+});
 
-/** install QueryPlugin */
+/** install Plugins */
 ResourceSchema.plugin( QueryPlugin );
 ResourceSchema.plugin( ResourceAllocationPlugin );
 
