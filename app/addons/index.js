@@ -35,7 +35,7 @@ function AddonManager (app, server, io, passport){
     res.json(list);
   }
   this.AvailableModules = function() {
-    return addons;
+    return _.map(addons, function(addon){return {name: addon.name, state: 'active'}});
   };
 
   this.UnregisterModule = function(i, cb){
