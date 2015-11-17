@@ -6,7 +6,7 @@
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');
 var crypto = require('crypto');
-
+var uuid = require('node-uuid');
 var Schema = mongoose.Schema;
 
 var oAuthTypes = [
@@ -44,7 +44,7 @@ var UserSchema = new Schema({
   account_level: {type: Number, default: 0},
   provider: {type: String},
   ldapId: {type: String},
-
+  apikeys: [String]
 })
 .post('save', function(){
   if( this.isNew ) {
@@ -196,7 +196,24 @@ UserSchema.methods = {
 
   skipValidation: function() {
     return ~oAuthTypes.indexOf(this.provider);
+  },
+
+  createApiKey: function(){
+    var uuid = uuid.v1();
+    this.apiKeys.append(uuid);
+    this.save();
+    return uuid
+  },
+  listApiKeys: function(){
+    return this.apiKeys;
+  },
+  deleteApiKey: function(key, cb){
+    if( this.apiKeys.indexOf(key) >= 0){
+      this.update( { $pull: { apiKeys: key } } );
+      this.save(cb);
+    }
   }
+
 };
 
 
@@ -228,6 +245,20 @@ UserSchema.static({
 
   findByEmail: function(email, cb) {
     this.find({ email : email }, cb);
+  },
+
+  getAllApiKeys: function(cb){
+    this.query({type: 'distinct', f: 'apiKeys'}, cb);
+  },
+
+  generateApiKey: function(username, cb){
+    this.findOne({username: username}, function(error, doc){
+      cb(error, doc?doc.generateApiKey():null);
+    });
+  },
+
+  apiKeyExists: function(apikey, cb){
+    this.findOne({apiKeys: apikey}, cb);
   }
 });
 

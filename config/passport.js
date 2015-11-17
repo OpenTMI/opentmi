@@ -1,7 +1,4 @@
 var mongoose = require('mongoose');
-var LocalStrategy = require('passport-local').Strategy;
-
-
 var User = mongoose.model('User');
 
 
@@ -11,6 +8,7 @@ var facebook = require('./passport/facebook');
 var twitter = require('./passport/twitter');
 var linkedin = require('./passport/linkedin');
 var github = require('./passport/github');
+var ldap = require('./passport/ldap');
 */
 
 
@@ -42,11 +40,12 @@ var Passport = function( passport, config ){
 
   // use these strategies
   passport.use(local);
-  /*passport.use(google);
-  passport.use(facebook);
-  passport.use(twitter);
-  passport.use(linkedin);
-  passport.use(github);*/
+  //passport.use(google);
+  //passport.use(facebook);
+  //passport.use(twitter);
+  //passport.use(linkedin);
+  //passport.use(github);
+  //passport.use(ldap);
 
 }
 

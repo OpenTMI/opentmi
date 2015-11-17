@@ -33,6 +33,13 @@ var Route = function(app, passport){
 
   //create authentication routes:
   var controller = require('./../controllers/authentication')();
+
+  /*
+  api.get('/api/v0/keys', apiKeys.keys);
+  api.get('/api/v0/accounts/:Account/keys', apiKeys.userKeys);
+  api.get('/api/v0/accounts/:Account/keys/new', apiKeys.createKey)
+  api.delete('/api/v0/accounts/:Account/keys/:Key', apiKeys.deleteKey);
+  */
   
   app.post('/api/v0/login', 
       passport.authenticate('local'), controller.login );

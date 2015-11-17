@@ -180,7 +180,6 @@ TestCaseSchema.set('toJSON', {
 
 TestCaseSchema.index({ tcid: 1, 'ver.cur': -1 }, {unique: true});
 
-
 /**
  * Add your
  * - pre-save hooks
