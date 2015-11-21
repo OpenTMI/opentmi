@@ -4,9 +4,6 @@
 [submodule "app/addons/gui"]
 	path = app/addons/gui
 url=https://bitbucket.org/_tmt_/tmt-gui.git
-[submodule "app/addons/suite_generator"]
-	path = app/addons/suite_generator
-url=https://bitbucket.org/_tmt_/tmt-suite-generator.git
 [submodule "app/addons/slack"]
 	path = app/addons/slack
 url=https://bitbucket.org/_tmt_/tmt-slack.git
@@ -16,9 +13,6 @@ url=https://bitbucket.org/_tmt_/tmt-jenkins.git
 [submodule "app/addons/github"]
 	path = app/addons/github
 url=https://bitbucket.org/_tmt_/tmt-github.git
-[submodule "app/addons/mbed-daemon"]
-	path = app/addons/mbed-daemon
-url=https://bitbucket.org/_tmt_/tmt-daemon.git
 [submodule "app/addons/scheduler"]
 	path = app/addons/scheduler
 	url = https://bitbucket.org/_tmt_/tmt-scheduler
