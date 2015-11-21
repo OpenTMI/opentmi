@@ -1,18 +1,15 @@
-[submodule "src/app/addons/gui"]
-	path = src/app/addons/gui
-	url = https://bitbucket.org/jussiva/gui.git
-[submodule "app/addons/gui"]
-	path = app/addons/gui
-url=https://bitbucket.org/_tmt_/tmt-gui.git
+[submodule "app/addons/default-gui"]
+	path = src/app/addons/default-gui
+	url = https://github.com/OpenTMI/opentmi-default-gui.git
 [submodule "app/addons/slack"]
 	path = app/addons/slack
-url=https://bitbucket.org/_tmt_/tmt-slack.git
+  url=https://github.com/OpenTMI/opentmi-slack.git
 [submodule "app/addons/jenkins"]
 	path = app/addons/jenkins
-url=https://bitbucket.org/_tmt_/tmt-jenkins.git
+  url=https://github.com/OpenTMI/opentmi-jenkins.git
 [submodule "app/addons/github"]
 	path = app/addons/github
-url=https://bitbucket.org/_tmt_/tmt-github.git
+  url=https://github.com/OpenTMI/opentmi-github.git
 [submodule "app/addons/scheduler"]
 	path = app/addons/scheduler
-	url = https://bitbucket.org/_tmt_/tmt-scheduler
+	url = https://github.com/OpenTMI/opentmi-scheduler
