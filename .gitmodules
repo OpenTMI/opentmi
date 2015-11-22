@@ -1,15 +1,3 @@
-[submodule "app/addons/default-gui"]
-	path = src/app/addons/default-gui
-	url  = https://github.com/OpenTMI/opentmi-default-gui.git
-[submodule "app/addons/slack"]
-	path = app/addons/slack
-  url  = https://github.com/OpenTMI/opentmi-slack.git
-[submodule "app/addons/jenkins"]
-	path = app/addons/jenkins
-  url  = https://github.com/OpenTMI/opentmi-jenkins.git
-[submodule "app/addons/github"]
-	path = app/addons/github
-  url  = https://github.com/OpenTMI/opentmi-github.git
-[submodule "app/addons/scheduler"]
-	path = app/addons/scheduler
-	url  = https://github.com/OpenTMI/opentmi-scheduler.git
+[submodule "default-gui"]
+	path = app/addons/default-gui
+	url = https://github.com/OpenTMI/opentmi-default-gui.git
