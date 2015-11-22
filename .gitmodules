@@ -12,4 +12,4 @@
   url=https://github.com/OpenTMI/opentmi-github.git
 [submodule "app/addons/scheduler"]
 	path = app/addons/scheduler
-	url = https://github.com/OpenTMI/opentmi-scheduler
+	url = https://github.com/OpenTMI/opentmi-scheduler.git

@@ -1,13 +1,25 @@
 {
-  "name": "TestManagementSolution",
-  "description": "Test Management Solution for IoT",
+  "name": "OpenTMI",
+  "description": "OpenTMI - Open Source Test Management Infrastructure",
   "version": "0.1.0",
   "author": {
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
   },
-  "copyright": "Copyright (c) 2015 Jussi Vatjus-Anttila! Inc. All rights reserved.",
-  "license": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenTMI/opentmi.git"
+  },
+  "keywords": [
+    "IoT",
+    "hardware",
+    "opentmi",
+    "test",
+    "management",
+    "backend"
+  ],
+  "copyright": "Jussi Vatjus-Anttila <jussiva@gmail.com>",
+  "license": "GPLv3",
   "engines": {
     "node": "0.10.x"
   },
@@ -57,13 +69,5 @@
     "should": "*",
     "superagent": "^0.18.0",
     "xunit-file": "0.0.5"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://bitbucket.org/jussiva/core.git"
-  },
-  "keywords": [
-    "IoT",
-    "mbed"
-  ]
+  }
 }

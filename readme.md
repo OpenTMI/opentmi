@@ -2,12 +2,27 @@
 
 Test Management Service
 
+# Ideology
+
+Basic idea is to store *all* meta information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when we can directly see what is tested in individual Device with individual Build...
+
+# Architecture
+
+* Backend
+** which provide RESTFull json -API, authentication etc.
+   Backend functionality can be extended with addons. This allows to use business -related secret stuff for example..
+* Frontend
+** OpenTMI provide default web GUI, which is single addon in backend actually.
+   webGUI is written with angularJS.
+* Client libraries
+** opentmi-client-python provide easy python API for test scripts, so that this system is easy to start using.
+
 ## What is this repository for? ##
 
-Repository provide backend for Test Management Service.
+This Repository provide backend for OpenTMI.
 
 Service contains full RESTFull json -API, as well as websockets.
-Also there is (not yet implemented) several kind of backend-services, like scheduler, result-analyser, report-generator, suite-generator, ...
+Also there will several different kind of backend-services as addons, like scheduler, result-analyser, report-generator, suite-generator, etc...
 
 ## Service resources (with API) are ##
 * Accounts
@@ -59,6 +74,8 @@ Job contains information what should be done in Slave machine. For example, it c
 (partially implemented)
 Resource is physical resource, what is Limited amount.
 Resource document contains all informations related Resource itself, like resource type, model, vendor, location, owner, administrator, ip-address, ...
+
+Resources section also provide kind of resource locking -mechanism, which allows to allocate individual/multiple resources so that no-one else can use it meanwhile it is in use by another service (e.g. test automation client). E.g. if Test case require 4 DUT's it could allocate 4 DUT's from backend and start using them safely without interrupt. This allows to see also that what resources is in use in real time and follow resource utilization as well (not implemented)..
 
 #### DUT ####
 Dut (Device Under Type) is special type of resource. It is used in test cases: list of allowed DUT's for particular TC..
