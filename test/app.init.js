@@ -11,7 +11,8 @@ describe("Index", function () {
       .end(function (e, res) {
         console.log(e);
         //(e === null).should.equal(true);
-        res.text.should.equal("API v0");
+        res.should.be.json
+        expect(res.body).to.deep.equal({"apiVersion":"v0"});
         done();
       });
   });
@@ -20,6 +21,8 @@ describe("Index", function () {
       .type('json')
       .end( function(e, res){
         res.should.be.json
+        res.status.should.equal(200);
+        res.body.should.be.instanceof(Array)
         done();
       })
   });
@@ -28,6 +31,8 @@ describe("Index", function () {
       .type('json')
       .end( function(e, res){
         res.should.be.json
+        res.status.should.equal(200);
+        res.body.should.be.instanceof(Array)
         done();
       })
   });
@@ -36,6 +41,8 @@ describe("Index", function () {
       .type('json')
       .end( function(e, res){
         res.should.be.json
+        res.status.should.equal(200);
+        res.body.should.be.instanceof(Array)
         done();
       })
   });
@@ -44,14 +51,18 @@ describe("Index", function () {
       .type('json')
       .end( function(e, res){
         res.should.be.json
+        res.status.should.equal(200);
+        res.body.should.be.instanceof(Array)
         done();
       })
   });
   it("get builds", function(done){
-    superagent.get(api+"/builds")
+    superagent.get(api+"/duts/builds")
       .type('json')
       .end( function(e, res){
         res.should.be.json
+        res.status.should.equal(200);
+        res.body.should.be.instanceof(Array)
         done();
       })
   });
