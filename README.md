@@ -1,6 +1,8 @@
-# README #
+# OpenTMI - Open Source Test Management Infrastructure
 
-Test Management Service
+OpenTMI is Open Source Test Management System. It is written in Node.js / Javascript and uses MongoDB as backing store. It is published in GPLv3 license.
+
+OpenTMI is extremely customizable through plugins. 
 
 # Ideology
 
