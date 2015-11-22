@@ -15,6 +15,7 @@ env:
 
 # Create directories for test and coverage reports
 before_script:
+  - npm install -g grunt-cli
   - mkdir -p shippable/testresults
   - mkdir -p shippable/codecoverage
 
@@ -31,4 +32,3 @@ after_script:
   - mongo test --eval "db.dropDatabase()"
   - ./node_modules/.bin/istanbul cover grunt -- -u tdd
   - ./node_modules/.bin/istanbul report cobertura --dir  shippable/codecoverage/
-
