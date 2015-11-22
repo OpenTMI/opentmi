@@ -1,6 +1,6 @@
 # OpenTMI - Open Source Test Management Infrastructure
 
-[![Build Status](build-image)](build-url)
+ [![Build Status][build-image][build-url]
 
 OpenTMI is Open Source Test Management System. It is written in Node.js / Javascript and uses MongoDB as backing store. It is published in GPLv3 license.
 
@@ -186,9 +186,9 @@ There is available several example addons like:
 * Repo owner or admin
 * Other community or team contact
 
-# LICENSE
+## License
 
-GPL-3.0
+  [GPL-3.0](LICENSE.md)
 
 [build-image]: https://travis-ci.org/OpenTMI/opentmi.svg?branch=master
 [build-url]: https://travis-ci.org/OpenTMI/opentmi
