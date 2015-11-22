@@ -6,6 +6,23 @@ Test Management Service
 
 Basic idea is to store *all* meta information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when we can directly see what is tested in individual Device with individual Build...
 
+# Installation
+
+```
+git clone --recursive https://github.com/OpenTMI/opentmi
+cd opentmi
+npm install
+./mongod.sh
+npm start
+or
+node .
+```
+
+## Configuration
+
+By default it start as development mode so configure file is:
+`./config/env/development`
+
 # Architecture
 
 * Backend
