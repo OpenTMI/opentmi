@@ -8,11 +8,16 @@ Basic idea is to store *all* meta information related to test execution, like so
 
 # Installation
 
+## Prepare
+
+You need to install mongodb and run it. File `mongod.sh` contains simple script to start mongod instance (db location ./db and logs ./db.logs).
+
+## Clone, install dependencies and start
+
 ```
 git clone --recursive https://github.com/OpenTMI/opentmi
 cd opentmi
 npm install
-./mongod.sh
 npm start
 or
 node .
@@ -22,6 +27,24 @@ node .
 
 By default it start as development mode so configure file is:
 `./config/env/development`
+example..
+```
+module.exports = {
+  name: 'OpenTMI',
+  host: '127.0.0.1',
+  port: 3000,
+  db: 'mongodb://localhost/tmi_dev',
+  admin: {
+    //default values
+    'user': 'admin',
+    'pwd': 'admin',
+  },
+  ldap: {
+    url: process.env.LDAP_URL
+  },
+  ...
+}
+```
 
 # Architecture
 
@@ -29,19 +52,19 @@ By default it start as development mode so configure file is:
 ** which provide RESTFull json -API, authentication etc.
    Backend functionality can be extended with addons. This allows to use business -related secret stuff for example..
 * Frontend
-** OpenTMI provide default web GUI, which is single addon in backend actually.
-   webGUI is written with angularJS.
+ * OpenTMI provide default web GUI, which is single addon in backend actually.
+    webGUI is written with angularJS.
 * Client libraries
-** opentmi-client-python provide easy python API for test scripts, so that this system is easy to start using.
+ * opentmi-client-python provide easy python API for test scripts, so that this system is easy to start using.
 
-## What is this repository for? ##
+## What is this repository for?
 
 This Repository provide backend for OpenTMI.
 
 Service contains full RESTFull json -API, as well as websockets.
 Also there will several different kind of backend-services as addons, like scheduler, result-analyser, report-generator, suite-generator, etc...
 
-## Service resources (with API) are ##
+## Service resources (with API) are
 * Accounts
 * Groups
 * Admin
@@ -49,15 +72,15 @@ Also there will several different kind of backend-services as addons, like sched
 * Product features
 * Campaigns
 * Test Automation
-** Jobs
+ * Jobs
 * Resources
-** DUT's
-** LAB equipments
-** Rooms
+ * DUT's
+ * LAB equipments
+ * Rooms
 * Builds
 * Test Results
 * Reports
-** Report template's
+ * Report template's
 * Addons
 
 ### Accounts ###
