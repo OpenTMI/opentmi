@@ -30,6 +30,10 @@ or
 node .
 ```
 
+## Available Plugins:
+
+[See from registry](https://github.com/OpenTMI/opentmi-registry)
+
 ## Configuration
 
 By default it start as development mode so configure file is:
