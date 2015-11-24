@@ -23,10 +23,10 @@ if (fs.existsSync(envFile)) {
  */
 
 module.exports = {
-  name: 'TMT',
+  name: 'OpenTMI-dev',
   host: '0.0.0.0',
   port: 3000,
-  db: 'mongodb://localhost/tmt_dev',
+  db: 'mongodb://localhost/opentmi_dev',
   admin: {
     //default values
     'user': 'admin',
