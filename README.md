@@ -11,7 +11,7 @@ OpenTMI is extremely customizable through plugins.
 
 # Ideology
 
-Basic idea is to store *all* meta information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when we can directly see what is tested in individual Device with individual Build...
+Basic idea is to store **all** meta information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when we can directly see what is tested in individual Device with individual Build...
 
 # Installation
 
@@ -60,7 +60,7 @@ module.exports = {
 # Architecture
 
 * Backend
-** which provide RESTFull json -API, authentication etc.
+ * which provide RESTFull json -API, authentication etc.
    Backend functionality can be extended with addons. This allows to use business -related secret stuff for example..
 * Frontend
  * OpenTMI provide default web GUI, which is single addon in backend actually.
