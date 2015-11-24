@@ -4,7 +4,7 @@
  */
 
 module.exports = {
-  db: 'mongodb://localhost/tmt_prod',
+  db: 'mongodb://localhost/opentmi_prod',
   port: 3000,
   ldap: {
     url: process.env.LDAP_URL
