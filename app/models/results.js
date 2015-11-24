@@ -15,6 +15,9 @@ var QueryPlugin = require('mongoose-query');
 var ResultSchema = new Schema({
   tcid: { type: String, required: true },
   tcRef: {type: Schema.Types.ObjectId, ref: 'Testcase' },
+  job:{
+    id: { type: String, default: ''}
+  },
   campaign: {type: String, default: ''},
   campaignRef: {type: Schema.Types.ObjectId, ref: 'Campaign' },
   cre: {
