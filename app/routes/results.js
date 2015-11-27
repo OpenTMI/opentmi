@@ -13,7 +13,8 @@ var Route = function(app, passport){
     .all( controller.all )
     .get( controller.find )
     .post(controller.create );
-  
+  router.route('/api/v0/results/junit')
+    .post(controller.createFromJunit );
   router.route('/api/v0/results/:Result.:format?')
     .all( controller.all )
     .get( controller.get )

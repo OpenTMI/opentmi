@@ -1,3 +1,8 @@
+/**
+  Express configuration
+*/
+
+//native modules
 
 /* 3rd party libraries */
 var express = require('express');
@@ -8,9 +13,11 @@ var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
+var busboy = require('connect-busboy');
 var csrf = require('csurf');
 var cors = require('cors');
-var multer = require('multer');
+
+
 
 var mongoStore = require('connect-mongo')(session);
 
@@ -69,8 +76,13 @@ module.exports = function (app, passport) {
   app.use( cors() );
   // bodyParser should be above methodOverride
   app.use( bodyParser.json() );
+  app.use( busboy({
+      limits: {
+        fileSize: 10 * 1024 * 1024
+      }
+    })
+  );
   app.use( bodyParser.urlencoded({ extended: false }) );
-  app.use(multer());
   app.use(methodOverride(function (req, res) {
     if (req.body && typeof req.body === 'object' && '_method' in req.body) {
       // look in urlencoded POST bodies and delete it
