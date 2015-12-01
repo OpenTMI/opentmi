@@ -1,6 +1,5 @@
-
 {
-  "name": "tmt-sample",
+  "name": "tmi-sample",
   "version": "0.1.0",
   "description": "TMT sample addon",
   "main": "index.js",
@@ -19,13 +18,22 @@
   "author": "Jussi Vatjus-Anttila <jussiva@gmail.com>",
   "license": "MIT",
   "readmeFilename": "Readme.md",
-  "tmt": {
+  "opentmi": {
     "id": "sample",
     "title": "Sample",
     "type": "provider",
     "hosted": true,
     "config": {
-      "controller": "SampleCtrl"
+      "menu": {
+        "reports": [
+          { 
+            "title": "Sample", 
+            "action": "#/sample",
+            "templateUrl": "sample.html",
+            "controller": "SampleCtrl"
+          }
+        ]
+      }
     }
   },
   "devDependencies": {
