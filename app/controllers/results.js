@@ -27,8 +27,11 @@ var Controller = function(){
     defaultCtrl.isEmpty( function(yes){
       if( yes === true ){
         var Template = {
-            tcid: 'Result-',
-            cre: { name: 'tmt'},
+            tcid: 'Testcase-',
+            cre: { name: 'tmi'},
+            job: {
+              id: ''
+            },
             exec: { 
               verdict: 'pass', 
               framework: { name: 'clitest', ver: '0.0'},
@@ -38,6 +41,9 @@ var Controller = function(){
                   branch: 'master',
                   commitId: 'abc12345678901234567'
                 }
+              },
+              sut: {
+                cut: ['fea-1']
               }
             }
           }
@@ -46,10 +52,11 @@ var Controller = function(){
            var _new = {};
            _.extend(_new, Template)
             _new.tcid += i;
+            _new.job.id = 'test-job-'+defaultCtrl.randomText(['A','B', 'C']);
             _new.exec.verdict = defaultCtrl.randomText(['pass','fail']);
             _new.exec.duration = defaultCtrl.randomIntInc(0, 500);
             return _new;
-        }, 10, function(err){
+        }, 1000, function(err){
           //done
           if(err)console.log(err);
           else console.log('dummy result generated');

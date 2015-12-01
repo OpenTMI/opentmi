@@ -42,7 +42,7 @@ var Controller = function(){
           _new.execution.estimation.duration = defaultCtrl.randomIntInc(10, 120)
           _new.tcid += i;
           return _new;
-      }, defaultCtrl.randomIntInc(100, 124), function(err){
+      }, 1000, function(err){
         //done
         if(err)console.log(err);
         else console.log('dummy testcases generated');

@@ -40,6 +40,7 @@ var ResultSchema = new Schema({
     sut: { // software under test
       ref: {type: Schema.Types.ObjectId, ref: 'Build' },
       gitUrl: {type: String, default: ''},
+      buildName: {type: String},
       buildDate: {type: Date},
       buildUrl: {type: String, default: ''},
       branch: {type: String, default: ''},
