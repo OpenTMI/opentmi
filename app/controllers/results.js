@@ -90,7 +90,6 @@ var Controller = function(){
       //data.exec.duration
       console.log("Got new "+"PASS".green+" result: "+data.tcid);
     } else {
-      console.log(data);
       console.log("Got new "+"FAIL".red+" result: "+data.tcid + "("+data._id+")");
     }
     duration =  Object.resolve('exec.duration', data, null);
