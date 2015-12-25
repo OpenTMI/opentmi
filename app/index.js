@@ -5,7 +5,6 @@ var http = require('http');
 var EventEmitter = require('events').EventEmitter
 
 var express = require('express');
-var passport = require('passport');
 var winston = require('winston');
 var nconf = require('nconf');
 
@@ -40,28 +39,25 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
   }
 });
 
-// Bootstrap passport config
-require('../config/passport')(passport, nconf.get());
-
 // Bootstrap application settings
-require('../config/express')(app, passport);
+require('../config/express')(app);
 
 // Bootstrap routes
 fs.readdirSync(__dirname + '/routes').forEach(function (file) {
   if ( file.match(/\.js$/) && 
       !file.match(/error\.js$/)) {
     winston.info('-AddRoute: '+file);
-    require(__dirname + '/routes/' + file)(app, passport);
+    require(__dirname + '/routes/' + file)(app);
   }
 });
 
 // Bootsrap addons, like default webGUI
 var AddonManager = require('./addons');
-GLOBAL.AddonManager = new AddonManager(app, server, io, passport);
+GLOBAL.AddonManager = new AddonManager(app, server, io);
 GLOBAL.AddonManager.RegisterAddons();
 
 // Add error router
-require(__dirname + '/routes/error.js')(app, passport);
+require(__dirname + '/routes/error.js')(app);
 
 // Start listen socket
 server.listen(nconf.get('port'), function(){

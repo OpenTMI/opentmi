@@ -5,18 +5,9 @@
 
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');
-var crypto = require('crypto');
+var bcrypt = require('bcryptjs');
 var uuid = require('node-uuid');
 var Schema = mongoose.Schema;
-
-var oAuthTypes = [
-  'github',
-  'twitter',
-  'facebook',
-  'google',
-  'linkedin',
-  'ldap'
-];
 
 var validateEmail = function(email) {
     var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -29,13 +20,15 @@ var validateEmail = function(email) {
 var UserSchema = new Schema({
   name: { type: String },
   
-  username: { type: String, required: true, unique: true },
-  hashed_password: { type: String, required: true },
-  salt: { type: String, default: '' },
-  authToken: { type: String, default: '' },
-  
-  email: { type: String, trim: true },
+  email: { type: String, unique: true, lowercase: true },
+  password: { type: String, select: false },
+  displayName: String,
+  picture: String,
+  bitbucket: String,
+  google: String,
+  github: String,
 
+  // statistics
   registered: { type: Date, default: Date.now },
   lastVisited: { type: Date, default: Date.now },
   loggedIn: { type: Boolean, default: false },
@@ -50,7 +43,7 @@ var UserSchema = new Schema({
   if( this.isNew ) {
     db.groups.findOneAndUpdate(
       {'name': 'default'},
-      {$push: {users: this.username}},
+      {$push: {users: this._id}},
       function(error, doc){
       }
     );
@@ -74,16 +67,6 @@ UserSchema.plugin( QueryPlugin ); //install QueryPlugin
  * - virtuals
  */
 
-UserSchema
-  .virtual('password')
-  .set(function(password) {
-    this._password = password;
-    this.salt = this.makeSalt();
-    this.hashed_password = this.encryptPassword(password);
-  })
-  .get(function() { return this._password });
-
-
 /**
  * Validations
  */
@@ -93,7 +76,7 @@ var validatePresenceOf = function (value) {
 };
 
 // the below 5 validations only apply if you are signing up traditionally
-
+/*
 UserSchema.path('name').validate(function (name) {
   if (this.skipValidation()) return true;
   return name.length;
@@ -120,26 +103,25 @@ UserSchema.path('username').validate(function (username) {
   if (this.skipValidation()) return true;
   return username.length;
 }, 'Username cannot be blank');
-
-UserSchema.path('hashed_password').validate(function (hashed_password) {
-  if (this.skipValidation()) return true;
-  return hashed_password.length;
-}, 'Password cannot be blank');
-
+*/
 
 /**
  * Pre-save hook
  */
-
 UserSchema.pre('save', function(next) {
-  if (!this.isNew) return next();
-
-  if (!validatePresenceOf(this.password) && !this.skipValidation()) {
-    next(new Error('Invalid password'));
-  } else {
-    next();
+  var user = this;
+  if (!user.isModified('password')) {
+    return next();
   }
-})
+  bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.hash(user.password, salt, function(err, hash) {
+      user.password = hash;
+      next();
+    });
+  });
+});
+
+
 
 /**
  * Methods
@@ -154,49 +136,15 @@ UserSchema.methods = {
    * @return {Boolean}
    * @api public
    */
-
-  authenticate: function (plainText) {
-    return this.encryptPassword(plainText) === this.hashed_password;
-  },
-
-  /**
-   * Make salt
-   *
-   * @return {String}
-   * @api public
-   */
-
-  makeSalt: function () {
-    return Math.round((new Date().valueOf() * Math.random())) + '';
-  },
-
-  /**
-   * Encrypt password
-   *
-   * @param {String} password
-   * @return {String}
-   * @api public
-   */
-
-  encryptPassword: function (password) {
-    if (!password) return '';
-    try {
-      return crypto
-        .createHmac('sha1', this.salt)
-        .update(password)
-        .digest('hex');
-    } catch (err) {
-      return '';
-    }
+  comparePassword: function(password, done) {
+    bcrypt.compare(password, this.password, function(err, isMatch) {
+      done(err, isMatch);
+    });
   },
 
   /**
    * Validation is not required if using OAuth
    */
-
-  skipValidation: function() {
-    return ~oAuthTypes.indexOf(this.provider);
-  },
 
   createApiKey: function(){
     var uuid = uuid.v1();
@@ -212,6 +160,11 @@ UserSchema.methods = {
       this.update( { $pull: { apiKeys: key } } );
       this.save(cb);
     }
+  },
+
+
+  skipValidation: function(){
+    return false;
   }
 
 };
@@ -251,8 +204,8 @@ UserSchema.static({
     this.query({type: 'distinct', f: 'apiKeys'}, cb);
   },
 
-  generateApiKey: function(username, cb){
-    this.findOne({username: username}, function(error, doc){
+  generateApiKey: function(email, cb){
+    this.findOne({email: email}, function(error, doc){
       cb(error, doc?doc.generateApiKey():null);
     });
   },

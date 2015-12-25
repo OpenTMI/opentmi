@@ -1,55 +1,45 @@
-
+var jwt = require('jwt-simple');
+var moment = require('moment');
+var nconf = require('nconf');
+var TOKEN_SECRET = nconf.get('webtoken');
 /*
- *  Generic require login routing middleware
+ |--------------------------------------------------------------------------
+ | Login Required Middleware
+ |--------------------------------------------------------------------------
  */
+module.exports.ensureAuthenticated = function(req, res, next) {
+  console.log('ensureAuthentication');
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
+  }
+  var token = req.headers.authorization.split(' ')[1];
 
-exports.requiresLogin = function (req, res, next) {
-  if (req.isAuthenticated()) return next()
-  if (req.method == 'GET') req.session.returnTo = req.originalUrl
-  res.redirect('/login')
+  var payload = null;
+  try {
+    payload = jwt.decode(token, TOKEN_SECRET);
+  }
+  catch (err) {
+    return res.status(401).send({ message: err.message });
+  }
+
+  if (payload.exp <= moment().unix()) {
+    return res.status(401).send({ message: 'Token has expired' });
+  }
+  req.user = payload.sub;
+  next();
 }
 
 /*
- *  User authorization routing middleware
+ |--------------------------------------------------------------------------
+ | Generate JSON Web Token
+ |--------------------------------------------------------------------------
  */
-
-exports.user = {
-  hasAuthorization: function (req, res, next) {
-    if (req.profile.id != req.user.id) {
-      req.flash('info', 'You are not authorized')
-      return res.redirect('/users/' + req.profile.id)
-    }
-    next()
-  }
-}
-
-/*
- *  Testcase authorization routing middleware
- */
-
-exports.testcase = {
-  hasAuthorization: function (req, res, next) {
-    if (req.testcase.user.id != req.user.id) {
-      //req.flash('info', 'You are not authorized')
-      return res.redirect('/testcases/' + req.article.id)
-    }
-    next()
-  }
-}
-
-/**
- * Comment authorization routing middleware
- */
-
-exports.campaign = {
-  hasAuthorization: function (req, res, next) {
-    // if the current user is comment owner or article owner
-    // give them authority to delete
-    if (req.user.id === req.comment.user.id || req.user.id === req.article.user.id) {
-      next()
-    } else {
-      req.flash('info', 'You are not authorized')
-      res.redirect('/articles/' + req.article.id)
-    }
-  }
+module.exports.createJWT = function(user) {
+  console.log('createJWT token');
+  var payload = {
+    sub: user._id,
+    iat: moment().unix(),
+    exp: moment().add(14, 'days').unix()
+  };
+  return jwt.encode(payload, TOKEN_SECRET);
 }

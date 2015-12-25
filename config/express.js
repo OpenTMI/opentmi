@@ -32,7 +32,7 @@ var env = process.env.NODE_ENV || 'development';
 /**
  * Expose
  */
-module.exports = function (app, passport) {
+module.exports = function (app) {
   
 
   // Compression middleware (should be placed before express.static)
@@ -104,10 +104,6 @@ module.exports = function (app, passport) {
       collection : 'sessions'
     })
   }));
-
-  // use passport session
-  app.use(passport.initialize());
-  app.use(passport.session());
   
   // adds CSRF support when production mode
   if ( process.env.NODE_ENV === 'production') {

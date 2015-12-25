@@ -3,7 +3,7 @@ var _ = require('underscore')
 var winston = require('winston')
 var async = require('async');
 
-function AddonManager (app, server, io, passport){
+function AddonManager (app, server, io){
   var self = this;
   var addons = [];
   
@@ -14,7 +14,7 @@ function AddonManager (app, server, io, passport){
          winston.info("-RegisterAddon: '"+file+"'");
          try {
            var Addon = require(__dirname + '/' + file);
-           var addon = new Addon(app, server, io, passport);
+           var addon = new Addon(app, server, io);
            addon.register();
            addons.push( addon  );
          } catch(e) {

@@ -26,6 +26,7 @@ module.exports = {
   name: 'OpenTMI-dev',
   host: '0.0.0.0',
   port: 3000,
+  webtoken:'OpenTMI-toP-SeCRet-tOKEn',
   db: 'mongodb://localhost/opentmi_dev',
   admin: {
     //default values
