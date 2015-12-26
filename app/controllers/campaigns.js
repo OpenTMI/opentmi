@@ -17,14 +17,6 @@ var Controller = function(){
   var Campaign = mongoose.model('Campaign');
   var defaultCtrl = new DefaultController(Campaign, 'Campaign');
 
-  function randomIntInc (low, high) {
-      return Math.floor(Math.random() * (high - low + 1) + low);
-  }
-  function randomText( list ){
-    i = randomIntInc( 0, list.length-1 )
-    return list[i]
-  }
-
   //create dummy campaigns when db is empty ->
   defaultCtrl.isEmpty( function(yes){
     if( yes === true ){

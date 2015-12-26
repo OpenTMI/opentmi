@@ -66,4 +66,14 @@ describe("Index", function () {
         done();
       })
   });
+  it("get users", function(done){
+    superagent.get(api+'/users')
+    .type('json')
+      .end( function(e, res){
+        res.should.be.json
+        res.status.should.equal(200);
+        res.body.should.be.instanceof(Array)
+        done();
+      })
+  })
 });

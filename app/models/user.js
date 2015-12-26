@@ -6,7 +6,14 @@
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');
 var bcrypt = require('bcryptjs');
-var uuid = require('node-uuid');
+var _ = require('underscore');
+
+/* Implementation */   
+var Schema = mongoose.Schema;
+var Types = Schema.Types;
+var ObjectId = Types.ObjectId;
+var Mixed = Types.Mixed;
+var Group = mongoose.model('Group');
 var Schema = mongoose.Schema;
 
 var validateEmail = function(email) {
@@ -33,20 +40,11 @@ var UserSchema = new Schema({
   lastVisited: { type: Date, default: Date.now },
   loggedIn: { type: Boolean, default: false },
 
-   // 0 = normal user, 1 = admin
-  account_level: {type: Number, default: 0},
-  provider: {type: String},
-  ldapId: {type: String},
-  apikeys: [String]
+  groups: [ { type: ObjectId, ref: 'Group' } ],
+  apikeys: [{ type: ObjectId, ref: 'ApiKey' } ]
 })
 .post('save', function(){
-  if( this.isNew ) {
-    db.groups.findOneAndUpdate(
-      {'name': 'default'},
-      {$push: {users: this._id}},
-      function(error, doc){
-      }
-    );
+  if( this.isNew ) { 
   }
 });
 
@@ -67,13 +65,6 @@ UserSchema.plugin( QueryPlugin ); //install QueryPlugin
  * - virtuals
  */
 
-/**
- * Validations
- */
-
-var validatePresenceOf = function (value) {
-  return value && value.length;
-};
 
 // the below 5 validations only apply if you are signing up traditionally
 /*
@@ -109,17 +100,34 @@ UserSchema.path('username').validate(function (username) {
  * Pre-save hook
  */
 UserSchema.pre('save', function(next) {
-  var user = this;
-  if (!user.isModified('password')) {
+  console.log('save-pre-hook-pwd')
+  var self = this;
+  if (!self.isModified('password')) {
     return next();
   }
   bcrypt.genSalt(10, function(err, salt) {
-    bcrypt.hash(user.password, salt, function(err, hash) {
-      user.password = hash;
+    bcrypt.hash(self.password, salt, function(err, hash) {
+      self.password = hash;
       next();
     });
   });
 });
+/*
+UserSchema.pre('save', function(next){
+  console.log('save-pre-hook')
+  if( this.isNew ){  
+    var self=this,
+        groups = this.groups;
+    this.groups = [];
+    if( groups ){
+      var self = this;
+      groups.forEach( function(group){
+        self.addToGroup(group);
+      });
+      next();
+    }
+  }
+})*/
 
 
 
@@ -127,47 +135,67 @@ UserSchema.pre('save', function(next) {
  * Methods
  */
 
-UserSchema.methods = {
+UserSchema.methods.addToGroup = function(group, done) {
+  var self = this;
+  Group.findOne({name: group}, function(error, group){
+      if( error ){
+        return done(error);
+      }
+      if(!group){
+        return done({message: 'group not found'});
+      }
+      self.groups.push(group._id);
+      group.addgroup.users.push(self._id);
+      group.save();
+      self.save(function(error, user){
+        if(error) {
+          console.log('error');
+          return done(error);
+        }
+        done(user);
+      });
+  });
+}
 
-  /**
-   * Authenticate - check if the passwords are the same
-   *
-   * @param {String} plainText
-   * @return {Boolean}
-   * @api public
-   */
-  comparePassword: function(password, done) {
-    bcrypt.compare(password, this.password, function(err, isMatch) {
-      done(err, isMatch);
-    });
-  },
+/**
+ * Authenticate - check if the passwords are the same
+ *
+ * @param {String} plainText
+ * @return {Boolean}
+ * @api public
+ */
+UserSchema.methods.comparePassword = function(password, done) {
+  bcrypt.compare(password, this.password, function(err, isMatch) {
+    done(err, isMatch);
+  });
+}
 
-  /**
-   * Validation is not required if using OAuth
-   */
-
-  createApiKey: function(){
-    var uuid = uuid.v1();
-    this.apiKeys.append(uuid);
-    this.save();
-    return uuid
-  },
-  listApiKeys: function(){
-    return this.apiKeys;
-  },
-  deleteApiKey: function(key, cb){
-    if( this.apiKeys.indexOf(key) >= 0){
-      this.update( { $pull: { apiKeys: key } } );
-      this.save(cb);
-    }
-  },
-
-
-  skipValidation: function(){
-    return false;
+/**
+ * Validation is not required if using OAuth
+ */
+UserSchema.methods.createApiKey = function(cb){
+  var self = this;
+  var ApiKey = mongoose.model('ApiKey');
+  apikey = new ApiKey();
+  apikey.save( function(doc){
+    self.apikeys.push( doc._id );
+    self.save(cb)
+    cb(null, doc.key)
+  })
+},
+UserSchema.methods.listApiKeys = function(){
+  return this.apiKeys;
+},
+UserSchema.methods.deleteApiKey = function(key, cb){
+  if( this.apiKeys.indexOf(key) >= 0){
+    this.update( { $pull: { apiKeys: key } } );
+    this.save(cb);
   }
+}
 
-};
+UserSchema.methods.skipValidation = function(){
+  return false;
+}
 
 
 /**
@@ -175,7 +203,6 @@ UserSchema.methods = {
  */
 
 UserSchema.static({
-  
   /**
    * Load
    *
@@ -200,18 +227,22 @@ UserSchema.static({
     this.find({ email : email }, cb);
   },
 
-  getAllApiKeys: function(cb){
-    this.query({type: 'distinct', f: 'apiKeys'}, cb);
-  },
-
-  generateApiKey: function(email, cb){
-    this.findOne({email: email}, function(error, doc){
-      cb(error, doc?doc.generateApiKey():null);
+  getApiKeys: function(user, cb){
+    this.findOne({_id: user}).populate('apikeys').exec( 
+      function(error, doc){
+        if(error){
+          return cb(error);
+        }
+        console.log(user);
+        console.log(doc);
+        cb(error, _.map(doc.apikeys, function(key){return key.key;}));
     });
   },
 
-  apiKeyExists: function(apikey, cb){
-    this.findOne({apiKeys: apikey}, cb);
+  generateApiKey: function(user, cb){
+    this.findOne({_id: user}, function(error, doc){
+      cb(error, doc?doc.generateApiKey():null);
+    });
   }
 });
 

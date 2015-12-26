@@ -1,13 +1,18 @@
 var jwt = require('jwt-simple');
 var moment = require('moment');
+var mongoose = require('mongoose');
 var nconf = require('nconf');
 var TOKEN_SECRET = nconf.get('webtoken');
+var _ = require('underscore');
+
+var User = mongoose.model('User');
+var Group = mongoose.model('Group');
 /*
  |--------------------------------------------------------------------------
  | Login Required Middleware
  |--------------------------------------------------------------------------
  */
-module.exports.ensureAuthenticated = function(req, res, next) {
+var ensureAuthenticated = module.exports.ensureAuthenticated = function(req, res, next) {
   console.log('ensureAuthentication');
   if (!req.headers.authorization) {
     return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
@@ -27,6 +32,42 @@ module.exports.ensureAuthenticated = function(req, res, next) {
   }
   req.user = payload.sub;
   next();
+}
+var getUser = module.exports.getUser = function(req, res, next){
+  ensureAuthenticated(req, res, function(req, res, next){
+    User.findOne({ _id: req.user}, function(error, user){
+      if( error ){
+        return res.status(401).send({message: error.message});
+      }
+      res.user = user;
+      next();
+    });
+  })
+}
+var getUserGroup = module.exports.getUserGroup = function(req, res, next){
+  if( !req.user ) {
+    return res.status(401).send({message: 'not signed in'});
+  }
+  Group.find({users: req.user}, function(error, groups){
+    if( error ){
+      return res.status(500).send({message: error});
+    }
+    res.groups = groups;
+    next();
+  });
+}
+module.exports.ensureAdmin = function(req, res, next) {
+  ensureAuthenticated(req, res, function(req, res, next){
+    getUserGroup(req, res, function(req, res, next){
+      if( _.find(req.groups, function(group){
+        if( group.name == 'admins'){ return true; }
+      })) {
+        next();
+      } else {
+        res.status(401).send({message: 'Sorry, admin access required'});
+      }
+    });
+  })
 }
 
 /*

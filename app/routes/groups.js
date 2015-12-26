@@ -1,6 +1,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var restify = require('express-restify-mongoose');
+var _ = require('underscore');
 
 var Route = function(app, passport){
 
@@ -12,13 +13,17 @@ var Route = function(app, passport){
     idProperty: '_id',
     protected: '__v',
   });
-
-  Group.count( {}, function(err, count){
+  Group.count({}, function(err, count){
     if(count===0){ 
-      (new Group({name: 'admins', users: ['admin']})).save(); 
-      (new Group({name: 'users', users: ['admin']})).save(); 
+      (new Group({name: 'admins', users: []})).save(); 
+      (new Group({name: 'users', users: []})).save(); 
     }
   });
+  Group.getUsers('admins', function(error, users){
+    var admins = _.map(users, function(user){return user.name||user.displayName||user.email;})
+    console.log('Admin Users: '+admins.join(','));
+  })
+  
 }
 
 module.exports = Route;

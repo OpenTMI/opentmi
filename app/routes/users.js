@@ -1,6 +1,10 @@
 //3rd party modules
 var express = require('express');
 var mongoose = require('mongoose');
+var nconf = require('nconf');
+var restify = require('express-restify-mongoose');
+
+
 
 var auth = require('./../../config/middlewares/authorization');
 
@@ -11,27 +15,42 @@ var auth = require('./../../config/middlewares/authorization');
 var Route = function(app){
 
   var User = mongoose.model('User');
-  if( 0 ){
-    User.count( {}, function(err, count){
-      if(count===0 ) (new User({
-          username: 'admin', password: 'admin'
-          ,email: 'admin@opentmi.com'
-        })).save( function(err, user){
-          console.log(user);
-          if(err)console.log(err);
-      }); 
-    });
-  }
+  User.count( {}, function(err, count){
+    if(count===0 ){
+      var admin = new User();
+      admin.name = nconf.get('admin').user;
+      admin.password = nconf.get('admin').pwd;
+      admin.save( function(err, user){
+        if(err)return console.log(err);
+        else {
+          user.addToGroup('admins', function(error, user){
+            if( error ) {
+              console.log(error);
+            } else {
+              console.log(user);
+            }
+          });
+        }
+      });
+    }
+  });
+
+  restify.serve(app, User, {
+    version: '/v0',
+    name: 'users',
+    idProperty: '_id',
+    protected: '__v,password',
+  });
+  
 
   //create authentication routes:
   var controller = require('./../controllers/authentication')();
-
-  /*
-  api.get('/api/v0/keys', apiKeys.keys);
-  api.get('/api/v0/accounts/:Account/keys', apiKeys.userKeys);
-  api.get('/api/v0/accounts/:Account/keys/new', apiKeys.createKey)
-  api.delete('/api/v0/accounts/:Account/keys/:Key', apiKeys.deleteKey);
-  */
+  var apiKeys = require('./../controllers/apikeys');
+  app.get('/api/v0/apikeys', auth.ensureAdmin, apiKeys.keys);
+  app.get('/api/v0/users/:User/apikeys', auth.ensureAuthenticated, apiKeys.userKeys);
+  app.get('/api/v0/users/:User/apikeys/new', auth.ensureAuthenticated, apiKeys.createKey)
+  app.delete('/api/v0/users/:User/apikeys/:Key', auth.ensureAuthenticated, apiKeys.deleteKey);
+  
   
   app.post('/auth/login', controller.login );
   app.get('/auth/me', auth.ensureAuthenticated, controller.getme );  
