@@ -82,7 +82,7 @@ GroupSchema.static({
       function(error, docs){
         if(error)return cb(error);
         if(docs) return cb(error, docs.users)
-        cb(error, docs})
+        cb(error, docs)
       }
     );
   }
