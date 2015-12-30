@@ -80,7 +80,9 @@ GroupSchema.static({
   getUsers: function(group, cb){
     this.findOne({name: group}).select('users').populate('users').exec( 
       function(error, docs){
-        cb(error, docs.users);
+        if(error)return cb(error);
+        if(docs) return cb(error, docs.users)
+        cb(error, docs})
       }
     );
   }
