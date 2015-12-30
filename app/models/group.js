@@ -51,7 +51,7 @@ GroupSchema.method({
         return cb(error);
       }
       if( !user ){
-        cb({message: 'user not found'});
+        return cb({message: 'user not found'});
       }
       if( user.groups.indexOf(self._id)>=0){
         console.log({message: 'group already exists'})
