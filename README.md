@@ -11,7 +11,12 @@ OpenTMI is extremely customizable through plugins.
 
 # Ideology
 
-Basic idea is to store **all** meta information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when we can directly see what is tested in individual Device with individual Build...
+Basic idea is to store **all** meta information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when users can directly see what is tested in individual Device with individual Build...
+
+# Pre-requirements
+
+* Node-js v4.2< (tested with 4.2, recommented to use latest version)
+* mongodb v2.6< (recommented to use latest version)
 
 # Installation
 

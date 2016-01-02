@@ -5,9 +5,10 @@ language: node_js
 services:
   - mongodb
 
-# version numbers, testing against two versions of node
+# version numbers, testing against major versions of node
 node_js:
-  - 0.10.25
+  - "4.2"
+  - "4.1"
 
 # The path for Xunit to output test reports
 env:
