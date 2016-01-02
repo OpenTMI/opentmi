@@ -145,7 +145,7 @@ UserSchema.methods.addToGroup = function(group, done) {
         return done({message: 'group not found'});
       }
       self.groups.push(group._id);
-      group.addgroup.users.push(self._id);
+      group.users.push(self._id);
       group.save();
       self.save(function(error, user){
         if(error) {
