@@ -59,6 +59,8 @@ GLOBAL.AddonManager.RegisterAddons();
 // Add error router
 require(__dirname + '/routes/error.js')(app);
 
+server.on('error', winston.error)
+
 // Start listen socket
 server.listen(nconf.get('port'), function(){
   winston.info('TMT started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');

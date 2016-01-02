@@ -6,7 +6,8 @@ module.exports = function (grunt) {
       test: {
         options: {
           script: "index.js",
-          timeout: 3000
+          timeout: 3000,
+          harmony: true
         }
       }
     },
