@@ -9,6 +9,12 @@ module.exports = {
   ldap: {
     url: process.env.LDAP_URL
   },
+  webtoken:'OpenTMI-toP-SeCRet-tOKEn',
+  admin: {
+    //default values
+    'user': 'admin',
+    'pwd': 'admin',
+  },
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
     clientSecret: process.env.FACEBOOK_SECRET,

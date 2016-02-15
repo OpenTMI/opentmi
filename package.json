@@ -24,7 +24,7 @@
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "NODE_PATH=./config:./app/controllers NODE_ENV=production node index.js",
+    "start": "NODE_ENV=production node index.js",
     "test": "grunt"
   },
   "dependencies": {

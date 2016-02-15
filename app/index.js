@@ -15,11 +15,18 @@ var io = require('socket.io')(server);
 // Create public event channel
 global.pubsub = new EventEmitter();
 
+var defaultConfigs = require( './../config/config.js' );
 // read configurations
-nconf.argv()
+nconf.argv({
+    port: {
+      describe: 'set listen port',
+      type: 'number',
+      demand: true,
+      default: defaultConfigs.port
+    }
+  })
    .env()
-   .defaults( require( './../config/config.js' ) );
-
+   .defaults( defaultConfigs );
 // Add winston file logger, which rotate daily
 winston.add(winston.transports.DailyRotateFile, {
     filename: 'log/app.log',
@@ -59,9 +66,17 @@ GLOBAL.AddonManager.RegisterAddons();
 // Add error router
 require(__dirname + '/routes/error.js')(app);
 
-server.on('error', winston.error)
+var listenPort = nconf.get('port');
+server.on('error', function(error){
+  if( error.code === 'EACCES' && listenPort < 1024 ) {
+    winston.error("You haven't access to open port below 1024. Please use admin rights if you wan't to use port %d!", listenPort);
+  } else {
+    winston.error(error);
+  }
+  process.exit(-1);
+});
 
 // Start listen socket
-server.listen(nconf.get('port'), function(){
+server.listen(listenPort, function(){
   winston.info('TMT started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
 });

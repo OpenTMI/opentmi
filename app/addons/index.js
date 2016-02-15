@@ -1,4 +1,8 @@
+//internal modules
 var fs = require('fs');
+var path = require('path');
+
+//3rd party modules
 var _ = require('underscore')
 var winston = require('winston')
 var async = require('async');
@@ -12,14 +16,14 @@ function AddonManager (app, server, io){
     fs.readdirSync(__dirname).forEach(function (file) {
       if (!file.match(/\.js$/) && !file.match(/^\./) ) {
          winston.info("-RegisterAddon: '"+file+"'");
+         var addonPath = path.join(__dirname, file)
          try {
-           var Addon = require(__dirname + '/' + file);
+           var Addon = require(addonPath);
            var addon = new Addon(app, server, io);
            addon.register();
            addons.push( addon  );
          } catch(e) {
-            console.log(e);
-            winston.error(e);
+            winston.error('Cannot load addon "%s"', addonPath);
          }
       }
     });  
