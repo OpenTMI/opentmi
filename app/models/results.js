@@ -18,10 +18,10 @@ var ResultSchema = new Schema({
   job:{
     id: { type: String, default: ''}
   },
-  campaign: {type: String, default: ''},
+  campaign: {type: String, default: '', index: true},
   campaignRef: {type: Schema.Types.ObjectId, ref: 'Campaign' },
   cre: {
-    time: {type: Date, default: Date.now},
+    time: {type: Date, default: Date.now, index: true},
     user: {type: String},
     userRef: {type: Schema.Types.ObjectId, ref: 'User' } 
   },  
