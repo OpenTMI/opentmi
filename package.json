@@ -28,7 +28,7 @@
     "test": "grunt"
   },
   "dependencies": {
-    "async": "^1.4.2",
+    "async": "^1.5.2",
     "bcryptjs": "^2.3.0",
     "body-parser": "*",
     "colors": "^1.1.2",
