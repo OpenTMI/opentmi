@@ -23,7 +23,7 @@ function AddonManager (app, server, io){
            addon.register();
            addons.push( addon  );
          } catch(e) {
-            winston.error('Cannot load addon "%s"', addonPath);
+            winston.error('Cannot load addon "%s": %s', addonPath, e.toString());
          }
       }
     });  
