@@ -1,21 +1,15 @@
 'use strict';
 
+// native modules
 var fs = require('fs');
 var http = require('http');
 var EventEmitter = require('events').EventEmitter
 
+// 3rd party modules
 var express = require('express');
 var winston = require('winston');
 var nconf = require('nconf');
 
-var app = express();
-var server = http.createServer(app);
-var io = require('socket.io')(server);
-
-// Create public event channel
-global.pubsub = new EventEmitter();
-
-var defaultConfigs = require( './../config/config.js' );
 // read configurations
 nconf.argv({
     listen: {
@@ -29,8 +23,15 @@ nconf.argv({
       describe: 'set listen port',
       type: 'number',
       demand: true,
-      default: defaultConfigs.port,
+      default: 3000,
       nargs: 1
+    },
+    cfg: {
+        alias: 'c',
+        default: process.env.NODE_ENV || 'development',
+        type: 'string',
+        describe: 'Select configuration (development,test,production)',
+        nargs: 1
     },
     verbose: {
         alias: 'v',
@@ -44,14 +45,13 @@ nconf.argv({
         type: 'bool',
         describe: 'Silent mode'
     }
-  }, 'Usage: npm start')
+  }, 'Usage: npm start -- (options)')
   .env()
-  .defaults( defaultConfigs );
+  .defaults( require( './../config/config.js' ) );
 
 if (nconf.get('help') || nconf.get('h')) {
   return nconf.stores.argv.showHelp()
 }
-
 
 var fileLevel = 'silly';
 var consoleLevel = 'info';
@@ -68,7 +68,14 @@ winston.add(require('winston-daily-rotate-file'), {
   level: fileLevel,
   datePatter: '.yyyy-MM-dd_HH-mm'
 });
-winston.debug('Use cfg: %s', defaultConfigs.cfg);
+winston.debug('Use cfg: %s', nconf.get('cfg'));
+
+var app = express();
+var server = http.createServer(app);
+var io = require('socket.io')(server);
+
+// Create public event channel
+global.pubsub = new EventEmitter();
 
 // Initialize database connetion
 require('./db');
@@ -111,7 +118,7 @@ var onError = function(error){
   process.exit(-1);
 };
 var onListening = function(){
-  console.log('OpenTMI started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
+  console.log('OpenTMI started on port ' + nconf.get('port') +' in '+nconf.get('cfg')+ ' mode');
 };
 
 server.listen(nconf.get('port'), nconf.get('listen'));
