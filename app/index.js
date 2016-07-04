@@ -101,17 +101,20 @@ GLOBAL.AddonManager.RegisterAddons();
 // Add error router
 require(__dirname + '/routes/error.js')(app);
 
-var listenPort = nconf.get('port');
-server.on('error', function(error){
-  if( error.code === 'EACCES' && listenPort < 1024 ) {
-    winston.error("You haven't access to open port below 1024. Please use admin rights if you wan't to use port %d!", listenPort);
+var onError = function(error){
+  if( error.code === 'EACCES' && nconf.get('port') < 1024 ) {
+    winston.error("You haven't access to open port below 1024");
+    winston.error("Please use admin rights if you wan't to use port %d!", nconf.get('port'));
   } else {
     winston.error(error);
   }
   process.exit(-1);
-});
+};
+var onListening = function(){
+  console.log('OpenTMI started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
+};
 
-// Start listen socket
-server.listen(listenPort, function(){
-  winston.info('OpenTMI started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
-});
+server.listen(nconf.get('port'), nconf.get('listen'));
+server.on('error', onError);
+server.on('listening', onListening);
+

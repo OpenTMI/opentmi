@@ -59,14 +59,10 @@ describe("Resource", function () {
       });
   });
   it("remove resource", function (done) {
-    console.log('delete..'+resource_id);
     superagent.delete(api+'/resources/'+resource_id).end(function (err, res) {
-        console.log('end..');
-        //console.log(err);
-        //console.log(res.body);
-        //res.should.be.json;
-        //expect(res.status).to.equal(200);
-        //resource_id = null;
+        res.should.be.json;
+        expect(res.status).to.equal(200);
+        resource_id = null;
         done();   
       });
   });

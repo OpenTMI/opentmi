@@ -31,7 +31,7 @@ mongoose.connection.on('reconnected', function() {
 // Close the Mongoose connection, when receiving SIGINT
 process.on('SIGINT', function() {
     mongoose.connection.close(function () {
-        winston.error('Force to close the MongoDB conection');
+        console.log('Force to close the MongoDB conection');
         process.exit(0);
     });
 });
