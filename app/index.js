@@ -28,7 +28,7 @@ nconf.argv({
    .env()
    .defaults( defaultConfigs );
 // Add winston file logger, which rotate daily
-winston.add(winston.transports.DailyRotateFile, {
+winston.add(require('winston-daily-rotate-file'), {
     filename: 'log/app.log',
     json: false,
     handleExceptions: false,

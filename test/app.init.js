@@ -9,9 +9,8 @@ describe("Index", function () {
   it("get api v0", function (done) {
     superagent.get(api)
       .end(function (e, res) {
-        console.log(e);
-        //(e === null).should.equal(true);
         res.should.be.json
+        expect(res.status).to.equal(200);
         expect(res.body).to.deep.equal({"apiVersion":"v0"});
         done();
       });
