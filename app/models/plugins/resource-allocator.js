@@ -3,6 +3,7 @@ var Validator = require('jsonschema').Validator;
 var async = require('async');
 var _ = require('underscore');
 var uuid = require('node-uuid');
+var logger = require('winston');
 
 /**
  * @method ResourceAllocator
@@ -48,9 +49,9 @@ var ResourceAllocator = function(schema, options){
       if(this.status.allocId) 
         this.status.allocId = undefined;
       this.save(cb);
-      console.log('release resource');
+      logger.silly('release resource');
     } else {
-      console.log('resource was already released')
+      logger.silly('resource was already released')
       cb(null, this);
     }
   }
@@ -59,7 +60,7 @@ var ResourceAllocator = function(schema, options){
       this.status.availability = 'reserved';
       this.status.allocId = uuid.v1();
       this.save(cb);
-      console.log('resource allocated :)');
+      logger.silly('resource allocated :)');
     } else {
       cb({error: 'resource already allocated for somebody else'});
     }
@@ -99,28 +100,28 @@ var ResourceAllocator = function(schema, options){
       }
 
       createQueryObject(function(q){
-        console.log('search: '+JSON.stringify(q));
+        logger.silly('search: '+JSON.stringify(q));
         self.find(q, function(error, results){
           if(error){
-            console.log('error'+error);
+            logger.warn('error'+error);
             alloc_cb(error);
           } else if( results && results.length > 0){
             reserve(results[0]);
           } else {
-            console.log('not found');
+            logger.silly('not found');
             alloc_cb({error: 'cannot locate required resources', request: request});
           }
         });
       });
     }  
-    console.log('allocateReources: '+JSON.stringify(alloc_request));
+    logger.debug('allocateReources: '+JSON.stringify(alloc_request));
     var result = v.validate(alloc_request, allocRequest);
     if(result.errors.length === 0){
       async.map(alloc_request, allocateResource, cb);
     }
     else { cb(result); }
   }
-  console.log("ResourceAllocator registered");
+  logger.debug("ResourceAllocator registered");
 }
 
 module.exports = exports = ResourceAllocator;

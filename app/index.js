@@ -18,22 +18,57 @@ global.pubsub = new EventEmitter();
 var defaultConfigs = require( './../config/config.js' );
 // read configurations
 nconf.argv({
+    listen: {
+        alias: 'l',
+        default: '0.0.0.0',
+        type: 'string',
+        describe: 'set binding interface',
+        nargs: 1
+    },
     port: {
       describe: 'set listen port',
       type: 'number',
       demand: true,
-      default: defaultConfigs.port
+      default: defaultConfigs.port,
+      nargs: 1
+    },
+    verbose: {
+        alias: 'v',
+        type: 'number',
+        describe: 'verbose level',
+        count: 'v'
+    },
+    silent: {
+        alias: 's',
+        default: false,
+        type: 'bool',
+        describe: 'Silent mode'
     }
-  })
-   .env()
-   .defaults( defaultConfigs );
+  }, 'Usage: npm start')
+  .env()
+  .defaults( defaultConfigs );
+
+if (nconf.get('help') || nconf.get('h')) {
+  return nconf.stores.argv.showHelp()
+}
+
+
+var fileLevel = 'silly';
+var consoleLevel = 'info';
+if (nconf.get('verbose') >= 1) { consoleLevel = 'verbose'; }
+if (nconf.get('verbose') >= 2) { consoleLevel = 'debug'; }
+if (nconf.get('verbose') >= 3) { consoleLevel = 'silly'; }
+if (nconf.get('silent')) { consoleLevel = 'error'; }
+winston.level = consoleLevel;
 // Add winston file logger, which rotate daily
 winston.add(require('winston-daily-rotate-file'), {
-    filename: 'log/app.log',
-    json: false,
-    handleExceptions: false,
-    datePatter: '.yyyy-MM-dd_HH-mm'
-  });
+  filename: 'log/app.log',
+  json: false,
+  handleExceptions: false,
+  level: fileLevel,
+  datePatter: '.yyyy-MM-dd_HH-mm'
+});
+winston.debug('Use cfg: %s', defaultConfigs.cfg);
 
 // Initialize database connetion
 require('./db');
@@ -78,5 +113,5 @@ server.on('error', function(error){
 
 // Start listen socket
 server.listen(listenPort, function(){
-  winston.info('TMT started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
+  winston.info('OpenTMI started on port ' + nconf.get('port') +' in '+process.env.NODE_ENV+ ' mode');
 });

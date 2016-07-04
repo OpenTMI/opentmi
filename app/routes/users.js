@@ -3,7 +3,7 @@ var express = require('express');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
 var restify = require('express-restify-mongoose');
-
+var logger = require('winston');
 
 
 var auth = require('./../../config/middlewares/authorization');
@@ -25,9 +25,9 @@ var Route = function(app){
         else {
           user.addToGroup('admins', function(error, user){
             if( error ) {
-              console.log(error);
+              logger.error(error);
             } else {
-              console.log(user);
+              logger.debug(user);
             }
           });
         }

@@ -12,15 +12,16 @@ var test = require('./env/test');
 var production = require('./env/production');
 
 
+var cfg = process.env.NODE_ENV || 'development';
 var defaults = {
-  root: path.normalize(__dirname + '/..')
+  root: path.normalize(__dirname + '/..'),
+  cfg: cfg
 };
 
 /**
  * Expose
  */
-var cfg = process.env.NODE_ENV || 'development';
-console.log('use cfg: %s', cfg);
+
 module.exports = {
   development: extend(development, defaults),
   test: extend(test, defaults),

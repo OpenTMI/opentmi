@@ -113,7 +113,7 @@ module.exports = function (app) {
     // This could be moved to view-helpers :-)
     app.use(function(req, res, next){
       res.locals.csrf_token = req.csrfToken();
-      console.log( res.locals.csrf_token )
+      winston.debug( res.locals.csrf_token )
       next();
     });
   }
