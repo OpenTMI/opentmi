@@ -8,7 +8,7 @@ module.exports = function (grunt) {
           script: "index.js",
           timeout: 3000,
           harmony: true,
-          args: ['-s']
+          args: ['-s'] //to more traces set -vvv instead of -s (silent)
         }
       }
     },

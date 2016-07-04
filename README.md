@@ -35,6 +35,21 @@ or
 node .
 ```
 
+# Command line
+
+```
+$ npm start -- -h
+Usage: npm start -- (options)
+
+Options:
+  --listen, -l   set binding interface             [string] [default: "0.0.0.0"]
+  --port         set listen port                      [required] [default: 3000]
+  --cfg, -c      Select configuration (development,test,production)
+                                               [string] [default: "development"]
+  --verbose, -v  verbose level                                           [count]
+  --silent, -s   Silent mode                                    [default: false]
+```
+
 ## Available Plugins:
 
 [See from registry](https://github.com/OpenTMI/opentmi-registry)

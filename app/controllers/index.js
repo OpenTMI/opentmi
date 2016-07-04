@@ -28,8 +28,7 @@ var DefaultController = function(Model, defaultModelName, docId){
       winston.debug('do param '+JSON.stringify(req.params) );
       var find = {};
       find[docId] = req.params[modelname];
-      console.log(find);
-
+      
       Model.findOne( find, function(error, data){
         if( error ) {
           if( errorCb ) errorCb(error);

@@ -5,8 +5,8 @@ var superagent = require("superagent"),
 
 var api = "http://localhost:3000/api/v0"
 
-describe("Index", function () {
-  it("get api v0", function (done) {
+describe("Basic Get API", function () {
+  it("get api version", function (done) {
     superagent.get(api)
       .end(function (e, res) {
         res.should.be.json

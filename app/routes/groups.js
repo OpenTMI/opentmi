@@ -2,6 +2,7 @@ var express = require('express');
 var mongoose = require('mongoose');
 var restify = require('express-restify-mongoose');
 var _ = require('underscore');
+var winston = require('winston');
 
 var Route = function(app, passport){
 
@@ -21,7 +22,7 @@ var Route = function(app, passport){
   });
   Group.getUsers('admins', function(error, users){
     var admins = _.map(users, function(user){return user.name||user.displayName||user.email;})
-    console.log('Admin Users: '+admins.join(','));
+    winston.info('Admin Users: '+admins.join(','));
   })
   
 }
