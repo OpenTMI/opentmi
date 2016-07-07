@@ -115,7 +115,7 @@ BuildSchema.path('location').validate(function (value, respond) {
 
 BuildSchema.pre('validate', true, function (next, done) {
 
-  if( this.build.data ) {
+  if( this.build && this.build.data ) {
     this.build.size = this.build.data.length;
     this.build.sha1 = checksum(this.build.data, 'sha1');
     this.build.sha256 = checksum(this.build.data, 'sha256');
