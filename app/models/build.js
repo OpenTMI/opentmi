@@ -121,7 +121,7 @@ BuildSchema.pre('validate', true, function (next, done) {
     this.build.sha256 = checksum(this.build.data, 'sha256');
   }
   if( this.target.type === 'simulate' ){
-    if( this.target.simulator ) next():
+    if( this.target.simulator ) next();
     else next('simulator missing');
   } else if( this.target.type === 'hardware' ){ 
     if( this.target.hw ) next();
