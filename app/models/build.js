@@ -34,9 +34,10 @@ var BuildSchema = new Schema({
     time: {type: Date, default: Date.now},
   },
   uuid: { type: String },
-  repository: [
-    new Schema({ 
-      vcs: { type: String, enum: ['git','SVN', 'CSV'] }, //version control system
+  vcs: [
+    new Schema({
+      name: { type: String },
+      type: { type: String, enum: ['git','SVN', 'CSV'] }, //version control system
       url: { type: String },
       commitId: { type: String },
       clean_wa: { type: Boolean }, 
