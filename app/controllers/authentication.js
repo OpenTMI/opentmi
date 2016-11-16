@@ -11,6 +11,7 @@ var Controller = function(){
 
 
   var User = mongoose.model('User');
+  var Group = mongoose.model('Group');
   var createJWT = auth.createJWT;
   var config = {
     GOOGLE_SECRET: nconf.get('google_secret'),
@@ -115,162 +116,183 @@ var Controller = function(){
       next();
     }
   }
+
+  
   /*
    |--------------------------------------------------------------------------
    | Login with GitHub
    |--------------------------------------------------------------------------
    */
+
   this.github = function(req, res) {
     var accessTokenUrl = 'https://github.com/login/oauth/access_token';
     var userApiUrl = 'https://api.github.com/user';
-    
+    var teamAdminUrl = 'https://api.github.com/teams/2178412/memberships/';
+    var organizationUrl = 'https://api.github.com/orgs/Semiproot/memberships/';
+
     var params = {
       code: req.body.code,
       client_id: req.body.clientId,
       client_secret: nconf.get('github').clientSecret,
       redirect_uri: req.body.redirectUri
     };
-    console.log(params);
-    // Step 1. Exchange authorization code for access token.
-    request.get({ url: accessTokenUrl, 
-                  qs: params 
-                }, function(err, response, accessToken) {
 
-      accessToken = qs.parse(accessToken);
-      var headers = { 'User-Agent': 'Satellizer' };
+    // Exchange authorization code for access token.
+    request.get({ url: accessTokenUrl,
+                  qs: params
+                }, 
+                function(err, response, accessToken) 
+                {
+                  accessToken = qs.parse(accessToken);
+                  var headers = { 'User-Agent': 'Satellizer' };
 
-      // Step 2. Retrieve profile information about the current user.
-      request.get({ url: userApiUrl, 
-                    qs: accessToken, 
-                    headers: headers, 
-                    json: true 
+      // Retrieve profile information about the current user.
+      request.get({ url: userApiUrl,
+                    qs: accessToken,
+                    headers: headers,
+                    json: true
                   }, function(err, response, profile) {
 
-        if( response.statusCode != 200  ) {
+        if(response.statusCode != 200) 
+        {
           return res.status(409).json({
             message: profile.message
           });
         }
-        if( !profile.email ){
-          console.log(response.headers);
-          console.log(profile);
+
+        if(!profile.email)
+        {
           return res.status(409).json({
-            message: 'did not get email address'
-          }); 
-        }
-        // Step 3a. Link user accounts.
-        if (req.headers.authorization ) {
-          console.log('Link user account')
-          console.log(profile)
-          User.findOne({ github: profile.id }, function(err, existingUser) {
-            if (existingUser) {
-              console.log(existingUser)
-              return res.status(409).send({ message: 'There is already a GitHub account that belongs to you' });
-            }
-            var token = req.headers.authorization.split(' ')[1];
-            var payload = jwt.decode(token, config.TOKEN_SECRET);
-            User.findById(payload.sub, function(err, user) {
-              if (!user) {
-                return res.status(400).send({ message: 'User not found' });
-              }
-              user.github = profile.id;
-              user.picture = user.picture || profile.avatar_url;
-              user.displayName = user.displayName || profile.name;
-              user.name = user.displayName;
-              user.email = user.email;
-              user.save(function(error) {
-                var token = createJWT(user);
-                res.send({ token: token });
-              });
-            });
-          });
-        } else {
-          console.log('Create a new user account or return an existing one.');
-          // Step 3b. Create a new user account or return an existing one.
-          User.findOne({ github: profile.id }, function(err, existingUser) {
-            if (existingUser) {
-              var token = createJWT(existingUser);
-              return res.send({ token: token });
-            }
-            var user = new User();
-            user.github = profile.id;
-            user.picture = profile.avatar_url;
-            user.displayName = profile.name;
-            user.email = profile.email;
-            user.save(function(error) {
-              console.log(error);
-              var token = createJWT(user);
-              res.send({ token: token });
-            });
+            message: 'Did not get email address.'
           });
         }
-      });
-    });
-  }
 
-    /*
-   |--------------------------------------------------------------------------
-   | Login with Google
-   |--------------------------------------------------------------------------
-   */
-  this.google = function(req, res) {
-    var accessTokenUrl = 'https://accounts.google.com/o/oauth2/token';
-    var peopleApiUrl = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect';
-    var params = {
-      code: req.body.code,
-      client_id: req.body.clientId,
-      client_secret: config.GOOGLE_SECRET,
-      redirect_uri: req.body.redirectUri,
-      grant_type: 'authorization_code'
-    };
+        // Retrieve organization authorization information for the user.
+        request.get({ url: organizationUrl + profile.login,
+                      qs: accessToken,
+                      headers: headers,
+                      json: true
+                    },
+                    function(err, response)
+                    {
+                      // Test if the user belongs to the organization(User authorization).
+                      if (response.statusCode != 200)
+                      {
+                        return res.status(401).send({
+                          message: 'You do not have required access.'
+                        })
+                      }
 
-    // Step 1. Exchange authorization code for access token.
-    request.post(accessTokenUrl, { json: true, form: params }, function(err, response, token) {
-      var accessToken = token.access_token;
-      var headers = { Authorization: 'Bearer ' + accessToken };
+                      // Retrieve admin authorization information for the user.
+                      request.get({ url: teamAdminUrl + profile.login,
+                                    qs: accessToken,
+                                    headers: headers,
+                                    json: true
+                                  },
+                                  function(err, response)
+                                  {
+                                    User.findOne({github: profile.id}, function(err, existingUser)
+                                    {
+                                      // Check if the user account exists.
+                                      if (existingUser)
+                                      {
+                                        console.log("Return an existing user account.");
 
-      // Step 2. Retrieve profile information about the current user.
-      request.get({ url: peopleApiUrl, headers: headers, json: true }, function(err, response, profile) {
-        if (profile.error) {
-          return res.status(500).send({message: profile.error.message});
-        }
-        // Step 3a. Link user accounts.
-        if (req.headers.authorization) {
-          User.findOne({ google: profile.sub }, function(err, existingUser) {
-            if (existingUser) {
-              return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
-            }
-            var token = req.headers.authorization.split(' ')[1];
-            var payload = jwt.decode(token, TOKEN_SECRET);
-            User.findById(payload.sub, function(err, user) {
-              if (!user) {
-                return res.status(400).send({ message: 'User not found' });
-              }
-              user.google = profile.sub;
-              user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
-              user.displayName = user.displayName || profile.name;
-              user.save(function() {
-                var token = createJWT(user);
-                res.send({ token: token });
-              });
-            });
-          });
-        } else {
-          // Step 3b. Create a new user account or return an existing one.
-          User.findOne({ google: profile.sub }, function(err, existingUser) {
-            if (existingUser) {
-              return res.send({ token: createJWT(existingUser) });
-            }
-            var user = new User();
-            user.google = profile.sub;
-            user.picture = profile.picture.replace('sz=50', 'sz=200');
-            user.displayName = profile.name;
-            user.save(function(err) {
-              var token = createJWT(user);
-              res.send({ token: token });
-            });
-          });
-        }
+                                        if (req.headers.authorization)
+                                        {
+                                          return res.status(409).send({ message: 'There is already a GitHub account that belongs to you' });
+                                        }
+
+                                        Group.findOne({users: existingUser, name: "admins"}, function(err, group) 
+                                        {
+                                          var role = "user";
+                                          if (group) { 
+                                            role = "admin";
+                                          }
+                                          var token = createJWT(existingUser, role)
+                                          return res.send({ token: token });
+                                        });
+                                      }
+                                      else
+                                      {
+                                        // Check if the user account needs to be created or just linked.
+                                        if (req.headers.authorization)
+                                        {
+                                          console.log("Link user account with github account.")
+                                          var token = req.headers.authorization.split(' ')[1];
+                                          var payload = jwt.decode(token, config.TOKEN_SECRET);
+                                          User.findById(payload.sub, function(err, user)
+                                          {
+                                            if (!user) 
+                                            {
+                                              return res.status(400).send({ message: 'User not found' });
+                                            }
+                                            user.github = profile.id;
+                                            user.picture = user.picture || profile.avatar_url;
+                                            user.displayName = user.displayName || profile.name;
+                                            user.name = user.displayName;
+                                            user.email = user.email;
+
+                                            // Check if the user is admin.
+                                            if (response.statusCode == 200) 
+                                            {
+                                              user.addToGroup("admins", function(user) 
+                                              {
+                                                user.save(function(error) 
+                                                {
+                                                  console.log(error);
+                                                  var token = createJWT(user, "admin");
+                                                  res.send({ token: token });
+                                                });
+                                              })
+                                            }
+                                            else 
+                                            {
+                                              user.save(function(error) 
+                                              {
+                                                console.log(error);
+                                                var token = createJWT(user, "user");
+                                                res.send({ token: token });
+                                              });
+                                            }
+                                          });
+                                        }
+                                        else
+                                        {
+                                          console.log("Create a new user account.")
+                                          var user = new User();
+                                          user.github = profile.id;
+                                          user.picture = profile.avatar_url;
+                                          user.displayName = profile.name;
+                                          user.email = profile.email;
+
+                                          // Check if the user is admin.
+                                          if (response.statusCode == 200) 
+                                          {
+                                            user.addToGroup("admins", function(user) 
+                                            {
+                                              user.save(function(error) 
+                                              {
+                                                console.log(error);
+                                                var token = createJWT(user, "admin");
+                                                res.send({ token: token });
+                                              });
+                                            });
+                                          }
+                                          else 
+                                          {
+                                            user.save(function(error) 
+                                            {
+                                              console.log(error);
+                                              var token = createJWT(user, "user");
+                                              res.send({ token: token });
+                                            });
+                                          }
+                                        }
+                                      }
+                                    })
+                                  });
+                    });
       });
     });
   }

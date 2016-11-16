@@ -58,7 +58,6 @@ var Route = function(app){
   app.post('/auth/signup', controller.signup );
   app.post('/auth/logout', controller.logout );
   app.post('/auth/github', controller.github );
-  app.post('/auth/google', controller.google );
 }
 
 module.exports = Route;

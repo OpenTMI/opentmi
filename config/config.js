@@ -1,4 +1,6 @@
-
+/*
+Called by nconf from ../app/index.js, fetches correct config file form ./env/
+*/
 /**
  * Module dependencies.
  */

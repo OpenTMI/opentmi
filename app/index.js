@@ -88,6 +88,9 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
   }
 });
 
+// Load dummy data to Loans & Items
+require('./seed');
+
 // Bootstrap application settings
 require('../config/express')(app);
 
