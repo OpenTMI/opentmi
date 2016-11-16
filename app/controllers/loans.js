@@ -26,7 +26,7 @@ var Controller = function(){
 
   this.me = function(req, res) {
     Loan.find({loaner: req.user})
-    .populate('loaned_item')
+    .populate('items.item')
     .exec(function(err, loans) {
       res.json(loans);
     })

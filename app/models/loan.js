@@ -6,11 +6,10 @@ var ObjectId = Types.ObjectId;
 var QueryPlugin = require('mongoose-query');
 
 var LoanSchema = new Schema({
-  count : { type:Number, required: true },
-  date_loaned : { type:Date, required: true, default: Date.now},
-  date_returned : { type:Date },
+  loan_date : { type:Date, required: true, default: Date.now},
   loaner : { type:ObjectId, ref:'User', required: true },                  
-  loaned_item : { type:ObjectId, ref:'Item', required: true }
+  items : [{item : { type:ObjectId, ref:'Item', required:true }, 
+	        return_date : { type:Date }}]
 });
 
 /**

@@ -27,13 +27,13 @@ var user_roots = [
   'Juhani' ];
 
 var loan_seeds = [
-  {user:0, item:1},
-  {user:2, item:0},
-  {user:4, item:5} ];
+  {user:0, item:0},
+  {user:2, item:2},
+  {user:4, item:4} ];
 
 // id's of generated items & users
-var items = [];
-var users = [];
+var created_items = [];
+var created_users = [];
 
 // fetch models used
 var Item = mongoose.model('Item');
@@ -65,7 +65,7 @@ function createItemSeed() {
     // Save the created model in the database
     item.save(function(err, new_item) {
       checkForError(err);     
-      items.push(new_item);
+      created_items.push(new_item);
       // Call self again if items_left is greater than zero
       if (items_left > 0)
         recursiveAddItem(items_left);
@@ -94,7 +94,7 @@ function createUserSeed() {
     // Save the created model in the database
     user.save(function(err, new_user) {
       checkForError();    
-      users.push(new_user);
+      created_users.push(new_user);
       // Call self again only if users_left is greater than zero
       if (users_left > 0) 
         recursiveAddUser(users_left);
@@ -112,10 +112,10 @@ function createLoanSeed() {
   winston.log('Inserting loans');
   for (var i = 0; i < loan_seeds.length; i++) {
     var loan = new Loan({
-      count       : i,
       date_loaned : Date(),
-      loaner      : users[loan_seeds[i].user].id,
-      loaned_item : items[loan_seeds[i].item].id });
+      loaner      : created_users[loan_seeds[i].user].id,
+      items       : [{item : created_items[loan_seeds[i].item].id}, 
+                     {item : created_items[loan_seeds[i].item + 1].id}]});
     
     // Save the created model in the database
     loan.save(checkForError);
