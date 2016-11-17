@@ -1,5 +1,5 @@
 [{
-    "_id" : "582c7948850f298a5acff980",
+    "_id" : { "$oid": "582c7948850f298a5acff980" },
     "barcode" : "012345678900",
     "name" : "NXP LPC800-MAX",
     "image_src": "https://developer.mbed.org/media/cache/platforms/xLPC812-MAX_enabled.JPG.250x250_q85.jpg.pagespeed.ic.bqQFgjcwbg.webp",
@@ -11,7 +11,7 @@
     "category" : "board"
 },
 {
-    "_id" : "582c7948850f298a5acff981",
+    "_id" : { "$oid": "582c7948850f298a5acff981" },
     "barcode" : "012345678901",
     "name" : "Seeeduino-Arch",
     "image_src": "https://developer.mbed.org/media/cache/platforms/Arch_V1.1.jpg.250x250_q85.jpg",
@@ -23,7 +23,7 @@
     "category" : "board"
 },
 {
-    "_id" : "582c7948850f298a5acff982",
+    "_id" : { "$oid": "582c7948850f298a5acff982" },
     "barcode" : "012345678902",
     "name" : "u-blox C027",
     "image_src": "https://developer.mbed.org/media/cache/platforms/xublox_square_1.jpg.250x250_q85.jpg.pagespeed.ic.4QtLNHdS_X.webp",
@@ -35,7 +35,7 @@
     "category" : "board"
 },
 {
-    "_id" : "582c7948850f298a5acff983",
+    "_id" : { "$oid": "582c7948850f298a5acff983" },
     "barcode" : "012345678903",
     "name" : "EA LPC11U35 QuickStart Board",
     "image_src": "https://developer.mbed.org/media/cache/platforms/LPC11U35_QSB_350.png.250x250_q85.png",
@@ -47,7 +47,7 @@
     "category" : "board"
 },
 {
-    "_id" : "582c7948850f298a5acff984",
+    "_id" : { "$oid": "582c7948850f298a5acff984" },
     "barcode" : "012345678904",
     "name" : "ARM Cortex-M Prototyping System (MPS2)",
     "image_src": "https://developer.mbed.org/media/cache/platforms/V2M-MPS2_revB_colour_large.jpg.250x250_q85.jpg",
@@ -59,7 +59,7 @@
     "category" : "board"
 },
 {
-    "_id" : "582c7948850f298a5acff985",
+    "_id" : { "$oid": "582c7948850f298a5acff985" },
     "barcode" : "012345678905",
     "name" : "Seeed Bluetooth Shield",
     "image_src": "https://developer.mbed.org/media/cache/components/components/Bluetooth20Sld.jpg.200x200_q85.jpg",
@@ -71,7 +71,7 @@
     "category" : "component"
 },
 {
-    "_id" : "582c7948850f298a5acff986",
+    "_id" : { "$oid": "582c7948850f298a5acff986" },
     "barcode" : "012345678906",
     "name" : "DisplayModule 2.4\" 240x320 Touch TFT with 8-bit Interface",
     "image_src": "https://developer.mbed.org/media/cache/components/components/xDM-TFT24-104.jpgv1424947950.200x200_q85.jpg.pagespeed.ic.rZ9UdokxDX.webp",
@@ -83,7 +83,7 @@
     "category" : "component"
 },
 {
-    "_id" : "582c7948850f298a5acff987",
+    "_id" : { "$oid": "582c7948850f298a5acff987" },
     "barcode" : "012345678907",
     "name" : "HerkuleX",
     "image_src": "https://developer.mbed.org/media/cache/components/components/herkulex.png.200x200_q85.jpg",
@@ -95,7 +95,7 @@
     "category" : "component"
 },
 {
-    "_id" : "582c7948850f298a5acff988",
+    "_id" : { "$oid": "582c7948850f298a5acff988" },
     "barcode" : "012345678908",
     "name" : "X-NUCLEO-IKS01A1 - Motion MEMS and Environmental Sensors",
     "image_src": "https://developer.mbed.org/media/cache/platforms/V2M-MPS2_revB_colour_large.jpg.250x250_q85.jpg",
@@ -107,7 +107,7 @@
     "category" : "component"
 },
 {
-    "_id" : "582c7948850f298a5acff989",
+    "_id" : { "$oid": "582c7948850f298a5acff989" },
     "barcode" : "012345678909",
     "name" : "Powersource 5V 2A",
     "image_src": "",
@@ -119,7 +119,7 @@
     "category" : "accessory"
 },
 {
-    "_id" : "582c7948850f298a5acff990",
+    "_id" : { "$oid": "582c7948850f298a5acff990" },
     "barcode" : "012345678910",
     "name" : "USB Type C cable 1.5m",
     "image_src": "http://www.laptopmag.com/images/wp/laptop-slideshow/272479.jpg",
@@ -131,7 +131,7 @@
     "category" : "accessory"
 },
 {
-    "_id" : "582c7948850f298a5acff991",
+    "_id" : { "$oid": "582c7948850f298a5acff991" },
     "barcode" : "012345678911",
     "name" : "JTAG cable 0.5m",
     "image_src": "https://img.fasttechcdn.com/100/1002400/1002400-3.jpg",
@@ -143,7 +143,7 @@
     "category" : "accessory"
 },
 {
-    "_id" : "582c7948850f298a5acff992",
+    "_id" : { "$oid": "582c7948850f298a5acff992" },
     "barcode" : "012345678912",
     "name" : "Apollo Magnetic Card Reader",
     "image_src": "https://developer.mbed.org/media/cache/components/components/_scaled_newcardreader.jpg.200x200_q85.jpg",
@@ -155,7 +155,7 @@
     "category" : "other"
 },
 {
-    "_id" : "582c7948850f298a5acff993",
+    "_id" : { "$oid": "582c7948850f298a5acff993" },
     "barcode" : "012345678913",
     "name" : "SD Card Slot",
     "image_src": "https://developer.mbed.org/media/cache/components/components/usd-breakout_i_ma.jpg.200x200_q85.jpg",

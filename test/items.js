@@ -24,7 +24,7 @@ describe("Items", function () {
   });
   
   it("should return a SINGLE item on /items?<name> GET", function (done) {
-    superagent.get(api + "/items" + "?name=Board_type_1")
+    superagent.get(api + "/items" + "?name=Seeeduino-Arch")
       .type('json')
       .end(function (e, res) {
         res.should.be.json
