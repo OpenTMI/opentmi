@@ -52,7 +52,7 @@ var ResultSchema = new Schema({
     },
     dut: {  //device(s) under test
       count: {type: Number},
-      type: {type: String, enum: ['hw','simulator', 'process'], default: 'simulator'},
+      type: {type: String, enum: ['hw','simulator', 'process'], default: 'hw'},
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
       vendor: {type: String},
       model: {type: String},
