@@ -19,38 +19,82 @@ function checksum (str, algorithm, encoding) {
 
 var Schema = mongoose.Schema;
 
+
+/**
+ * Location schema
+ */
+var Location = new Schema({
+  url: {type: String }, // fs://... or http://... or ftp://... or sft://...
+  auth: {
+    usr: { type: String },
+    pwd: { type: String }
+  }
+});
+
+/**
+ * Issue schema
+ */
+var Issue = new Schema({
+  time: {type: Date, default: Date.now},
+  type: { type: String, enum: ['github', 'jira'] },
+  url: { type: String }
+});
+
 /**
  * Build schema
  */
 var BuildSchema = new Schema({
   name: {type: String, required: true },
-  type: { type: String, enum: ['cliapp', 'unittest']},
+  type: { type: String, enum: ['app', 'lib'], default: 'app'},
   cre: {
     user: {type: String},
-    time: {type: Date, default: Date.now},
+    time: {type: Date, default: Date.now}
   },
   mod: {
     user: {type: String},
-    time: {type: Date, default: Date.now},
+    time: {type: Date, default: Date.now}
   },
   uuid: { type: String },
   vcs: [
     new Schema({
       name: { type: String },
-      type: { type: String, enum: ['git','SVN', 'CSV'] }, //version control system
-      url: { type: String },
+      system: { type: String, enum: ['git','SVN', 'CSV'], default: 'git' },
+      type: {type: String, enum: ['PR']},
+
       commitId: { type: String },
-      clean_wa: { type: Boolean }, 
       branch: { type: String },
+
+      base_branch: {type: String},
+      base_commit: {type: String},
+      pr_number: {type: String},
+      url: { type: String },
+      clean_wa: { type: Boolean }
     })
   ],
+  ci: {
+    system: {type: String, enum: ['Jenkins']},
+    location: Location,
+    job: {
+      name: {type: String},
+      number: {type: String}
+    }
+  },
   compiledBy: { type: String, enum: ['CI', 'manual'] },
   changeId: {type: String}, // e.g. when gerrit build
-  pullRequest: {type: String}, // e.g. when github
   meta_info: {
     compiler: {type: String},
     version: {type: String},
-    machine: {type: String},
+    toolchain: {type: String},
+    machine: {type: String}
+  },
+  memory: {
+    size: {
+      heap: {type: Number},
+      static_ram: {type: Number},
+      total_flash: {type: Number},
+      stack: {type: Number},
+      total_ram: {type: Number}
+    }
   },
   file: {
     //buffer limit 16MB when attached to document!
@@ -60,40 +104,25 @@ var BuildSchema = new Schema({
     sha1: { type: String },
     sha256: { type: String }
   },
-  location: [
-    new Schema({
-      url: {type: String }, // fs://... or http://... or ftp://... or sft://...
-      auth: {
-        usr: { type: String },
-        pwd: { type: String } 
-      },
-    })
-  ],
-  issues: [
-    new Schema({
-      time: {type: Date, default: Date.now},
-      type: { type: String, enum: ['github', 'jira'] },
-      url: { type: String }
-    })
-  ],
+  location: [ Location ],
+  issues: [ Issue ],
   // build target device
   target: {
     type: { type: String, enum: ['simulate','hardware'], default: 'hardware'},
-    os: { type: String, enum: ['win32', 'win64', 'linux32', 'linux64', 'mbedOS', 'unknown'] },
+    os: { type: String, enum: ['win32', 'win64', 'unix32', 'unix64', 'mbedOS', 'unknown'] },
     simulator: {
       bt: { type: String },
-      network: { type: String },
+      network: { type: String }
     },
     hw: {
       vendor: { type: String },
-      platform: {type: String},
+      model: {type: String},
       rev: { type: String },
-      rf: {
-        // ??
-      }
+      meta: { type: String }
     }
   }
 });
+
 
 /**
  * Build plugin
