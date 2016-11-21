@@ -47,7 +47,8 @@ module.exports = function(grunt) {
                     if (dirName.substr(dirName.length - 5) === "/test") {
                         // use only test directories that are in the root of the addon
                         if ((dirName.match(/\//g) || []).length === 3) {
-                            // add it to the test files
+                            // only add test js files that are in the root of the /test directory.
+                            // if you need to include subdirs, modify this to: dirName + '/' + '**/*.js'
                             testFiles.push(dirName + '/' + '*.js');
                         }
                     }
