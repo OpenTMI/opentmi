@@ -43,8 +43,11 @@ module.exports = function(grunt) {
             items.forEach(function(item) {
                 if (fs.statSync(path + '/' + item).isDirectory()) {
                     var dirName = path + '/' + item;
-                    if (dirName.indexOf('test') > -1) {
+                    // find only directories that ends with /test
+                    if (dirName.substr(dirName.length - 5) === "/test") {
+                        // use only test directories that are in the root of the addon
                         if ((dirName.match(/\//g) || []).length === 3) {
+                            // add it to the test files
                             testFiles.push(dirName + '/' + '*.js');
                         }
                     }
