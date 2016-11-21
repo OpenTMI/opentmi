@@ -1,8 +1,10 @@
 require("xunit-file");
 fs = require('fs');
 
-var testFiles = ["test/*.js"];
+
 module.exports = function(grunt) {
+    var testFiles = ["test/*.js"];
+
     grunt.initConfig({
         express: {
             test: {
