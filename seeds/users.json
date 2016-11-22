@@ -73,17 +73,5 @@
     "loggedIn": false,
     "lastVisited": "2016-11-11T12:37:16.000Z",
     "registered": "2016-11-11T12:37:16.000Z"
-},
-{
-    "_id" : { "$oid":  "5825bcb8fe7545132c88cf4a" },
-    "email": "paavola.ee@gmail.com",
-    "displayName": "Eero Paavola",
-    "picture": "https://avatars.githubusercontent.com/u/15650873?v=3",
-    "github": "15650873",
-    "apikeys":[],
-    "groups":[],
-    "loggedIn": false,
-    "lastVisited": "2016-11-11T12:42:32.785Z",
-    "registered": "2016-11-11T12:42:32.785Z"
 }
-]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+]

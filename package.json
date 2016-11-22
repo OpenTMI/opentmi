@@ -25,6 +25,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=development node index.js",
+    "startWin": "set NODE_ENV=development&&set GITHUB_CLIENTID=ae4772ca39d7719692ad&&set GITHUB_SECRET=ec2b292cf164d42171a655f4fc6632084e45e63d&&node index.js",
     "test": "grunt"
   },
   "dependencies": {
