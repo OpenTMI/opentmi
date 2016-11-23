@@ -1,7 +1,11 @@
-src/node_modules
 tmp
 db
 *~
 node_modules
 xunit.xml
 db.log
+.idea/
+*.log
+app/addons/
+!app/addons/index.js
+
