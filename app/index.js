@@ -102,8 +102,8 @@ fs.readdirSync(__dirname + '/routes').forEach(function (file) {
 
 // Bootsrap addons, like default webGUI
 var AddonManager = require('./addons');
-GLOBAL.AddonManager = new AddonManager(app, server, io);
-GLOBAL.AddonManager.RegisterAddons();
+global.AddonManager = new AddonManager(app, server, io);
+global.AddonManager.RegisterAddons();
 
 // Add error router
 require(__dirname + '/routes/error.js')(app);
