@@ -1,23 +1,25 @@
 
 var superagent = require("superagent"),
-    dookie = require('dookie');
-    co = require('co');
+    dookie = require("dookie");
+    co = require("co");
     chai = require("chai"),
     expect = chai.expect,
     should = require("should");
 
 var api = "http://localhost:3000/api/v0";
+var mongodbUri = 'mongodb://localhost/opentmi_dev';
 
 describe("Items", function () {
 
   // Create fresh DB
-  before(function() {
-    co(function*() {
-      const fs = require('fs');
-      const mongodbUri = 'mongodb://localhost:27017/opentmi_dev';
-      const data = JSON.parse(fs.readFileSync('./seeds/dummy_db.json', 'utf8'));
-      yield dookie.push(mongodbUri, parsed);
-      });
+  before(function(done) {
+    this.timeout(5000);
+    const fs = require('fs');
+    const file_contents = fs.readFileSync('./seeds/dummy_db.json', 'utf8')
+    const data = JSON.parse(file_contents);
+    dookie.push(mongodbUri, data).then(function() {
+      done();
+    });
   });
 
   var item_categories = ['accessory', 'board', 'component', 'other'];
@@ -29,8 +31,8 @@ describe("Items", function () {
         res.should.be.json
         res.status.should.equal(200);
         expect(e).to.equal(null);
-        expect(res.body).not.to.be.empty;
         expect(res.body).to.be.an('array');
+        expect(res.body).not.to.be.empty;
         done();
       })
   });
@@ -49,6 +51,7 @@ describe("Items", function () {
         expect(res.body).to.have.lengthOf(1);
 
         var item_data = res.body[0];
+        //TODO: take properties straight from model
         expect(item_data).to.have.property('_id');
         expect(item_data).to.have.property('barcode')
         expect(item_data).to.have.property('name')

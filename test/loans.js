@@ -1,22 +1,26 @@
 
 var superagent = require("superagent"),
+    dookie = require("dookie");
+    co = require("co");
     chai = require("chai"),
     expect = chai.expect,
     mongoose = require("mongoose"),
     should = require("should");
 
 var api = "http://localhost:3000/api/v0"
+var mongodbUri = 'mongodb://localhost/opentmi_dev';
 
 describe("Loans", function () {
 
   // Create fresh DB
-  before(function() {
-    co(function*() {
-      const fs = require('fs');
-      const mongodbUri = 'mongodb://localhost:27017/opentmi_dev';
-      const data = JSON.parse(fs.readFileSync('./seeds/dummy_db.json', 'utf8'));
-      yield dookie.push(mongodbUri, parsed);
-      });
+  before(function(done) {
+    this.timeout(5000);
+    const fs = require('fs');
+    const file_contents = fs.readFileSync('./seeds/dummy_db.json', 'utf8')
+    const data = JSON.parse(file_contents);
+    dookie.push(mongodbUri, data).then(function() {
+      done();
+    });
   });
 
   var first_loan_id;

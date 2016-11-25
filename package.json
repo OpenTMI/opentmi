@@ -72,7 +72,6 @@
     "grunt-wait-server": "*",
     "istanbul": "^0.4.4",
     "mocha": "^2.5.3",
-    "node-mongo-seeds": "^2.3.0",
     "should": "*",
     "superagent": "^2.0.0",
     "xunit-file": "^1.0.0"
