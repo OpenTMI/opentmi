@@ -27,4 +27,6 @@ var Controller = function(){
   return this;
 }
 
+//TODO available must change with in stock
+
 module.exports = Controller;
