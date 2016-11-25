@@ -1,7 +1,23 @@
-Used by node-mongo-seeds to create dummy collections. For testing and demo purposes.
-https://github.com/toymachiner62/node-mongo-seeds
+https://www.npmjs.com/package/dookie
+http://thecodebarbarian.com/dookie-import-export-mongodb
 
-usage:
-(1.) get node-mongo-seeds: "npm install -g node-mongo-seeds"
-2. .json files in /seeds folder contain database collections. Collection names are the same as the filename.
-3. run "seed" in project root anytime you want to set up the db collections (destroys old collections of the same name)
+Use contents of this folder to fill mongoDB with dummy data using mongoimport (for individual collections) or dookie (whole DB).
+
+redo individual collections with Mongoimport:
+mongoimport --db opentmi_dev --drop --jsonArray --file ./seeds/items.json
+mongoimport --db opentmi_dev --drop --jsonArray --file ./seeds/users.json
+mongoimport --db opentmi_dev --drop --jsonArray --file ./seeds/loans.json
+
+
+insert or export many collections with dookie:
+first make sure its installed (npm install)
+
+to export db to file:
+$ node_modules/.bin/dookie pull --db <name_of_db> --file <filename>
+example: dookie pull --db opentmi_dev --file ./dbdump.json
+
+to import db from file:
+$ node_modules/.bin/dookie push --db <name_of_db> --file <filename>
+example: dookie push --db opentmi_dev --file ./seeds/dummy_db.json
+
+

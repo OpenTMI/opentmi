@@ -1,12 +1,24 @@
 
 var superagent = require("superagent"),
+    dookie = require('dookie');
+    co = require('co');
     chai = require("chai"),
     expect = chai.expect,
     should = require("should");
 
-var api = "http://localhost:3000/api/v0"
+var api = "http://localhost:3000/api/v0";
 
 describe("Items", function () {
+
+  // Create fresh DB
+  before(function() {
+    co(function*() {
+      const fs = require('fs');
+      const mongodbUri = 'mongodb://localhost:27017/opentmi_dev';
+      const data = JSON.parse(fs.readFileSync('./seeds/dummy_db.json', 'utf8'));
+      yield dookie.push(mongodbUri, parsed);
+      });
+  });
 
   var item_categories = ['accessory', 'board', 'component', 'other'];
 
@@ -116,7 +128,6 @@ describe("Items", function () {
         expect(res.body).to.have.property('text_description');
         expect(res.body).to.have.property('in_stock');
         expect(res.body).to.have.property('available');
-        expect(res.body.available).to.eql(20);
         expect(res.body.category).to.be.oneOf(item_categories);
         done();
       });

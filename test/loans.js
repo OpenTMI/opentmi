@@ -8,6 +8,17 @@ var superagent = require("superagent"),
 var api = "http://localhost:3000/api/v0"
 
 describe("Loans", function () {
+
+  // Create fresh DB
+  before(function() {
+    co(function*() {
+      const fs = require('fs');
+      const mongodbUri = 'mongodb://localhost:27017/opentmi_dev';
+      const data = JSON.parse(fs.readFileSync('./seeds/dummy_db.json', 'utf8'));
+      yield dookie.push(mongodbUri, parsed);
+      });
+  });
+
   var first_loan_id;
   it("should return ALL loans on /loans GET", function (done) {
     superagent.get(api+"/loans")
@@ -51,12 +62,15 @@ describe("Loans", function () {
   var new_loan_id;
   it("should add a SINGLE loan on /loans POST", function (done) {
 	  var date = new Date();
+    new_loan_id = mongoose.Types.ObjectId();
     var body = {
+      "_id" : new_loan_id,
       "loan_date" : date,
       "loaner" : "5825bb7cfe7545132c88c777",                  
       "items" : 
         [
-          {"item" : "582c7948850f298a5acff983"}
+          {"_id": "582c7948850f298a5acff002",
+           "item" : "582c7948850f298a5acff983"}
         ]
     };
 
@@ -74,9 +88,18 @@ describe("Loans", function () {
       });
   }); 
   
-  // FIXME
-  it.skip("should update a SINGLE item on /loans/<id> PUT", function (done) {    
-    superagent.put(api + '/loans/' + new_item_id)
+  it("should update a SINGLE item on /loans/<id> PUT", function (done) {
+    var date = new Date();
+    var body = {
+      "items":[
+        {
+        "id": "582c7948850f298a5acff002",
+        "item": "582c7948850f298a5acff983",
+        "return_date": date
+        }
+      ]
+    };
+    superagent.put(api + '/loans/' + new_loan_id.toString())
       .send(body)
       .end(function (e, res) {
         res.should.be.json
@@ -86,10 +109,21 @@ describe("Loans", function () {
         }
         expect(res.status).to.equal(200);
         expect(e).to.equal(null);
+        done();
       });
   });
 
-  // In normal use loans are not deleted (in order to maintain loan history)
-  // Add this when core features work
-  it("should delete a SINGLE loan on /loans/<id> DELETE");
+  it("should delete a SINGLE loan on /loans/<id> DELETE", function (done) {
+    superagent.del(api + "/loans/" + new_loan_id)
+      .end(function (e, res) {
+        res.should.be.json
+        if( res.status === 300 ) {
+          console.log("seems that your DB is not clean!");
+          process.exit(1);
+        }
+        expect(res.status).to.equal(200);
+        expect(e).to.equal(null);
+        done();
+      });
+  });
 });
