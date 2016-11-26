@@ -6,8 +6,8 @@ var ObjectId = Types.ObjectId;
 var QueryPlugin = require('mongoose-query');
 
 var ItemSchema = new Schema({
-  barcode : { type: String },
-  name : { type: String },
+  barcode : { type: String, required:true, unique:true },
+  name : { type: String, required:true },
   image_src: { type: String },
   text_description: { type: String },
   external_reference : { type: String },

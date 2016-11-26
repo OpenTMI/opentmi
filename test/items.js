@@ -1,12 +1,26 @@
 
 var superagent = require("superagent"),
+    dookie = require("dookie");
+    co = require("co");
     chai = require("chai"),
     expect = chai.expect,
     should = require("should");
 
-var api = "http://localhost:3000/api/v0"
+var api = "http://localhost:3000/api/v0";
+var mongodbUri = 'mongodb://localhost/opentmi_dev';
 
 describe("Items", function () {
+
+  // Create fresh DB
+  before(function(done) {
+    this.timeout(5000);
+    const fs = require('fs');
+    const file_contents = fs.readFileSync('./seeds/dummy_db.json', 'utf8')
+    const data = JSON.parse(file_contents);
+    dookie.push(mongodbUri, data).then(function() {
+      done();
+    });
+  });
 
   var item_categories = ['accessory', 'board', 'component', 'other'];
 
@@ -17,8 +31,8 @@ describe("Items", function () {
         res.should.be.json
         res.status.should.equal(200);
         expect(e).to.equal(null);
-        expect(res.body).not.to.be.empty;
         expect(res.body).to.be.an('array');
+        expect(res.body).not.to.be.empty;
         done();
       })
   });
@@ -37,6 +51,7 @@ describe("Items", function () {
         expect(res.body).to.have.lengthOf(1);
 
         var item_data = res.body[0];
+        //TODO: take properties straight from model
         expect(item_data).to.have.property('_id');
         expect(item_data).to.have.property('barcode')
         expect(item_data).to.have.property('name')
@@ -116,7 +131,6 @@ describe("Items", function () {
         expect(res.body).to.have.property('text_description');
         expect(res.body).to.have.property('in_stock');
         expect(res.body).to.have.property('available');
-        expect(res.body.available).to.eql(20);
         expect(res.body.category).to.be.oneOf(item_categories);
         done();
       });

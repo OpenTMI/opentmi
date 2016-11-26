@@ -64,13 +64,14 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "co": "^4.6.0",
+    "dookie": "^0.1.19",
     "grunt": "^0.4.5",
     "grunt-express-server": "^0.5.3",
     "grunt-simple-mocha": "^0.4.0",
     "grunt-wait-server": "*",
     "istanbul": "^0.4.4",
     "mocha": "^2.5.3",
-    "node-mongo-seeds": "^2.3.0",
     "should": "*",
     "superagent": "^2.0.0",
     "xunit-file": "^1.0.0"
