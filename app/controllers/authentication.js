@@ -222,11 +222,6 @@ var Controller = function(){
 
     var ready = function(err, profile)
     {
-      if (err)
-      {
-        return res.sendStatus(500);
-      }
-
       // Helper function to update user's admin group status.
       var updateGroup = function(user, done)
       {
@@ -236,22 +231,27 @@ var Controller = function(){
           {
             user.removeFromGroup("admins", function(user)
             {
-              user.save(done)
+              user.save(done);
             });
           }
           else if (!group && profile.role === "admin")
           {
             user.addToGroup("admins", function(user)
             {
-              user.save(done)
+              user.save(done);
             });
           }
           else
           {
-            done();
+            user.save(done);
           }
         });
       };
+
+      if (err)
+      {
+        return res.sendStatus(500);
+      }
 
       User.findOne({github: profile.id}, function(err, existingUser)
       {
@@ -314,7 +314,8 @@ var Controller = function(){
             })
           }
         }
-      });
+      }); // End User.findOne()
+
     };
 
     async.waterfall([authorization, getProfile, checkOrganization, checkAdmin], ready);
