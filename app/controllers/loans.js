@@ -59,7 +59,7 @@ function subtractItemAvailability(i, keys, items, callback) {
 }
 function addItemAvailability(i, keys, items, callback) {
 	Item.findOneAndUpdate({_id:keys[i]}, {available: items[keys[i]].item.available + items[keys[i]].returns}, function(err, item) {
-    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
+    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.\n' + err}); }
     else {
 	  if (i + 1 >= keys.length) { 
 	    callback(undefined); 
@@ -95,10 +95,8 @@ function validateItems(i, items, relevant_items, callback) {
 	  relevant_items[items[i].item] = {item:docs[0], count:1};  
 
 	  // Callback if at the last index, otherwise call self with increased index
-	  if (i + 1 >= items.length) {
-		  callback(undefined, relevant_items); 
-      } // This is where we want to be
-      else                       { validateItems(i + 1, items, relevant_items, callback); }
+	  if (i + 1 >= items.length) { callback(undefined, relevant_items); } // This is where we want to be 
+      else { validateItems(i + 1, items, relevant_items, callback); } 
 	}
 	else {
 	  callback({code:500, message:'Messy database, ' + items[i].item + ' refers to more than one item'}, undefined);
@@ -112,6 +110,19 @@ function validateItems(i, items, relevant_items, callback) {
 // TODO:
 // Prefilled return date with request breaks everything, need to check for that
 function validateAndCreate(req, res) {
+  if (!(req.body.items instanceof Array)) { // Items field is an array
+	res.status(400).json({error:'Invalid field, items field either missing or not an array'});
+	return;
+  }
+	
+  // Ensure return date is not already defined
+  for (i in req.body.items) {
+	if (req.body.items[i].return_date) {
+      res.status(400).json({error:'Invalid field, return_date predefining is not allowed'});
+      return;
+    }
+  }
+   
   // Test that loaner is present and valid
   if (!req.body.loaner) {
 	res.status(400).json({error:'Missing field, loaner field could not be found in the request body'});
@@ -124,11 +135,6 @@ function validateAndCreate(req, res) {
 	  return;
 	}	
 	
-	if (!(req.body.items instanceof Array)) { // Items field is an array
-	  res.status(400).json({error:'Invalid field, items field either missing or not an array'});
-	  return;
-	}
-	
 	// Items are valid
 	dict = {};
 	validateItems(0, req.body.items, dict, function(err, relevant_items) {
@@ -137,14 +143,14 @@ function validateAndCreate(req, res) {
 		return;
 	  }
 
-      // Ensure availability
+	  // Ensure availability  
       for (i in relevant_items) {
 	    if (relevant_items[i].item.available < relevant_items[i].count) {
 		  res.status(400).json({error:'Not enough items in: ' + i +  ', currently available ' + relevant_items[i].item.available});
 	      return;
 	    }
-      }
-
+	  }
+	  
       var loan = new Loan(req.body);
       loan.validate(function() {
 		// Enforce availability changes
@@ -179,7 +185,6 @@ function validateLoaner(user_id, callback) {
 }
 
 function createLoan(req, res, loan){
-  console.log('Creating loan');
   loan.save(function(error) {
     if(error) {
 	  // One validation is done before this, we should never get here
@@ -199,6 +204,8 @@ function createLoan(req, res, loan){
 //#####################
 //# Update Validation #
 //#####################
+// TODO
+// should not allow PUT to change an already loaned item to another, sholud go through a new loan
 function validateAndUpdate(req, res) {
   // Request does not modify items array, no further custom validation needed
   if (!req.body.items) {
@@ -236,6 +243,8 @@ function validateAndUpdate(req, res) {
 		defaultCtrl.emit('update', loan.toObject());
 		res.json(loan);
 		
+		//console.log(JSON.stringify(relevant_items));
+		
 		// Modify item availability, by all logic this should not throw an error
 		addItemAvailability(0, Object.keys(relevant_items), relevant_items, function(err) {
 		  if (err) {
@@ -255,11 +264,16 @@ function verifyItemsInLoan(loan_id, items, validated_items, callback) {
 	  return;
 	}
 
+    if (!loan) {
+      callback({code:404, message:'Invalid id, loaner with the id does not exist'})
+      return;
+    }      
+
 	for (i in items) {
 	  // Define a parent key for this item if one doesn't exist
-	  if (!validated_items[items[i]]) { validated_items[items[i]] = {}; }
+	  if (!validated_items[items[i].item]) { validated_items[items[i].item] = {}; }
       // Define returns key for this item if one doesn't exist
-      if (!validated_items[items[i]].returns) {	validated_items[items[i]].returns = 0; }
+      if (!validated_items[items[i].item].returns) { validated_items[items[i].item].returns = 0; }
       
 	  // Check whether a subdocument of this item exists or not
 	  var sub_document = loan.items.id(items[i]._id);	
