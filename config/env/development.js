@@ -56,12 +56,8 @@ module.exports = {
     clientID: process.env.GITHUB_CLIENTID,
     clientSecret: process.env.GITHUB_SECRET,
     callbackURL: 'http://localhost:3000/auth/github/callback',
-    /*authentication: {
-      type: 'oauth',
-      token: 'my-token'
-    },
-    orgId: 'my-organization'
-    */
+    orgId: process.env.GITHUB_ORGID,
+    adminTeamId: process.env.GITHUB_ADMINTEAMID
   },
   linkedin: {
     clientID: process.env.LINKEDIN_CLIENTID,

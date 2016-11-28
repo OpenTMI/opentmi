@@ -157,6 +157,28 @@ UserSchema.methods.addToGroup = function(group, done) {
   });
 }
 
+UserSchema.methods.removeFromGroup = function(group, done) {
+  var self = this;
+  Group.findOne({name: group}, function(error, group){
+      if( error ){
+        return done(error);
+      }
+      if(!group){
+        return done({message: 'group not found'});
+      }
+      self.groups = _.without(self.groups, group._id);
+      group.users = _.without(group.users, self._id);
+      group.save();
+      self.save(function(error, user){
+        if(error) {
+          console.log('error');
+          return done(error);
+        }
+        done(user);
+      });
+  });
+}
+
 /**
  * Authenticate - check if the passwords are the same
  *
