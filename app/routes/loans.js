@@ -6,8 +6,8 @@ var Route = function(app){
   var router = express.Router();
   var controller = require('./../controllers/loans')();	
 
-  router.param('Loan'  , controller.paramFormat);
-  router.param('format', controller.paramFormat );
+  router.param('Loan', controller.paramLoan);
+  router.param('format', controller.paramFormat);
 
   router.route('/api/v0/loans.:format?')
     .get(controller.find)

@@ -24,7 +24,7 @@ var Controller = function(){
   this.paramLoan = defaultCtrl.modelParam();
   
   // Define handlers for rest calls
-  this.get = customGet;
+  this.get = defaultCtrl.get;
   this.find = defaultCtrl.find;
   this.create = validateAndCreate;
   
@@ -346,19 +346,5 @@ function addItemAvailability(dict_iterator, callback) {
     else     { subtractItemAvailability(dict_iterator, callback); } 
   });
 }
-
-
-//#####################
-//# Get Validation    #
-//#####################
-function customGet(req, res) {
-  Loan.find({_id: req.params['Loan']}, function(err, docs) {
-	if (err) { res.status(400).json({error:'Something went wrong with the request, probably an invalid _id'}); }
-	else if (docs.length === 0) { res.status(404).json({error:'Document not found'});}
-	else if (docs.length === 1) { res.json(docs[0]); }
-	else { res.status(400).json({error:'More than one document found, something wrong with the database'}) }
-  });
-}
-
 
 module.exports = Controller;
