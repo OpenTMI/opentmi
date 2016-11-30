@@ -71,7 +71,23 @@ describe("Loans", function () {
                   loaner    : "5825bb7cfe7545132c88c773"
                }
 	
-	superagent.post(api+'/loans')
+	superagent.post(api + '/loans')
+      .send(body)
+      .end(function (e, res) {
+        res.should.be.json;
+        expect(res.status).to.equal(400);
+        expect(e).to.not.equal(null);
+        expect(res.body).to.have.property('error')
+        done();
+      });
+  });
+  
+  it("should not accept POST with an empty items array", function(done) {
+	var body = { loan_date : test_date,
+                 loaner    : "5825bb7cfe7545132c88c773",
+                 items     : [] }
+	
+	superagent.post(api + '/loans')
       .send(body)
       .end(function (e, res) {
         res.should.be.json;

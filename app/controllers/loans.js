@@ -44,62 +44,102 @@ var Controller = function(){
   return this;
 }
 
-function subtractItemAvailability(i, keys, items, callback) {
-  Item.findOneAndUpdate({_id:keys[i]}, {available: items[keys[i]].item.available - items[keys[i]].count}, function(err, item) {
-    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
-    else {
-	  if (i + 1 >= keys.length) { 
-	    callback(undefined); 
-      }
+
+// Array iterator
+function makeArrayIterator(array) {
+  var next_index = 0;
+  
+  return {
+    next: function() {
+	  return next_index < array.length ?
+	    {value: array[next_index++], done: false} :
+	    {done: true};
+	}
+  }
+}
+// Dictionary iterator
+function makeDictIterator(dictionary) {
+  var keys = Object.keys(dictionary);
+  var next_index = 0;
+  
+  return {
+	next: function() {
+	  if (next_index < keys.length) {
+	    var key = keys[next_index];
+	    var value = dictionary[key];
+	    next_index += 1;
+          return {key:key, value:value, done: false};
+      } 
       else {
-		subtractItemAvailability(i + 1, keys, items, callback);
+		return {done: true};
 	  }
 	}
+  }
+}
+
+function subtractItemAvailability(dict_iterator, callback) {
+  var next = dict_iterator.next();
+  if (next.done) {
+    callback(undefined);
+    return;
+  }
+  
+  Item.findOneAndUpdate({_id:next.key}, {available: next.value.item.available - next.value.count}, function(err, item) {
+    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
+    else     { subtractItemAvailability(dict_iterator, callback); } 
   });
 }
-function addItemAvailability(i, keys, items, callback) {
-	Item.findOneAndUpdate({_id:keys[i]}, {available: items[keys[i]].item.available + items[keys[i]].returns}, function(err, item) {
-    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.\n' + err}); }
-    else {
-	  if (i + 1 >= keys.length) { 
-	    callback(undefined); 
-      }
-      else {
-		AddItemAvailability(i + 1, keys, items, callback);
-	  }
-	}
+function addItemAvailability(dict_iterator, callback) {
+  var next = dict_iterator.next();
+  if (next.done) {
+    callback(undefined);
+    return;
+  }
+  
+  Item.findOneAndUpdate({_id:next.key}, {available: next.value.item.available + next.value.returns}, function(err, item) {
+    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
+    else     { subtractItemAvailability(dict_iterator, callback); } 
   });
 }
  
-function validateItems(i, items, relevant_items, callback) {
-  // If item has already been fetched, increase count and either callback or call self again with next index
-  if (relevant_items[items[i].item]) {
-	// Increase count of an item
-	relevant_items[items[i].item].count += 1;
-	
-    if (i + 1 >= items.length) { callback(undefined, relevant_items); } // This is where we want to be
-    else                       { validateItems(i + 1, items, relevant_items, callback); }
-    return; //Return so that on the way back we won't call Item.find a second time
+function validateItems(item_iterator, relevant_items, callback) {
+  // Fetch the current value
+  var next = item_iterator.next();
+  
+  // If the iterator is done, callback
+  if (next.done) {
+	callback(undefined, relevant_items); 
+	return;
+  }
+  
+  // Check that item field is defined
+  if (!("item" in next.value)) {
+	callback({code:400, message:"Missing field, provided item does not define an 'item' field"}, undefined); 
+	return;
+  }
+  
+  // If the item in question is defined just increase its' count
+  if (next.value.item in relevant_items) {
+	relevant_items[next.value.item].count += 1;  
+	validateItems(item_iterator, relevant_items, callback);
+	return;
   }
   
   // Find how many items with the _id exist
-  Item.find({_id:items[i].item}, function(err, docs) {
+  Item.find({_id:next.value.item}, function(err, docs) {
     if (err) {
-      callback({code:400, message:'Something weird, cannot find id:  ' + items[i].item + ' is invalid'}, undefined);
+      callback({code:400, message:'Something weird, cannot find id:  ' + next.value.item + ' is invalid'}, undefined);
     }
     else if (docs.length === 0) {
-	  callback({code:400, message:'Bad reference, ' + items[i].item + ' does not refer to any item'}, undefined);
+	  callback({code:400, message:'Bad reference, ' + next.value.item + ' does not refer to any item'}, undefined);
 	}
 	else if (docs.length === 1) {
 	  // Define item for dictionary
-	  relevant_items[items[i].item] = {item:docs[0], count:1};  
-
-	  // Callback if at the last index, otherwise call self with increased index
-	  if (i + 1 >= items.length) { callback(undefined, relevant_items); } // This is where we want to be 
-      else { validateItems(i + 1, items, relevant_items, callback); } 
+	  relevant_items[next.value.item] = {item:docs[0], count:1};  
+      validateItems(item_iterator, relevant_items, callback);
 	}
 	else {
-	  callback({code:500, message:'Messy database, ' + items[i].item + ' refers to more than one item'}, undefined);
+	  callback({code:500, message:'Messy database, ' + next.value.item + ' refers to more than one item'}, undefined);
 	}
   });
 }
@@ -113,6 +153,12 @@ function validateAndCreate(req, res) {
   if (!(req.body.items instanceof Array)) { // Items field is an array
 	res.status(400).json({error:'Invalid field, items field either missing or not an array'});
 	return;
+  }
+	
+  // Field items should not be empty
+  if (req.body.items.length === 0) {
+	res.status(400).json({error:'Invalid field, items field contained an empty array.'});
+    return;
   }
 	
   // Ensure return date is not already defined
@@ -137,7 +183,7 @@ function validateAndCreate(req, res) {
 	
 	// Items are valid
 	dict = {};
-	validateItems(0, req.body.items, dict, function(err, relevant_items) {
+	validateItems(makeArrayIterator(req.body.items), dict, function(err, relevant_items) {
       if (err) { 
 		res.status(err.code).json({error:err.message});
 		return;
@@ -150,11 +196,16 @@ function validateAndCreate(req, res) {
 	      return;
 	    }
 	  }
-	  
+	 
       var loan = new Loan(req.body);
-      loan.validate(function() {
+      loan.validate(function(err) {
+		if (err) { 
+		  res.status(err.code).json({error:err.message}); 
+		  return;
+		}  
+
 		// Enforce availability changes
-        subtractItemAvailability(0, Object.keys(relevant_items), relevant_items, function(err) {
+        subtractItemAvailability(makeDictIterator(relevant_items), function(err) {
 		  if (err) { res.status(err.code).json({error:err.message}); }
 		  else     { createLoan(req, res, loan); }
 		});
@@ -208,19 +259,19 @@ function createLoan(req, res, loan){
 // should not allow PUT to change an already loaned item to another, sholud go through a new loan
 function validateAndUpdate(req, res) {
   // Request does not modify items array, no further custom validation needed
-  if (!req.body.items) {
+  if (!("items" in req.body)) {
 	defaultCtrl.update(req, res);
 	return;
   }
- 
+  
   // Field items does not contain an array
   if (!req.body.items instanceof Array) { // Did not receive an array
-	res.status(400).json({error:'Invalid field, items field did not contain an array.'});
+	res.status(400).json({error:"Invalid field, items field did not contain an array."});
     return;
   }
-  
+ 
   // Validate provided items
-  validateItems(0, req.body.items, {}, function(err, relevant_items) {
+  validateItems(makeArrayIterator(req.body.items), {}, function(err, relevant_items) {
     if (err) {
 	  res.status(err.code).json({error: err.message});
 	  return;
@@ -233,25 +284,36 @@ function validateAndUpdate(req, res) {
 		return;  
 	  }
 		
-	  // Perform update and run model validators
-	  Loan.findOneAndUpdate({_id:loan._id}, req.body, {runValidators: true}, function(err, loan) { 
+	  // Make initial changes to loan
+	  for (key in req.body) {
+	    loan[key] = req.body[key];
+	  }
+	  
+	  // Validate the new fields
+	  loan.validate(function(err) {
 		if (err) {
 		  res.status(400).json({error:err});
 		  return;
-		}
+		} 
 		
-		defaultCtrl.emit('update', loan.toObject());
-		res.json(loan);
-		
-		//console.log(JSON.stringify(relevant_items));
-		
-		// Modify item availability, by all logic this should not throw an error
-		addItemAvailability(0, Object.keys(relevant_items), relevant_items, function(err) {
+		// Should not fail after validation anymore
+		addItemAvailability(makeDictIterator(relevant_items), function(err) {
 		  if (err) {
-			console.log(err.message);
-            //res.status(err.code).json({error:err.message});	
+			res.status(400).json({error:err});
+            return;
 		  }
-	    });	  
+		    
+		  // Save changes
+		  loan.save(function(err) {
+	        if (err) {
+		      res.status(400).json({error:err});
+		      return;
+		    }
+		      
+		    defaultCtrl.emit('update', loan.toObject());  	  
+		    res.json(loan);
+	      });
+	    });
 	  });
 	});
   });
@@ -272,6 +334,7 @@ function verifyItemsInLoan(loan_id, items, validated_items, callback) {
 	for (i in items) {
 	  // Define a parent key for this item if one doesn't exist
 	  if (!validated_items[items[i].item]) { validated_items[items[i].item] = {}; }
+	  
       // Define returns key for this item if one doesn't exist
       if (!validated_items[items[i].item].returns) { validated_items[items[i].item].returns = 0; }
       
