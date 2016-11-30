@@ -43,7 +43,7 @@ describe("Loans", function () {
     });
 
   it("should return a SINGLE loan on /loans/<id> GET", function (done) {
-    superagent.get(api + "/loans" + "?_id=" + first_loan_id)
+    superagent.get(api + "/loans/" + first_loan_id)
       .type('json')
       .end(function (e, res) {
         res.should.be.json
@@ -53,15 +53,12 @@ describe("Loans", function () {
         }
         expect(res.status).to.equal(200);
         expect(e).to.equal(null);
-        expect(res.body).to.have.lengthOf(1);
-
-        var item_data = res.body[0];
-        expect(item_data).to.have.property('_id');
-        expect(item_data).to.have.property('loaner');
-        expect(item_data).to.have.property('items');
-        expect(item_data.items).to.be.an('array');
-        expect(item_data.items[0]).to.have.property('item');
-        expect(item_data).to.have.property('loan_date');
+        expect(res.body).to.have.property('_id');
+        expect(res.body).to.have.property('loaner');
+        expect(res.body).to.have.property('items');
+        expect(res.body.items).to.be.an('array');
+        expect(res.body.items[0]).to.have.property('item');
+        expect(res.body).to.have.property('loan_date');
         done();
       });
   });

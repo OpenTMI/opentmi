@@ -130,12 +130,7 @@ describe("Items", function () {
   });
 
   it("should not accept PUT with a negative available", function(done) {
-	var body = {
-      available: -1
-    }
-    
-    console.log(new_item_id);
-    
+	var body = { available: -1 }
     superagent.put(api + "/items/" + new_item_id.toString())
       .send(body)
       .end(function(e, res) {
@@ -150,10 +145,7 @@ describe("Items", function () {
 	  });
   });
   it("should not accept PUT with a negative in_stock", function(done) {
-	var body = {
-      in_stock: -1
-    }
-    
+	var body = { in_stock: -1 }
     superagent.put(api + "/items/" + new_item_id.toString())
       .send(body)
       .end(function(e, res) {

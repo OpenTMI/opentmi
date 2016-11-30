@@ -24,13 +24,11 @@ var Controller = function(){
   this.paramLoan = defaultCtrl.modelParam();
   
   // Define handlers for rest calls
-  this.get = defaultCtrl.get;
+  this.get = customGet;
   this.find = defaultCtrl.find;
   this.create = validateAndCreate;
   
-  //this.update = defaultCtrl.update;
   this.update = validateAndUpdate;
-  
   this.remove = defaultCtrl.remove;
 
   this.me = function(req, res) {
@@ -44,8 +42,7 @@ var Controller = function(){
   return this;
 }
 
-
-// Array iterator
+// Iterators
 function makeArrayIterator(array) {
   var next_index = 0;
   
@@ -57,7 +54,6 @@ function makeArrayIterator(array) {
 	}
   }
 }
-// Dictionary iterator
 function makeDictIterator(dictionary) {
   var keys = Object.keys(dictionary);
   var next_index = 0;
@@ -76,32 +72,8 @@ function makeDictIterator(dictionary) {
 	}
   }
 }
-
-function subtractItemAvailability(dict_iterator, callback) {
-  var next = dict_iterator.next();
-  if (next.done) {
-    callback(undefined);
-    return;
-  }
-  
-  Item.findOneAndUpdate({_id:next.key}, {available: next.value.item.available - next.value.count}, function(err, item) {
-    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
-    else     { subtractItemAvailability(dict_iterator, callback); } 
-  });
-}
-function addItemAvailability(dict_iterator, callback) {
-  var next = dict_iterator.next();
-  if (next.done) {
-    callback(undefined);
-    return;
-  }
-  
-  Item.findOneAndUpdate({_id:next.key}, {available: next.value.item.available + next.value.returns}, function(err, item) {
-    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
-    else     { subtractItemAvailability(dict_iterator, callback); } 
-  });
-}
  
+// Shared item validation function
 function validateItems(item_iterator, relevant_items, callback) {
   // Fetch the current value
   var next = item_iterator.next();
@@ -147,8 +119,6 @@ function validateItems(item_iterator, relevant_items, callback) {
 //#####################
 //# Create Validation #
 //#####################
-// TODO:
-// Prefilled return date with request breaks everything, need to check for that
 function validateAndCreate(req, res) {
   if (!(req.body.items instanceof Array)) { // Items field is an array
 	res.status(400).json({error:'Invalid field, items field either missing or not an array'});
@@ -213,7 +183,6 @@ function validateAndCreate(req, res) {
     });
   });
 }
-
 function validateLoaner(user_id, callback) {
   var User = mongoose.model('User');
   //console.log('User: ' + user_id);
@@ -234,7 +203,6 @@ function validateLoaner(user_id, callback) {
 	}
   });
 }
-
 function createLoan(req, res, loan){
   loan.save(function(error) {
     if(error) {
@@ -251,12 +219,25 @@ function createLoan(req, res, loan){
     }
   });
 }
+function subtractItemAvailability(dict_iterator, callback) {
+  var next = dict_iterator.next();
+  if (next.done) {
+    callback(undefined);
+    return;
+  }
+  
+  Item.findOneAndUpdate({_id:next.key}, {available: next.value.item.available - next.value.count}, function(err, item) {
+    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
+    else     { subtractItemAvailability(dict_iterator, callback); } 
+  });
+}
+
 
 //#####################
 //# Update Validation #
 //#####################
 // TODO
-// should not allow PUT to change an already loaned item to another, sholud go through a new loan
+// should not allow PUT to change an already loaned item to another, should go through a new loan
 function validateAndUpdate(req, res) {
   // Request does not modify items array, no further custom validation needed
   if (!("items" in req.body)) {
@@ -318,7 +299,6 @@ function validateAndUpdate(req, res) {
 	});
   });
 }
-
 function verifyItemsInLoan(loan_id, items, validated_items, callback) {
   Loan.findById(loan_id, function(err, loan) {
 	if (err) {
@@ -354,5 +334,31 @@ function verifyItemsInLoan(loan_id, items, validated_items, callback) {
 	callback(undefined, loan, validated_items);  
   });
 }
+function addItemAvailability(dict_iterator, callback) {
+  var next = dict_iterator.next();
+  if (next.done) {
+    callback(undefined);
+    return;
+  }
+  
+  Item.findOneAndUpdate({_id:next.key}, {available: next.value.item.available + next.value.returns}, function(err, item) {
+    if (err) { callback({code:500, message:'Could not update item ' + item + ', something went wrong with update.'}); }
+    else     { subtractItemAvailability(dict_iterator, callback); } 
+  });
+}
+
+
+//#####################
+//# Get Validation    #
+//#####################
+function customGet(req, res) {
+  Loan.find({_id: req.params['Loan']}, function(err, docs) {
+	if (err) { res.status(400).json({error:'Something went wrong with the request, probably an invalid _id'}); }
+	else if (docs.length === 0) { res.status(404).json({error:'Document not found'});}
+	else if (docs.length === 1) { res.json(docs[0]); }
+	else { res.status(400).json({error:'More than one document found, something wrong with the database'}) }
+  });
+}
+
 
 module.exports = Controller;
