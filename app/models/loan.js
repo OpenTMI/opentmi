@@ -12,7 +12,8 @@ var LoanSchema = new Schema({
 	  item : { type:ObjectId, ref:'Item', required:true }, 
 	  return_date : { type:Date },
 	  resource : { type:ObjectId, ref:'Resource' }
-  }]
+  }],
+  notes : { type: String }
 });
 
 /**

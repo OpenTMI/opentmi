@@ -37,6 +37,10 @@ function customCreate(req, res) {
 	  return;
 	}
   }
+  else if ("in_stock" in req.body || "available" in req.body) {
+    res.status(400).json("Missing field, cannot only set available or in_stock, these two must be defined in POST together");
+	return;
+  }
   
   defaultCtrl.create(req, res);
 }

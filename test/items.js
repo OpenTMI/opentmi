@@ -72,24 +72,72 @@ describe("Items", function () {
       barcode: "00000000099",
       name: "item 99",
       text_description: "This is a test item.",
-      external_reference: "http://img.pandawhale.com/104933-dickbutt-meme-Imgur-dick-butt-yfgk.png",
+      external_reference: 'http://img.pandawhale.com/104933-dickbutt-meme-Imgur-dick-butt-yfgk.png',
       in_stock: 24,
       available: 25,
       date_created: new Date(),
-      category: "component"
+      category: 'component'
     }
     
-    superagent.post(api + "/items")
+    superagent.post(api + '/items')
       .send(body)
       .end(function(e, res) {
 	    res.should.be.json;	
-	    if( res.status === 300 ) {
-          console.log("seems that your DB is not clean!");
+	    if(res.status === 300) {
+          console.log('seems that your DB is not clean!');
           process.exit(1);
         }  
         expect(res.status).to.equal(400);
 	    expect(e).to.not.equal(null);
 	    done();
+	});
+  });
+  it ('should not accept available without in_stock', function(done) {
+	var body = {
+      barcode: '00000000099',
+      name: 'item 99',
+      text_description: 'This is a test item.',
+      external_reference: 'http://img.pandawhale.com/104933-dickbutt-meme-Imgur-dick-butt-yfgk.png',
+      available: 25,
+      date_created: new Date(),
+      category: 'component'
+    }
+    
+    superagent.post(api + '/items')
+      .send(body)
+      .end(function(e, res) {
+	    res.should.be.json;
+	    if (res.status === 300) {
+		  console.log('seems that your DB is not clean!');
+          process.exit(1);
+		}
+		expect(res.status).to.equal(400);
+		expect(e).to.not.equal(null);
+		done();	  
+	});
+  });
+  it ('should not accept in_stock without available', function(done) {
+	var body = {
+      barcode: '00000000099',
+      name: 'item 99',
+      text_description: 'This is a test item.',
+      external_reference: 'http://img.pandawhale.com/104933-dickbutt-meme-Imgur-dick-butt-yfgk.png',
+      in_stock: 24,
+      date_created: new Date(),
+      category: 'component'
+    }
+    
+    superagent.post(api + '/items')
+      .send(body)
+      .end(function(e, res) {
+	    res.should.be.json;
+	    if (res.status === 300) {
+		  console.log('seems that your DB is not clean!');
+          process.exit(1);
+		}
+		expect(res.status).to.equal(400);
+		expect(e).to.not.equal(null);
+		done();	  
 	});
   });
 

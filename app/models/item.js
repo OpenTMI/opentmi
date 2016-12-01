@@ -6,13 +6,13 @@ var ObjectId = Types.ObjectId;
 var QueryPlugin = require('mongoose-query');
 
 var ItemSchema = new Schema({
-  barcode : { type: String, required:true, unique:true },
-  name : { type: String, required:true },
+  barcode : { type: String, unique:true },
+  name : { type: String, required:true, unique:true },
   image_src: { type: String },
   text_description: { type: String },
   external_reference : { type: String },
-  in_stock : { type: Number }, // total amount of SKUs
-  available: { type: Number }, // in_stock - loaned
+  in_stock : { type: Number, default: 0 }, // total amount of SKUs
+  available: { type: Number, default: 0 }, // in_stock - loaned
   date_created : { type: Date },
   category : { type: String, required:true,
                enum:['accessory',
