@@ -1,7 +1,6 @@
 
 var superagent = require("superagent"),
     dookie = require("dookie");
-    co = require("co");
     chai = require("chai"),
     expect = chai.expect,
     should = require("should");

@@ -6,11 +6,11 @@ module.exports = function (grunt) {
       test: {
         options: {
           output: "this will never appear",
-          delay: "10000",
+          delay: 10000,
           script: "index.js",
           timeout: 3000,
           harmony: true,
-          args: ['-vvv'] //to more traces set -vvv instead of -s (silent)
+          args: ['-s'] //to more traces set -vvv instead of -s (silent)
         }
       }
     },

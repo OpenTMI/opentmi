@@ -64,7 +64,6 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "co": "^4.6.0",
     "dookie": "^0.1.19",
     "grunt": "^0.4.5",
     "grunt-express-server": "^0.5.3",
