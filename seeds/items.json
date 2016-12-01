@@ -6,7 +6,7 @@
     "text_description": "LPC800-MAX from NXP is an mbed enabled platform which combines the advantages of the mbed ecosystem and Arduino form factor.",
     "external_reference" : "https://developer.mbed.org/platforms/NXP-LPC800-MAX/",
     "in_stock" : 32,
-    "available": 25,
+    "available": 31,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "board"
 },
@@ -18,7 +18,7 @@
     "text_description": "Seeeduino Arch from Seeed Studio is an mbed enabled development board which combines some advantages of mbed and Arduino. Arch is based on NXP LPC11U24 with Arduino form factor and Grove connectors. Building a prototype is easy with lots of Shield and Grove modules.",
     "external_reference" : "https://developer.mbed.org/platforms/Seeeduino-Arch/",
     "in_stock" : 20,
-    "available": 18,
+    "available": 19,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "board"
 },
@@ -30,7 +30,7 @@
     "text_description": "The u-blox-C027 is a complete starter kit that allows quick prototyping of a variety of applications for the Internet of Things. The application board has a MAX-M8Q GPS/GNSS receiver and a LISA or SARA cellular module, enabling straightforward development of locationaware,global communicating ap",
     "external_reference" : "https://developer.mbed.org/platforms/u-blox-C027/",
     "in_stock" : 20,
-    "available": 20,
+    "available": 17,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "board"
 },
@@ -42,7 +42,7 @@
     "text_description": "The LPC11U35 QuickStart Board from Embedded Artists is a easy to use ARM Cortex-M0 rapid prototyping board in a breadboard-friendly 30-pin DIL format. The board targets smaller control applications as well as low-power applications. The small form factor makes the board perfect for integration.",
     "external_reference" : "https://developer.mbed.org/platforms/EA-LPC11U35/",
     "in_stock" : 10,
-    "available": 2,
+    "available": 9,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "board"
 },
@@ -54,7 +54,7 @@
     "text_description": "The Cortex-M Prototyping System (or V2M-MPS2) is designed for prototyping and evaluation Cortex-M family of processors. It is an affordable motherboard available as part of the Versatile Express range of development boards. It boasts a large FPGA for prototyping Cortex-M based designs and a range of different debug options. It comes with a range of useful peripherals including PSRAM, Ethernet, touch screen, Audio, VGA, SPI and GPIO. It comes provided with fixed encrypted FPGA implementations of all the Cortex-M processors.The product supports Cortex-M0 design start and includes an example design with CMSDK peripherals which the user can use in their design. It is an ideal platform for the evaluation and FPGA prototyping of Cortex-M based designs.",
     "external_reference" : "https://developer.mbed.org/platforms/ARM-MPS2/",
     "in_stock" : 15,
-    "available": 8,
+    "available": 15,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "board"
 },
@@ -66,7 +66,7 @@
     "text_description": "The Bluetooth Shield integrates a Serial Bluetooth module. It can be easily used with mbed/Arduino for transparent wireless serial communication.",
     "external_reference" : "https://developer.mbed.org/components/Seeed-Bluetooth-Shield/",
     "in_stock" : 10,
-    "available": 9,
+    "available": 10,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "component"
 },
@@ -78,7 +78,7 @@
     "text_description": "The DM-TFT24-104 display module, specifications and other resources are available from DisplayModule.com.",
     "external_reference" : "https://developer.mbed.org/components/24-Touch-TFT-with-8-bit-Interface/",
     "in_stock" : 15,
-    "available": 13,
+    "available": 15,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "component"
 },
@@ -90,7 +90,7 @@
     "text_description": "HerkuleX Smart Servo Motor",
     "external_reference" : "https://developer.mbed.org/components/HerkuleX/",
     "in_stock" : 15,
-    "available": 8,
+    "available": 14,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "component"
 },
@@ -102,7 +102,7 @@
     "text_description": "The X-NUCLEO-IKS01A1 is a motion MEMS and environmental sensor evaluation board system.",
     "external_reference" : "https://developer.mbed.org/components/X-NUCLEO-IKS01A1/",
     "in_stock" : 70,
-    "available": 55,
+    "available": 69,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "component"
 },
@@ -126,7 +126,7 @@
     "text_description": "USB Type C male-male cable.",
     "external_reference" : "-",
     "in_stock" : 40,
-    "available": 25,
+    "available": 40,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "accessory"
 },
@@ -138,7 +138,7 @@
     "text_description": "JTAG cable for embedded devices",
     "external_reference" : "-",
     "in_stock" : 10,
-    "available": 8,
+    "available": 10,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "accessory"
 },
@@ -162,7 +162,7 @@
     "text_description": "Accessing SD cards as a filesystem on mbed, using an SPI interface.",
     "external_reference" : "https://developer.mbed.org/components/SD-Card/",
     "in_stock" : 3,
-    "available": 2,
+    "available": 3,
     "date_created" : {"$date": "2016-11-12T17:11:28+02:00"},
     "category" : "other"
 }

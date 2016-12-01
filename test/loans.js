@@ -192,7 +192,7 @@ describe("Loans", function () {
 		expect(res.status).to.equal(200);
 		expect(e).to.equal(null);
 		expect(res.body).to.have.property('available');
-		expect(res.body.available).to.equal(0); // Should decrease 2 from what is in the seeds 
+		expect(res.body.available).to.equal(7); // Should decrease 2 from what is in the seeds 
 		done(); 
 	  });
   });
@@ -325,7 +325,7 @@ describe("Loans", function () {
         res.should.be.json;
         expect(res.status).to.equal(200);
         expect(res.body).to.have.property('available');
-        expect(res.body.available).to.equal(1); // Should increase 1 from what is in the seeds
+        expect(res.body.available).to.equal(8); // Should increase 1 from what is in the seeds
         done();
 	  });
   });
