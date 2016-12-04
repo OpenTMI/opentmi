@@ -74,15 +74,14 @@ module.exports.ensureAdmin = function(req, res, next) {
  | Generate JSON Web Token
  |--------------------------------------------------------------------------
  */
-module.exports.createJWT = function(user, role) 
-{
+module.exports.createJWT = function (user, group) {
   console.log('createJWT token');
   var payload = {
     sub: user._id,
-    role: role,
+    group,
     iat: moment().unix(),
-    exp: moment().add(2, 'hours').unix()
-    };
+    exp: moment().add(2, 'hours').unix(),
+  };
 
   return jwt.encode(payload, TOKEN_SECRET);
 };

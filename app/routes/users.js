@@ -4,6 +4,8 @@ var mongoose = require('mongoose');
 var nconf = require('nconf');
 var restify = require('express-restify-mongoose');
 var logger = require('winston');
+var jwt = require('express-jwt');
+var TOKEN_SECRET = nconf.get('webtoken');
 
 
 var auth = require('./../../config/middlewares/authorization');
@@ -57,7 +59,7 @@ var Route = function(app){
   app.put('/auth/me', auth.ensureAuthenticated, controller.putme );
   app.post('/auth/signup', controller.signup );
   app.post('/auth/logout', controller.logout );
-  app.post('/auth/github', controller.github );
+  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), controller.github );
   app.post('/auth/google', controller.google );
 }
 

@@ -135,27 +135,28 @@ UserSchema.pre('save', function(next){
  * Methods
  */
 
-UserSchema.methods.addToGroup = function(group, done) {
+UserSchema.methods.addToGroup = function (groupname, done) {
   var self = this;
-  Group.findOne({name: group}, function(error, group){
-      if( error ){
+  Group.findOne({ name: groupname }, function (error, group) {
+    if (error) {
+      return done(error);
+    } else if (!group) {
+      return done({ message: 'group not found' });
+    } else if (_.find(group.users, function (user) { return user === self._id; })) {
+      return done({ message: 'user belongs to the group already' });
+    }
+
+    self.groups.push(group._id);
+    group.users.push(self._id);
+    group.save();
+    self.save(function (error, user) {
+      if (error) {
         return done(error);
       }
-      if(!group){
-        return done({message: 'group not found'});
-      }
-      self.groups.push(group._id);
-      group.users.push(self._id);
-      group.save();
-      self.save(function(error, user){
-        if(error) {
-          console.log('error');
-          return done(error);
-        }
-        done(user);
-      });
+      done(user);
+    });
   });
-}
+};
 
 UserSchema.methods.removeFromGroup = function(group, done) {
   var self = this;
