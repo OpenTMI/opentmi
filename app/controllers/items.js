@@ -5,6 +5,7 @@
 //3rd party modules
 var express = require('express');
 var mongoose = require('mongoose');
+var winston = require('winston');
 
 //own modules
 var DefaultController = require('./');
@@ -23,26 +24,25 @@ var Controller = function(){
   // Define handlers for rest calls
   this.get = defaultCtrl.get;
   this.find = defaultCtrl.find;
-  this.create = customCreate;
+  this.create = function(req, res) {
+	var item = new Item(req.body);
+    item.save( function(err){
+      if(err) { 
+		winston.warn(err);
+		return res.status(400).json({error:err.message}) 
+	  }
+        
+      if(res){
+        return res.status(200).json(item);
+      }
+    });  
+  }
+  
+  // Normal update refuses to run validators
   this.update = customUpdate;
   this.remove = defaultCtrl.remove;
 
   return this;
-}
-
-function customCreate(req, res) {
-  if ("in_stock" in req.body && "available" in req.body) {
-	if (req.body.available > req.body.in_stock) {
-	  res.status(400).json("Invalid field, available cannot be higher than in_stock");
-	  return;
-	}
-  }
-  else if ("in_stock" in req.body || "available" in req.body) {
-    res.status(400).json("Missing field, cannot only set available or in_stock, these two must be defined in POST together");
-	return;
-  }
-  
-  defaultCtrl.create(req, res);
 }
 
 function customUpdate(req, res) {
@@ -53,78 +53,32 @@ function customUpdate(req, res) {
   else if (!("in_stock" in req.body) && "available" in req.body) {
 	updateAvailable(req, res);
   }
-  else if ("in_stock" in req.body && "available" in req.body){
-	updateBoth(req, res);
+  else if("in_stock" in req.body && "available" in req.body) {  
+	req.Item.available = req.body.available;
+	req.Item.in_stock = req.body.in_stock;
   }
-  else {
-	defaultCtrl.update(req, res);  
-  }
-}
-
-function updateInStock(req, res) {
-  if (req.body.in_stock < 0)  {
-	res.status(400).json({error:"Cannot set in_stock to a negative number"});
-	return;
-  }
-    
-  Item.findOne({_id : req.params['Item']}, function(err, item) {
-	if (err) { 
-	  res.status(400).json({error:"Request failed item with param id"}); 
-	  return;
-    }
-
-    if (!item) {
-      res.status(404).json({error:"Cannot find item with param id"}); 
-	  return; 
-    }
-
-	var delta_stock = req.body.in_stock - item.in_stock;
-	if (item.available + delta_stock <= 0) {
-	  res.status(400).json({error:"Cannot change in_stock in this manner, as it would result in negative availability"});
-	  return;
-	}
-	else {
-	  req.body.available = item.available + delta_stock;
-	  defaultCtrl.update(req, res);
-    }
-  });    
-}
-
-function updateAvailable(req, res) {
-  if (req.body.available < 0)  {
-	res.status(400).json({error:"Cannot set available to a negative number"});
-	return;
-  }
-    
-  Item.findOne({_id : req.params['Item']}, function(err, item) {
-	if (err) { 
-	  res.status(400).json({error:"Request failed item with param id"}); 
-	  return;
-    }
-
-    if (!item) {
-      res.status(404).json({error:"Cannot find item with param id"}); 
-	  return; 
-    }
-
-	var delta_stock = req.body.available - item.available;
-	req.body.in_stock = item.in_stock + delta_stock;
-	defaultCtrl.update(req, res);
+  
+  req.Item.save(function(err) {
+	if (err) { return res.status(400).json({error:err.message}); }
+	else { res.status(200).json(req.Loan); }
   });
 }
 
-function updateBoth(req, res) {
-  if (req.body.availability < 0 || req.body.in_stock < 0) {
-	res.status(400).json({error:"Cannot set available or in_stock to a negative number"});
-	return;
+function updateInStock(req, res) {
+  var delta_stock = req.body.in_stock - req.Item.in_stock;
+  if (req.Item.available + delta_stock <= 0) {
+	return res.status(400).json({error:"Cannot change in_stock in this manner, would result in negative availability"});
   }
-  
-  if (req.body.availability > req.body.in_stock) {
-	res.status(400).json({error:"Cannot set availability bigger than in_stock"});
-	return;
-  }
-  
-  defaultCtrl.update(req, res);
+  else {
+	req.Item.in_stock = req.body.in_stock;
+	req.Item.available = req.Item.available + delta_stock;
+  }    
+}
+
+function updateAvailable(req, res) {
+  var delta_stock = req.body.available - req.Item.available;
+  req.Item.available = req.body.available;
+  req.Item.in_stock = req.Item.in_stock + delta_stock;
 }
 
 module.exports = Controller;

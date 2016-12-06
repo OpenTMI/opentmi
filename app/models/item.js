@@ -11,8 +11,8 @@ var ItemSchema = new Schema({
   image_src: { type: String },
   text_description: { type: String },
   external_reference : { type: String },
-  in_stock : { type: Number, default: 0 }, // total amount of SKUs
-  available: { type: Number, default: 0 }, // in_stock - loaned
+  in_stock : { type: Number, required:true, default: 0, min:0 }, // total amount of SKUs
+  available: { type: Number, required:true, default: 0, min:0 }, // in_stock - loaned
   date_created : { type: Date },
   category : { type: String, required:true,
                enum:['accessory',
@@ -26,5 +26,10 @@ var ItemSchema = new Schema({
  * Query plugin
  */
 ItemSchema.plugin( QueryPlugin ); //install QueryPlugin
+
+ItemSchema.pre('save', function(next) {
+  if (this.available > this.in_stock) { return next(new Error('availability cannot be higher than in_stock')); }
+  next();	
+});
 
 mongoose.model("Item", ItemSchema);

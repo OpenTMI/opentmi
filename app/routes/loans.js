@@ -14,7 +14,7 @@ var Route = function(app){
     .post(controller.create);
 
   router.route('/api/v0/loans/me')
-    .get(auth.ensureAuthenticated, controller.me);
+    .get(auth.ensureAuthenticated, controller.getMe);
 
   router.route('/api/v0/loans/:Loan.:format?')
     .get(controller.get)
