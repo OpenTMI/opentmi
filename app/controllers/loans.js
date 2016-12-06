@@ -19,17 +19,8 @@ var Controller = function(){
   this.paramLoan = defaultCtrl.modelParam();
   
   // Define handlers for rest calls
-  this.find = function(req, res) {
-	Loan.find({}, function(err, loans) {
-	  if (err) return res.status(400).json({error:err.message});
-      res.status(200).json(loans);
-	});
-  }
- 
-  this.get = function(req, res) {
-	if (req.Loan) res.status(200).json(req.Loan);
-	else return res.status(404).json({error:'Not found'});
-  }
+  this.find = defaultCtrl.find;
+  this.get = defaultCtrl.get;
   
   this.getMe = function(req, res) {
     Loan.find({loaner: req.user})
