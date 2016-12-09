@@ -146,13 +146,13 @@ BuildSchema.path('location').validate(function (value, respond) {
  */
 
 BuildSchema.pre('validate', function (next) {
-
+  var err;
   if( _.isArray(this.files) ) {
     for(i=0;i<this.files.length;i++) {
         var file = this.files[i];
         if( !file.name) {
-            next('filename missing');
-            return;
+            err = new Error('file.name missing');
+            break;
         }
         if(file.data) {
           file.size = file.data.length;
@@ -162,15 +162,16 @@ BuildSchema.pre('validate', function (next) {
         }
     }
   }
-  if( this.target.type === 'simulate' ){
-    if( this.target.simulator ) next();
-    else next('simulator missing');
-  } else if( this.target.type === 'hardware' ){ 
-    if( this.target.hw ) next();
-    else next( 'target missing' );
-  } else {
-    next( 'target missing' );
+  if( this.target.type === 'simulate' && !err){
+    if( !this.target.simulator )
+        err = new Error('simulator missing');
+  } else if( this.target.type === 'hardware' && !err){ 
+    if( !this.target.hw )
+        err = new Error('target missing');
+  } else if( !err ) {
+    err = new Error('target missing');
   }
+  next(err);
  });
 
 /**
