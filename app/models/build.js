@@ -160,7 +160,7 @@ BuildSchema.pre('validate', true, function (next, done) {
           file.sha1 = checksum(file.data, 'sha1');
           file.sha256 = checksum(file.data, 'sha256');
         }
-    });
+    }
   }
   if( this.target.type === 'simulate' ){
     if( this.target.simulator ) next();
