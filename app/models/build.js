@@ -151,7 +151,7 @@ BuildSchema.pre('validate', function (next) {
     for(i=0;i<this.files.length;i++) {
         var file = this.files[i];
         if( !file.name) {
-            err = new Error('file.name missing');
+            err = new Error('file['+i+'].name missing');
             break;
         }
         if(file.data) {
@@ -169,8 +169,10 @@ BuildSchema.pre('validate', function (next) {
     if( !this.target.simulator )
         err = new Error('simulator missing');
   } else if( this.target.type === 'hardware' ){ 
-    if( !this.target.hw || (this.target.hw && !this.target.hw.model) )
-        err = new Error('target or model missing');
+    if( !this.target.hw )
+        err = new Error('target.hw missing');
+    else if(!this.target.hw.model)
+        err = new Error('target.hw.model missing');
   }
   next(err);
  });
