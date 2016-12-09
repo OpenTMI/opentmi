@@ -90,7 +90,7 @@ var BuildSchema = new Schema({
     machine: {type: String}
   },
   memory: {
-    size: {
+    summary: {
       heap: {type: Number},
       static_ram: {type: Number},
       total_flash: {type: Number},
@@ -101,7 +101,7 @@ var BuildSchema = new Schema({
   files: [{
     //buffer limit 16MB when attached to document!
     name: { type: String },
-    mime_type: { type: Buffer },
+    mime_type: { type: String },
     data: { type: Buffer },
     size: { type: Number },
     sha1: { type: String },
@@ -110,7 +110,7 @@ var BuildSchema = new Schema({
   issues: [ Issue ],
   // build target device
   target: {
-    type: { type: String, enum: ['simulate','hardware'], default: 'hardware'},
+    type: { type: String, enum: ['simulate','hardware'], default: 'hardware', required: true},
     os: { type: String, enum: ['win32', 'win64', 'unix32', 'unix64', 'mbedOS', 'unknown'] },
     simulator: {
       bt: { type: String },
@@ -162,14 +162,15 @@ BuildSchema.pre('validate', function (next) {
         }
     }
   }
-  if( this.target.type === 'simulate' && !err){
+  if( err ) {
+      return next(err);
+  }
+  if( this.target.type === 'simulate' ){
     if( !this.target.simulator )
         err = new Error('simulator missing');
-  } else if( this.target.type === 'hardware' && !err){ 
+  } else if( this.target.type === 'hardware' ){ 
     if( !this.target.hw )
         err = new Error('target missing');
-  } else if( !err ) {
-    err = new Error('target missing');
   }
   next(err);
  });
