@@ -145,7 +145,7 @@ BuildSchema.path('location').validate(function (value, respond) {
  }, '{PATH} missing');
  */
 
-BuildSchema.pre('validate', true, function (next, done) {
+BuildSchema.pre('validate', function (next) {
 
   if( _.isArray(this.files) ) {
     for(i=0;i<this.files.length;i++) {
@@ -169,10 +169,9 @@ BuildSchema.pre('validate', true, function (next, done) {
     if( this.target.hw ) next();
     else next( 'target missing' );
   } else {
-    next( 'target missing' );
+    return next( 'target missing' );
   }
-    next();
- }, '{PATH}: invalid');
+ });
 
 /**
  * Methods
