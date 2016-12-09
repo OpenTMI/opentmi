@@ -171,6 +171,7 @@ BuildSchema.pre('validate', true, function (next, done) {
   } else {
     next( 'target missing' );
   }
+    next();
  }, '{PATH}: invalid');
 
 /**
