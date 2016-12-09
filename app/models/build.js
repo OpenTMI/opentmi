@@ -169,8 +169,8 @@ BuildSchema.pre('validate', function (next) {
     if( !this.target.simulator )
         err = new Error('simulator missing');
   } else if( this.target.type === 'hardware' ){ 
-    if( !this.target.hw )
-        err = new Error('target missing');
+    if( !this.target.hw || (this.target.hw && !this.target.hw.model) )
+        err = new Error('target or model missing');
   }
   next(err);
  });
