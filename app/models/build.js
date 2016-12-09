@@ -6,6 +6,8 @@
 var crypto = require('crypto');
 
 // 3rd party modules
+var _ = require('underscore');
+var uuid = require('node-uuid');
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');
 
@@ -54,10 +56,10 @@ var BuildSchema = new Schema({
     user: {type: String},
     time: {type: Date, default: Date.now}
   },
-  uuid: { type: String },
+  uuid: { type: String, default: uuid.v4, index: true },
   vcs: [
     new Schema({
-      name: { type: String },
+      name: { type: String }, //e.g. "github"
       system: { type: String, enum: ['git','SVN', 'CSV'], default: 'git' },
       type: {type: String, enum: ['PR']},
 
@@ -72,7 +74,7 @@ var BuildSchema = new Schema({
     })
   ],
   ci: {
-    system: {type: String, enum: ['Jenkins']},
+    system: {type: String, enum: ['Jenkins', 'travisCI', 'circleCI']},
     location: Location,
     job: {
       name: {type: String},
@@ -96,15 +98,15 @@ var BuildSchema = new Schema({
       total_ram: {type: Number}
     }
   },
-  file: {
+  files: [{
     //buffer limit 16MB when attached to document!
     name: { type: String },
+    mime_type: { type: Buffer },
     data: { type: Buffer },
     size: { type: Number },
     sha1: { type: String },
     sha256: { type: String }
-  },
-  location: [ Location ],
+  }],
   issues: [ Issue ],
   // build target device
   target: {
@@ -145,10 +147,20 @@ BuildSchema.path('location').validate(function (value, respond) {
 
 BuildSchema.pre('validate', true, function (next, done) {
 
-  if( this.build && this.build.data ) {
-    this.build.size = this.build.data.length;
-    this.build.sha1 = checksum(this.build.data, 'sha1');
-    this.build.sha256 = checksum(this.build.data, 'sha256');
+  if( _.isArray(this.files) ) {
+    for(i=0;i<this.files.length;i++) {
+        var file = this.files[i];
+        if( !file.name) {
+            next('filename missing');
+            return;
+        }
+        if(file.data) {
+          file.size = file.data.length;
+          //file.type = mimetype(file.name(
+          file.sha1 = checksum(file.data, 'sha1');
+          file.sha256 = checksum(file.data, 'sha256');
+        }
+    });
   }
   if( this.target.type === 'simulate' ){
     if( this.target.simulator ) next();
