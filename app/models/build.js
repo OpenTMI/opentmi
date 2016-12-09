@@ -169,7 +169,7 @@ BuildSchema.pre('validate', function (next) {
     if( this.target.hw ) next();
     else next( 'target missing' );
   } else {
-    return next( 'target missing' );
+    next( 'target missing' );
   }
  });
 
