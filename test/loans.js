@@ -229,11 +229,11 @@ describe('Loans', function () {
 	  });
   });
   
-  // Should be the last test for loans
+  // Should be the second last test for loans
   it('should delete a SINGLE loan on /loans/<id> DELETE', function (done) {
     var loan_route = api + '/loans/' + test_loan_id;
     superagent.del(loan_route)
-      .end(function (e, res) {
+      .end(function(e, res) {
         expect(e).to.equal(null);
         expectResult(200, res, undefined);
    
@@ -246,6 +246,18 @@ describe('Loans', function () {
 			done(); 
 		  });
       });
+  });
+  
+  // Make sure items availability changed on delete
+  it('should increase availablity on deleted item for all unreturned items', function(done) {
+	var expected_body = { available:7 }
+	
+	superagent.get(api + '/items/' + test_item_id)
+	  .end(function(e, res) {
+		expect(e).to.equal(null);
+		expectResult(200, res, expected_body);
+		done();  
+	  });
   });
 });
 

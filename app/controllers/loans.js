@@ -74,7 +74,13 @@ var Controller = function(){
 	});  
   }
   
-  this.remove = defaultCtrl.remove;
+  // Default implementation des not fire up pre remove hooks, so override is necessary
+  this.remove = function(req, res) {
+	req.Loan.remove(function(err) {
+	  if (err) return res.status(400).json({ error:err });
+	  res.status(200).json({});	
+	});
+  }//defaultCtrl.remove;
   
   return this;
 }
