@@ -40,7 +40,12 @@ var Controller = function(){
   
   // Normal update refuses to run validators
   this.update = customUpdate;
-  this.remove = defaultCtrl.remove;
+  this.remove = function(req, res) {
+	req.Item.remove(function(err) {
+	  if (err) return res.status(400).json(err);
+	  res.status(200).json({});
+    });
+  }//defaultCtrl.remove;
 
   return this;
 }

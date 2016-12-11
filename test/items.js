@@ -8,6 +8,7 @@ var superagent = require("superagent"),
 var api = 'http://localhost:3000/api/v0';
 var mongodbUri = 'mongodb://localhost/opentmi_dev';
 
+var item_id_loaned = '582c7948850f298a5acff981';
 var new_item_id;
 var valid_post_body = {
   barcode: '9876543210',
@@ -257,6 +258,15 @@ describe('Items', function () {
 		    done();
           });
       });
+  });
+  
+  it('should not delete item that is loaned somewhere', function(done) {
+    superagent.del(api + '/items/' + item_id_loaned)
+      .end(function(e, res) {
+	    expect(e).to.not.equal(null);
+	    expectResult(400, res, undefined); 
+	    done();
+	  });
   });
 });
 
