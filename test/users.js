@@ -55,7 +55,7 @@ describe("Users", function () {
           console.log("seems that your DB is not clean!");
           process.exit(1);
         }
-        expect(res.status).to.equal(201);
+        expect(res.status).to.equal(200);
         expect(e).to.equal(null);
         expect(res.body).to.have.property('_id');
         new_user_id = res.body._id;
@@ -111,40 +111,48 @@ describe("Users", function () {
         }
         expect(res.status).to.equal(200);
         expect(e).to.equal(null);
-      });
-    
-    superagent.get(api + "/users/" + new_user_id)
-      .type('json')
-      .end(function (e, res) {
-        res.should.be.json
-        if( res.status === 300 ) {
-          console.log("seems that your DB is not clean!");
-          process.exit(1);
-        }
-        expect(res.body).to.have.property('_id');
-        expect(res.body.name).to.eql("Test User");
-        expect(res.body.email).to.eql("newtestermail@fakemail.se");
-        expect(res.body.displayName).to.eql("Tester");
-        expect(res.body).to.have.property('apikeys');
-        expect(res.body).to.have.property('groups');
-        expect(res.body).to.have.property('loggedIn');
-        expect(res.body).to.have.property('lastVisited');
-        expect(res.body).to.have.property('registered');
-        done();
+        
+        superagent.get(api + "/users/" + new_user_id)
+          .type('json')
+          .end(function (e, res) {
+            res.should.be.json
+            if( res.status === 300 ) {
+              console.log("seems that your DB is not clean!");
+              process.exit(1);
+            }
+            expect(res.body).to.have.property('_id');
+            expect(res.body.name).to.eql("Test User");
+            expect(res.body.email).to.eql("newtestermail@fakemail.se");
+            expect(res.body.displayName).to.eql("Tester");
+            expect(res.body).to.have.property('apikeys');
+            expect(res.body).to.have.property('groups');
+            expect(res.body).to.have.property('loggedIn');
+            expect(res.body).to.have.property('lastVisited');
+            expect(res.body).to.have.property('registered');
+            done();
+          });
       });
   });
 
   it("should delete a SINGLE user on /users/<id> DELETE", function (done) {
     superagent.del(api + "/users/" + new_user_id)
-      .end(function (e, res) {
+      .end(function(e, res) {
         res.should.be.json
         if( res.status === 300 ) {
           console.log("seems that your DB is not clean!");
           process.exit(1);
         }
-        expect(res.status).to.equal(204);
+        expect(res.status).to.equal(200);
         expect(e).to.equal(null);
-        done();
+        
+        // Make sure the document is deleted
+        superagent.get(api + "/users/" + new_user_id)
+          .end(function(e, res) {
+		    res.should.be.json
+		    expect(e).to.not.equal(null);
+		    expect(res.status).to.equal(404);
+		    done();
+		  });
       });
   });
 });

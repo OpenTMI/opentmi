@@ -15,52 +15,60 @@ var auth = require('./../../config/middlewares/authorization');
  */
 
 var Route = function(app){
-
+  var router = express.Router();
   var User = mongoose.model('User');
-  User.count( {}, function(err, count){
-    if(count===0 ){
-      var admin = new User();
-      admin.name = nconf.get('admin').user;
-      admin.password = nconf.get('admin').pwd;
-      admin.save( function(err, user){
-        if(err)return console.log(err);
-        else {
-          user.addToGroup('admins', function(error, user){
-            if( error ) {
-              logger.error(error);
-            } else {
-              logger.debug(user);
-            }
-          });
-        }
-      });
-    }
-  });
-
-  restify.serve(app, User, {
-    version: '/v0',
-    name: 'users',
-    idProperty: '_id',
-    protected: '__v,password',
-  });
   
+  // Create a default admin if there is no users in the database
+  User.count({}, function(err, count) {
+    if (count === 0) createDefaultAdmin();
+  });
 
+  //create user routes
+  var user_controller = require('./../controllers/users')();
+  router.param('User', user_controller.paramUser);
+  router.param('format', user_controller.paramFormat);
+
+  router.route('/api/v0/users.:format?')
+    .get(user_controller.find)
+    .post(user_controller.create);
+    
+  router.route('/api/v0/users/:User.:format?')
+    .get(user_controller.get)
+    .put(user_controller.update)
+    .delete(user_controller.remove);
+    
+  app.use(router);
+  
   //create authentication routes:
-  var controller = require('./../controllers/authentication')();
+  var auth_controller = require('./../controllers/authentication')();
   var apiKeys = require('./../controllers/apikeys');
   app.get('/api/v0/apikeys', auth.ensureAdmin, apiKeys.keys);
   app.get('/api/v0/users/:User/apikeys', auth.ensureAuthenticated, apiKeys.userKeys);
   app.get('/api/v0/users/:User/apikeys/new', auth.ensureAuthenticated, apiKeys.createKey)
   app.delete('/api/v0/users/:User/apikeys/:Key', auth.ensureAuthenticated, apiKeys.deleteKey);
   
-  
-  app.post('/auth/login', controller.login );
-  app.get('/auth/me', auth.ensureAuthenticated, controller.getme );  
-  app.put('/auth/me', auth.ensureAuthenticated, controller.putme );
-  app.post('/auth/signup', controller.signup );
-  app.post('/auth/logout', controller.logout );
-  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), controller.github );
-  app.post('/auth/google', controller.google );
+  app.post('/auth/login', auth_controller.login );
+  app.get('/auth/me', auth.ensureAuthenticated, auth_controller.getme );  
+  app.put('/auth/me', auth.ensureAuthenticated, auth_controller.putme );
+  app.post('/auth/signup', auth_controller.signup );
+  app.post('/auth/logout', auth_controller.logout );
+  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), auth_controller.github );
+  app.post('/auth/google', auth_controller.google );
+}
+
+function createDefaultAdmin() {
+  var admin = new User();
+  admin.name = nconf.get('admin').user;
+  admin.password = nconf.get('admin').pwd;
+  admin.save(function(err, user) {
+    if(err) return console.log(err);
+    else {
+      user.addToGroup('admins', function(error, user) {
+        if (error) logger.error(error);
+        else logger.debug(user);
+      });
+    }
+  });
 }
 
 module.exports = Route;
