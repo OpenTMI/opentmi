@@ -156,7 +156,7 @@ describe('Items', function () {
   });
   
   it('should not accept PUT with an in_stock that would cause available to be negative', function(done) {
-	var body = { in_stock: 4 }
+	var body = { in_stock: 0 }
 	var expected_body = { error : undefined }
 	
     superagent.put(api + '/items/' + new_item_id)
@@ -167,7 +167,6 @@ describe('Items', function () {
 		done();
 	  });
   });
-
 
   it('should update a SINGLE item on /items/<id> PUT, with just available field', function (done) {
     var body = { available: 10 }
