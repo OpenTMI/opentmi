@@ -23,13 +23,15 @@ var Controller = function(){
   this.get = defaultCtrl.get;
   
   this.getMe = function(req, res) {
-    Loan.find({loaner: req.user})
+    Loan.find({loaner: req.user.sub})
     .populate('items.item')
     .exec(function(err, loans) {
-      res.json(loans);
+      if (err) { res.sendStatus(500); } else {
+        res.json(loans);
+      }
     });
-  }
-  
+  };
+
   this.create = function(req, res) {
 	//console.log('Create getto');
 	var loan = new Loan(req.body);

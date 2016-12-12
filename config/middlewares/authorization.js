@@ -12,6 +12,16 @@ var Group = mongoose.model('Group');
  | Login Required Middleware
  |--------------------------------------------------------------------------
  */
+module.exports.ensureAuth = function (err, req, res, next) {
+  if (err) {
+    if (err.name === 'UnauthorizedError' && !req.headers.authorization) {
+      return res.status(401).send({ message: 'Please make sure your request has an Authorization header'});
+    }
+    return res.sendStatus(401);
+  }
+  next();
+};
+
 var ensureAuthenticated = module.exports.ensureAuthenticated = function(req, res, next) {
   if (!req.headers.authorization) {
     return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
@@ -32,6 +42,7 @@ var ensureAuthenticated = module.exports.ensureAuthenticated = function(req, res
   req.user = payload.sub;
   next();
 }
+
 var getUser = module.exports.getUser = function(req, res, next){
   ensureAuthenticated(req, res, function(req, res, next){
     User.findOne({ _id: req.user}, function(error, user){

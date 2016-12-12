@@ -201,13 +201,16 @@ var Controller = function () {
     };
 
     var prepareUser = function (profile, callback) {
-      User.findOne({ github: profile.id }, function (err, existingUser) {
+      User.findOne({ $or: [{ github: profile.login }, { email: profile.email }] }, function (err, existingUser) {
         // Check if the user account exists.
         if (existingUser) {
           winston.info('Return an existing user account.');
 
           if (req.headers.authorization) {
             callback({ status: 409, msg: 'There is already a GitHub account that belongs to you' });
+          } else if (existingUser.github !== profile.login) {
+            existingUser.github = profile.login;
+            callback(null, existingUser, profile.group);
           } else {
             callback(null, existingUser, profile.group);
           }
@@ -218,7 +221,7 @@ var Controller = function () {
             if (!user) {
               return callback({ status: 400, msg: 'User not found' });
             } else {
-              user.github = profile.id;
+              user.github = profile.login;
               user.picture = user.picture || profile.avatar_url;
               user.displayName = user.displayName || profile.name;
               user.name = user.displayName;
@@ -230,7 +233,7 @@ var Controller = function () {
           winston.info('Create a new user account.');
 
           var user = new User();
-          user.github = profile.id;
+          user.github = profile.login;
           user.picture = profile.avatar_url;
           user.displayName = profile.name;
           user.name = user.displayName;

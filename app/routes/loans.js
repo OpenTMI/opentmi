@@ -1,5 +1,8 @@
 var express = require('express');
+var nconf = require('nconf');
 var auth = require('./../../config/middlewares/authorization');
+var jwt = require('express-jwt');
+var TOKEN_SECRET = nconf.get('webtoken');
 
 var Route = function(app){
 
@@ -14,7 +17,7 @@ var Route = function(app){
     .post(controller.create);
 
   router.route('/api/v0/loans/me')
-    .get(auth.ensureAuthenticated, controller.getMe);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuth, controller.getMe);
 
   router.route('/api/v0/loans/:Loan.:format?')
     .get(controller.get)
