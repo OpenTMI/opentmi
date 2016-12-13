@@ -2,12 +2,12 @@
   Users Controller 
 */
 
-//3rd party modules
+// 3rd party modules
 var winston = require('winston');
 var express = require('express');
 var mongoose = require('mongoose');
 
-//own modules
+// Own modules
 var DefaultController = require('./');
 
 var Controller = function() {
@@ -23,9 +23,16 @@ var Controller = function() {
   this.find = defaultCtrl.find;
   this.create = defaultCtrl.create;
   this.update = defaultCtrl.update;
-  this.remove = defaultCtrl.remove;
+  this.remove = customRemove;
 
   return this;
 }
+
+function customRemove(req, res) {
+  req.User.remove(function(err) {
+	if (err) return res.status(400).json({error:err.message});
+	res.status(200).json({});
+  });
+};
 
 module.exports = Controller;

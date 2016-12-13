@@ -5,6 +5,8 @@ var superagent = require("superagent"),
     expect = chai.expect,
     should = require("should");
 
+var existing_item_id = "5825bb7cfe7545132c88c780";
+
 // var userSchema = require('mongoose').model('User').schema;
 var api = "http://localhost:3000/api/v0";
 var mongodbUri = 'mongodb://localhost/opentmi_dev';
@@ -132,6 +134,16 @@ describe("Users", function () {
             done();
           });
       });
+  });
+
+  it("should not delete a user that is referenced in a loan", function(done) {
+	superagent.del(api + '/users/' + existing_item_id)
+	  .end(function(e, res) {
+		res.should.be.json
+		expect(e).to.not.equal(null); 
+		expect(res.status).to.equal(400);
+		done();	 
+	  });  
   });
 
   it("should delete a SINGLE user on /users/<id> DELETE", function (done) {
