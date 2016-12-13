@@ -7,24 +7,23 @@ var logger = require('winston');
 var jwt = require('express-jwt');
 var TOKEN_SECRET = nconf.get('webtoken');
 
-
 var auth = require('./../../config/middlewares/authorization');
+
+var user_controller = require('./../controllers/users')();
+var auth_controller = require('./../controllers/authentication')();
+var User = mongoose.model('User');
 
 /**
  * Route middlewares
  */
-
 var Route = function(app){
-  var router = express.Router();
-  var User = mongoose.model('User');
-  
   // Create a default admin if there is no users in the database
   User.count({}, function(err, count) {
     if (count === 0) createDefaultAdmin();
   });
 
   //create user routes
-  var user_controller = require('./../controllers/users')();
+  var router = express.Router();
   router.param('User', user_controller.paramUser);
   router.param('format', user_controller.paramFormat);
 
@@ -40,7 +39,6 @@ var Route = function(app){
   app.use(router);
   
   //create authentication routes:
-  var auth_controller = require('./../controllers/authentication')();
   var apiKeys = require('./../controllers/apikeys');
   app.get('/api/v0/apikeys', auth.ensureAdmin, apiKeys.keys);
   app.get('/api/v0/users/:User/apikeys', auth.ensureAuthenticated, apiKeys.userKeys);
