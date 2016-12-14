@@ -5,9 +5,12 @@ var superagent = require("superagent"),
     should = require("should");
     mongoose = require("mongoose");
 
+var error_body = { error : undefined }
+
 var api = 'http://localhost:3000/api/v0';
 var mongodbUri = 'mongodb://localhost/opentmi_dev';
 
+var item_id_loaned = '582c7948850f298a5acff981';
 var new_item_id;
 var valid_post_body = {
   barcode: '9876543210',
@@ -79,30 +82,51 @@ describe('Items', function () {
 	var body = Object.assign({}, valid_post_body);
 	body.available = body.in_stock + 1;
 	
-    var expected_body = { error : undefined	}
-    
     superagent.post(api + '/items')
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
-		expectResult(400, res, expected_body);
+		expectResult(400, res, error_body);
 		done();
 	  });
   });
   
-  it ('should not accept non-zero available without in_stock', function(done) {
+  it('should not accept POST that has negative available', function(done) {
+	var body = Object.assign({}, valid_post_body);
+	body.available = -1;
+	
+	superagent.post(api + '/items')
+	  .send(body)
+	  .end(function(e, res) {
+		expect(e).to.not.equal(null);
+		expectResult(400, res, error_body);
+		done();  
+	  });
+  });
+  
+  it('should not accept POST that has negative available', function(done) {
+	var body = Object.assign({}, valid_post_body);
+	body.in_stock = -1;
+
+	superagent.post(api + '/items')
+	  .send(body)
+	  .end(function(e, res) {
+		expect(e).to.not.equal(null);
+		expectResult(400, res, error_body);
+		done();  
+	  });
+  });
+  
+  it ('should not accept positive available without in_stock', function(done) {
 	// Copy a valid body and remove in_stock field from it
 	var body = Object.assign({}, valid_post_body);
 	delete body.in_stock;
 	
-	// We expect to receive an error with a message
-    var expected_body = { error : undefined }
-    
     superagent.post(api + '/items')
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
-		expectResult(400, res, expected_body);
+		expectResult(400, res, error_body);
 		done();
 	  });
   });
@@ -130,43 +154,39 @@ describe('Items', function () {
 
   it('should not accept PUT with a negative available', function(done) {
 	var body = { available: -1 }
-	var expected_body = { error : undefined }
-	
+
     superagent.put(api + '/items/' + new_item_id.toString())
       .send(body)
       .end(function(e, res) {  
 		//expect(e).to.not.equal(null);
-		expectResult(400, res, expected_body);
+		expectResult(400, res, error_body);
 		done();
 	  });
   });
   
   it('should not accept PUT with a negative in_stock', function(done) {
 	var body = { in_stock: -1 }
-	var expected_body = { error : undefined }
-	
+
     superagent.put(api + '/items/' + new_item_id.toString())
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
-		expectResult(400, res, expected_body);
+		expectResult(400, res, error_body);
 		done();
 	  });
   });
   
   it('should not accept PUT with an in_stock that would cause available to be negative', function(done) {
-	var body = { in_stock: 4 }
-	var expected_body = { error : undefined }
-	
+	var body = { in_stock: 0 }
+
     superagent.put(api + '/items/' + new_item_id)
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
-		expectResult(400, res, expected_body);
+		expectResult(400, res, error_body);
 		done();
 	  });
   });
-
 
   it('should update a SINGLE item on /items/<id> PUT, with just available field', function (done) {
     var body = { available: 10 }
@@ -190,7 +210,6 @@ describe('Items', function () {
           });	
       });   
   });
-  
   
   it('should update a SINGLE item on /items/<id> PUT, with just in_stock field', function (done) {
     var body = { in_stock: 20 }
@@ -257,6 +276,15 @@ describe('Items', function () {
 		    done();
           });
       });
+  });
+  
+  it('should not delete item that is loaned somewhere', function(done) {
+    superagent.del(api + '/items/' + item_id_loaned)
+      .end(function(e, res) {
+	    expect(e).to.not.equal(null);
+	    expectResult(400, res, undefined); 
+	    done();
+	  });
   });
 });
 
