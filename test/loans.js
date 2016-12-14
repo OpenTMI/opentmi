@@ -107,6 +107,7 @@ describe('Loans', function () {
       .send(body)
       .end(function(e, res) {
 	    expectResult(200, res, undefined);
+	    
 	    superagent.get(api + '/loans/' + res.body._id)
 	      .type('json')
 	      .end(function(e, res) {
@@ -133,22 +134,33 @@ describe('Loans', function () {
         // Save _id for later use
         test_loan_id = res.body._id;
         test_loanitem_id = res.body.items[0]._id;
-        valid_loan_body.items[0]._id = res.body.items[0]._id;
-        valid_loan_body.items[1]._id = res.body.items[1]._id;
-        valid_loan_body.items[2]._id = res.body.items[2]._id;
-        done();
+        
+        // Make sure the loan is created
+        superagent.get(api + '/loans/' + test_loan_id)
+          .type('json')
+          .end(function(e, res) {
+		    expect(e).to.equal(null);
+		    expectResult(200, res, expected_body);
+		    
+		    // Validate created items
+            valid_loan_body.items[0]._id = res.body.items[0]._id;
+            valid_loan_body.items[1]._id = res.body.items[1]._id;
+            valid_loan_body.items[2]._id = res.body.items[2]._id;
+        
+		    done();
+		  });
       });
   }); 
-  
-  it('should decrease item availability on POST', function(done) { // Should be run after a succesfull POST
-    var expected_body = { available : 4 } // Should decrease 6 from what is in the seeds(after 2 successful loans of 3)
-   
+    
+  it('should decrease item availability on POST', function(done) {
+    var expected_body = { available : 4 }
     superagent.get(api + '/items/' + test_item_id)
       .type('json')
       .end(function(e, res) {
 		expect(e).to.equal(null);
+		// Should decrease 6 from what is in the seeds(after 2 successful loans of 3)
 		expectResult(200, res, expected_body);
-		done(); 
+	 	done(); 
 	  });
   });
     
@@ -158,25 +170,27 @@ describe('Loans', function () {
 	body.items.pop();
 	
     superagent.put(api + '/loans/' + test_loan_id)
-    .send(body)
-    .end(function(e, res) {
-	  expect(e).to.not.equal(null);
-      expectResult(400, res, undefined);
-      done();
+      .send(body)
+      .end(function(e, res) {
+	    expect(e).to.not.equal(null);
+        expectResult(400, res, undefined);
+        done();
     });
   });
+  
   it ('should not accept return PUT with invalid return_date', function(done) {
     var body = { items : cloneObject(valid_loan_body.items) }
 	body.items[0].return_date = 'invalid date';
 	
 	superagent.put(api + '/loans/' + test_loan_id)
-    .send(body)
-    .end(function (e, res) {
-	  expect(e).to.not.equal(null);
-      expectResult(400, res, undefined);
-      done();
-    });
+      .send(body)
+      .end(function (e, res) {
+	    expect(e).to.not.equal(null);
+        expectResult(400, res, undefined);
+        done();
+      });
   });
+  
   it ('should accept return PUT with valid return_date', function(done) {
     var test_date = new Date();
     var body = { items : cloneObject(valid_loan_body.items) }
@@ -186,13 +200,14 @@ describe('Loans', function () {
 	expected_body.items = undefined;
 	
 	superagent.put(api + '/loans/' + test_loan_id)
-    .send(body)
-    .end(function(e, res) {
-	  expect(e).to.equal(null);
-      expectResult(200, res, expected_body);
-      done();
-    });
+      .send(body)
+      .end(function(e, res) {
+	    expect(e).to.equal(null);
+        expectResult(200, res, expected_body);
+        done();
+      });
   });
+  
   it('should update a SINGLE item on /loans/<id> PUT', function (done) {
     var test_date = new Date();
     var body = { 'loan_date' : test_date };
@@ -212,8 +227,8 @@ describe('Loans', function () {
           .type('json')
           .end(function(e, res) {
 			expect(e).to.equal(null);
-			expectResult(200, res, expected_body);
-			done();  
+			expectResult(200, res, expected_body);	
+			done();
 	      });
       });
   });
