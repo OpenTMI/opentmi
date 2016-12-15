@@ -7,7 +7,7 @@ var TOKEN_SECRET = nconf.get('webtoken');
 var Route = function(app){
 
   var router = express.Router();
-  var controller = require('./../controllers/loans')();	
+  var controller = require('./../controllers/loans')();
 
   router.param('Loan', controller.paramLoan);
   router.param('format', controller.paramFormat);
@@ -17,7 +17,7 @@ var Route = function(app){
     .post(controller.create);
 
   router.route('/api/v0/loans/me')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuth, controller.getMe);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.getMe);
 
   router.route('/api/v0/loans/:Loan.:format?')
     .get(controller.get)
@@ -25,6 +25,6 @@ var Route = function(app){
     .delete(controller.remove);
 
   app.use(router);
-}
+};
 
 module.exports = Route;

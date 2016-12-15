@@ -1,9 +1,13 @@
 var express = require('express');
+var nconf = require('nconf');
+var auth = require('./../../config/middlewares/authorization');
+var jwt = require('express-jwt');
+var TOKEN_SECRET = nconf.get('webtoken');
 
 var Route = function(app){
 
   var router = express.Router();
-  var controller = require('./../controllers/items')();	
+  var controller = require('./../controllers/items')();
 
   router.param('Item', controller.paramItem);
   router.param('format', controller.paramFormat);
@@ -18,6 +22,6 @@ var Route = function(app){
     .delete(controller.remove);
 
   app.use(router);
-}
+};
 
 module.exports = Route;

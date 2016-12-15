@@ -23,7 +23,7 @@ var Controller = function () {
    |--------------------------------------------------------------------------
    */
   this.getme = function (req, res) {
-    User.findById(req.user, function (err, user) {
+    User.findById(req.user.sub, function (err, user) {
       res.send(user);
     });
   };
@@ -34,7 +34,7 @@ var Controller = function () {
    |--------------------------------------------------------------------------
    */
   this.putme = function (req, res) {
-    User.findById(req.user, function (err, user) {
+    User.findById(req.user.sub, function (err, user) {
       if (!user) {
         return res.status(400).send({ message: 'User not found' });
       }
@@ -131,6 +131,9 @@ var Controller = function () {
     var accessTokenUrl = 'https://github.com/login/oauth/access_token';
     var userApiUrl = 'https://api.github.com/user';
 
+    /*
+      Authorize the user using github by exchanging authorization code for access token.
+    */
     var authorization = function (callback) {
       var params = {
         code: req.body.code,
@@ -142,6 +145,7 @@ var Controller = function () {
       request.get({ url: accessTokenUrl, qs: params },
         function (err, response, accessToken) {
           if (err) {
+            winston.info('Github auth: authorization error');
             callback({ status: 500, msg: err.toString() });
           } else {
             accessToken = qs.parse(accessToken);
@@ -152,14 +156,20 @@ var Controller = function () {
         });
     };
 
+    /*
+      Retrieve the user's github profile.
+    */
     var getProfile = function (accessToken, headers, callback) {
       request.get({ url: userApiUrl, qs: accessToken, headers, json: true },
         function (err, response, profile) {
           if (err) {
+            winston.info('Github auth: getProfile error');
             callback({ status: 500, msg: err.toString() });
           } else if (!err && response.statusCode !== 200) {
+            winston.info('Github auth: bad profile response');
             callback({ status: 409, msg: 'Did not get github profile.' });
           } else if (!profile.email) {
+            winston.info('Github auth: no email error');
             callback({ status: 409, msg: 'Did not get email address.' });
           } else {
             callback(null, accessToken, headers, profile);
@@ -167,10 +177,14 @@ var Controller = function () {
         });
     };
 
+    /*
+      Ensure the user belongs to the required organization.
+    */
     var checkOrganization = function (accessToken, headers, profile, callback) {
       request.get({ url: userApiUrl + '/orgs', qs: accessToken, headers, json: true },
         function (err, response) {
           if (err) {
+            winston.info('Github auth: checkOrganization error');
             callback({ status: 500, msg: err.toString() });
           } else {
             var belongsOrg = _.find(response.body, { login: nconf.get('github').organization });
@@ -178,16 +192,21 @@ var Controller = function () {
             if (belongsOrg) {
               callback(null, accessToken, headers, profile);
             } else {
+              winston.info('Github auth: user not in organization');
               callback({ status: 401, msg: 'You do not have required access.' });
             }
           }
         });
     };
 
+    /*
+      Check if the user is an administrator or a normal employee in the organization.
+    */
     var checkAdmin = function (accessToken, headers, profile, callback) {
       request.get({ url: userApiUrl + '/teams', qs: accessToken, headers, json: true },
         function (err, response) {
           if (err) {
+            winston.info('Github auth: checkAdmin error');
             callback({ status: 500, msg: err.toString() });
           } else {
             var isAdmin = _.find(response.body, function (team) {
@@ -200,6 +219,9 @@ var Controller = function () {
         });
     };
 
+    /*
+      Retrieve the user from the database, or create a new entry if the user does not exist.
+    */
     var prepareUser = function (profile, callback) {
       User.findOne({ $or: [{ github: profile.login }, { email: profile.email }] }, function (err, existingUser) {
         // Check if the user account exists.
@@ -207,8 +229,10 @@ var Controller = function () {
           winston.info('Return an existing user account.');
 
           if (req.headers.authorization) {
+            winston.info('Github auth: user authorized already');
             callback({ status: 409, msg: 'There is already a GitHub account that belongs to you' });
           } else if (existingUser.github !== profile.login) {
+            winston.info('Github auth: updated github username');
             existingUser.github = profile.login;
             callback(null, existingUser, profile.group);
           } else {
@@ -219,6 +243,7 @@ var Controller = function () {
 
           User.findById(req.user.sub, function (err, user) {
             if (!user) {
+              winston.info('Github auth: no user found');
               return callback({ status: 400, msg: 'User not found' });
             } else {
               user.github = profile.login;
@@ -243,7 +268,11 @@ var Controller = function () {
       });
     };
 
+    /*
+      Update the user's admin status.
+    */
     var updateUser = function (user, groupname, callback) {
+      winston.log('Github auth: update user');
       Group.findOne({ users: user, name: 'admins' }, function (err, group) {
         if (group && groupname !== 'admins') {
           user.removeFromGroup('admins', function (user) {

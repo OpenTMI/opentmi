@@ -15,7 +15,7 @@ module.exports = {
     })
   },
   userKeys: function(req, res){
-    User.getApiKeys(req.user, function(error, keys){
+    User.getApiKeys(req.user.sub, function(error, keys){
         if(error){
           return res.status(401).send({message: error});
         }
@@ -23,7 +23,7 @@ module.exports = {
     });
   },
   createKey: function(req, res){
-    User.createApiKey(req.user, function(error, key){
+    User.createApiKey(req.user.sub, function(error, key){
       if(error){
         return res.status(401).send({message: error});
       }
@@ -31,7 +31,7 @@ module.exports = {
     })
   },
   deleteKey: function(req, res){
-    User.deleteApiKey(req.user, req.params.ApiKey, function(error, ok){
+    User.deleteApiKey(req.user.sub, req.params.ApiKey, function(error, ok){
       if(error){
         return res.status(401).send({message: error});
       }

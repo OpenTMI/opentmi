@@ -30,29 +30,29 @@ var Route = function(app){
   router.route('/api/v0/users.:format?')
     .get(user_controller.find)
     .post(user_controller.create);
-    
+
   router.route('/api/v0/users/:User.:format?')
     .get(user_controller.get)
     .put(user_controller.update)
     .delete(user_controller.remove);
-    
+
   app.use(router);
-  
+
   //create authentication routes:
   var apiKeys = require('./../controllers/apikeys');
-  app.get('/api/v0/apikeys', auth.ensureAdmin, apiKeys.keys);
-  app.get('/api/v0/users/:User/apikeys', auth.ensureAuthenticated, apiKeys.userKeys);
-  app.get('/api/v0/users/:User/apikeys/new', auth.ensureAuthenticated, apiKeys.createKey)
-  app.delete('/api/v0/users/:User/apikeys/:Key', auth.ensureAuthenticated, apiKeys.deleteKey);
-  
+  app.get('/api/v0/apikeys', jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, apiKeys.keys);
+  app.get('/api/v0/users/:User/apikeys', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.userKeys);
+  app.get('/api/v0/users/:User/apikeys/new', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.createKey);
+  app.delete('/api/v0/users/:User/apikeys/:Key', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.deleteKey);
+
   app.post('/auth/login', auth_controller.login );
-  app.get('/auth/me', auth.ensureAuthenticated, auth_controller.getme );  
-  app.put('/auth/me', auth.ensureAuthenticated, auth_controller.putme );
+  app.get('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, auth_controller.getme );
+  app.put('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, auth_controller.putme );
   app.post('/auth/signup', auth_controller.signup );
   app.post('/auth/logout', auth_controller.logout );
   app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), auth_controller.github );
   app.post('/auth/google', auth_controller.google );
-}
+};
 
 function createDefaultAdmin() {
   var admin = new User();
