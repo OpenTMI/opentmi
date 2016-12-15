@@ -31,6 +31,7 @@ ItemSchema.plugin( QueryPlugin ); //install QueryPlugin
  * Pre-save hook
  */
 ItemSchema.pre('save', function(next) {
+  winston.info('Item pre-save hook started');
   if (this.available > this.in_stock) { return next(new Error('availability cannot be higher than in_stock')); }
   next();
 });
@@ -39,6 +40,8 @@ ItemSchema.pre('save', function(next) {
  * Pre-remove hook
  */
 ItemSchema.pre('remove', function(next) {
+  winston.info('Item pre-remove hook started');
+  
   var self = this;
   var Loan = mongoose.model('Loan');
  

@@ -10,11 +10,10 @@ var winston = require('winston');
 //own modules
 var DefaultController = require('./');
 
-var Item;
+var Item = mongoose.model('Item');
 var defaultCtrl;
 
 var Controller = function(){
-  Item = mongoose.model('Item');
   defaultCtrl = new DefaultController(Item, 'Item');
   
   // Define route params
@@ -36,8 +35,8 @@ function customCreate(req, res) {
   var item = new Item(req.body);
   item.save( function(err){
     if(err) {
-	  winston.error(); 
-	  return res.status(400).json({error:err.message}) 
+	  winston.error(err.message); 
+	  return res.status(400).json({ error:err.message }); 
 	}
         
     if(res){
@@ -60,21 +59,28 @@ function customUpdate(req, res) {
   
   // Regular save
   req.Item.save(function(err) {
-	if (err) { return res.status(400).json({error:err.message}); }
-	else { res.status(200).json(req.Loan); }
+	if (err) { 
+	  winston.error(err.message);
+	  return res.status(400).json({error:err.message}); 
+	}
+	else {
+	  res.status(200).json(req.Loan); 
+	}
   });
 }
 
 function handleUpdateInStock(req, res) {
   var delta_stock = req.body.in_stock - req.Item.in_stock;
   if (req.Item.available + delta_stock <= 0) {
-	return res.status(400).json({error:'Cannot change in_stock in this manner, would result in negative availability'});
+	winston.error('cannot change in_stock in this manner, would result in negative availability');
+	return res.status(400).json({error:'cannot change in_stock in this manner, would result in negative availability'});
   }
   else {
 	req.Item.in_stock = req.body.in_stock;
 	req.Item.available = req.Item.available + delta_stock;
   }    
 }
+
 function handleUpdateAvailable(req, res) {
   var delta_stock = req.body.available - req.Item.available;
   req.Item.available = req.body.available;
@@ -83,7 +89,10 @@ function handleUpdateAvailable(req, res) {
 
 function customRemove(req, res) {
   req.Item.remove(function(err) {
-	if (err) return res.status(400).json(err);
+	if (err) {
+	  winston.error(err.message);
+	  return res.status(400).json(err);
+	}
 	res.status(200).json({});
   });
 }

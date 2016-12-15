@@ -30,10 +30,12 @@ var LoanSchema = new Schema({
  */
 LoanSchema.plugin( QueryPlugin ); //install QueryPlugin
 
-
+/**
+ * Pre-save hooks
+ */
 // Make sure loaner is a user
 LoanSchema.pre('save', function(next) {
-  //console.log('User start...');
+  winston.info('Loan first pre-save hook started');
   var User = mongoose.model('User');
   User.findById(this.loaner, function(err, user) {
 	if (err) next(new Error('Error while trying to find user, save interrupted'));
@@ -44,9 +46,8 @@ LoanSchema.pre('save', function(next) {
 
 // Takes care of decreasing availability of items before loaning
 LoanSchema.pre('save', function(next) {
-  //console.log('Save start...');
+  winston.info('Loan second pre-save hook started');
   var self = this;
-  
   if (!this.isNew) return next();
   
   var item_counts = self.extractItemIds();
@@ -59,14 +60,20 @@ LoanSchema.pre('save', function(next) {
   });
 });
 
+/**
+ * Pre-remove hook
+ */
 LoanSchema.pre('remove', function(next) {
-  //console.log('Remove start...');
+  winston.info('Loan pre-remove hook started');
   var self = this;
   
   var unreturned = self.countUnreturnedItems();
   self.modifyAvailability(unreturned, next);
 });
 
+/**
+ * Methods
+ */
 LoanSchema.methods.extractItemIds = function() {
   var self = this;
   
@@ -171,6 +178,9 @@ LoanSchema.methods.countUnreturnedItems = function() {
   return objectToArrayOfObjects(counts);
 }
 
+/**
+ * Private methods
+ */
 // Should be executed before actually attempting to decrease availability
 function ensureItemAvailability(item_count_obj, next) {
   Item.findById(item_count_obj.id, function(err, item) {
