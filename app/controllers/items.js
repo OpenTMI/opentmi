@@ -46,16 +46,18 @@ function customCreate(req, res) {
 }
 
 function customUpdate(req, res) {
+  // Handle requests that only provide available or in_stock in a special manner
   if (req.body.in_stock !== undefined && req.body.available === undefined) {
     handleUpdateInStock(req, res);
   }
   else if (req.body.in_stock === undefined && req.body.available !== undefined) {
 	handleUpdateAvailable(req, res);
   }
-  else if(req.body.in_stock !== undefined && req.body.available !== undefined) {  
-	req.Item.available = req.body.available;
-	req.Item.in_stock = req.body.in_stock;
-  }
+  
+  // Updating the item body
+  for (var key in req.body) {
+	req.Item[key] = req.body[key];
+  }  
   
   // Regular save
   req.Item.save(function(err) {
@@ -71,20 +73,18 @@ function customUpdate(req, res) {
 
 function handleUpdateInStock(req, res) {
   var delta_stock = req.body.in_stock - req.Item.in_stock;
-  if (req.Item.available + delta_stock <= 0) {
-	winston.error('cannot change in_stock in this manner, would result in negative availability');
-	return res.status(400).json({error:'cannot change in_stock in this manner, would result in negative availability'});
-  }
-  else {
-	req.Item.in_stock = req.body.in_stock;
-	req.Item.available = req.Item.available + delta_stock;
-  }    
+
+  // Increase availability with the same amount that in_stock was changed
+  winston.info('Received only in_stock in PUT, automatically modifying available with the same amount:' + delta_stock);
+  req.body.available = req.Item.available + delta_stock;
 }
 
 function handleUpdateAvailable(req, res) {
   var delta_stock = req.body.available - req.Item.available;
-  req.Item.available = req.body.available;
-  req.Item.in_stock = req.Item.in_stock + delta_stock;
+
+  // Update in_stock in accordance with received delta in_stock
+  winston.info('Received only available in PUT, automatically modifying in_stock with the same amount:' + delta_stock);
+  req.body.in_stock = req.Item.in_stock + delta_stock;
 }
 
 function customRemove(req, res) {

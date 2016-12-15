@@ -203,7 +203,7 @@ describe('Items', function () {
 		// Check up call to make sure changes occured
 		superagent.get(api + '/items/' + new_item_id.toString())
           .type('json')
-          .end(function (e, res) {
+          .end(function(e, res) {
             expect(e).to.equal(null);
             expectResult(200, res, expected_body);
             done();
@@ -261,6 +261,35 @@ describe('Items', function () {
       });
   });
   
+  it('should update all field values on a normal PUT', function(done) {
+	var body = {
+      barcode: '9876543991',
+      name: 'real item',
+      text_description: 'This was a test item.',
+      external_reference: 'https://suprtickets.com/blog/wp-content/uploads/2015/11/Rick-Astley-UK-Tour-Dates-2015.jpg',
+      in_stock: 15,
+      available: 10,
+      date_created: new Date('2012-11-12T17:11:28+02:00'), // This is an object so cloned objects will refer to the same date, be careful
+      category: 'other'
+    }
+    
+    superagent.put(api + '/items/' + new_item_id.toString())
+      .send(body)
+      .end(function(e, res) {
+	    expect(e).to.equal(null);
+	    expectResult(200, res, undefined);
+	    
+	    // Check up call to make sure changes occured
+	    superagent.get(api + '/items/' + new_item_id.toString())
+	      .type('json')
+	      .end(function(e, res) {
+			expect(e).to.equal(null);
+			expectResult(200, res, body);
+			done();
+		  });
+	  });
+  });
+  
   it('should delete a SINGLE item on /items/<id> DELETE', function (done) {
     var item_path = api + '/items/' + new_item_id;
     superagent.del(item_path)
@@ -288,7 +317,7 @@ describe('Items', function () {
   });
 });
 
-// Expect a certain status with a certain body
+// Short cut for expect a certain status with a certain body
 function expectResult(target_status, res, target_body) {
   res.should.be.json;
   
