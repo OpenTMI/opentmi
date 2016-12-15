@@ -30,7 +30,10 @@ var Controller = function() {
 
 function customRemove(req, res) {
   req.User.remove(function(err) {
-	if (err) return res.status(400).json({error:err.message});
+	if (err) {
+	  winston.error(err.message);
+	  return res.status(400).json({error:err.message}); 
+	}
 	res.status(200).json({});
   });
 };

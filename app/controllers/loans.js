@@ -37,41 +37,38 @@ function findUsersLoans(req, res) {
   Loan.find({loaner: req.user})
     .populate('items.item')
     .exec(function(err, loans) {
-      if (err) { res.sendStatus(500); } 
-      else { res.json(loans); }
+      if (err) { 
+		winston.error(err.message);
+		res.sendStatus(500).json(err.message); 
+	  } 
+      else res.json(loans);
     });
 }
 
 function customCreate(req, res) {
-  //console.log('Create getto');
   var loan = new Loan(req.body);
   loan.save(function(err) { 
-    //console.log('Save done');
-    if (err) res.status(400).json({error:err.message});
-    else res.status(200).json(loan);
+    if (err) {
+	  winston.error(err.message);
+	  res.status(400).json({error:err.message});
+	}
+    else {
+	  winston.info('Item save completed successfully');
+	  res.status(200).json(loan);
+    }
   });
 }
 
 function customUpdate(req, res) {
   if (req.body.items !== undefined) {
-	//console.log('Updating');
-	var count_objs = req.Loan.countReturns(req.body.items)
-	if (count_objs instanceof Error) return res.status(400).json({error:count_objs.message});
-
-	// Add return dates to model
-	for (var i = 0; i < count_objs.length; i++) {
-	  req.Loan.items[count_objs[i].index].return_date = count_objs[i].date;
-	  //req.Loan.markModified('items.' + count_objs[i].index); 
+	winston.info('PUT request with items property received');
+    err = handleItemsInUpdate(req, res);
+    
+    if (err) {
+	  winston.error(err.message);
+	  return res.status(400).json({ error:err.message });	
 	}
-	  
-	// Dereference items from body so they will not cause trouble later on
-	delete req.body.items;
-	  
-	// Change availability
-	req.Loan.modifyAvailability(count_objs, function(err) {
-	  if (err) return res.status(400).json({error:'could not return items, something went horribly wrong'});
-	});
-  } 
+  }
 	
   // Update safe values
   for (key in req.body) {	
@@ -80,14 +77,42 @@ function customUpdate(req, res) {
 	
   // Save the result
   req.Loan.save(function(err) {
-	if (err) { res.status(400).json({error:err}); }
-	else { res.status(200).json(req.Loan); }	
+	if (err) { 
+	  winston.error(err.message);
+	  res.status(400).json({ error:err.message }); 		
+	}
+	else {
+	  winston.info('Update completed successfully');
+	  res.status(200).json(req.Loan);
+	}
   });  
+}
+function handleItemsInUpdate(req, res) {
+  var count_array = req.Loan.countReturns(req.body.items)
+  if (count_array instanceof Error) {
+    return count_array;
+  }
+
+  // Add return dates to model
+  for (var i = 0; i < count_array.length; i++) {
+    req.Loan.items[count_array[i].index].return_date = count_array[i].date;
+  }
+	  
+  // Dereference items from body so they will not cause trouble later on
+  delete req.body.items;
+	  
+  // Change availability
+  req.Loan.modifyAvailability(count_array, function(err) {
+    if (err) return err;
+  });
 }
 
 function customRemove(req, res) {
   req.Loan.remove(function(err) {
-	if (err) return res.status(400).json({ error:err });
+	if (err) {
+	  winston.error(err.message);
+	  return res.status(400).json({ error:err.message });
+	}
 	res.status(200).json({});	
   });
 }
