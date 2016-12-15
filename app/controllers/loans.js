@@ -34,7 +34,7 @@ var Controller = function() {
 }
 
 function findUsersLoans(req, res) {
-  Loan.find({loaner: req.user})
+  Loan.find({ loaner: req.user.sub })
     .populate('items.item')
     .exec(function(err, loans) {
       if (err) { 
