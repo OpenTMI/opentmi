@@ -55,27 +55,31 @@ LoanSchema.pre('save', function(next) {
 	
 	// Errors after this point could corrupt item.available value 
 	self.pushIdsToItemsArray();
-	//console.log('Save ended...');
 	self.modifyAvailability(item_counts, next);
   });
 });
 
+LoanSchema.pre('remove', function(next) {
+  //console.log('Remove start...');
+  var self = this;
+  
+  var unreturned = self.countUnreturnedItems();
+  self.modifyAvailability(unreturned, next);
+});
+
 LoanSchema.methods.extractItemIds = function() {
+  var self = this;
+  
   // Get item counts 
   var counts = {};
   for (var i = 0; i < this.items.length; i++) {
-	if (counts[this.items[i].item]) counts[this.items[i].item] += 1; //
-	else counts[this.items[i].item] = 1;
+	counts[this.items[i].item] = typeof counts[this.items[i].item] === 'undefined' ?
+	  -1 :
+	  counts[this.items[i].item] - 1;
   }
   
   // Convert counts to array of objects
-  var array_counts = [];
-  for (key in counts) {
-	// Add negative counts because we want to decrease availability
-	array_counts.push({item_id:key, count:-counts[key]}); 
-  }
-  
-  return array_counts;
+  return objectToArrayOfObjects(counts);
 };
 LoanSchema.methods.ensureAvailability = function(item_counts, next) {  
   winston.info('Ensuring item availablities');
@@ -134,8 +138,8 @@ LoanSchema.methods.countReturns = function(delta_items) {
   
   // Convert counts to array of objects
   var array_counts = [];
-  for (key in counts) {
-	array_counts.push({item_id:key, index:counts[key].index, date:counts[key].date, count:counts[key].count});
+  for (var key in counts) {
+	array_counts.push({id:key, index:counts[key].index, date:counts[key].date, count:counts[key].count});
   }
   
   return array_counts;
@@ -149,12 +153,29 @@ LoanSchema.methods.findWithIndex = function(item_id) {
   //console.log('No matches');
   return null;
 }
+LoanSchema.methods.countUnreturnedItems = function() {
+  var self = this;
+  var counts = {};
+  //console.log(self.items);
+  for (var i = 0; i < self.items.length; i++) {
+	// Skip if return date has been defined
+    if (typeof self.items[i].return_date !== 'undefined') continue;
+
+	// Increase count by one 
+	counts[self.items[i].item] = (typeof counts[self.items[i].item] === 'undefined') ?
+	  1 :
+      counts[self.items[i].item] + 1;
+  }
+  
+  // Return as array of objects
+  return objectToArrayOfObjects(counts);
+}
 
 // Should be executed before actually attempting to decrease availability
 function ensureItemAvailability(item_count_obj, next) {
-  Item.findById(item_count_obj.item_id, function(err, item) {
-    if (err) return next(new Error('Error while finding a provided item, item: ' + item_count_obj.item_id)); 
-	if (item === null) return next(new Error('Could not find item, item: ' + item_count_obj.item_id)); 
+  Item.findById(item_count_obj.id, function(err, item) {
+    if (err) return next(new Error('Error while finding a provided item, item: ' + item_count_obj.id)); 
+	if (item === null) return next(new Error('Could not find item, item: ' + item_count_obj.id)); 
 	
 	if (item.available + item_count_obj.count >= 0) 
 	  next();
@@ -165,19 +186,25 @@ function ensureItemAvailability(item_count_obj, next) {
 
 // modify availability of an item
 function modifyItemAvailability(item_count_obj, next) {
-  winston.info('modifying item: ' + item_count_obj.item_id + ' by ' + item_count_obj.count);
-  Item.findById(item_count_obj.item_id, function(err, item) {
-	if (err) return next(new Error('Error while finding a provided item, item:' + keys[cur] + ' is very likely now corrupted')); // Should not happen
-	if (item === null) return next(new Error('Could not find item, item:' + keys[cur] + ' is very likely now corrupted')); // Should not happen either
-	//console.log('  Item found: ' + item.available);
+  winston.info('modifying item: ' + item_count_obj.id + ' by ' + item_count_obj.count);
+  Item.findById(item_count_obj.id, function(err, item) {
+	if (err) return next(new Error('Error while finding a provided item, item:' + item_count_obj.id + ' is very likely now corrupted')); // Should not happen
+	if (item === null) return next(new Error('Could not find item, item:' + item_count_obj.id + ' is very likely now corrupted')); // Should not happen either
 	
 	item.available += item_count_obj.count;
 	item.save(function(err) {
-	  //console.log('  Save complete');
-	  if (err) next(new Error('Could not save availability, item:' + items[cur].item + ' is very likely now corrupted'));
+	  if (err) next(new Error('Could not save availability, item:' + item._id + ' is very likely now corrupted'));
 	  else next();
     });
   });
+}
+
+function objectToArrayOfObjects(obj) {
+  var count_array = [];
+  for (var i in obj) {
+	count_array.push({ id:i, count:obj[i] });
+  }
+  return count_array;
 }
 
 // Makes sure the provided date is valid
