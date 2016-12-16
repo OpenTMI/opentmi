@@ -315,6 +315,17 @@ var Controller = function () {
     ], final);
   };
 
+  this.getGithubClientId = function(req, res) {
+	winston.log('Github auth: return github clientID');
+	var id = nconf.get('github').clientID;
+	if (id === undefined) {
+	  res.status(400).json({ error:'found client id is undefined' });
+	} 
+	else {
+	  res.status(200).json({ clientID:id }); 
+	}
+  }
+
    /*
    |--------------------------------------------------------------------------
    | Login with Google

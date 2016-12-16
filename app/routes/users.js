@@ -52,6 +52,7 @@ var Route = function(app){
   app.post('/auth/logout', auth_controller.logout );
   app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), auth_controller.github );
   app.post('/auth/google', auth_controller.google );
+  app.get('/auth/github/id', auth_controller.getGithubClientId);
 };
 
 function createDefaultAdmin() {
