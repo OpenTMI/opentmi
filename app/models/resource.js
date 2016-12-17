@@ -12,10 +12,10 @@ var _ = require('underscore');
 
 var QueryPlugin = require('mongoose-query');
 var ResourceAllocationPlugin = require('./plugins/resource-allocator');
-/**
- * User schema
- */
 
+/**
+ * Resource schema
+ */
 var ResourceSchema = new Schema({
   name: {type: String, unique: true, required: true}, // Resource Name (more like nickname)
   type: {type: String, required: true, enum: [        // Resource type
@@ -25,8 +25,7 @@ var ResourceSchema = new Schema({
         'instrument',
         'accessorie', 
         'computer', 
-        'room', 
-        'daemon'
+        'room'
       ]},
   status: { 
     value: { type: String, enum: [
@@ -46,11 +45,11 @@ var ResourceSchema = new Schema({
   },
   cre: {
       user: {type: String, default: ""},              // Resource creator
-      time: { type: Date, default: Date.now },   // Create timestamp
+      time: { type: Date, default: Date.now }    // Create timestamp
   },
   mod: {
       user: {type: String, default: ""},              // Resource modifier
-      timestamp: { type: Date, default: Date.now },   // Modify timestamp
+      timestamp: { type: Date, default: Date.now }    // Modify timestamp
   },
   ownership: {
       corporation: {type: String},
@@ -61,8 +60,8 @@ var ResourceSchema = new Schema({
       author: { type: String},
       purchased: {
           timestamp: { type: Date},
-          user: { type: String},
-      },
+          user: { type: String}
+      }
   },
   user_info: {
       corporation: {type: String},
@@ -70,7 +69,7 @@ var ResourceSchema = new Schema({
       division: {type: String},
       department: {type: String},
       author: { type: String},
-      cost_center: { type: String},
+      cost_center: { type: String}
   },
   usage: {
     type: {type: String, enum: [
@@ -85,7 +84,7 @@ var ResourceSchema = new Schema({
       'unknown'], 
       default: 'unknown' },
     automation: {
-      system: {type: String, enum: ['default']},
+      system: {type: String, enum: ['default']}
     }
   },
   //resource details - target details
@@ -99,12 +98,12 @@ var ResourceSchema = new Schema({
       ipv4: {type: String}, //IPv4 address
       ipv4netmask: {type: String },
       ipv6: {type: String}, //IPv6 address
-      mac: {type: String},
+      mac: {type: String}
     })],
     remote_connection: {
       type: {type: String, enum:['', 'vnc','http','ssh','telnet','rdm'], default: ''},
       url: {type: String}, //if dedicated
-      authentication: { username: {type: String}, password: {type: String}},
+      authentication: { username: {type: String}, password: {type: String}}
     }
   },
   other_info: {
@@ -117,10 +116,10 @@ var ResourceSchema = new Schema({
       postcode: { type: String },     // Postcode
       room: { type: String, default: 'unknown'},      // Room
       subRoom: { type: String },      // subRoom
-      geo: {type: [Number], index: '2d'},
+      geo: {type: [Number], index: '2d'}
     },
     identification: {
-      sn: { type: String },
+      sn: { type: String }
     }
   },
   /*
@@ -159,8 +158,7 @@ var ResourceSchema = new Schema({
   // Parent Resource
   parent: {type: ObjectId, ref: 'Resource'}
 });
-
-ResourceSchema.set('toJSON', { 
+ResourceSchema.set('toJSON', {
   virtuals: true,
   getters: true, 
   minimize: true,
@@ -194,7 +192,7 @@ ResourceSchema.plugin( ResourceAllocationPlugin );
 ResourceSchema.method({
   // find route from this resource to HEAD
   solveRoute: function (cb) {
-    var route = []
+    var route = [];
     var Resource = mongoose.model('Resource');
     var loop = function(error, resource){
       if( resource && resource.parent ) {
@@ -203,14 +201,14 @@ ResourceSchema.method({
       } else {
         cb(error, route);
       } 
-    }
+    };
     loop(null, this);
   },
   setDeviceBuild: function(build){
     this.device.build = build;
     this.save();
     console.log('new build in resource');
-  },
+  }
 });
 
 /**

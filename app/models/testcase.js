@@ -41,7 +41,7 @@ var ComponentSchema = new Schema({
 var TestCaseSchema = new Schema({
   tcid: {
     type: String,     
-    minlength: 6, 
+    minlength: 4, 
     required: true, 
     index: true, 
     title: 'TC ID'

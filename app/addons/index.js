@@ -19,11 +19,16 @@ function AddonManager (app, server, io){
          var addonPath = path.join(__dirname, file)
          try {
            var Addon = require(addonPath);
+           if(Addon.disabled) {
+             winston.info('Addon %s is disabled', file);
+             return;
+           }
            var addon = new Addon(app, server, io);
            addon.register();
            addons.push( addon  );
          } catch(e) {
             winston.error('Cannot load addon "%s": %s', addonPath, e.toString());
+            winston.error(e.stack);
          }
       }
     });  
