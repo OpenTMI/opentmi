@@ -28,6 +28,8 @@ var Controller = function(){
   this.update = customUpdate;
   this.remove = customRemove; // Default one does not run pre-remove hook
 
+  this.getImage = getImage;
+
   return this;
 }
 
@@ -94,6 +96,17 @@ function customRemove(req, res) {
 	  return res.status(400).json(err);
 	}
 	res.status(200).json({});
+  });
+}
+
+function getImage(req, res) {
+  req.Item.fetchImageData(function(result) {
+	if (result instanceof Error) return res.status(400).json(result.message);
+    else {
+	  //console.log('Image found, returning data : ' + JSON.stringify(result));
+	  res.set('Content-Type', result.type);
+	  res.send(result.data);
+    } 
   });
 }
 

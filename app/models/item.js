@@ -60,4 +60,22 @@ ItemSchema.pre('remove', function(next) {
   });
 });
 
+/**
+ * Methods
+ */
+ItemSchema.methods.fetchImageData = function(next) {
+  var self = this;
+  var request = require('request').defaults({ encoding:null });	
+  request.get(self.image_src, function(err, res, body) {
+	if (err) return next(new Error('could not process image get request'));
+	
+	if (res.statusCode === 200) {
+		var image_data = { type:res.headers["content-type"],
+			               data:body }
+	    next(image_data);
+	}
+	else return next(new Error('image get request returned with an unexpected code:' + res.statusCode));  
+  });  
+}
+
 mongoose.model("Item", ItemSchema);

@@ -21,6 +21,9 @@ var Route = function(app){
     .put(controller.update)
     .delete(controller.remove);
 
+  router.route('/api/v0/items/:Item/image')
+    .get(controller.getImage);
+
   app.use(router);
 };
 

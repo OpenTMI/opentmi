@@ -67,7 +67,7 @@ describe('Items', function () {
   
     superagent.get(api + '/items?name=Seeeduino-Arch')
       .type('json')
-      .end(function (e, res) { 
+      .end(function(e, res) { 
         expect(e).to.equal(null);
         expect(res.body).to.be.an('array');
         expect(res.body).not.to.be.empty;
@@ -75,6 +75,17 @@ describe('Items', function () {
         expectResult(200, res, expected_body);
         done();
       });     
+  });
+ 
+  it('should return an image from /items/id/image', function(done) {
+	superagent.get(api + '/items' + '/582c7948850f298a5acff981' + '/image')
+	  .type('json')
+	  .end(function(e, res) {
+        expect(e).to.equal(null);
+        expect(res.status).to.equal(200);
+        expect(res.get('Content-Type')).to.equal('image/jpeg');
+        done();
+	  });
   });
  
   it('should not accept POST that has more available than in_stock', function(done) {
