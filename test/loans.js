@@ -1,13 +1,17 @@
-var superagent = require("superagent"),
-    dookie = require("dookie");
-    chai = require("chai"),
+var jwt_s = require('jwt-simple');
+var nconf = require('nconf');
+var moment = require('moment');
 
+var superagent = require("superagent"),
+    dookie = require("dookie"),
+    chai = require("chai"),
     expect = chai.expect,
     mongoose = require('mongoose'),
     should = require('should');
 
-var api = 'http://localhost:3000/api/v0'
+var api = 'http://localhost:3000/api/v0';
 var mongodbUri = 'mongodb://localhost/opentmi_dev';
+var test_user_id = "5825bb7afe7545132c88c761";
 
 var test_loan_id;
 var test_loanitem_id;
@@ -24,28 +28,26 @@ var valid_loan_body = {
 };
 
 describe('Loans', function () {
+  var auth_string;	
+
   // Create fresh DB
   before(function(done) {
     this.timeout(5000);
-    const fs = require('fs');
-    const file_contents = fs.readFileSync('./seeds/dummy_db.json', 'utf8')
-    const data = JSON.parse(file_contents);
-    dookie.push(mongodbUri, data).then(function() {
-      done();
-    });
-  });
- 
-  it('should return ALL loans on /loans GET', function (done) {
-    superagent.get(api+'/loans')
-      .type('json')
-      .end( function(e, res){
-        res.should.be.json
-        res.status.should.equal(200);
-        expect(e).to.equal(null);
-        expect(res.body).not.to.be.empty;
-        expect(res.body).to.be.an('array');
-        done();
-      });
+    
+    // Initialize nconf
+    nconf.argv({ cfg:{ default:'development' } })
+      .env()
+      .defaults(require('./../config/config.js'));  
+    
+    // Create token for requests
+    var payload = { sub:test_user_id,
+		              group:'admins',
+		              iat:moment().unix(), 
+		              exp:moment().add(2, 'h').unix() };
+    var token = jwt_s.encode(payload, nconf.get('webtoken')); 
+    auth_string = 'Bearer ' + token;
+    
+    done();
   });
 
   it('should return a SINGLE loan on /loans/<id> GET', function (done) {
@@ -57,6 +59,7 @@ describe('Loans', function () {
     }
     
     superagent.get(api + '/loans/' + valid_loan_id)
+      .set('authorization', auth_string)
       .type('json')
       .end(function (e, res) {
         expect(e).to.equal(null);
@@ -71,32 +74,56 @@ describe('Loans', function () {
       });
   });
   
-  it.skip('should not accept POST without items array', function(done) {
+  it('should not accept POST without items array', function(done) {
 	var body = cloneObject(valid_loan_body);
 	delete body.items;
 
-	tryPost(400, body, undefined, done);
+    superagent.post(api + '/loans')
+      .set('authorization', auth_string)
+      .send(body)
+      .end(function(e, res) {
+	    expectResult(400, res, undefined);
+        done();
+    });
   });
   
-  it.skip('should not accept POST with an empty items array', function(done) {
+  it('should not accept POST with an empty items array', function(done) {
 	var body = cloneObject(valid_loan_body);
 	body.items = [];
 	
-    tryPost(400, body, undefined, done);
+    superagent.post(api + '/loans')
+      .set('authorization', auth_string)
+      .send(body)
+      .end(function(e, res) {
+	    expectResult(400, res, undefined);
+        done();
+    });
   });
  
   it('should not accept POST with item that does not have an item field', function(done) {
     var body = cloneObject(valid_loan_body);
 	delete body.items[0].item;
 	
-    tryPost(400, body, undefined, done);
+    superagent.post(api + '/loans')
+      .set('authorization', auth_string)
+      .send(body)
+      .end(function(e, res) {
+	    expectResult(400, res, undefined);
+        done();
+    });
   });
   
-  it ('should not accept POST with item that has an invalid item field', function(done) {
+  it('should not accept POST with item that has an invalid item field', function(done) {
 	var body = cloneObject(valid_loan_body);
 	body.items[0].item = 'invalid_field';
 	
-    tryPost(400, body, undefined, done);
+    superagent.post(api + '/loans')
+      .set('authorization', auth_string)
+      .send(body)
+      .end(function(e, res) {
+	    expectResult(400, res, undefined);
+        done();
+    });
   });
   
   it('should accept and remove predefined return dates from a POST', function(done) {
@@ -104,11 +131,13 @@ describe('Loans', function () {
 	body.items[0].return_date = new Date();
 	
 	superagent.post(api + '/loans')
+	  .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
 	    expectResult(200, res, undefined);
 	    
 	    superagent.get(api + '/loans/' + res.body._id)
+	      .set('authorization', auth_string)
 	      .type('json')
 	      .end(function(e, res) {
 			expect(e).to.equal(null);
@@ -125,6 +154,7 @@ describe('Loans', function () {
     expected_body.items = undefined; // arrays cannot be compared automatically
 
     superagent.post(api + '/loans')
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
         //console.log(res.body);
@@ -137,6 +167,7 @@ describe('Loans', function () {
         
         // Make sure the loan is created
         superagent.get(api + '/loans/' + test_loan_id)
+          .set('authorization', auth_string)
           .type('json')
           .end(function(e, res) {
 		    expect(e).to.equal(null);
@@ -155,6 +186,7 @@ describe('Loans', function () {
   it('should decrease item availability on POST', function(done) {
     var expected_body = { available : 4 }
     superagent.get(api + '/items/' + test_item_id)
+      .set('authorization', auth_string)
       .type('json')
       .end(function(e, res) {
 		expect(e).to.equal(null);
@@ -170,6 +202,7 @@ describe('Loans', function () {
 	body.items.pop();
 	
     superagent.put(api + '/loans/' + test_loan_id)
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
 	    expect(e).to.not.equal(null);
@@ -183,6 +216,7 @@ describe('Loans', function () {
 	body.items[0].return_date = 'invalid date';
 	
 	superagent.put(api + '/loans/' + test_loan_id)
+	  .set('authorization', auth_string)
       .send(body)
       .end(function (e, res) {
 	    expect(e).to.not.equal(null);
@@ -200,6 +234,7 @@ describe('Loans', function () {
 	expected_body.items = undefined;
 	
 	superagent.put(api + '/loans/' + test_loan_id)
+	  .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
 	    expect(e).to.equal(null);
@@ -218,12 +253,14 @@ describe('Loans', function () {
  
     var loan_route = api + '/loans/' + test_loan_id;
     superagent.put(loan_route)
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
         expect(e).to.equal(null);
         expectResult(200, res, undefined);
         
         superagent.get(loan_route)
+          .set('authorization', auth_string)
           .type('json')
           .end(function(e, res) {
 			expect(e).to.equal(null);
@@ -236,6 +273,7 @@ describe('Loans', function () {
   it('should increase item availability on PUT', function(done) {   // Should be after the relevant put
     var expected_body = { available : 5 };
     superagent.get(api + '/items/' + test_item_id)
+      .set('authorization', auth_string)
       .type('json')
       .end(function(e, res) {
 		expect(e).to.equal(null);
@@ -248,12 +286,14 @@ describe('Loans', function () {
   it('should delete a SINGLE loan on /loans/<id> DELETE', function (done) {
     var loan_route = api + '/loans/' + test_loan_id;
     superagent.del(loan_route)
+      .set('authorization', auth_string)
       .end(function(e, res) {
         expect(e).to.equal(null);
         expectResult(200, res, undefined);
    
         // Make sure loan is deleted
         superagent.get(loan_route)
+          .set('authorization', auth_string)
           .type('json')
           .end(function(e, res) {
 			expect(e).to.not.equal(null);
@@ -268,6 +308,7 @@ describe('Loans', function () {
 	var expected_body = { available:7 }
 	
 	superagent.get(api + '/items/' + test_item_id)
+	  .set('authorization', auth_string)
 	  .end(function(e, res) {
 		expect(e).to.equal(null);
 		expectResult(200, res, expected_body);
@@ -278,15 +319,6 @@ describe('Loans', function () {
 
 function cloneObject(obj) {
   return JSON.parse(JSON.stringify(obj));
-}
-
-function tryPost(expected_status, body, expection, next) {
-  superagent.post(api + '/loans')
-    .send(body)
-    .end(function(e, res) {
-	  expectResult(expected_status, res, expection);
-      next();
-    });
 }
 
 // Expect a certain status with a certain body

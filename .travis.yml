@@ -25,7 +25,7 @@ git:
 
 # Running npm test to run your test cases
 script:
- - npm test
+ - grunt inventory
 
 # Tell istanbul to generate a coverage report
 after_script:

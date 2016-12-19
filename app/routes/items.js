@@ -13,16 +13,16 @@ var Route = function(app){
   router.param('format', controller.paramFormat);
 
   router.route('/api/v0/items.:format?')
-    .get(controller.find)
-    .post(controller.create);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.find)
+    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.create);
 
   router.route('/api/v0/items/:Item.:format?')
-    .get(controller.get)
-    .put(controller.update)
-    .delete(controller.remove);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.get)
+    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.update)
+    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.remove);
 
   router.route('/api/v0/items/:Item/image')
-    .get(controller.getImage);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.getImage);
 
   app.use(router);
 };

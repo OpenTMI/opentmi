@@ -7,7 +7,7 @@ var ObjectId = Types.ObjectId;
 var QueryPlugin = require('mongoose-query');
 
 var ItemSchema = new Schema({
-  barcode : { type: String, unique:true, sparse:true },
+  barcode : { type: String, required:true, unique:true },
   name : { type: String, required:true, unique:true },
   image_src: { type: String },
   text_description: { type: String },
@@ -22,6 +22,7 @@ var ItemSchema = new Schema({
                      'other'],
                default:'other' }
 });
+//ItemSchema.index({barcode:1}, {unique:true});
 
 /**
  * Query plugin
