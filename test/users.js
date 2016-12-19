@@ -1,3 +1,6 @@
+var jwt_s = require('jwt-simple');
+var nconf = require('nconf');
+var moment = require('moment');
 
 var superagent = require("superagent"),
     dookie = require("dookie");
@@ -5,39 +8,33 @@ var superagent = require("superagent"),
     expect = chai.expect,
     should = require("should");
 
-var existing_item_id = "5825bb7cfe7545132c88c780";
+var user_with_loan_id = "5825bb7cfe7545132c88c773";
 
-// var userSchema = require('mongoose').model('User').schema;
-var api = "http://localhost:3000/api/v0";
+var api = 'http://localhost:3000/api/v0';
 var mongodbUri = 'mongodb://localhost/opentmi_dev';
+var test_user_id = "5825bb7afe7545132c88c761";
 
 describe("Users", function () {
+  var auth_string;	
 
-  /* Create fresh DB
+  // Create fresh DB
   before(function(done) {
     this.timeout(5000);
-    const fs = require('fs');
-    const file_contents = fs.readFileSync('./seeds/dummy_db.json', 'utf8')
-    const data = JSON.parse(file_contents);
-    dookie.push(mongodbUri, data).then(function() {
-      done();
-    });
-  });
-  */
-  
-  var single_user;
-  it("should return ALL users on /users GET", function(done){
-    superagent.get(api+"/users")
-      .type('json')
-      .end( function(e, res){
-        res.should.be.json
-        res.status.should.equal(200);
-        expect(e).to.equal(null);
-        expect(res.body).to.be.an('array');
-        expect(res.body).not.to.be.empty;
-        single_user = res.body.pop();
-        done();
-      })
+    
+    // Initialize nconf
+    nconf.argv({ cfg:{ default:'development' } })
+      .env()
+      .defaults(require('./../config/config.js'));  
+    
+    // Create token for requests
+    var payload = { sub:test_user_id,
+		              group:'admins',
+		              iat:moment().unix(), 
+		              exp:moment().add(2, 'h').unix() };
+    var token = jwt_s.encode(payload, nconf.get('webtoken')); 
+    auth_string = 'Bearer ' + token;
+    
+    done();
   });
   
   var new_user_id;
@@ -50,6 +47,7 @@ describe("Users", function () {
         "groups":[]
     };
     superagent.post(api+'/users')
+      .set('authorization', auth_string)
       .send(body)
       .end(function (e, res) {
         res.should.be.json
@@ -75,6 +73,7 @@ describe("Users", function () {
 
   it("should return a SINGLE user on /users/<id> GET", function (done) {
     superagent.get(api + "/users/" + new_user_id)
+      .set('authorization', auth_string)
       .type('json')
       .end(function (e, res) {
         res.should.be.json
@@ -104,6 +103,7 @@ describe("Users", function () {
         email: "newtestermail@fakemail.se"
     };
     superagent.put(api + '/users/' + new_user_id)
+      .set('authorization', auth_string)
       .send(body)
       .end(function (e, res) {
         res.should.be.json
@@ -115,6 +115,7 @@ describe("Users", function () {
         expect(e).to.equal(null);
         
         superagent.get(api + "/users/" + new_user_id)
+          .set('authorization', auth_string)
           .type('json')
           .end(function (e, res) {
             res.should.be.json
@@ -137,7 +138,8 @@ describe("Users", function () {
   });
 
   it("should not delete a user that is referenced in a loan", function(done) {
-	superagent.del(api + '/users/' + existing_item_id)
+	superagent.del(api + '/users/' + user_with_loan_id)
+	  .set('authorization', auth_string)
 	  .end(function(e, res) {
 		res.should.be.json
 		expect(e).to.not.equal(null); 
@@ -148,6 +150,7 @@ describe("Users", function () {
 
   it("should delete a SINGLE user on /users/<id> DELETE", function (done) {
     superagent.del(api + "/users/" + new_user_id)
+      .set('authorization', auth_string)
       .end(function(e, res) {
         res.should.be.json
         if( res.status === 300 ) {
@@ -159,6 +162,7 @@ describe("Users", function () {
         
         // Make sure the document is deleted
         superagent.get(api + "/users/" + new_user_id)
+          .set('authorization', auth_string)
           .end(function(e, res) {
 		    res.should.be.json
 		    expect(e).to.not.equal(null);
@@ -168,4 +172,3 @@ describe("Users", function () {
       });
   });
 });
-

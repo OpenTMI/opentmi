@@ -28,13 +28,13 @@ var Route = function(app){
   router.param('format', user_controller.paramFormat);
 
   router.route('/api/v0/users.:format?')
-    .get(user_controller.find)
-    .post(user_controller.create);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, user_controller.find)
+    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, user_controller.create);
 
   router.route('/api/v0/users/:User.:format?')
-    .get(user_controller.get)
-    .put(user_controller.update)
-    .delete(user_controller.remove);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, user_controller.get)
+    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, user_controller.update)
+    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, user_controller.remove);
 
   app.use(router);
 

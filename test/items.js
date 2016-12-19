@@ -1,3 +1,7 @@
+var jwt_s = require('jwt-simple');
+var nconf = require('nconf');
+var moment = require('moment');
+
 var superagent = require("superagent"),
     dookie = require("dookie");
     chai = require("chai"),
@@ -5,10 +9,11 @@ var superagent = require("superagent"),
     should = require("should");
     mongoose = require("mongoose");
 
-var error_body = { error : undefined }
-
 var api = 'http://localhost:3000/api/v0';
 var mongodbUri = 'mongodb://localhost/opentmi_dev';
+var test_user_id = "5825bb7afe7545132c88c761";
+
+var error_body = { error : undefined }
 
 var item_id_loaned = '582c7948850f298a5acff981';
 var new_item_id;
@@ -24,31 +29,26 @@ var valid_post_body = {
 }
 
 describe('Items', function () {
+  var auth_string;	
+
   // Create fresh DB
   before(function(done) {
     this.timeout(5000);
-    const fs = require('fs');
-    const file_contents = fs.readFileSync('./seeds/dummy_db.json', 'utf8')
-    const data = JSON.parse(file_contents);
-    dookie.push(mongodbUri, data).then(function() {
-      done();
-    });
-  });
- 
-  var item_categories = ['accessory', 'board', 'component', 'other'];
-  
-  it('should return ALL items on /items GET', function(done){
-    superagent.get(api+'/items')
-      .type('json')
-      .end( function(e, res){
-        res.should.be.json
-        res.status.should.equal(200);
-        expect(e).to.equal(null);
-        expect(res.body).to.be.an('array');
-        expect(res.body).not.to.be.empty;
-        expect(res.body).to.have.lengthOf(14);  
-        done();
-      })
+    
+    // Initialize nconf
+    nconf.argv({ cfg:{ default:'development' } })
+      .env()
+      .defaults(require('./../config/config.js'));  
+    
+    // Create token for requests
+    var payload = { sub:test_user_id,
+		              group:'admins',
+		              iat:moment().unix(), 
+		              exp:moment().add(2, 'h').unix() };
+    var token = jwt_s.encode(payload, nconf.get('webtoken')); 
+    auth_string = 'Bearer ' + token;
+    
+    done();
   });
   
   it('should return a list with a SINGLE item on /items?<name> GET', function (done) {
@@ -66,6 +66,7 @@ describe('Items', function () {
 	}
   
     superagent.get(api + '/items?name=Seeeduino-Arch')
+      .set('authorization', auth_string)
       .type('json')
       .end(function(e, res) { 
         expect(e).to.equal(null);
@@ -79,6 +80,7 @@ describe('Items', function () {
  
   it('should return an image from /items/id/image', function(done) {
 	superagent.get(api + '/items' + '/582c7948850f298a5acff981' + '/image')
+	  .set('authorization', auth_string)
 	  .type('json')
 	  .end(function(e, res) {
         expect(e).to.equal(null);
@@ -94,6 +96,7 @@ describe('Items', function () {
 	body.available = body.in_stock + 1;
 	
     superagent.post(api + '/items')
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
@@ -107,6 +110,7 @@ describe('Items', function () {
 	body.available = -1;
 	
 	superagent.post(api + '/items')
+	  .set('authorization', auth_string)
 	  .send(body)
 	  .end(function(e, res) {
 		expect(e).to.not.equal(null);
@@ -120,6 +124,7 @@ describe('Items', function () {
 	body.in_stock = -1;
 
 	superagent.post(api + '/items')
+	  .set('authorization', auth_string)
 	  .send(body)
 	  .end(function(e, res) {
 		expect(e).to.not.equal(null);
@@ -127,13 +132,14 @@ describe('Items', function () {
 		done();  
 	  });
   });
-  
+ 
   it ('should not accept positive available without in_stock', function(done) {
 	// Copy a valid body and remove in_stock field from it
 	var body = Object.assign({}, valid_post_body);
 	delete body.in_stock;
 	
     superagent.post(api + '/items')
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
@@ -143,7 +149,7 @@ describe('Items', function () {
   });
 
   // POST item and save _id because it is used for PUT and DELETE tests
-  it('should add a SINGLE item on /items POST', function (done) {
+  it('should add a SINGLE item on /items POST', function(done) {
 	// Copy a valid body
     var body = Object.assign({}, valid_post_body);
     
@@ -151,6 +157,7 @@ describe('Items', function () {
     var expected_body = valid_post_body;
  
     superagent.post(api + '/items')
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
         expect(e).to.equal(null);
@@ -159,14 +166,35 @@ describe('Items', function () {
         // Save id of this item for further testing purposes
         new_item_id = res.body._id;
         
-        done();
+        superagent.get(api+'/items/'+new_item_id)
+          .set('authorization', auth_string)
+	       .type('json')
+	       .end(function(e, res) {
+			  expect(e).to.equal(null);
+			  done();
+		   });
       });
+  });
+  
+  it('should not accept post that has a barcode that is already in the database', function(done) {
+	 var body = Object.assign({}, valid_post_body);	 
+	 body.barcode = '9876543210';
+	 
+	 superagent.post(api + '/items')
+	   .set('authorization', auth_string)
+	   .send(body)
+	   .end(function(e, res) {
+		 expect(e).to.not.equal(null);
+		 expectResult(400, res, { error:undefined });
+		 done();
+	   });  
   });
 
   it('should not accept PUT with a negative available', function(done) {
 	var body = { available: -1 }
 
     superagent.put(api + '/items/' + new_item_id.toString())
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {  
 		//expect(e).to.not.equal(null);
@@ -179,6 +207,7 @@ describe('Items', function () {
 	var body = { in_stock: -1 }
 
     superagent.put(api + '/items/' + new_item_id.toString())
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
@@ -191,6 +220,7 @@ describe('Items', function () {
 	var body = { in_stock: 0 }
 
     superagent.put(api + '/items/' + new_item_id)
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {  
 		expect(e).to.not.equal(null);
@@ -206,6 +236,7 @@ describe('Items', function () {
     expected_body.available = 10;
     
     superagent.put(api + '/items/' + new_item_id.toString())
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
         expect(e).to.equal(null);
@@ -213,6 +244,7 @@ describe('Items', function () {
         
 		// Check up call to make sure changes occured
 		superagent.get(api + '/items/' + new_item_id.toString())
+		  .set('authorization', auth_string)
           .type('json')
           .end(function(e, res) {
             expect(e).to.equal(null);
@@ -229,6 +261,7 @@ describe('Items', function () {
     expected_body.available = 15;
     
     superagent.put(api + '/items/' + new_item_id.toString())
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
 		expect(e).to.equal(null);
@@ -236,6 +269,7 @@ describe('Items', function () {
 		
         // Make sure item is really updated
 	    superagent.get(api + '/items/' + new_item_id.toString())
+	      .set('authorization', auth_string)
           .type('json')
           .end(function (e, res) {
 			expect(e).to.equal(null);
@@ -256,6 +290,7 @@ describe('Items', function () {
     
     var item_route = api + '/items/' + new_item_id.toString(); 
     superagent.put(item_route)
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
         expect(e).to.equal(null);
@@ -263,6 +298,7 @@ describe('Items', function () {
         
 		// Make sure item is really updated
 		superagent.get(item_route)
+		  .set('authorization', auth_string)
           .type('json')
           .end(function (e, res) {
 			expect(e).to.equal(null);
@@ -285,6 +321,7 @@ describe('Items', function () {
     }
     
     superagent.put(api + '/items/' + new_item_id.toString())
+      .set('authorization', auth_string)
       .send(body)
       .end(function(e, res) {
 	    expect(e).to.equal(null);
@@ -292,6 +329,7 @@ describe('Items', function () {
 	    
 	    // Check up call to make sure changes occured
 	    superagent.get(api + '/items/' + new_item_id.toString())
+	      .set('authorization', auth_string)
 	      .type('json')
 	      .end(function(e, res) {
 			expect(e).to.equal(null);
@@ -304,12 +342,14 @@ describe('Items', function () {
   it('should delete a SINGLE item on /items/<id> DELETE', function (done) {
     var item_path = api + '/items/' + new_item_id;
     superagent.del(item_path)
+      .set('authorization', auth_string)
       .end(function(e, res) {
         expect(e).to.equal(null);
         expectResult(200, res, undefined);
         
         // Make sure item is deleted
         superagent.get(item_path)
+          .set('authorization', auth_string)
           .end(function(e, res) { 
 		    expect(e).to.not.equal(null);
 		    expectResult(404, res, undefined);
@@ -320,6 +360,7 @@ describe('Items', function () {
   
   it('should not delete item that is loaned somewhere', function(done) {
     superagent.del(api + '/items/' + item_id_loaned)
+      .set('authorization', auth_string)
       .end(function(e, res) {
 	    expect(e).to.not.equal(null);
 	    expectResult(400, res, undefined); 
