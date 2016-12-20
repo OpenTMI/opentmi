@@ -71,7 +71,7 @@ ItemSchema.methods.fetchImageData = function(next) {
 
   if (res.statusCode === 200) {
     var image_data = {
-      type: res.headers['Content-Type'],
+      type: res.headers['content-type'],
       data: body,
     };
     next(image_data);
