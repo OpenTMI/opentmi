@@ -1,9 +1,9 @@
-var superagent = require("superagent"),
-    chai = require("chai"),
-    expect = chai.expect,
-    should = require("should");
+var superagent = require("superagent");
+var chai = require("chai");
+var expect = chai.expect;
+var should = require("should");
 
-var api = "http://localhost:3000/api/v0"
+var api = "http://localhost:3000/api/v0";
 
 describe("Resource", function () {
   var resource_id;
@@ -60,10 +60,10 @@ describe("Resource", function () {
   });
   it("remove resource", function (done) {
     superagent.delete(api+'/resources/'+resource_id).end(function (err, res) {
-        res.should.be.json;
-        expect(res.status).to.equal(200);
-        resource_id = null;
-        done();   
-      });
+      res.should.be.json;
+      expect(res.status).to.equal(200);
+      resource_id = null;
+      done();   
+    });
   });
 });
