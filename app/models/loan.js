@@ -51,6 +51,9 @@ LoanSchema.pre('save', function(next) {
   if (!this.isNew) return next();
   
   var item_counts = self.extractItemIds();
+  if (item_counts.length === 0)
+    return next(new Error('cannot process post without items field'));
+  
   self.ensureAvailability(item_counts, function(err) {
 	if (err) return next(err);
 	

@@ -13,16 +13,16 @@ var Route = function(app){
   router.param('format', controller.paramFormat);
 
   router.route('/api/v0/loans.:format?')
-    .get(controller.find)
-    .post(controller.create);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.find)
+    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.create);
 
   router.route('/api/v0/loans/me')
     .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.getMe);
 
   router.route('/api/v0/loans/:Loan.:format?')
-    .get(controller.get)
-    .put(controller.update)
-    .delete(controller.remove);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.get)
+    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.update)
+    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.remove);
 
   app.use(router);
 };

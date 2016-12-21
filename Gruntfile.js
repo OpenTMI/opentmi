@@ -26,6 +26,16 @@ module.exports = function(grunt) {
                 }
             }
         },
+        exec: {
+            restore_db: {
+                cmd: './scripts/dbrestore.sh local ./seeds/test_dump/',
+                stdout: false,
+                stderr: false,
+                options: {
+                   shell: 'bash'
+                }
+            }
+        },
         simplemocha: {
             options: {
                 globals: ["should"],
@@ -64,7 +74,8 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-wait-server');
     grunt.loadNpmTasks("grunt-express-server");
+    grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-simple-mocha");
-    grunt.registerTask("default", ["FindTests", "express:test", 'waitServer', "simplemocha:all"]);
-
+    grunt.registerTask("inventory", ["FindTests", "express:test", "waitServer", "exec", "simplemocha:all"]);
+    grunt.registerTask("default", ["FindTests", "express:test", "waitServer", "simplemocha:all"]);
 };
