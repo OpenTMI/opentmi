@@ -109,6 +109,7 @@ var BuildSchema = new Schema({
     //buffer limit 16MB when attached to document!
     name: { type: String },
     mime_type: { type: String },
+    base64: { type: String },
     data: { type: Buffer },
     size: { type: Number },
     sha1: { type: String },
@@ -163,6 +164,10 @@ BuildSchema.pre('validate', function (next) {
           err = new Error('file['+i+'].name missing');
           break;
       }
+      if(file.base64) {
+        file.data = new Buffer(file.base64, 'base64');
+        this.files[i].base64 = undefined;
+      }
       if(file.data) {
         file.size = file.data.length;
         //file.type = mimetype(file.name(
@@ -175,7 +180,7 @@ BuildSchema.pre('validate', function (next) {
           // store to filesystem
           var target = path.join(filedb, file.sha1);
           var fileData = file.data;
-          delete file.data;
+          this.files[i].data = undefined;
           fs.exists(target, function(exists){
             if(exists) {
               winston.warn('File %s exists already (filename: %s)', file.name, file.sha1);
@@ -190,7 +195,7 @@ BuildSchema.pre('validate', function (next) {
           });
         } else {
           //do not store at all..
-          delete file.data;
+          this.files[i].data = undefined;
           winston.warn('filedb is not configured');
         }
       }
