@@ -9,6 +9,8 @@ module.exports = function(grunt) {
         express: {
             test: {
                 options: {
+                    output: "dummy testcases generated",
+                    delay: 10000,
                     script: "index.js",
                     timeout: 3000,
                     harmony: true,

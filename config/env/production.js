@@ -28,7 +28,9 @@ module.exports = {
   github: {
     clientID: process.env.GITHUB_CLIENTID,
     clientSecret: process.env.GITHUB_SECRET,
-    callbackURL: 'http://nodejs-express-demo.herokuapp.com/auth/github/callback'
+    callbackURL: process.env.GITHUB_CBURL,
+    organization: process.env.GITHUB_ORG,
+    adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
   },
   linkedin: {
     clientID: process.env.LINKEDIN_CLIENTID,

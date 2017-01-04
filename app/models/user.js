@@ -51,8 +51,8 @@ var UserSchema = new Schema({
 /**
  * User plugin
  */
-
 //UserSchema.plugin(userPlugin, {});
+
 /**
  * Query Plugin 
  */
@@ -64,8 +64,6 @@ UserSchema.plugin( QueryPlugin ); //install QueryPlugin
  * - validations
  * - virtuals
  */
-
-
 // the below 5 validations only apply if you are signing up traditionally
 /*
 UserSchema.path('name').validate(function (name) {
@@ -129,13 +127,46 @@ UserSchema.pre('save', function(next){
   }
 })*/
 
-
+/**
+ * Pre-remove hook
+ */
+UserSchema.pre('remove', function(next) {
+  var self = this;
+  var Loan = mongoose.model('Loan');
+  
+  Loan.find({ loaner:self._id }, function(err, loans) {
+	if (loans.length > 0) return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
+	next();
+  });
+});
 
 /**
  * Methods
  */
+UserSchema.methods.addToGroup = function (groupname, done) {
+  var self = this;
+  Group.findOne({ name: groupname }, function (error, group) {
+    if (error) {
+      return done(error);
+    } else if (!group) {
+      return done({ message: 'group not found' });
+    } else if (_.find(group.users, function (user) { return user === self._id; })) {
+      return done({ message: 'user belongs to the group already' });
+    }
 
-UserSchema.methods.addToGroup = function(group, done) {
+    self.groups.push(group._id);
+    group.users.push(self._id);
+    group.save();
+    self.save(function (error, user) {
+      if (error) {
+        return done(error);
+      }
+      done(user);
+    });
+  });
+};
+
+UserSchema.methods.removeFromGroup = function(group, done) {
   var self = this;
   Group.findOne({name: group}, function(error, group){
       if( error ){
@@ -144,8 +175,8 @@ UserSchema.methods.addToGroup = function(group, done) {
       if(!group){
         return done({message: 'group not found'});
       }
-      self.groups.push(group._id);
-      group.users.push(self._id);
+      self.groups = _.without(self.groups, group._id);
+      group.users = _.without(group.users, self._id);
       group.save();
       self.save(function(error, user){
         if(error) {
@@ -201,7 +232,6 @@ UserSchema.methods.skipValidation = function(){
 /**
  * Statics
  */
-
 UserSchema.static({
   /**
    * Load
