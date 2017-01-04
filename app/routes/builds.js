@@ -19,7 +19,10 @@ var Route = function(app, passport){
     .get( controller.get )
     .put( controller.update )
     .delete( controller.remove );
-  
+
+  router.route('/api/v0/duts/builds/:Build/files/:Index/download')
+    .get( controller.download );
+
   app.use( router );
 }
 
