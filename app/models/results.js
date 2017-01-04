@@ -11,6 +11,7 @@ var _ = require('lodash');
 
 var Schema = mongoose.Schema;
 
+var Build = mongoose.model('Build');
 
 /**
  * User schema
@@ -37,8 +38,8 @@ var ResultSchema = new Schema({
       rackId: {type: String},
       framework: {
         name: {type: String, default: ''},
-        ver: {type: String, default: ''},
-      },
+        ver: {type: String, default: ''}
+      }
     },
     sut: { // software under test
       ref: {type: Schema.Types.ObjectId, ref: 'Build' },
@@ -46,12 +47,13 @@ var ResultSchema = new Schema({
       buildName: {type: String},
       buildDate: {type: Date},
       buildUrl: {type: String, default: ''},
+      buildSha1: {type: String },
       branch: {type: String, default: ''},
       commitId: {type: String, default: ''},
       tag: [{type: String}],
       href: {type: String},
       cut: [{type: String}], // Component Under Test
-      fut: [{type: String}], // Feature Under Test
+      fut: [{type: String}] // Feature Under Test
     },
     dut: {  //device(s) under test
       count: {type: Number},
@@ -69,7 +71,7 @@ var ResultSchema = new Schema({
         filename: {type: String},
         filesize: {type: Number},
         refs: {type: String},
-        data: {type: Buffer},
+        data: {type: Buffer}
       }
     ]
   }
@@ -90,10 +92,34 @@ ResultSchema.plugin( QueryPlugin ); //install QueryPlugin
 /**
  * Methods
  */
-
-ResultSchema.method({
-
+ResultSchema.pre('validate', function (next) {
+  var err;
+  var buildSha1 = _.get(this, 'exec.sut.buildSha1');
+  console.log(buildSha1, this)
+  if (buildSha1) {
+    winston.debug('result build sha1: ', buildSha1);
+    Build.findOne({'files.sha1': buildSha1}, (err, build) => {
+      if(build) {
+        this.exec.sut.ref = build._id;
+      }
+      next();
+    });
+    return;
+  }
+  next(err);
 });
+ResultSchema.virtual('exec.sut.sha1');
+  /*.get()
+  .set(function(v) {
+
+  });*/
+ResultSchema.methods.setBuild = function(cb) {
+
+};
+ResultSchema.methods.getBuild = function(cb) {
+  winston.debug('lookup build..');
+  Build.findOne({_id: _.get(this, 'exec.sut.ref')}, cb);
+};
 
 /**
  * Statics

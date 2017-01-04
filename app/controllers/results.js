@@ -154,7 +154,14 @@ var Controller = function(){
         });
     }
     req.pipe(req.busboy);
-  }
+  };
+
+  this.buildDownload = function(req, res) {
+    req.Result.getBuild( (err, build) => {
+      build.download( req.params.Index, res);
+    });
+
+  };
   
   //util.inherits(this, defaultCtrl);
 

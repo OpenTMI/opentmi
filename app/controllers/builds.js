@@ -67,6 +67,10 @@ var Controller = function(){
   this.create = defaultCtrl.create;
   this.update = defaultCtrl.update;
   this.remove = defaultCtrl.remove;
+
+  this.download = function(req, res) {
+    req.Build.download( req.params.Index, res);
+  };
   //util.inherits(this, defaultCtrl);
 
   return this;

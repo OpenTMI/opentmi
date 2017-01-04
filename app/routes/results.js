@@ -15,11 +15,16 @@ var Route = function(app, passport){
     .post(controller.create );
   router.route('/api/v0/results/junit')
     .post(controller.createFromJunit );
+
   router.route('/api/v0/results/:Result.:format?')
     .all( controller.all )
     .get( controller.get )
     .put( controller.update )
     .delete( controller.remove );
+
+  router.route('/api/v0/results/:Result/builds/:Index/download')
+    .all( controller.all )
+    .get( controller.buildDownload);
   
   app.use( router );
 }
