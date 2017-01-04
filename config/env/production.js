@@ -13,7 +13,7 @@ module.exports = {
   admin: {
     //default values
     'user': 'admin',
-    'pwd': 'admin',
+    'pwd': 'admin'
   },
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
@@ -30,6 +30,10 @@ module.exports = {
     clientSecret: process.env.GITHUB_SECRET,
     callbackURL: process.env.GITHUB_CBURL,
     organization: process.env.GITHUB_ORG,
+    authentication: {
+        type: "oauth",
+        token: process.env.GITHUB_TOKEN
+    },
     adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
   },
   linkedin: {

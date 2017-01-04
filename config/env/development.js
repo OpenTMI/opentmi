@@ -31,16 +31,17 @@ module.exports = {
   admin: {
     //default values
     'user': 'admin',
-    'pwd': 'admin',
+    'pwd': 'admin'
   },
   ldap: {
     url: process.env.LDAP_URL
   },
   jenkins: {
-    //url: 'my@host.jenkins.com/'
+    url: process.env.JENKINS_URL
   },
   slack: {
-    //token: 'my-token'
+    token: process.env.SLACK_TOKEN,
+    allowedChannels: process.env.SLACK_ALLOWED_CHANNELS
   },
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
@@ -57,6 +58,10 @@ module.exports = {
     clientSecret: process.env.GITHUB_SECRET,
     callbackURL: process.env.GITHUB_CBURL || 'http://localhost:3000/auth/github/callback',
     organization: process.env.GITHUB_ORG,
+    authentication: {
+        type: "oauth",
+        token: process.env.GITHUB_TOKEN
+    },
     adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
   },
   linkedin: {
