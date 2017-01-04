@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var ApiKey = mongoose.model('ApiKey');
-var _ = require('underscore');
+var _ = require('lodash');
 
 module.exports = {
   keys: function(req, res){

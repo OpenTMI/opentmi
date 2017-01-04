@@ -8,6 +8,7 @@ var util = require("util");
 //3rd party modules
 var express = require('express');
 var mongoose = require('mongoose');
+var _ = require('lodash');
 
 //own modules
 var DefaultController = require('./');
@@ -37,7 +38,6 @@ var Controller = function(){
           }
         }     
       }
-      var _ = require('underscore');
       defaultCtrl.generateDummyData( function(i){
           var _new = {};
           _.extend(_new, Template)
@@ -60,7 +60,7 @@ var Controller = function(){
   this.all = function(req, res, next){
     // dummy middleman function..
     next(); 
-  }
+  };
   
   this.get = defaultCtrl.get;
   this.find = defaultCtrl.find;

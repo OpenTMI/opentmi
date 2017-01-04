@@ -1,7 +1,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var restify = require('express-restify-mongoose');
-var _ = require('underscore');
+var _ = require('lodash');
 var winston = require('winston');
 
 var Route = function(app, passport){

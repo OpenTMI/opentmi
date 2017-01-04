@@ -1,13 +1,16 @@
-
 /*!
  * Module dependencies
  */
 
+//3rd party modules
 var mongoose = require('mongoose');
 //var userPlugin = require('mongoose-user');
+var QueryPlugin = require('mongoose-query');
+var winston = require('winston');
+var _ = require('lodash');
+
 var Schema = mongoose.Schema;
 
-var QueryPlugin = require('mongoose-query');
 
 /**
  * User schema
