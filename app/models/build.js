@@ -245,8 +245,7 @@ BuildSchema.methods.download = function(index, expressResponse) {
     }
     var source = path.join(filedb, file.sha1);
     winston.debug('downloading source: ', source);
-    fs.readfile(source, function(err, data) {
-      winston.debug('data: ', data);
+    fs.readFile(source, function(err, data) {
       cb(err, data?_.merge({}, file, {data: data}):null);
     });
   } else {
