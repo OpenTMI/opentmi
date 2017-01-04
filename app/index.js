@@ -74,10 +74,6 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 
-var bodyParser = require('body-parser');
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-
 // Create public event channel
 global.pubsub = new EventEmitter();
 

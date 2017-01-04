@@ -82,7 +82,7 @@ module.exports = function (app) {
   
   app.use( cors() );
   // bodyParser should be above methodOverride
-  app.use( bodyParser.json() );
+  app.use( bodyParser.json({ limit: '50mb' }) );
   app.use( busboy({
       limits: {
         fileSize: 10 * 1024 * 1024
