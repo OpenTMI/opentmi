@@ -13,6 +13,8 @@ var JunitParser = require('junit-xml-parser').parser;
 var uuid = require('node-uuid');
 var async = require('async');
 var winston = require('winston');
+var _ = require('lodash');
+
 //own modules
 var DefaultController = require('./');
 
@@ -47,7 +49,6 @@ var Controller = function(){
               }
             }
           }
-        var _ = require('underscore');
         defaultCtrl.generateDummyData( function(i){
            var _new = {};
            _.extend(_new, Template)
@@ -153,7 +154,14 @@ var Controller = function(){
         });
     }
     req.pipe(req.busboy);
-  }
+  };
+
+  this.buildDownload = function(req, res) {
+    req.Result.getBuild( (err, build) => {
+      build.download( req.params.Index, res);
+    });
+
+  };
   
   //util.inherits(this, defaultCtrl);
 

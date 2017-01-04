@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 //var userPlugin = require('mongoose-user');
 var Schema = mongoose.Schema;
 var QueryPlugin = require('mongoose-query');
-var _ = require('underscore')
+var _ = require('lodash')
 
 var Schema = mongoose.Schema;
 var Types = Schema.Types;

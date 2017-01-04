@@ -22,7 +22,7 @@ var DefaultController = function(Model, defaultModelName, docId){
   }
   this.modelParam = function(modelname, errorCb, successCb){
     //find from db
-    modelname = modelname || defaultModelName
+    modelname = modelname || defaultModelName;
 
     return function(req, res, next, id){
       winston.debug('do param '+JSON.stringify(req.params) );

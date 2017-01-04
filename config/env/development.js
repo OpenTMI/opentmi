@@ -33,6 +33,7 @@ module.exports = {
     'user': 'admin',
     'pwd': 'admin'
   },
+  filedb: process.env.FILE_DB || './data',
   ldap: {
     url: process.env.LDAP_URL
   },

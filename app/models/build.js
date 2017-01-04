@@ -4,12 +4,17 @@
  */
 // native modules
 var crypto = require('crypto');
+var fs = require('fs');
+var path = require('path');
 
 // 3rd party modules
-var _ = require('underscore');
+var winston = require('winston');
+var _ = require('lodash');
 var uuid = require('node-uuid');
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');
+var mime = require('mime');
+var nconf = require('nconf');
 
 
 function checksum (str, algorithm, encoding) {
@@ -20,6 +25,8 @@ function checksum (str, algorithm, encoding) {
 }
 
 var Schema = mongoose.Schema;
+
+var filedb = nconf.get('filedb');
 
 
 /**
@@ -102,6 +109,7 @@ var BuildSchema = new Schema({
     //buffer limit 16MB when attached to document!
     name: { type: String },
     mime_type: { type: String },
+    base64: { type: String },
     data: { type: Buffer },
     size: { type: Number },
     sha1: { type: String },
@@ -124,6 +132,8 @@ var BuildSchema = new Schema({
     }
   }
 });
+BuildSchema.set('toObject', { virtuals: true });
+//BuildSchema.set('toJSON', { virtuals: true });
 
 
 /**
@@ -149,29 +159,58 @@ BuildSchema.pre('validate', function (next) {
   var err;
   if( _.isArray(this.files) ) {
     for(i=0;i<this.files.length;i++) {
-        var file = this.files[i];
-        if( !file.name) {
-            err = new Error('file['+i+'].name missing');
-            break;
+      var file = this.files[i];
+      if( !file.name) {
+          err = new Error('file['+i+'].name missing');
+          break;
+      }
+      if(file.base64) {
+        file.data = new Buffer(file.base64, 'base64');
+        this.files[i].base64 = undefined;
+      }
+      if(file.data) {
+        file.size = file.data.length;
+        //file.type = mimetype(file.name(
+        file.sha1 = checksum(file.data, 'sha1');
+        file.sha256 = checksum(file.data, 'sha256');
+        if( filedb === 'mongodb') {
+          //use mongodb document
+          winston.warn('store file %s to mongodb', file.name);
+        }  else if( filedb ) {
+          // store to filesystem
+          var target = path.join(filedb, file.sha1);
+          var fileData = file.data;
+          this.files[i].data = undefined;
+          fs.exists(target, function(exists){
+            if(exists) {
+              winston.warn('File %s exists already (filename: %s)', file.name, file.sha1);
+              return;
+            }
+            winston.warn('Store file %s (filename: %s)', file.name, file.sha1);
+            fs.writeFile(target, fileData, function(err){
+              if(err) {
+                winston.warn(err);
+              }
+            });
+          });
+        } else {
+          //do not store at all..
+          this.files[i].data = undefined;
+          winston.warn('filedb is not configured');
         }
-        if(file.data) {
-          file.size = file.data.length;
-          //file.type = mimetype(file.name(
-          file.sha1 = checksum(file.data, 'sha1');
-          file.sha256 = checksum(file.data, 'sha256');
-        }
+      }
     }
   }
   if( err ) {
       return next(err);
   }
-  if( this.target.type === 'simulate' ){
-    if( !this.target.simulator )
+  if( _.get(this, 'target.type') === 'simulate' ){
+    if( !_.get(this, 'target.simulator' ))
         err = new Error('simulator missing');
-  } else if( this.target.type === 'hardware' ){ 
-    if( !this.target.hw )
+  } else if( _.get(this, 'target.type') === 'hardware' ){
+    if( !_.get(this, 'target.hw') )
         err = new Error('target.hw missing');
-    else if(!this.target.hw.model)
+    else if(!_.get(this, 'target.hw.model'))
         err = new Error('target.hw.model missing');
   }
   next(err);
@@ -180,7 +219,50 @@ BuildSchema.pre('validate', function (next) {
 /**
  * Methods
  */
-//BuildSchema.method({});
+BuildSchema.methods.download = function(index, expressResponse) {
+  index = index || 0;
+  var cb = function(err, file) {
+    var res = expressResponse;
+    if(err) {
+      return res.status(500).json(err);
+    }
+    if(file.data) {
+      var mimetype = mime.lookup(file.name);
+      res.writeHead(200, {
+          'Content-Type': mimetype,
+          'Content-disposition': 'attachment;filename=' + file.name,
+          'Content-Length': file.data.length
+      });
+      res.end( file.data );
+    } else {
+      res.status(404).json(build);
+    }
+  };
+  if( _.get(this.files, index)) {
+    var file = _.get(this.files, index);
+    if(file.data) {
+      return cb(null, file);
+    }
+    var source = path.join(filedb, file.sha1);
+    winston.debug('downloading source: ', source);
+    fs.readFile(source, function(err, data) {
+      cb(err, data?_.merge({}, file, {data: data}):null);
+    });
+  } else {
+    cb({error: 'file not found'});
+  }
+};
+
+BuildSchema.virtual('file').get(
+  function() {
+      if(this.files.length === 1) {
+        var href;
+        if( filedb && filedb !== 'mongodb' && this.files[0].sha1) {
+          href = path.join(filedb, this.files[0].sha1);
+        }
+      }
+      return href;
+  });
 
 /**
  * Statics
