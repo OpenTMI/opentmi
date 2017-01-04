@@ -5,7 +5,7 @@ var request = require('request');
 var auth = require('./../../config/middlewares/authorization');
 var jwt = require('jwt-simple');
 var async = require('async');
-var _ = require('underscore');
+var _ = require('lodash');
 var winston = require('winston');
 
 var Controller = function () {

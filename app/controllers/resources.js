@@ -9,6 +9,7 @@ var util = require("util");
 var express = require('express');
 var mongoose = require('mongoose');
 var async = require('async');
+var _ = require('lodash');
 
 //own modules
 var DefaultController = require('./');
@@ -43,7 +44,6 @@ var Controller = function(){
             build: '5213'
           }
         }
-      var _ = require('underscore');
       defaultCtrl.generateDummyData( function(i){
          var _new = {};
          _.extend(_new, Template)

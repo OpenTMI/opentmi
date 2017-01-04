@@ -6,7 +6,7 @@
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');
 var bcrypt = require('bcryptjs');
-var _ = require('underscore');
+var _ = require('lodash');
 
 /* Implementation */   
 var Schema = mongoose.Schema;

@@ -4,7 +4,7 @@
  */
 
 var mongoose = require('mongoose');
-var _ = require('underscore');
+var _ = require('lodash');
 var Schema = mongoose.Schema;
 var QueryPlugin = require('mongoose-query');
 /* Implementation */   

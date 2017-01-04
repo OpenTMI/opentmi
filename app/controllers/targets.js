@@ -9,7 +9,7 @@ var util = require("util");
 var express = require('express');
 var mongoose = require('mongoose');
 
-var _ = require('underscore');
+var _ = require('lodash');
 
 //own modules
 var DefaultController = require('./');

@@ -1,5 +1,5 @@
 var express = require('express');
-var _ = require('underscore');
+var _ = require('lodash');
 var nconf = require('nconf');
 
 var Route = function(app, passport){

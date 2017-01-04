@@ -6,7 +6,8 @@
 var crypto = require('crypto');
 
 // 3rd party modules
-var _ = require('underscore');
+var winston = require('winston');
+var _ = require('lodash');
 var uuid = require('node-uuid');
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');

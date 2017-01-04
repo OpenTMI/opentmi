@@ -9,6 +9,7 @@ var request = require('request');
 //3rd party modules
 var express = require('express');
 var mongoose = require('mongoose');
+var _ = require('lodash');
 
 //own modules
 var DefaultController = require('./');
@@ -30,7 +31,7 @@ var Controller = function(){
             title: 'Example case', 
             purpose: 'dummy' }
         }
-      var _ = require('underscore');
+
       defaultCtrl.generateDummyData( function(i){
           var _new = {execution: { estimation: {} }};
           _.extend(_new, Template);
