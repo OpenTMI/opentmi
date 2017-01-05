@@ -58,7 +58,8 @@ var BuildSchema = new Schema({
   type: { type: String, enum: ['app', 'lib'], default: 'app'},
   cre: {
     user: {type: String},
-    time: {type: Date, default: Date.now}
+    time: {type: Date, default: Date.now},
+    host: {type: String}
   },
   mod: {
     user: {type: String},
@@ -70,10 +71,8 @@ var BuildSchema = new Schema({
       name: { type: String }, //e.g. "github"
       system: { type: String, enum: ['git','SVN', 'CSV'], default: 'git' },
       type: {type: String, enum: ['PR']},
-
       commitId: { type: String },
       branch: { type: String },
-
       base_branch: {type: String},
       base_commit: {type: String},
       pr_number: {type: String},
@@ -91,11 +90,32 @@ var BuildSchema = new Schema({
   },
   compiledBy: { type: String, enum: ['CI', 'manual'] },
   changeId: {type: String}, // e.g. when gerrit build
-  meta_info: {
-    compiler: {type: String},
-    version: {type: String},
-    toolchain: {type: String},
-    machine: {type: String}
+  configuration: {
+    name: { type: String },
+    compiler: {
+      name: {type: String},
+      version: {type: String},
+      macros: [{
+        key: {type: String},
+        value: {type: String}
+      }],
+      flags: [{
+        key: {type: String},
+        value: {type: String}
+      }]
+    },
+    linker: {
+      name: {type: String},
+      version: {type: String},
+      flags: [{
+        key: {type: String},
+        value: {type: String}
+      }]
+    },
+    toolchain: {
+      name: {type: String},
+      version: {type: String}
+    }
   },
   memory: {
     summary: {
