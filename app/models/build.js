@@ -6,6 +6,7 @@
 var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
+const zlib = require('zlib');
 
 // 3rd party modules
 var winston = require('winston');
@@ -178,19 +179,24 @@ BuildSchema.pre('validate', function (next) {
           winston.warn('store file %s to mongodb', file.name);
         }  else if( filedb ) {
           // store to filesystem
-          var target = path.join(filedb, file.sha1);
+          var target = path.join(filedb, file.sha1+'.gz');
           var fileData = file.data;
           this.files[i].data = undefined;
-          fs.exists(target, function(exists){
-            if(exists) {
-              winston.warn('File %s exists already (filename: %s)', file.name, file.sha1);
+          fs.exists(target, function(exists) {
+            if (exists) {
+              winston.warn('File %s exists already (filename: %s)', file.name, target);
               return;
             }
-            winston.warn('Store file %s (filename: %s)', file.name, file.sha1);
-            fs.writeFile(target, fileData, function(err){
-              if(err) {
-                winston.warn(err);
+            winston.warn('Store file %s (filename: %s)', file.name, target);
+            zlib.gzip(fileData, function (error, result) {
+              if (error) {
+                return winston.warn(error);
               }
+              fs.writeFile(target, result, function (err) {
+                if (err) {
+                  winston.warn(err);
+                }
+              });
             });
           });
         } else {
@@ -243,10 +249,13 @@ BuildSchema.methods.download = function(index, expressResponse) {
     if(file.data) {
       return cb(null, file);
     }
-    var source = path.join(filedb, file.sha1);
+    var source = path.join(filedb, file.sha1+'.gz');
     winston.debug('downloading source: ', source);
-    fs.readFile(source, function(err, data) {
-      cb(err, data?_.merge({}, file, {data: data}):null);
+    fs.readFile(source, function(err, buffer) {
+      if(err) { return cb(err); }
+      zlib.gunzip(buffer, function (error, data) {
+        cb(error, data?_.merge({}, file, {data: data}):null);
+      });
     });
   } else {
     cb({error: 'file not found'});
