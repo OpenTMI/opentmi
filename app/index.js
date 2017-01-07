@@ -3,6 +3,7 @@
 // native modules
 var fs = require('fs');
 var http = require('http');
+var https = require('https');
 var EventEmitter = require('events').EventEmitter
 
 // 3rd party modules
@@ -18,6 +19,11 @@ nconf.argv({
         type: 'string',
         describe: 'set binding interface',
         nargs: 1
+    },
+    https: {
+      describe: 'use https',
+      type: 'bool',
+      default: false
     },
     port: {
       describe: 'set listen port',
@@ -71,7 +77,29 @@ winston.add(require('winston-daily-rotate-file'), {
 winston.debug('Use cfg: %s', nconf.get('cfg'));
 
 var app = express();
-var server = http.createServer(app);
+/**
+ * Create HTTP server.
+ */
+var server;
+var sslcert_key = 'sslcert/server.key';
+var sslcert_crt = 'sslcert/server.crt';
+if( nconf.get('https') ) {
+    if( !fs.existsSync(sslcert_key) ) {
+        winston.error('ssl cert key is missing: %s', sslcert_key);
+        process.exit(1);
+    }
+    if( !fs.existsSync(sslcert_crt) ) {
+        winston.error('ssl cert crt is missing: %s', sslcert_crt);
+        process.exit(1);
+    }
+    var privateKey = fs.readFileSync(sslcert_key);
+    var certificate = fs.readFileSync(sslcert_crt);
+    var credentials = {key: privateKey, cert: certificate};
+    server = https.createServer(credentials, app);
+} else {
+    server = http.createServer(app);
+}
+
 var io = require('socket.io')(server);
 
 // Create public event channel
@@ -93,7 +121,7 @@ require('../config/express')(app);
 
 // Bootstrap routes
 fs.readdirSync(__dirname + '/routes').forEach(function (file) {
-  if ( file.match(/\.js$/) && 
+  if ( file.match(/\.js$/) &&
       !file.match(/error\.js$/)) {
     winston.info('-AddRoute: '+file);
     require(__dirname + '/routes/' + file)(app);
@@ -118,10 +146,10 @@ var onError = function(error){
   process.exit(-1);
 };
 var onListening = function(){
-  console.log('OpenTMI started on port ' + nconf.get('port') +' in '+nconf.get('cfg')+ ' mode');
+  var listenurl = (nconf.get('https')?'https':'http:')+'://'+nconf.get('listen')+':'+nconf.get('port');
+  console.log('OpenTMI started on ' +listenurl+ ' in '+ nconf.get('cfg')+ ' mode');
 };
 
 server.listen(nconf.get('port'), nconf.get('listen'));
 server.on('error', onError);
 server.on('listening', onListening);
-
