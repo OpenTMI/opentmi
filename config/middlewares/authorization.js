@@ -4,7 +4,7 @@ var mongoose = require('mongoose');
 var nconf = require('nconf');
 var winston = require('winston');
 var TOKEN_SECRET = nconf.get('webtoken');
-var _ = require('underscore');
+var _ = require('lodash');
 
 var User = mongoose.model('User');
 var Group = mongoose.model('Group');

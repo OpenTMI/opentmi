@@ -109,9 +109,10 @@ global.pubsub = new EventEmitter();
 require('./db');
 
 // Connect models
+winston.info("Register models..");
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
   if (file.match(/\.js$/) && !file.match(/^\./)){
-    winston.info('-RegisterModel: '+file);
+    winston.verbose(' * '+file);
     require(__dirname + '/models/' + file);
   }
 });
@@ -120,10 +121,11 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
 require('../config/express')(app);
 
 // Bootstrap routes
+winston.info("Add Routers..");
 fs.readdirSync(__dirname + '/routes').forEach(function (file) {
   if ( file.match(/\.js$/) &&
       !file.match(/error\.js$/)) {
-    winston.info('-AddRoute: '+file);
+    winston.verbose(' * '+file);
     require(__dirname + '/routes/' + file)(app);
   }
 });
