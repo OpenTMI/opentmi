@@ -12,10 +12,10 @@ function AddonManager (app, server, io){
   var addons = [];
 
   this.RegisterAddons = function() {
-
+    winston.info("Loading addons..");
     fs.readdirSync(__dirname).forEach(function (file) {
       if (!file.match(/\.js$/) && !file.match(/^\./) ) {
-         winston.info("-RegisterAddon: '"+file+"'");
+         winston.verbose(" * "+file);
          var addonPath = path.join(__dirname, file)
          try {
            let packageJsonFile = path.join(addonPath, 'package.json');
@@ -25,12 +25,11 @@ function AddonManager (app, server, io){
               try {
                   require.resolve(dep);
               } catch(e) {
-                  winston.warn(dep + " npm package is not found");
+                  winston.warn(dep + " npm package is not found, required by addon "+file);
                   deps = false;
               }
            });
            if(deps === false) {
-             winston.warn("skip loading addon "+file);
              return;
            }
          } catch(e){
