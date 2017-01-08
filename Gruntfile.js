@@ -1,5 +1,5 @@
 require("xunit-file");
-fs = require('fs');
+const fs = require('fs');
 
 
 module.exports = function(grunt) {

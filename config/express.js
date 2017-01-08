@@ -37,40 +37,40 @@ module.exports = function (app) {
   app.use(compression({
     threshold: 512
   }));
-  
+
   app.use( express.static( nconf.get('root') + '/public') );
-  
+
   // Logging middleware
   app.use(expressWinston.logger({
       winstonInstance: winston,
-      meta: false, // optional: control whether you want to log the meta data about the request (default to true) 
-      //msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}" 
-      expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true 
-      colorStatus: true, // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true 
-      ignoreRoute: function (req, res) { 
+      meta: false, // optional: control whether you want to log the meta data about the request (default to true)
+      //msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+      expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true
+      colorStatus: true, // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
+      ignoreRoute: function (req, res) {
         // skip web page requests
         skip = true;
         if( req.url.match(/^\/api/)!==null ) skip = false;
         return skip;
-      } 
+      }
     }));
-  
-  
-  
+
+
+
   // set views path, template engine and default layout
   //app.engine('html', swig.renderFile);
   //app.set('views', config.root + '/app/views');
   //app.set('view engine', 'html');
-  
+
   // expose package.json to views
   app.use(function (req, res, next) {
     res.locals.pkg = pkg;
     res.locals.env = env;
     next();
   });
-  
-  
-  
+
+
+
   app.use( cors() );
   // bodyParser should be above methodOverride
   app.use( bodyParser.json({ limit: '50mb' }) );
@@ -102,10 +102,10 @@ module.exports = function (app) {
       collection : 'sessions'
     })
   }));
-  
+
   // adds CSRF support when production mode
   if ( process.env.NODE_ENV === 'production') {
-    // Add CSRF support only for production mode app
+    // Add CSRF (Cross-site request forgery) support only for production mode app
     //app.use(csrf());
 
     // This could be moved to view-helpers :-)
@@ -120,5 +120,5 @@ module.exports = function (app) {
   app.on('mount', function (parent) {
     console.log(parent); // refers to the parent app
   });*/
-  
+
 }
