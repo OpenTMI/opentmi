@@ -10,6 +10,7 @@ var express = require('express');
 var mongoose = require('mongoose');
 var async = require('async');
 var _ = require('lodash');
+var nconf = require('nconf');
 
 //own modules
 var DefaultController = require('./');
@@ -27,45 +28,48 @@ var Controller = function(){
     return list[i]
   }
 
-  //create dummy testcases when db is empty ->
-  defaultCtrl.isEmpty( function(yes){
-    if( yes === true ){
-      var Template = {
-          name: 'DUT-',
-          cre: { user: 'tmt'},
-          type: 'dut',
-          usage: {type: 'automation'},
-          status: {  value: 'active' },
-          other_info: { location: { site: 'Oulu'}, group: 'department' },
-          device: { 
-            manufacturer: 'Atmel',
-            model: 'sam4eXplained',
-            sn: '123568',
-            build: '5213'
+  if( nconf.get('seeds') ){
+    //create dummy testcases when db is empty ->
+    defaultCtrl.isEmpty( function(yes){
+      return;
+      if( yes === true ){
+        var Template = {
+            name: 'DUT-',
+            cre: { user: 'tmt'},
+            type: 'dut',
+            usage: {type: 'automation'},
+            status: {  value: 'active' },
+            other_info: { location: { site: 'Oulu'}, group: 'department' },
+            device: {
+              manufacturer: 'Atmel',
+              model: 'sam4eXplained',
+              sn: '123568',
+              build: '5213'
+            }
           }
-        }
-      defaultCtrl.generateDummyData( function(i){
-         var _new = {};
-         _.extend(_new, Template)
-          _new.name += i;
-          _new.device.sn += i
-          return _new;
-      }, 10, function(err){
-        //done
-        if(err)console.log(err);
-        else console.log('dummy resource generated');
-      });
-    }
-  });
+        defaultCtrl.generateDummyData( function(i){
+           var _new = {};
+           _.extend(_new, Template)
+            _new.name += i;
+            _new.device.sn += i
+            return _new;
+        }, 10, function(err){
+          //done
+          if(err)console.log(err);
+          else console.log('dummy resource generated');
+        });
+      }
+    });
+  }
 
   this.paramFormat = defaultCtrl.format();
   this.paramResource = defaultCtrl.modelParam();
 
   this.all = function(req, res, next){
     // dummy middleman function..
-    next(); 
+    next();
   }
-  
+
   this.get = defaultCtrl.get;
   this.find = defaultCtrl.find;
   this.create = defaultCtrl.create;
@@ -134,7 +138,7 @@ var Controller = function(){
   }
   this.releaseMultiple = function(req, res){
     console.log('Releasing: '+req.allocated.length);
-    async.map( req.allocated, 
+    async.map( req.allocated,
       function(resource, cb){
         console.log('try to release: '+resource._id);
         resource.release(cb)

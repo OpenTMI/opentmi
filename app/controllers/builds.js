@@ -9,6 +9,7 @@ var util = require("util");
 var express = require('express');
 var mongoose = require('mongoose');
 var _ = require('lodash');
+var nconf = require('nconf');
 
 //own modules
 var DefaultController = require('./');
@@ -25,43 +26,45 @@ var Controller = function(){
     i = randomIntInc( 0, list.length-1 )
     return list[i]
   }
-
-  //create dummy testcases when db is empty ->
-  defaultCtrl.isEmpty( function(yes){
-    if( yes === true ){
-      var Template = {
-        name: 'Build-',
-        target: {
-          type: 'simulate',
-          hw: {
-            platform: ''
+  if( nconf.get('seeds') ){
+    //create dummy testcases when db is empty ->
+    defaultCtrl.isEmpty( function(yes){
+      return;
+      if( yes === true ){
+        var Template = {
+          name: 'Build-',
+          target: {
+            type: 'simulate',
+            hw: {
+              model: ''
+            }
           }
-        }     
+        }
+        defaultCtrl.generateDummyData( function(i){
+            var _new = {};
+            _.extend(_new, Template)
+            _new.name += i;
+            _new.target.type = defaultCtrl.randomText(['simulate', 'hardware']);
+            _new.target.hw.model =
+              defaultCtrl.randomText(['K84F', 'nRF123', 'XBoard'])
+            return _new;
+        }, 10, function(err){
+          //done
+          if(err)console.log(err);
+          else console.log('dummy build generated');
+        });
       }
-      defaultCtrl.generateDummyData( function(i){
-          var _new = {};
-          _.extend(_new, Template)
-          _new.name += i;
-          _new.target.type = defaultCtrl.randomText(['simulate', 'hardware']);
-          _new.target.hw.platform = 
-            defaultCtrl.randomText(['K84F', 'nRF123', 'XBoard'])
-          return _new;
-      }, 10, function(err){
-        //done
-        if(err)console.log(err);
-        else console.log('dummy build generated');
-      });
-    }
-  });
+    });
+  }
 
   this.paramFormat = defaultCtrl.format();
   this.paramBuild = defaultCtrl.modelParam();
 
   this.all = function(req, res, next){
     // dummy middleman function..
-    next(); 
+    next();
   };
-  
+
   this.get = defaultCtrl.get;
   this.find = defaultCtrl.find;
   this.create = defaultCtrl.create;

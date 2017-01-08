@@ -14,6 +14,7 @@ var uuid = require('node-uuid');
 var async = require('async');
 var winston = require('winston');
 var _ = require('lodash');
+var nconf = require('nconf');
 
 //own modules
 var DefaultController = require('./');
@@ -24,7 +25,7 @@ var Controller = function(){
   var Testcase = mongoose.model('Testcase')
   var defaultCtrl = new DefaultController(Result, 'Result');
 
-  var doDummy = function() {
+  if( nconf.get('seeds') ){
     //create dummy testcases when db is empty ->
     defaultCtrl.isEmpty( function(yes){
       if( yes === true ){
@@ -34,8 +35,8 @@ var Controller = function(){
             job: {
               id: ''
             },
-            exec: { 
-              verdict: 'pass', 
+            exec: {
+              verdict: 'pass',
               framework: { name: 'clitest', ver: '0.0'},
               dut: {
                 vendor: 'atmel',
@@ -71,14 +72,14 @@ var Controller = function(){
 
   this.all = function(req, res, next){
     // dummy middleman function..
-    next(); 
+    next();
   }
-  
+
   this.get = defaultCtrl.get;
   this.find = defaultCtrl.find;
   this.create = defaultCtrl.create;
   this.update = defaultCtrl.update;
-  this.remove = defaultCtrl.remove;  
+  this.remove = defaultCtrl.remove;
 
   Object.resolve = function(path, obj, safe) {
         return path.split('.').reduce(function(prev, curr) {
@@ -98,7 +99,7 @@ var Controller = function(){
       Testcase.updateTcDuration(data.tcid, duration);
     }
   });
-  
+
   function streamToString(stream, cb) {
       const chunks = [];
       stream.on('data', function(chunk){
@@ -115,7 +116,7 @@ var Controller = function(){
         var result = new Result({
             tcid: value.name,
             cre: { name: 'tmt'},
-            exec: { 
+            exec: {
               verdict: value.failure ? 'FAIL' : 'PASS',
               duration: value.time
             },
@@ -135,7 +136,7 @@ var Controller = function(){
             res.json({ok: 1, message: "created "+results.tests.length + " results"} );
           }
       });
-      
+
     });
   }
   this.createFromJunit = function(req, res) {
@@ -162,10 +163,8 @@ var Controller = function(){
     });
 
   };
-  
-  //util.inherits(this, defaultCtrl);
 
-  doDummy();
+  //util.inherits(this, defaultCtrl);
   return this;
 }
 
