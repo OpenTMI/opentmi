@@ -169,6 +169,20 @@ BuildSchema.plugin( QueryPlugin ); //install QueryPlugin
  * - virtuals
  */
 
+BuildSchema.virtual('fileElfs').get(
+    function() {
+        let elf_hrefs = _.filter(this.files, (o) => { return o.name.match(/\.elf/)});
+        elf_hrefs = _.reduce(elf_hrefs, (s, o)=>{
+            if( filedb && filedb !== 'mongodb') {
+              let href = path.join(filedb, o.sha1+'.gz');
+              s.push(href);
+            }
+            return s;
+        }, []);
+        return elf_hrefs;
+    }
+)
+
 /*
 BuildSchema.path('location').validate(function (value, respond) {
     if( value.length === 0 ) respond(false);
