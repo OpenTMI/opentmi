@@ -33,6 +33,7 @@ var ResultSchema = new Schema({
     verdict: { type: String, required: true, enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'] },
     note: {type: String, default: ''},
     duration: {type: Number}, //seconds
+    profiling: {type: Schema.Types.Mixed},
     env: { //environment information
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
       rackId: {type: String},
@@ -95,7 +96,6 @@ ResultSchema.plugin( QueryPlugin ); //install QueryPlugin
 ResultSchema.pre('validate', function (next) {
   var err;
   var buildSha1 = _.get(this, 'exec.sut.buildSha1');
-  console.log(buildSha1, this)
   if (buildSha1) {
     winston.debug('result build sha1: ', buildSha1);
     Build.findOne({'files.sha1': buildSha1}, (err, build) => {
