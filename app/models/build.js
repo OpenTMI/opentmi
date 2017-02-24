@@ -176,6 +176,27 @@ BuildSchema.path('location').validate(function (value, respond) {
  }, '{PATH} missing');
  */
 
+function handleFiledb(file) {
+  var target = path.join(filedb, file.sha1+'.gz');
+  var fileData = file.data;
+  fs.exists(target, function(exists) {
+    if (exists) {
+      winston.warn('File %s exists already (filename: %s)', file.name, target);
+      return;
+    }
+    winston.warn('Store file %s (filename: %s)', file.name, target);
+    zlib.gzip(fileData, function (error, result) {
+      if (error) {
+        return winston.warn(error);
+      }
+      fs.writeFile(target, result, function (err) {
+        if (err) {
+          winston.warn(err);
+        }
+      });
+    });
+  });
+}
 BuildSchema.pre('validate', function (next) {
   var err;
   if( _.isArray(this.files) ) {
@@ -187,7 +208,7 @@ BuildSchema.pre('validate', function (next) {
       }
       if(file.base64) {
         file.data = new Buffer(file.base64, 'base64');
-        this.files[i].base64 = undefined;
+        file.base64 = undefined;
       }
       if(file.data) {
         file.size = file.data.length;
@@ -199,29 +220,11 @@ BuildSchema.pre('validate', function (next) {
           winston.warn('store file %s to mongodb', file.name);
         }  else if( filedb ) {
           // store to filesystem
-          var target = path.join(filedb, file.sha1+'.gz');
-          var fileData = file.data;
-          this.files[i].data = undefined;
-          fs.exists(target, function(exists) {
-            if (exists) {
-              winston.warn('File %s exists already (filename: %s)', file.name, target);
-              return;
-            }
-            winston.warn('Store file %s (filename: %s)', file.name, target);
-            zlib.gzip(fileData, function (error, result) {
-              if (error) {
-                return winston.warn(error);
-              }
-              fs.writeFile(target, result, function (err) {
-                if (err) {
-                  winston.warn(err);
-                }
-              });
-            });
-          });
+          handleFiledb(file);
+          file.data = undefined;
         } else {
           //do not store at all..
-          this.files[i].data = undefined;
+          file.data = undefined;
           winston.warn('filedb is not configured');
         }
       }
