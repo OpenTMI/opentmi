@@ -7,3 +7,4 @@ xunit.xml
 db.log
 data/
 sslcert
+.idea/
