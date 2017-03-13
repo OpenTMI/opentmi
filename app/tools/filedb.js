@@ -14,12 +14,14 @@ var checksum = require('./checksum');
 module.exports.provider = filedb;
 module.exports.readFile = function readFile(file, callback) {
     var source = path.join(filedb, file.sha1+'.gz');
-    winston.debug('downloading source: ', source);
+    winston.debug('loading source: ', source);
     fs.readFile(source, function(err, buffer) {
         if(err) {
             return callback(err);
         }
+        winston.debug("file readed");
         zlib.gunzip(buffer, function (error, data) {
+            winston.debug("data gunzipped");
             callback(error, data?_.merge({}, file, {data: data}):null);
         });
     });
