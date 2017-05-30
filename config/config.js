@@ -34,7 +34,7 @@ module.exports = {
   production: extend(production, defaults)
 }[nconf.get('cfg')];
 
-filedb = module.exports.filedb;
+var filedb = module.exports.filedb;
 if(filedb && filedb !== 'mongodb') {
   if (!fs.existsSync(filedb)){
     winston.info('create %s folder for filedb', filedb);

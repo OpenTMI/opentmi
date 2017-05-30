@@ -1,6 +1,7 @@
 require("xunit-file");
 const fs = require('fs');
 
+var path = require("path");
 
 module.exports = function(grunt) {
     var testFiles = ["test/*.js"];
@@ -28,12 +29,9 @@ module.exports = function(grunt) {
         },
         exec: {
             restore_db: {
-                cmd: './scripts/dbrestore.sh local ./test/seeds/test_dump/',
-                stdout: false,
-                stderr: false,
-                options: {
-                   shell: 'bash'
-                }
+                cmd: 'sh ./scripts/dbrestore.sh local ./test/seeds/test_dump/',
+                stdout: true,
+                stderr: true
             }
         },
         simplemocha: {
