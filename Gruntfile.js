@@ -1,7 +1,6 @@
 require("xunit-file");
 const fs = require('fs');
 
-var path = require("path");
 
 module.exports = function(grunt) {
     var testFiles = ["test/*.js"];
@@ -30,8 +29,8 @@ module.exports = function(grunt) {
         exec: {
             restore_db: {
                 cmd: 'sh ./scripts/dbrestore.sh local ./test/seeds/test_dump/',
-                stdout: true,
-                stderr: true
+                stdout: false,
+                stderr: false
             }
         },
         simplemocha: {
@@ -74,6 +73,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-express-server");
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-simple-mocha");
-    grunt.registerTask("inventory", ["FindTests", "express:test", "waitServer", "exec", "simplemocha:all"]);
-    grunt.registerTask("default", ["FindTests", "express:test", "waitServer", "simplemocha:all"]);
+    grunt.registerTask("default", ["FindTests", "express:test", "waitServer", "exec", "simplemocha:all"]);
+    grunt.registerTask("no-db-restore", ["FindTests", "express:test", "waitServer", "simplemocha:all"]);
 };
