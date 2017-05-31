@@ -28,9 +28,12 @@ module.exports = function(grunt) {
         },
         exec: {
             restore_db: {
-                cmd: 'sh ./scripts/dbrestore.sh local ./test/seeds/test_dump/',
+                cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
                 stdout: false,
-                stderr: false
+                stderr: false,
+		options: {
+		    shell: 'bash'
+		}
             }
         },
         simplemocha: {
