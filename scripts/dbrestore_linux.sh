@@ -57,7 +57,7 @@ if [ "$1" = "local" ] && [ -d "$2" ]; then
     DB_NAME="$LOCAL_DB_NAME"
     printDumpInfo
     # If you need to drop existing collections, add --drop as an argument below
-    if mongorestore -h $MONGO_HOST:$MONGO_PORT -d $DB_NAME $DB_DIR --quiet --drop; then
+    if mongorestore -h $MONGO_HOST:$MONGO_PORT -d $DB_NAME $DB_DIR --drop; then
         echo "Success!"
     fi
 
