@@ -14,7 +14,7 @@ module.exports = function(grunt) {
                     script: "index.js",
                     timeout: 3000,
                     harmony: true,
-                    args: ['-s'] //to more traces set -vvv instead of -s (silent)
+                    args: ['-vvv'] //to more traces set -vvv instead of -s (silent)
                 }
             }
         },
@@ -29,8 +29,8 @@ module.exports = function(grunt) {
         exec: {
             restore_db: {
                 cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
-                stdout: false,
-                stderr: false,
+                stdout: true,
+                stderr: true,
 		options: {
 		    shell: 'bash'
 		}
