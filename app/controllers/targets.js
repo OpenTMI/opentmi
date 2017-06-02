@@ -2,65 +2,25 @@
   Campaign Controller
 */
 
-//native modules
-var util = require("util");
+// native modules
 
-//3rd party modules
-var express = require('express');
+// 3rd party modules
 var mongoose = require('mongoose');
-var nconf = require('nconf');
-var _ = require('lodash');
 
-//own modules
+// own modules
 var DefaultController = require('./');
 
-var Controller = function(){
-
+var Controller = function () {
   var Campaign = mongoose.model('Target');
   var defaultCtrl = new DefaultController(Campaign, 'Target', 'name');
-
-  if( nconf.get('seeds') ){
-    //create dummy campaigns when db is empty ->
-    defaultCtrl.isEmpty( function(yes){
-      if( yes === true ){
-        var Template = {
-            name: 'K64F',
-            yotta: [{
-              target: "frdm-k64f-gcc",
-              toolchain: "GCC_ARM"
-            }],
-            binary: {
-              type: ".bin",
-            },
-            flash: {
-              method: "cp",
-              cycle_s: 4
-            },
-            reset: {
-              method: "default"
-            }
-          }
-        defaultCtrl.generateDummyData( function(i){
-           var _new = {};
-           _.extend(_new, Template)
-            _new.name += i;
-            return _new;
-        }, 2, function(err){
-          //done
-          if(err)console.log(err);
-          else console.log('dummy Targets generated');
-        });
-      }
-    });
-  }
 
   this.paramFormat = defaultCtrl.format();
   this.paramTarget = defaultCtrl.modelParam();
 
-  this.all = function(req, res, next){
+  this.all = (req, res, next) => {
     // dummy middleman function..
     next();
-  }
+  };
 
   this.get = defaultCtrl.get;
   this.find = defaultCtrl.find;
@@ -68,12 +28,12 @@ var Controller = function(){
   this.update = defaultCtrl.update;
   this.remove = defaultCtrl.remove;
 
-  this.getGt = function(req, res){
+  this.getGt = (req, res) => {
     res.json(req.Target.toGt());
-  }
+  };
 
   return this;
-}
+};
 
 
 module.exports = Controller;
