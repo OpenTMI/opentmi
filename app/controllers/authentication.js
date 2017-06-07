@@ -320,9 +320,9 @@ var Controller = function () {
 	var id = nconf.get('github').clientID;
 	if (id === undefined) {
 	  res.status(400).json({ error:'found client id is undefined' });
-	} 
+	}
 	else {
-	  res.status(200).json({ clientID:id }); 
+	  res.status(200).json({ clientID:id });
 	}
   }
 

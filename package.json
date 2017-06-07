@@ -24,9 +24,10 @@
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "NODE_ENV=production node index.js",
+    "start": "NODE_ENV=development node index.js",
     "debug": "NODE_ENV=development node --inspect index.js",
-    "test": "grunt"
+    "test": "grunt",
+    "test-inventory": "grunt inventory" 
   },
   "dependencies": {
     "async": "^1.5.2",
@@ -74,6 +75,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.7.1",
     "grunt": "^0.4.5",
+    "grunt-exec": "^1.0.1",
     "grunt-express-server": "^0.5.3",
     "grunt-simple-mocha": "^0.4.0",
     "grunt-wait-server": "*",

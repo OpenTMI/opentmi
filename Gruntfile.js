@@ -1,5 +1,5 @@
 require("xunit-file");
-fs = require('fs');
+const fs = require('fs');
 
 
 module.exports = function(grunt) {
@@ -14,7 +14,7 @@ module.exports = function(grunt) {
                     script: "index.js",
                     timeout: 3000,
                     harmony: true,
-                    args: ['-s'] //to more traces set -vvv instead of -s (silent)
+                    args: ['-s'], //to more traces set -vvv instead of -s (silent)
                 }
             }
         },
@@ -24,6 +24,16 @@ module.exports = function(grunt) {
                     url: 'http://localhost:3000/api/v0'
 
                 }
+            }
+        },
+        exec: {
+            restore_db: {
+                cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
+                stdout: true,
+                stderr: true,
+		options: {
+		    shell: 'bash'
+		}
             }
         },
         simplemocha: {
@@ -64,7 +74,8 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-wait-server');
     grunt.loadNpmTasks("grunt-express-server");
+    grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-simple-mocha");
-    grunt.registerTask("default", ["FindTests", "express:test", 'waitServer', "simplemocha:all"]);
-
+    grunt.registerTask("default", ["FindTests", "express:test", "waitServer", "exec", "simplemocha:all"]);
+    grunt.registerTask("no-db-restore", ["FindTests", "express:test", "waitServer", "simplemocha:all"]);
 };

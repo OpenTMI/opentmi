@@ -3,7 +3,7 @@
     "_id" : { "$oid":  "5825bb7afe7545132c88c761" },
     "name": "admin",
     "apikeys":[],
-    "groups":[],
+    "groups":[{ "$oid":  "000000000000000000001337" }],
     "loggedIn": false,
     "lastVisited": "2016-11-11T12:37:14.383Z",
     "registered": "2016-11-11T12:37:14.383Z"
