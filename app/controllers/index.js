@@ -1,39 +1,46 @@
 'use strict';
 
-var util = require('util');
-var winston = require('winston');
-var EventEmitter = require('events').EventEmitter;
+const util = require('util');
+const winston = require('winston');
+const EventEmitter = require('events').EventEmitter;
 /*
-  General ontrollers for "Restfull" services 
+  General ontrollers for "Restfull" services
 */
-var DefaultController = function (Model, defaultModelName, docId) {
-  var self = this;
-  var docId = docId || '_id';
+class DefaultController extends EventEmitter {
+  constructor(Model, defaultModelName, docId) {
+    console.log(Model.name);
 
-  this.format = () => {
-    return function(req, res, next, id) {
+    super();
+    this.Model = Model;
+    this.defaultModelName = defaultModelName;
+    this.docId = docId || '_id';
+    EventEmitter.call(this);
+  }
+
+  static format() {
+    return (req, res, next, id) => {
       if (req.params.format === 'html') {
-        var redirurl = '/#'+req.url.match(/\/api\/v0(.*)\.html/)[1];
+        const redirurl = `/#${req.url.match(/\/api\/v0(.*)\.html/)[1]}`;
         res.redirect(redirurl);
       } else {
         next();
       }
     };
-  };
+  }
 
-  this.modelParam = (modelname, errorCb, successCb) => {
-    //find from db
-    modelname = modelname || defaultModelName;
+  modelParam(pModelname, errorCb, successCb) {
+    // Find from db
+    const modelname = pModelname || this.defaultModelName;
 
     return (req, res, next, id) => {
-      winston.debug('do param ' + JSON.stringify(req.params));
-      var find = {};
-      find[docId] = req.params[modelname];
-      
-      Model.findOne(find, (error, data) => {
+      winston.debug(`do param ${JSON.stringify(req.params)}`);
+      const find = {};
+      find[this.docId] = req.params[modelname];
+
+      this.Model.findOne(find, (error, data) => {
         if (error) {
           if (errorCb) errorCb(error);
-          else res.status(300).json({ error: error });
+          else res.status(300).json({ error });
         } else if (data) {
           if (typeof modelname === 'string') req[modelname] = data;
           if (successCb) successCb();
@@ -43,98 +50,85 @@ var DefaultController = function (Model, defaultModelName, docId) {
         }
       });
     };
-  };
+  }
 
-  this.get = (req, res) => {
-    if (req[defaultModelName]) {
-      self.emit('get', req[defaultModelName].toObject());
-      res.json(req[defaultModelName]);
+  all(req, res, next) {
+    // dummy middleman function..
+    next();
+  }
+
+  get(req, res) {
+    if (req[this.defaultModelName]) {
+      this.emit('get', req[this.defaultModelName].toObject());
+      this.json(req[this.defaultModelName]);
     } else {
       winston.warn('should not be there!');
       res.status(300).json({ error: 'some strange problemo' });
     }
-  };
+  }
 
-  this.find = (req, res) => {
-    Model.query(req.query, (error, list) => {
+  find(req, res) {
+    this.Model.query(req.query, (error, list) => {
       if (error) {
-        res.status(300).json({ error: error });
+        res.status(300).json({ error });
       } else {
-        self.emit('find', list);
+        this.emit('find', list);
         res.json(list);
       }
     });
-  };
+  }
 
-  this.create = (req, res) => {
-    var item = new Model(req.body);
+  create(req, res) {
+    const item = new this.Model(req.body);
     item.save((error) => {
       if (error) {
         winston.warn(error);
-        if (res) res.status(300).json({ error: error });
+        if (res) res.status(300).json({ error });
       } else if (res) {
         req.query = req.body;
-        self.emit('create', item.toObject());
+        this.emit('create', item.toObject());
         res.json(item);
       }
     });
-  };
+  }
 
-  this.update = (req, res) => {
+  update(req, res) {
     delete req.body._id;
     delete req.body.__v;
     winston.debug(req.body);
 
-    Model.findByIdAndUpdate(req.params[defaultModelName], req.body, (error, doc) => {
+    this.Model.findByIdAndUpdate(req.params[this.defaultModelName], req.body, (error, doc) => {
       if (error) {
-        res.status(300).json({ error: error });
+        res.status(300).json({ error });
       } else {
-        self.emit('update', doc.toObject());
+        this.emit('update', doc.toObject());
         res.json(doc);
       }
     });
-  };
+  }
 
-  this.remove = (req, res) => {
-    var find = {};
-    find[docId] = req.params[defaultModelName];
-    Model.findByIdAndRemove(find, (error, ok) => {
+  remove(req, res) {
+    const find = {};
+    find[this.docId] = req.params[this.defaultModelName];
+    this.Model.findByIdAndRemove(find, (error, ok) => {
       if (error) {
-        res.status(300).json({ error: error });
+        res.status(300).json({ error });
       } else {
-        self.emit('remove', req.params[defaultModelName]);
+        this.emit('remove', req.params[this.defaultModelName]);
         res.json({});
       }
     });
-  };
+  }
 
   // extra functions
-  this.isEmpty = (cb) => {
-    Model.count({}, (error, count) => {
+  isEmpty(cb) {
+    this.Model.count({}, (error, count) => {
       if (error) cb(error);
       else if (count === 0) cb(true);
       else cb(false);
     });
-  };
-
-  this.generateDummyData = (doItem, count, done) => {
-    if (count > 0) {
-      var o = new Model(doItem(count));
-      o.save((err) => {
-        if (err) done(err);
-        else self.generateDummyData(doItem, count - 1, done);
-      });
-    } else {
-      done();
-    }
-  };
-
-  this.randomIntInc = (low, high) => Math.floor((Math.random() * (high - low + 1)) + low);
-  this.randomText = list => list[self.randomIntInc(0, list.length - 1)];
-
-  EventEmitter.call(this);
-  return this;
-};
+  }
+}
 
 // Inherit functions from `EventEmitter`'s prototype
 util.inherits(DefaultController, EventEmitter);

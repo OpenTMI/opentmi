@@ -3,40 +3,30 @@
 */
 
 // native modules
-var request = require('request');
+const request = require('request');
 
 // 3rd party modules
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 // own modules
-var DefaultController = require('./');
+const DefaultController = require('./');
 
-var Controller = function () {
-  var Testcase = mongoose.model('Testcase');
-  var defaultCtrl = new DefaultController(Testcase, 'testcase');
+class Controller extends DefaultController {
+  constructor() {
+    super(mongoose.model('Testcase'), 'Testcase');
 
-  this.paramFormat = defaultCtrl.format();
-  this.paramTestcase = defaultCtrl.modelParam();
+    this.paramFormat = DefaultController.format();
+    this.paramTestcase = this.modelParam();
+  }
 
-  this.all = (req, res, next) => {
-    // dummy middleman function..
-    next();
-  };
-
-  this.get = defaultCtrl.get;
-  this.find = defaultCtrl.find;
-  this.create = defaultCtrl.create;
-  this.update = defaultCtrl.update;
-  this.remove = defaultCtrl.remove;
-
-  this.download = (req, res) => {
-    var tc = req.testcase.toObject();
+  download(req, res) {
+    const tc = req.testcase.toObject();
     if (tc.files.length > 0) {
       res.attachment();
-      var url = tc.files[0].href;
+      const url = tc.files[0].href;
       request({
         followAllRedirects: true,
-        url: url,
+        url,
       }, (error, response, body) => {
         if (!error) {
           response.pipe(res);
@@ -45,10 +35,8 @@ var Controller = function () {
     } else {
       res.status(404).json({ error: 'nothing to download' });
     }
-  };
-
-  return this;
-};
+  }
+}
 
 
 module.exports = Controller;

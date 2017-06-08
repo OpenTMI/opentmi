@@ -14,7 +14,7 @@ var Controller = function () {
   var Group = mongoose.model('Group');
   var defaultCtrl = new DefaultController(Group, 'Group');
 
-  this.paramFormat = defaultCtrl.format();
+  this.paramFormat = DefaultController.format();
   this.paramGroup = defaultCtrl.modelParam();
 
   this.all = (req, res, next) => {

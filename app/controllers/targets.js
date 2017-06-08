@@ -14,7 +14,7 @@ var Controller = function () {
   var Campaign = mongoose.model('Target');
   var defaultCtrl = new DefaultController(Campaign, 'Target', 'name');
 
-  this.paramFormat = defaultCtrl.format();
+  this.paramFormat = DefaultController.format();
   this.paramTarget = defaultCtrl.modelParam();
 
   this.all = (req, res, next) => {

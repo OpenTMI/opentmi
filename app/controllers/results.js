@@ -20,7 +20,7 @@ var Controller = function () {
   var Testcase = mongoose.model('Testcase');
   var defaultCtrl = new DefaultController(Result, 'Result');
 
-  this.paramFormat = defaultCtrl.format();
+  this.paramFormat = DefaultController.format();
   this.paramResult = defaultCtrl.modelParam();
 
   this.all = (req, res, next) => {

@@ -1,48 +1,48 @@
-var express = require('express');
+const express = require('express');
+const ResourceController = require('./../controllers/resources');
 
-var Route = function(app, passport){
+var Route = function(app, passport) {
+  const router = express.Router();
+  const controller = new ResourceController();
 
-  var router = express.Router();
-  var controller = require('./../controllers/resources')();
-
-  router.param('Resource', controller.paramResource );
-  router.param('format', controller.paramFormat );
-  router.param('Alloc', controller.paramAlloc );
+  router.param('Resource', controller.paramResource.bind(controller));
+  router.param('format', controller.paramFormat.bind(controller));
+  router.param('Alloc', ResourceController.paramAlloc);
 
   router.route('/api/v0/resources.:format?')
-    .all( controller.all )
-    .get( controller.find )
-    .post(controller.create );
-
+    .all(controller.all.bind(controller))
+    .get(controller.find.bind(controller))
+    .post(controller.create.bind(controller));
 
   router.route('/api/v0/resources/allocation')
     //.get( controller.list_allocs )
-    .put( controller.allocMultiple )
+    .put(ResourceController.allocMultiple);
 
   //router.route('/api/v0/resources/allocation/:Alloc')
   //  .get( controller.list_alloc_resources );
-  
+
   router.route('/api/v0/resources/allocation/:Alloc/release')
-    .put( controller.releaseMultiple );
+    .put(ResourceController.releaseMultiple);
 
   router.route('/api/v0/resources/:Resource.:format?')
-    .all( controller.all )
-    .get( controller.get )
-    .put( controller.update )
-    .delete( controller.remove );
+    .all(controller.all.bind(controller))
+    .get(controller.get.bind(controller))
+    .put(controller.update.bind(controller))
+    .delete(controller.remove.bind(controller));
 
   router.route('/api/v0/resources/:Resource/alloc')
-    .put( controller.alloc );
+    .put(ResourceController.alloc);
 
   router.route('/api/v0/resources/:Resource/release')
-    .put( controller.release );
+    .put(ResourceController.release);
 
   router.route('/api/v0/resources/:Resource/device/build')
-    .put( controller.setDeviceBuild )
+    .put(ResourceController.setDeviceBuild);
+
   router.route('/api/v0/resources/:Resource/route')
-    .get( controller.solveRoute )
-  
-  app.use( router );
-}
+    .get(ResourceController.solveRoute);
+
+  app.use(router);
+};
 
 module.exports = Route;

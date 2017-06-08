@@ -14,7 +14,7 @@ var Controller = function () {
   var Build = mongoose.model('Build');
   var defaultCtrl = new DefaultController(Build, 'Build');
 
-  this.paramFormat = defaultCtrl.format();
+  this.paramFormat = DefaultController.format();
   this.paramBuild = defaultCtrl.modelParam();
 
   this.all = (req, res, next) => {

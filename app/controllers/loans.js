@@ -105,7 +105,7 @@ var Controller = function () {
   var defaultCtrl = new DefaultController(Loan, 'Loan');
 
   // Define route params
-  this.paramFormat = defaultCtrl.format();
+  this.paramFormat = DefaultController.format();
   this.paramLoan = defaultCtrl.modelParam();
 
   this.getMe = findUsersLoans;

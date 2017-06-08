@@ -25,7 +25,7 @@ var Controller = function () {
   var defaultCtrl = new DefaultController(User, 'User');
 
   // Define route params
-  this.paramFormat = defaultCtrl.format();
+  this.paramFormat = DefaultController.format();
   this.paramUser = defaultCtrl.modelParam();
 
   // Define route connection points
