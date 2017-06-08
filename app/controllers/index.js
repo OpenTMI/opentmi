@@ -3,6 +3,7 @@
 const util = require('util');
 const winston = require('winston');
 const EventEmitter = require('events').EventEmitter;
+
 /*
   General ontrollers for "Restfull" services
 */
@@ -70,7 +71,7 @@ class DefaultController extends EventEmitter {
   find(req, res) {
     this.Model.query(req.query, (error, list) => {
       if (error) {
-        res.status(300).json({ error });
+        res.status(300).json({ error: error });
       } else {
         this.emit('find', list);
         res.json(list);
