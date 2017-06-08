@@ -1,28 +1,29 @@
-var express = require('express');
-var nconf = require('nconf');
-var auth = require('./../../config/middlewares/authorization');
-var jwt = require('express-jwt');
-var TOKEN_SECRET = nconf.get('webtoken');
+const express = require('express');
+const nconf = require('nconf');
+const auth = require('./../../config/middlewares/authorization');
+const jwt = require('express-jwt');
+const ItemController = require('./../controllers/items');
 
-var Route = function(app){
+const TOKEN_SECRET = nconf.get('webtoken');
 
-  var router = express.Router();
-  var controller = require('./../controllers/items')();
+const Route = function (app) {
+  const router = express.Router();
+  const controller = new ItemController();
 
   router.param('Item', controller.paramItem);
   router.param('format', controller.paramFormat);
 
   router.route('/api/v0/items.:format?')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.find)
-    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.create);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.find.bind(controller))
+    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.create.bind(controller));
 
   router.route('/api/v0/items/:Item.:format?')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.get)
-    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.update)
-    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.remove);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.get.bind(controller))
+    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.update.bind(controller))
+    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.remove.bind(controller));
 
   router.route('/api/v0/items/:Item/image')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.getImage);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, ItemController.getImage);
 
   app.use(router);
 };

@@ -1,28 +1,29 @@
-var express = require('express');
-var nconf = require('nconf');
-var auth = require('./../../config/middlewares/authorization');
-var jwt = require('express-jwt');
-var TOKEN_SECRET = nconf.get('webtoken');
+const express = require('express');
+const nconf = require('nconf');
+const auth = require('./../../config/middlewares/authorization');
+const jwt = require('express-jwt');
+const LoanController = require('./../controllers/loans');
 
-var Route = function(app){
+const TOKEN_SECRET = nconf.get('webtoken');
 
-  var router = express.Router();
-  var controller = require('./../controllers/loans')();
+const Route = function (app) {
+  const router = express.Router();
+  const controller = new LoanController();
 
-  router.param('Loan', controller.paramLoan);
-  router.param('format', controller.paramFormat);
+  router.param('Loan', controller.paramLoan.bind(controller));
+  router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/loans.:format?')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.find)
-    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.create);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.find.bind(controller))
+    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.create.bind(controller));
 
   router.route('/api/v0/loans/me')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.getMe);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.findUsersLoans.bind(controller));
 
   router.route('/api/v0/loans/:Loan.:format?')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.get)
-    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.update)
-    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.remove);
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.get.bind(controller))
+    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.update.bind(controller))
+    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.remove.bind(controller));
 
   app.use(router);
 };

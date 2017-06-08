@@ -61,7 +61,7 @@ class DefaultController extends EventEmitter {
   get(req, res) {
     if (req[this.defaultModelName]) {
       this.emit('get', req[this.defaultModelName].toObject());
-      this.json(req[this.defaultModelName]);
+      res.json(req[this.defaultModelName]);
     } else {
       winston.warn('should not be there!');
       res.status(300).json({ error: 'some strange problemo' });

@@ -3,11 +3,11 @@
 */
 
 // 3rd party modules
-var winston = require('winston');
-var mongoose = require('mongoose');
+const winston = require('winston');
+const mongoose = require('mongoose');
 
 // Own modules
-var DefaultController = require('./');
+const DefaultController = require('./');
 
 function customRemove(req, res) {
   req.User.remove((err) => {
@@ -20,23 +20,18 @@ function customRemove(req, res) {
   });
 }
 
-var Controller = function () {
-  var User = mongoose.model('User');
-  var defaultCtrl = new DefaultController(User, 'User');
+class Controller extends DefaultController {
+  constructor() {
+    super(mongoose.model('User'), 'User');
 
-  // Define route params
-  this.paramFormat = DefaultController.format();
-  this.paramUser = defaultCtrl.modelParam();
+    // Define route params
+    this.paramFormat = DefaultController.format();
+    this.paramUser = this.modelParam();
+  }
 
   // Define route connection points
-  this.get = defaultCtrl.get;
-  this.find = defaultCtrl.find;
-  this.create = defaultCtrl.create;
-  this.update = defaultCtrl.update;
-  this.remove = customRemove;
-
-  return this;
-};
+  remove(req, res) { customRemove(req, res); }
+}
 
 
 module.exports = Controller;

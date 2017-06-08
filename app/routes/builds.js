@@ -1,29 +1,28 @@
-var express = require('express');
+const express = require('express');
+const BuildController = require('./../controllers/builds');
 
-var Route = function(app, passport){
+var Route = function(app, passport) {
+  const router = express.Router();
+  const controller = new BuildController();
 
-  var router = express.Router();
-  var controller = require('./../controllers/builds')();
+  router.param('Build', controller.paramBuild.bind(controller));
+  router.param('format', controller.paramFormat.bind(controller));
 
-  router.param('Build', controller.paramBuild );
-  router.param('format', controller.paramFormat );
-
-  
   router.route('/api/v0/duts/builds.:format?')
-    .all( controller.all )
-    .get( controller.find )
-    .post(controller.create );
-  
+    .all(controller.all.bind(controller))
+    .get(controller.find.bind(controller))
+    .post(controller.create.bind(controller));
+
   router.route('/api/v0/duts/builds/:Build.:format?')
-    .all( controller.all )
-    .get( controller.get )
-    .put( controller.update )
-    .delete( controller.remove );
+    .all(controller.all.bind(controller))
+    .get(controller.get.bind(controller))
+    .put(controller.update.bind(controller))
+    .delete(controller.remove.bind(controller));
 
   router.route('/api/v0/duts/builds/:Build/files/:Index/download')
-    .get( controller.download );
+    .get(BuildController.download);
 
-  app.use( router );
-}
+  app.use(router);
+};
 
 module.exports = Route;

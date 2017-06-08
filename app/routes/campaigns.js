@@ -12,13 +12,13 @@ var Route = function(app, passport) {
     .all(controller.all.bind(controller))
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
-  
+
   router.route('/api/v0/campaigns/:Campaign.:format?')
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
-  
+
   app.use(router);
 }
 
