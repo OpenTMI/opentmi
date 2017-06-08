@@ -201,12 +201,12 @@ class Controller {
     }
   }
 
-  /*
-|--------------------------------------------------------------------------
-| Login with GitHub
-|--------------------------------------------------------------------------
-*/
-  static getGithubClientId(req, res) {
+    /*
+  |--------------------------------------------------------------------------
+  | Login with GitHub
+  |--------------------------------------------------------------------------
+  */
+  getGithubClientId(req, res) {
     winston.log('Github auth: return github clientID');
     const id = nconf.get('github').clientID;
     if (id === undefined) {
@@ -217,6 +217,8 @@ class Controller {
   }
 
   github(req, res) {
+    console.log('Github auth started');
+
     const userApiUrl = 'https://api.github.com/user';
     const accessTokenUrl = 'https://github.com/login/oauth/access_token';
 
@@ -224,11 +226,12 @@ class Controller {
       Authorize the user using github by exchanging authorization code for access token.
     */
     const authorization = (callback) => {
+      console.log('Auth');
       const params = {
-        code: this.req.body.code,
-        client_id: this.req.body.clientId,
+        code: req.body.code,
+        client_id: req.body.clientId,
         client_secret: nconf.get('github').clientSecret,
-        redirect_uri: this.req.body.redirectUri,
+        redirect_uri: req.body.redirectUri,
       };
 
       request.get({ url: accessTokenUrl, qs: params }, (err, response, accessToken) => {
@@ -248,6 +251,7 @@ class Controller {
       Retrieve the user's github profile.
     */
     const getProfile = (accessToken, headers, callback) => {
+      console.log('getProfile');
       request.get({ url: userApiUrl, qs: accessToken, headers, json: true }, (err, response, profile) => {
         if (err) {
           winston.info('Github auth: getProfile error');
@@ -268,6 +272,7 @@ class Controller {
       Ensure the user belongs to the required organization.
     */
     const checkOrganization = (accessToken, headers, profile, callback) => {
+      console.log('checkOrganization');
       request.get({ url: `${userApiUrl}/orgs`, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
           winston.info('Github auth: checkOrganization error');
@@ -289,7 +294,8 @@ class Controller {
       Check if the user is an administrator or a normal employee in the organization.
     */
     const checkAdmin = (accessToken, headers, profile, callback) => {
-      request.get({ url: `${this.github.userApiUrl}/teams`, qs: accessToken, headers, json: true }, (err, response) => {
+      console.log('checkAdmin');
+      request.get({ url: `${userApiUrl}/teams`, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
           winston.info('Github auth: checkAdmin error');
           callback({ status: 500, msg: err.toString() });
@@ -308,12 +314,13 @@ class Controller {
     Retrieve the user from the database, or create a new entry if the user does not exist.
     */
     const prepareUser = (profile, callback) => {
+      console.log('prepareUser');
       User.findOne({ $or: [{ github: profile.login }, { email: profile.email }] }, (err, existingUser) => {
         // Check if the user account exists.
         if (existingUser) {
           winston.info('Return an existing user account.');
 
-          if (this.req.headers.authorization) {
+          if (req.headers.authorization) {
             winston.info('Github auth: user authorized already');
             callback({ status: 409, msg: 'There is already a GitHub account that belongs to you' });
           } else if (existingUser.github !== profile.login) {
@@ -323,10 +330,10 @@ class Controller {
           } else {
             callback(null, existingUser, profile.group);
           }
-        } else if (this.req.headers.authorization) {
+        } else if (req.headers.authorization) {
           winston.info('Link user account with github account.');
 
-          User.findById(this.req.user.sub, (err, user) => {
+          User.findById(req.user.sub, (err, user) => {
             if (!user) {
               winston.info('Github auth: no user found');
               return callback({ status: 400, msg: 'User not found' });
@@ -359,6 +366,7 @@ class Controller {
       Update the user's admin status.
     */
     const updateUser = (pUser, groupname, callback) => {
+      console.log('updateUser');
       winston.log('Github auth: update user');
       Group.findOne({ users: pUser, name: 'admins' }, (err, group) => {
         if (group && groupname !== 'admins') {
@@ -381,25 +389,29 @@ class Controller {
           pUser.save(callback(null, auth.createJWT(pUser, groupname)));
         }
       });
-
-      let final = function (err, token) {
-        if (err) {
-          return res.status(err.status).json({
-            message: err.msg,
-          });
-        }
-        return res.send({ token });
-      };
-
-      async.waterfall([
-        authorization,
-        getProfile,
-        checkOrganization,
-        checkAdmin,
-        prepareUser,
-        updateUser,
-      ], final);
     };
+
+    console.log('Before final');
+
+    const final = function (err, token) {
+      if (err) {
+        return res.status(err.status).json({
+          message: err.msg,
+        });
+      }
+      return res.send({ token });
+    };
+
+    console.log('Before fall');
+
+    async.waterfall([
+      authorization,
+      getProfile,
+      checkOrganization,
+      checkAdmin,
+      prepareUser,
+      updateUser,
+    ], final);
   }
 }
 

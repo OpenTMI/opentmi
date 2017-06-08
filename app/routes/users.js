@@ -2,7 +2,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const nconf = require('nconf');
-const restify = require('express-restify-mongoose');
 const logger = require('winston');
 const jwt = require('express-jwt');
 
@@ -70,14 +69,15 @@ var Route = function (app) {
   app.get('/api/v0/users/:User/apikeys/new', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.createKey);
   app.delete('/api/v0/users/:User/apikeys/:Key', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.deleteKey);
 
-  app.post('/auth/login', authController.login);
-  app.get('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, authController.getme);
-  app.put('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, authController.putme);
-  app.post('/auth/signup', authController.signup);
-  app.post('/auth/logout', authController.logout);
-  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), authController.github);
-  app.post('/auth/google', authController.google);
-  app.get('/auth/github/id', AuthController.getGithubClientId);
+  app.post('/auth/login', authController.login.bind(authController));
+  app.get('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, authController.getme.bind(authController));
+  app.put('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, authController.putme.bind(authController));
+  app.post('/auth/signup', authController.signup.bind(authController));
+  app.post('/auth/logout', authController.logout.bind(authController));
+  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), authController.github.bind(authController));
+  app.post('/auth/google', authController.google.bind(authController));
+  app.get('/auth/github/id', authController.getGithubClientId.bind(authController));
 };
+
 
 module.exports = Route;
