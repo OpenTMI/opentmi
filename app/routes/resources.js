@@ -1,11 +1,11 @@
 const express = require('express');
 const ResourceController = require('./../controllers/resources');
 
-var Route = function(app, passport) {
+const Route = function (app, passport) {
   const router = express.Router();
   const controller = new ResourceController();
 
-  router.param('Resource', controller.paramResource.bind(controller));
+  router.param('Resource', controller.modelParam.bind(controller));
   router.param('format', controller.paramFormat.bind(controller));
   router.param('Alloc', ResourceController.paramAlloc);
 
@@ -18,7 +18,7 @@ var Route = function(app, passport) {
     //.get( controller.list_allocs )
     .put(ResourceController.allocMultiple);
 
-  //router.route('/api/v0/resources/allocation/:Alloc')
+  // router.route('/api/v0/resources/allocation/:Alloc')
   //  .get( controller.list_alloc_resources );
 
   router.route('/api/v0/resources/allocation/:Alloc/release')

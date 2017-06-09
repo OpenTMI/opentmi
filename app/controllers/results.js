@@ -15,13 +15,11 @@ const winston = require('winston');
 // own modules
 const DefaultController = require('./');
 
-class Controller extends DefaultController {
+class ResultsController extends DefaultController {
   constructor() {
-    super(mongoose.model('Result'), 'Result');
+    super('Result');
 
     this.Testcase = mongoose.model('Testcase');
-    this.paramFormat = DefaultController.format();
-    this.paramResult = this.modelParam();
 
     const self = this;
     Object.resolve = (path, obj, safe) => {
@@ -92,10 +90,10 @@ class Controller extends DefaultController {
     console.log('Got new Junit file');
     if (req.busboy) {
       req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-        Controller.streamToString(file, (data) => {
+        ResultsController.streamToString(file, (data) => {
           req.junit = data;
           try {
-            Controller.handleJunit(req, res);
+            ResultsController.handleJunit(req, res);
           } catch (e) {
             console.log(e);
             res.json({ error: e.toString() });
@@ -114,4 +112,4 @@ class Controller extends DefaultController {
 }
 
 
-module.exports = Controller;
+module.exports = ResultsController;

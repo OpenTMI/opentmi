@@ -5,28 +5,13 @@
 // native modules
 
 // 3rd party modules
-const mongoose = require('mongoose');
 const async = require('async');
 
 // own modules
 const DefaultController = require('./');
 
-class Controller extends DefaultController {
-  constructor() {
-    super(mongoose.model('Resource'), 'Resource');
-
-    this.paramFormat = DefaultController.format();
-    this.paramResource = this.modelParam();
-  }
-
-  static randomIntInc(low, high) {
-    return Math.floor((Math.random() * (high - low + 1)) + low);
-  }
-
-  static randomText(list) {
-    const i = Controller.randomIntInc(0, list.length - 1);
-    return list[i];
-  }
+class ResourcesController extends DefaultController {
+  constructor() { super('Resource'); }
 
   static setDeviceBuild(req, res) {
     req.Resource.setDeviceBuild(req.body.build);
@@ -95,11 +80,11 @@ class Controller extends DefaultController {
   }
 
   static releaseMultiple(req, res) {
-    console.log('Releasing: ' + req.allocated.length);
+    console.log(`Releasing: ${req.allocated.length}`);
     async.map(
       req.allocated,
       (resource, cb) => {
-        console.log('try to release: ' + resource._id);
+        console.log(`try to release: ${resource._id}`);
         resource.release(cb);
       },
       (error, results) => {
@@ -111,4 +96,4 @@ class Controller extends DefaultController {
 }
 
 
-module.exports = Controller;
+module.exports = ResourcesController;

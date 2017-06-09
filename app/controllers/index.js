@@ -1,24 +1,26 @@
 'use strict';
 
-const util = require('util');
 const winston = require('winston');
 const EventEmitter = require('events').EventEmitter;
+const mongoose = require('mongoose');
 
 /*
   General ontrollers for "Restfull" services
 */
 class DefaultController extends EventEmitter {
-  constructor(Model, defaultModelName, docId) {
-    console.log(Model.name);
-
+  constructor(pModelName, docId) {
     super();
-    this.Model = Model;
-    this.defaultModelName = defaultModelName;
+
+    this._model = mongoose.model(pModelName);
+    this.modelName = pModelName;
     this.docId = docId || '_id';
     EventEmitter.call(this);
+
+    this.paramFormat = DefaultController.defaultParamFormat();
+    this.modelParam = this.defaultModelParam();
   }
 
-  static format() {
+  static defaultParamFormat() {
     return (req, res, next, id) => {
       if (req.params.format === 'html') {
         const redirurl = `/#${req.url.match(/\/api\/v0(.*)\.html/)[1]}`;
@@ -29,9 +31,9 @@ class DefaultController extends EventEmitter {
     };
   }
 
-  modelParam(pModelname, errorCb, successCb) {
+  defaultModelParam(pModelname, errorCb, successCb) {
     // Find from db
-    const modelname = pModelname || this.defaultModelName;
+    const modelname = pModelname || this.modelName;
 
     return (req, res, next, id) => {
       winston.debug(`do param ${JSON.stringify(req.params)}`);
@@ -53,25 +55,30 @@ class DefaultController extends EventEmitter {
     };
   }
 
+  get Model() {
+    return this._model;
+  }
+
   all(req, res, next) {
     // dummy middleman function..
     next();
   }
 
   get(req, res) {
-    if (req[this.defaultModelName]) {
-      this.emit('get', req[this.defaultModelName].toObject());
-      res.json(req[this.defaultModelName]);
+    if (req[this.modelName]) {
+      this.emit('get', req[this.modelName].toObject());
+      res.json(req[this.modelName]);
     } else {
-      winston.warn('should not be there!');
-      res.status(300).json({ error: 'some strange problemo' });
+      const errorMsg = `Cannot get model, request does not have a value linked to key: ${this.modelName}`;
+      winston.warn(errorMsg);
+      res.status(300).json({ error: errorMsg });
     }
   }
 
   find(req, res) {
-    this.Model.query(req.query, (error, list) => {
+    this._model.query(req.query, (error, list) => {
       if (error) {
-        res.status(300).json({ error: error });
+        res.status(300).json({ error });
       } else {
         this.emit('find', list);
         res.json(list);
@@ -80,12 +87,12 @@ class DefaultController extends EventEmitter {
   }
 
   create(req, res) {
-    const item = new this.Model(req.body);
+    const item = new this._model(req.body);
     item.save((error) => {
       if (error) {
         winston.warn(error);
-        if (res) res.status(300).json({ error });
-      } else if (res) {
+        if (res) res.status(400).json({ error });
+      } else { // if (res) {
         req.query = req.body;
         this.emit('create', item.toObject());
         res.json(item);
@@ -98,7 +105,7 @@ class DefaultController extends EventEmitter {
     delete req.body.__v;
     winston.debug(req.body);
 
-    this.Model.findByIdAndUpdate(req.params[this.defaultModelName], req.body, (error, doc) => {
+    this._model.findByIdAndUpdate(req.params[this.modelName], req.body, (error, doc) => {
       if (error) {
         res.status(300).json({ error });
       } else {
@@ -109,21 +116,20 @@ class DefaultController extends EventEmitter {
   }
 
   remove(req, res) {
-    const find = {};
-    find[this.docId] = req.params[this.defaultModelName];
-    this.Model.findByIdAndRemove(find, (error, ok) => {
-      if (error) {
-        res.status(300).json({ error });
-      } else {
-        this.emit('remove', req.params[this.defaultModelName]);
-        res.json({});
+    req[this.modelName].remove((err) => {
+      if (err) {
+        winston.error(err.message);
+        return res.status(400).json({ error: err.message });
       }
+
+      this.emit('remove', req.params[this.defaultModelName]);
+      return res.status(200).json({});
     });
   }
 
   // extra functions
   isEmpty(cb) {
-    this.Model.count({}, (error, count) => {
+    this._model.count({}, (error, count) => {
       if (error) cb(error);
       else if (count === 0) cb(true);
       else cb(false);
@@ -131,7 +137,5 @@ class DefaultController extends EventEmitter {
   }
 }
 
-// Inherit functions from `EventEmitter`'s prototype
-util.inherits(DefaultController, EventEmitter);
 
 module.exports = DefaultController;

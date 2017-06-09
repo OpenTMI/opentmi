@@ -10,8 +10,8 @@ const Route = function (app) {
   const router = express.Router();
   const controller = new ItemController();
 
-  router.param('Item', controller.paramItem);
-  router.param('format', controller.paramFormat);
+  router.param('Item', controller.modelParam.bind(controller));
+  router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/items.:format?')
     .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.find.bind(controller))

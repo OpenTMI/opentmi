@@ -1,12 +1,12 @@
 const express = require('express');
 const CampaignsRouter = require('./../controllers/campaigns');
 
-var Route = function(app, passport) {
-  var router = express.Router();
-  var controller = new CampaignsRouter();
+const Route = function (app, passport) {
+  const router = express.Router();
+  const controller = new CampaignsRouter();
 
-  router.param('Campaign', controller.paramCampaign);
-  router.param('format', controller.paramFormat);
+  router.param('Campaign', controller.modelParam.bind(controller));
+  router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/campaigns.:format?')
     .all(controller.all.bind(controller))
@@ -20,6 +20,6 @@ var Route = function(app, passport) {
     .delete(controller.remove.bind(controller));
 
   app.use(router);
-}
+};
 
 module.exports = Route;

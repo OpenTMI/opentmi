@@ -3,43 +3,20 @@
 */
 
 // 3rd party modules
-const mongoose = require('mongoose');
 const winston = require('winston');
 
 // own modules
 const DefaultController = require('./');
 
-class Controller extends DefaultController {
-  constructor() {
-    super(mongoose.model('Item'), 'Item');
-
-    // Define route params
-    this.paramFormat = DefaultController.format();
-    this.paramItem = this.modelParam();
-  }
-
-  create(req, res) {
-    const item = new this.Model(req.body);
-    item.save((err) => {
-      if (err) {
-        winston.error(err.message);
-        return res.status(400).json({ error: err.message });
-      }
-
-      if (res) {
-        return res.status(200).json(item);
-      }
-
-      return undefined;
-    });
-  }
+class ItemsController extends DefaultController {
+  constructor() { super('Item'); }
 
   update(req, res) {
     // Handle requests that only provide available or in_stock in a special manner
     if (req.body.in_stock !== undefined && req.body.available === undefined) {
-      Controller._handleUpdateInStock(req);
+      ItemsController._handleUpdateInStock(req);
     } else if (req.body.in_stock === undefined && req.body.available !== undefined) {
-      Controller._handleUpdateAvailable(req);
+      ItemsController._handleUpdateAvailable(req);
     }
 
     // Updating the item body
@@ -74,17 +51,6 @@ class Controller extends DefaultController {
     req.body.in_stock = req.Item.in_stock + deltaStock;
   }
 
-  remove(req, res) {
-    req.Item.remove((err) => {
-      if (err) {
-        winston.error(err.message);
-        return res.status(400).json(err);
-      }
-
-      return res.status(200).json({});
-    });
-  }
-
   static getImage(req, res) {
     req.Item.fetchImageData((result) => {
       if (result instanceof Error) {
@@ -99,4 +65,4 @@ class Controller extends DefaultController {
 }
 
 
-module.exports = Controller;
+module.exports = ItemsController;

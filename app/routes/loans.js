@@ -10,7 +10,7 @@ const Route = function (app) {
   const router = express.Router();
   const controller = new LoanController();
 
-  router.param('Loan', controller.paramLoan.bind(controller));
+  router.param('Loan', controller.modelParam.bind(controller));
   router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/loans.:format?')

@@ -6,18 +6,12 @@
 const request = require('request');
 
 // 3rd party modules
-const mongoose = require('mongoose');
 
 // own modules
 const DefaultController = require('./');
 
-class Controller extends DefaultController {
-  constructor() {
-    super(mongoose.model('Testcase'), 'Testcase');
-
-    this.paramFormat = DefaultController.format();
-    this.paramTestcase = this.modelParam();
-  }
+class TestcasesController extends DefaultController {
+  constructor() { super('Testcase'); }
 
   download(req, res) {
     const tc = req.testcase.toObject();
@@ -39,4 +33,4 @@ class Controller extends DefaultController {
 }
 
 
-module.exports = Controller;
+module.exports = TestcasesController;

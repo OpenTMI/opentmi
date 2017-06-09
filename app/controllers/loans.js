@@ -1,22 +1,15 @@
 /**
-  Loans Controller 
+  Loans Controller
 */
 
 // 3rd party modules
 const winston = require('winston');
-const mongoose = require('mongoose');
 
 // own modules
 const DefaultController = require('./');
 
-class Controller extends DefaultController {
-  constructor() {
-    super(mongoose.model('Loan'), 'Loan');
-
-    // Define route params
-    this.paramFormat = DefaultController.format();
-    this.paramLoan = this.modelParam();
-  }
+class LoansController extends DefaultController {
+  constructor() { super('Loan'); }
 
   create(req, res) {
     const loan = new this.Model(req.body);
@@ -26,6 +19,8 @@ class Controller extends DefaultController {
         res.status(400).json({ error: err.message });
       } else {
         winston.info('Item save completed successfully');
+        req.query = req.body;
+        this.emit('create', loan.toObject());
         res.status(200).json(loan);
       }
     });
@@ -34,7 +29,7 @@ class Controller extends DefaultController {
   update(req, res) {
     if (req.body.items !== undefined) {
       winston.info('PUT request with items property received');
-      const err = Controller._handleItemsInUpdate(req);
+      const err = LoansController._handleItemsInUpdate(req);
 
       if (err) {
         winston.error(err.message);
@@ -84,20 +79,8 @@ class Controller extends DefaultController {
     return undefined;
   }
 
-  // Default implementation does not fire up pre-remove hooks, so override is necessary
-  remove(req, res) {
-    req.Loan.remove((err) => {
-      if (err) {
-        winston.error(err.message);
-        return res.status(400).json({ error: err.message });
-      }
-
-      return res.status(200).json({});
-    });
-  }
-
   findUsersLoans(req, res) {
-    Loan.find({ loaner: req.user.sub })
+    this.Model.find({ loaner: req.user.sub })
       .populate('items.item')
       .exec((err, loans) => {
         if (err) {
@@ -111,4 +94,4 @@ class Controller extends DefaultController {
 }
 
 
-module.exports = Controller;
+module.exports = LoansController;

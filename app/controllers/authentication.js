@@ -11,87 +11,11 @@ const winston = require('winston');
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 
-class Controller {
+class AuthenticationController {
   constructor() {
     this.config = {
       GOOGLE_SECRET: nconf.get('google_secret'),
       TOKEN_SECRET: nconf.get('webtoken'),
-    };
-
-    /*
-    |--------------------------------------------------------------------------
-    | Login with Google
-    |--------------------------------------------------------------------------
-    */
-    this.google = function (req, res) {
-      const accessTokenUrl = 'https://accounts.google.com/o/oauth2/token';
-      const peopleApiUrl = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect';
-      const params = {
-        code: req.body.code,
-        client_id: req.body.clientId,
-        client_secret: this.config.GOOGLE_SECRET,
-        redirect_uri: req.body.redirectUri,
-        grant_type: 'authorization_code',
-      };
-
-      // Step 1. Exchange authorization code for access token.
-      request.post(accessTokenUrl, { json: true, form: params }, (err, postResponse, token) => {
-        const accessToken = token.access_token;
-        const headers = { Authorization: `Bearer ${accessToken}` };
-
-        // Step 2. Retrieve profile information about the current user.
-        request.get({ url: peopleApiUrl, headers, json: true }, (err, getResponse, profile) => {
-          if (profile.error) {
-            return res.status(500).send({ message: profile.error.message });
-          }
-
-          // Step 3a. Link user accounts.
-          if (req.headers.authorization) {
-            User.findOne({ google: profile.sub }, (err, existingUser) => {
-              if (existingUser) {
-                return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
-              }
-              token = req.headers.authorization.split(' ')[1];
-              const payload = jwt.decode(token, this.config.TOKEN_SECRET);
-              User.findById(payload.sub, (err, user) => {
-                if (!user) {
-                  return res.status(400).send({ message: 'User not found' });
-                }
-                user.google = profile.sub;
-                user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
-                user.displayName = user.displayName || profile.name;
-                user.save(() => {
-                  const actualToken = auth.createJWT(user);
-                  res.send({ token: actualToken });
-                });
-                return undefined;
-              });
-
-              return undefined;
-            });
-          } else {
-            // Step 3b. Create a new user account or return an existing one.
-            User.findOne({ google: profile.sub }, (err, existingUser) => {
-              if (existingUser) {
-                return res.send({ token: this.createJWT(existingUser) });
-              }
-
-              const user = new User();
-              user.google = profile.sub;
-              user.picture = profile.picture.replace('sz=50', 'sz=200');
-              user.displayName = profile.name;
-              user.save((err) => {
-                const actualToken = auth.createJWT(user);
-                res.send({ token: actualToken });
-              });
-
-              return undefined;
-            });
-          }
-
-          return undefined;
-        });
-      });
     };
   }
 
@@ -206,7 +130,7 @@ class Controller {
   | Login with GitHub
   |--------------------------------------------------------------------------
   */
-  getGithubClientId(req, res) {
+  static getGithubClientId(req, res) {
     winston.log('Github auth: return github clientID');
     const id = nconf.get('github').clientID;
     if (id === undefined) {
@@ -216,9 +140,7 @@ class Controller {
     }
   }
 
-  github(req, res) {
-    console.log('Github auth started');
-
+  static github(req, res) {
     const userApiUrl = 'https://api.github.com/user';
     const accessTokenUrl = 'https://github.com/login/oauth/access_token';
 
@@ -226,7 +148,6 @@ class Controller {
       Authorize the user using github by exchanging authorization code for access token.
     */
     const authorization = (callback) => {
-      console.log('Auth');
       const params = {
         code: req.body.code,
         client_id: req.body.clientId,
@@ -251,7 +172,6 @@ class Controller {
       Retrieve the user's github profile.
     */
     const getProfile = (accessToken, headers, callback) => {
-      console.log('getProfile');
       request.get({ url: userApiUrl, qs: accessToken, headers, json: true }, (err, response, profile) => {
         if (err) {
           winston.info('Github auth: getProfile error');
@@ -272,7 +192,6 @@ class Controller {
       Ensure the user belongs to the required organization.
     */
     const checkOrganization = (accessToken, headers, profile, callback) => {
-      console.log('checkOrganization');
       request.get({ url: `${userApiUrl}/orgs`, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
           winston.info('Github auth: checkOrganization error');
@@ -294,7 +213,6 @@ class Controller {
       Check if the user is an administrator or a normal employee in the organization.
     */
     const checkAdmin = (accessToken, headers, profile, callback) => {
-      console.log('checkAdmin');
       request.get({ url: `${userApiUrl}/teams`, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
           winston.info('Github auth: checkAdmin error');
@@ -314,7 +232,6 @@ class Controller {
     Retrieve the user from the database, or create a new entry if the user does not exist.
     */
     const prepareUser = (profile, callback) => {
-      console.log('prepareUser');
       User.findOne({ $or: [{ github: profile.login }, { email: profile.email }] }, (err, existingUser) => {
         // Check if the user account exists.
         if (existingUser) {
@@ -366,7 +283,6 @@ class Controller {
       Update the user's admin status.
     */
     const updateUser = (pUser, groupname, callback) => {
-      console.log('updateUser');
       winston.log('Github auth: update user');
       Group.findOne({ users: pUser, name: 'admins' }, (err, group) => {
         if (group && groupname !== 'admins') {
@@ -391,8 +307,6 @@ class Controller {
       });
     };
 
-    console.log('Before final');
-
     const final = function (err, token) {
       if (err) {
         return res.status(err.status).json({
@@ -401,8 +315,6 @@ class Controller {
       }
       return res.send({ token });
     };
-
-    console.log('Before fall');
 
     async.waterfall([
       authorization,
@@ -413,6 +325,82 @@ class Controller {
       updateUser,
     ], final);
   }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Login with Google
+  |--------------------------------------------------------------------------
+  */
+  google(req, res) {
+    const accessTokenUrl = 'https://accounts.google.com/o/oauth2/token';
+    const peopleApiUrl = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect';
+    const params = {
+      code: req.body.code,
+      client_id: req.body.clientId,
+      client_secret: this.config.GOOGLE_SECRET,
+      redirect_uri: req.body.redirectUri,
+      grant_type: 'authorization_code',
+    };
+
+    // Step 1. Exchange authorization code for access token.
+    request.post(accessTokenUrl, { json: true, form: params }, (err, postResponse, token) => {
+      const accessToken = token.access_token;
+      const headers = { Authorization: `Bearer ${accessToken}` };
+
+      // Step 2. Retrieve profile information about the current user.
+      request.get({ url: peopleApiUrl, headers, json: true }, (err, getResponse, profile) => {
+        if (profile.error) {
+          return res.status(500).send({ message: profile.error.message });
+        }
+
+        // Step 3a. Link user accounts.
+        if (req.headers.authorization) {
+          User.findOne({ google: profile.sub }, (err, existingUser) => {
+            if (existingUser) {
+              return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
+            }
+            token = req.headers.authorization.split(' ')[1];
+            const payload = jwt.decode(token, this.config.TOKEN_SECRET);
+            User.findById(payload.sub, (err, user) => {
+              if (!user) {
+                return res.status(400).send({ message: 'User not found' });
+              }
+              user.google = profile.sub;
+              user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
+              user.displayName = user.displayName || profile.name;
+              user.save(() => {
+                const actualToken = auth.createJWT(user);
+                res.send({ token: actualToken });
+              });
+              return undefined;
+            });
+
+            return undefined;
+          });
+        } else {
+          // Step 3b. Create a new user account or return an existing one.
+          User.findOne({ google: profile.sub }, (err, existingUser) => {
+            if (existingUser) {
+              return res.send({ token: this.createJWT(existingUser) });
+            }
+
+            const user = new User();
+            user.google = profile.sub;
+            user.picture = profile.picture.replace('sz=50', 'sz=200');
+            user.displayName = profile.name;
+            user.save((err) => {
+              const actualToken = auth.createJWT(user);
+              res.send({ token: actualToken });
+            });
+
+            return undefined;
+          });
+        }
+
+        return undefined;
+      });
+    });
+  }
 }
 
-module.exports = Controller;
+module.exports = AuthenticationController;

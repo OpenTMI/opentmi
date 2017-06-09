@@ -1,11 +1,11 @@
 const express = require('express');
 const BuildController = require('./../controllers/builds');
 
-var Route = function(app, passport) {
+const Route = function (app, passport) {
   const router = express.Router();
   const controller = new BuildController();
 
-  router.param('Build', controller.paramBuild.bind(controller));
+  router.param('Build', controller.modelParam.bind(controller));
   router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/duts/builds.:format?')

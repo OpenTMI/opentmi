@@ -5,8 +5,8 @@ var Route = function(app, passport) {
   const router = express.Router();
   const controller = new ResultController();
 
-  router.param('Result', controller.paramResult.bind(controller));
-  router.param('format', controller.paramFormat.bind(controller));
+  router.param('Result', controller.paramFormat.bind(controller));
+  router.param('format', controller.modelParam.bind(controller));
 
   router.route('/api/v0/results.:format?')
     .all(controller.all.bind(controller))

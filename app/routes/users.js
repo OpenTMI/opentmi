@@ -39,7 +39,7 @@ function createDefaultAdmin() {
 /**
  * Route middlewares
  */
-var Route = function (app) {
+const Route = function (app) {
   // Create a default admin if there is no users in the database
   User.count({}, (err, count) => {
     if (count === 0) { createDefaultAdmin(); }
@@ -47,7 +47,7 @@ var Route = function (app) {
 
   // Create user routes
   const router = express.Router();
-  router.param('User', userController.paramUser.bind(userController));
+  router.param('User', userController.modelParam.bind(userController));
   router.param('format', userController.paramFormat.bind(userController));
 
   // Route for operations that target all users
@@ -74,9 +74,9 @@ var Route = function (app) {
   app.put('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, authController.putme.bind(authController));
   app.post('/auth/signup', authController.signup.bind(authController));
   app.post('/auth/logout', authController.logout.bind(authController));
-  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), authController.github.bind(authController));
+  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), AuthController.github);
   app.post('/auth/google', authController.google.bind(authController));
-  app.get('/auth/github/id', authController.getGithubClientId.bind(authController));
+  app.get('/auth/github/id', AuthController.getGithubClientId);
 };
 
 
