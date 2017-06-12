@@ -15,10 +15,10 @@ class LoansController extends DefaultController {
     const loan = new this.Model(req.body);
     loan.save((err) => {
       if (err) {
-        winston.error(err.message);
+        winston.warn(err.message);
         res.status(400).json({ error: err.message });
       } else {
-        winston.info('Item save completed successfully');
+        winston.info('Loan save completed successfully');
         req.query = req.body;
         this.emit('create', loan.toObject());
         res.status(200).json(loan);
@@ -32,7 +32,7 @@ class LoansController extends DefaultController {
       const err = LoansController._handleItemsInUpdate(req);
 
       if (err) {
-        winston.error(err.message);
+        winston.warn(err.message);
         return res.status(400).json({ error: err.message });
       }
     }
@@ -45,7 +45,7 @@ class LoansController extends DefaultController {
     // Save the result
     req.Loan.save((err) => {
       if (err) {
-        winston.error(err.message);
+        winston.warn(err.message);
         res.status(400).json({ error: err.message });
       } else {
         winston.info('Update completed successfully');
@@ -84,7 +84,7 @@ class LoansController extends DefaultController {
       .populate('items.item')
       .exec((err, loans) => {
         if (err) {
-          winston.error(err.message);
+          winston.warn(err.message);
           return res.sendStatus(500).json(err.message);
         }
 

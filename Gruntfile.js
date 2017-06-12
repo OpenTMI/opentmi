@@ -3,7 +3,8 @@ const fs = require('fs');
 
 
 module.exports = function(grunt) {
-    var testFiles = ["test/*.js"];
+    var testFilesApi = ["test/tests_api/*.js"];
+    var testFilesUnit = ["test/tests_unittests/*.js"];
 
     grunt.initConfig({
         express: {
@@ -31,26 +32,29 @@ module.exports = function(grunt) {
                 cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
                 stdout: true,
                 stderr: true,
-		options: {
-		    shell: 'bash'
-		}
+                options: {
+                    shell: 'bash',
+                }
             }
         },
         simplemocha: {
             options: {
                 globals: ["should"],
-                timeout: 3000,
+                timeout: 120000,
                 ignoreLeaks: false,
                 ui: "bdd",
                 reporter: "xunit-file"
             },
-            all: {
-                src: testFiles
+            api: {
+                src: testFilesApi
+            },
+            unit: {
+                src: testFilesUnit
             }
-        }
+        },
     });
 
-    grunt.registerTask('FindTests', 'Find all tests under the addons', function() {
+    grunt.registerTask('FindApiTests', 'Find all tests under the addons', function() {
         var root = "app/addons";
         (function walk(path) {
             var items = fs.readdirSync(path);
@@ -63,7 +67,7 @@ module.exports = function(grunt) {
                         if ((dirName.match(/\//g) || []).length === 3) {
                             // only add test js files that are in the root of the /test directory.
                             // if you need to include subdirs, modify this to: dirName + '/' + '**/*.js'
-                            testFiles.push(dirName + '/' + '*.js');
+                            testFilesApi.push(dirName + '/' + '*.js');
                         }
                     }
                     walk(path + '/' + item);
@@ -76,6 +80,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-express-server");
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-simple-mocha");
-    grunt.registerTask("default", ["FindTests", "express:test", "waitServer", "exec", "simplemocha:all"]);
-    grunt.registerTask("no-db-restore", ["FindTests", "express:test", "waitServer", "simplemocha:all"]);
+    grunt.registerTask("default", ["simplemocha:unit", "FindApiTests", "express:test", "waitServer", "exec", "simplemocha:api"]);
+    grunt.registerTask("apitests", ["FindApiTests", "express:test", "waitServer", "exec", "simplemocha:api"]);
+    grunt.registerTask("unittests", ["simplemocha:unit"]);
 };

@@ -6,7 +6,6 @@ const Route = function (app, passport) {
   const controller = new TestCaseController();
 
   router.param('Testcase', controller.modelParam.bind(controller));
-  router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/testcases.:format?')
     .all(controller.all.bind(controller))

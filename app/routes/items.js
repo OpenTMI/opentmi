@@ -11,7 +11,6 @@ const Route = function (app) {
   const controller = new ItemController();
 
   router.param('Item', controller.modelParam.bind(controller));
-  router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/items.:format?')
     .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.find.bind(controller))

@@ -24,7 +24,7 @@
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "NODE_ENV=development node index.js",
+"start": "NODE_ENV=development node index.js",
     "debug": "NODE_ENV=development node --inspect index.js",
     "test": "grunt",
     "test-inventory": "grunt inventory" 
@@ -68,6 +68,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
+    "chai-subset": "^1.5.0",
     "dookie": "^0.1.19",
     "eslint": "^3.11.1",
     "eslint-config-airbnb": "^13.0.0",
@@ -80,8 +81,9 @@
     "grunt-simple-mocha": "^0.4.0",
     "grunt-wait-server": "*",
     "istanbul": "^0.4.4",
-    "protractor": "^4.0.11",
     "mocha": "^2.5.3",
+    "mockgoose": "^7.3.3",
+    "protractor": "^4.0.11",
     "should": "*",
     "superagent": "^2.0.0",
     "xunit-file": "^1.0.0"

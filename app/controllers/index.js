@@ -16,19 +16,7 @@ class DefaultController extends EventEmitter {
     this.docId = docId || '_id';
     EventEmitter.call(this);
 
-    this.paramFormat = DefaultController.defaultParamFormat();
     this.modelParam = this.defaultModelParam();
-  }
-
-  static defaultParamFormat() {
-    return (req, res, next, id) => {
-      if (req.params.format === 'html') {
-        const redirurl = `/#${req.url.match(/\/api\/v0(.*)\.html/)[1]}`;
-        res.redirect(redirurl);
-      } else {
-        next();
-      }
-    };
   }
 
   defaultModelParam(pModelname, errorCb, successCb) {
@@ -69,16 +57,17 @@ class DefaultController extends EventEmitter {
       this.emit('get', req[this.modelName].toObject());
       res.json(req[this.modelName]);
     } else {
-      const errorMsg = `Cannot get model, request does not have a value linked to key: ${this.modelName}`;
+      const errorMsg = `get failed: Cannot get model, request does not have a value linked to key: ${this.modelName}`;
       winston.warn(errorMsg);
-      res.status(300).json({ error: errorMsg });
+      res.status(500).json({ error: errorMsg });
     }
   }
 
   find(req, res) {
-    this._model.query(req.query, (error, list) => {
+    this._model.find(req.query, (error, list) => {
       if (error) {
-        res.status(300).json({ error });
+        winston.warn(error);
+        res.status(300).json({ error: error.message });
       } else {
         this.emit('find', list);
         res.json(list);
@@ -91,7 +80,7 @@ class DefaultController extends EventEmitter {
     item.save((error) => {
       if (error) {
         winston.warn(error);
-        if (res) res.status(400).json({ error });
+        if (res) res.status(400).json({ error: error.message });
       } else { // if (res) {
         req.query = req.body;
         this.emit('create', item.toObject());
@@ -105,9 +94,11 @@ class DefaultController extends EventEmitter {
     delete req.body.__v;
     winston.debug(req.body);
 
-    this._model.findByIdAndUpdate(req.params[this.modelName], req.body, (error, doc) => {
+    const updateOpts = { runValidators: true };
+    this._model.findByIdAndUpdate(req.params[this.modelName], req.body, updateOpts, (error, doc) => {
       if (error) {
-        res.status(300).json({ error });
+        winston.warn(error);
+        res.status(300).json({ error: error.message });
       } else {
         this.emit('update', doc.toObject());
         res.json(doc);
@@ -116,15 +107,21 @@ class DefaultController extends EventEmitter {
   }
 
   remove(req, res) {
-    req[this.modelName].remove((err) => {
-      if (err) {
-        winston.error(err.message);
-        return res.status(400).json({ error: err.message });
-      }
+    if (req[this.modelName]) {
+      req[this.modelName].remove((err) => {
+        if (err) {
+          winston.warn(err.message);
+          return res.status(400).json({ error: err.message });
+        }
 
-      this.emit('remove', req.params[this.defaultModelName]);
-      return res.status(200).json({});
-    });
+        this.emit('remove', req.params[this.defaultModelName]);
+        return res.status(200).json({});
+      });
+    } else {
+      const errorMsg = `remove failed: Cannot get model, request does not have a value linked to key: ${this.modelName}`;
+      winston.warn(errorMsg);
+      res.status(500).json({ error: errorMsg });
+    }
   }
 
   // extra functions

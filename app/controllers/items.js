@@ -27,7 +27,7 @@ class ItemsController extends DefaultController {
     // Regular save
     req.Item.save((err) => {
       if (err) {
-        winston.error(err.message);
+        winston.warn(err.message);
         return res.status(400).json({ error: err.message });
       }
 

@@ -6,7 +6,6 @@ const Route = function (app, passport) {
   const controller = new ResourceController();
 
   router.param('Resource', controller.modelParam.bind(controller));
-  router.param('format', controller.paramFormat.bind(controller));
   router.param('Alloc', ResourceController.paramAlloc);
 
   router.route('/api/v0/resources.:format?')

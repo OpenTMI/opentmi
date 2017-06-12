@@ -1,5 +1,7 @@
 var winston = require('winston');
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
+
 var nconf = require('nconf');
 
 var isConnectedBefore = false;

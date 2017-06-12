@@ -6,7 +6,6 @@ const Route = function (app, passport) {
   const controller = new CampaignsRouter();
 
   router.param('Campaign', controller.modelParam.bind(controller));
-  router.param('format', controller.paramFormat.bind(controller));
 
   router.route('/api/v0/campaigns.:format?')
     .all(controller.all.bind(controller))

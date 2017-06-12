@@ -48,7 +48,6 @@ const Route = function (app) {
   // Create user routes
   const router = express.Router();
   router.param('User', userController.modelParam.bind(userController));
-  router.param('format', userController.paramFormat.bind(userController));
 
   // Route for operations that target all users
   router.route('/api/v0/users.:format?')
