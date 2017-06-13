@@ -34,7 +34,7 @@ module.exports = function(grunt) {
                 stderr: true,
                 options: {
                     shell: 'bash',
-                }
+                }            
             }
         },
         simplemocha: {
@@ -42,8 +42,6 @@ module.exports = function(grunt) {
                 globals: ["should"],
                 timeout: 120000,
                 ignoreLeaks: false,
-                ui: "bdd",
-                reporter: "xunit-file"
             },
             api: {
                 src: testFilesApi

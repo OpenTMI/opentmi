@@ -8,6 +8,7 @@ chai.use(chaiSubset);
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
+const QueryPlugin = require('mongoose-query');
 const Mockgoose = require('mockgoose').Mockgoose;
 
 const winston = require('winston');
@@ -41,6 +42,7 @@ const DummyItemSchema = new Schema({
     default: 'category1' },
   date: { type: Date },
 });
+DummyItemSchema.plugin(QueryPlugin);
 
 // Add mock data
 const mockData1 = {

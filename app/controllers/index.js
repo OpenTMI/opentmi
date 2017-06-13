@@ -64,7 +64,7 @@ class DefaultController extends EventEmitter {
   }
 
   find(req, res) {
-    this._model.find(req.query, (error, list) => {
+    this._model.query(req.query, (error, list) => {
       if (error) {
         winston.warn(error);
         res.status(300).json({ error: error.message });
