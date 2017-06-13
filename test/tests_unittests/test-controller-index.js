@@ -67,7 +67,6 @@ const mockData2 = {
   date: new Date('07.11.2017'),
 };
 
-
 let mockItem1 = null;
 let Dummy = null;
 
@@ -96,11 +95,15 @@ describe('controllers/index.js', () => {
     mockgoose.prepareStorage().then(() => {
       console.log('    └ Connecting to mongo...');
       mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
+        should.not.exist(error);
         mongoose.model('DummyItem', DummyItemSchema);
         defaultController = new DefaultController('DummyItem');
 
+        // Some library, probably mockgoose, leaks this global variable that needs to be purged
+        delete check;
+
         Dummy = mongoose.model('DummyItem');
-        done(error);
+        done();
       });
     });
   });
@@ -111,7 +114,7 @@ describe('controllers/index.js', () => {
       mockItem1 = new Dummy(mockData1);
       mockItem1.save((error) => {
         should.not.exist(error);
-        done(error);
+        done();
       });
     });
   });
