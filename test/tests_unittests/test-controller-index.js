@@ -20,11 +20,10 @@ const DefaultController = require('./../../app/controllers/index.js');
 
 const expect = chai.expect;
 const mockgoose = new Mockgoose(mongoose);
-const Schema = mongoose.Schema;
 let defaultController = null;
 
 // Define testing schema
-const DummyItemSchema = new Schema({
+const DummyItemSchema = new mongoose.Schema({
   text_unique_sparse: { type: String, unique: true, sparse: true },
   text_unique_required: { type: String, unique: true, required: true },
   text_freeform: { type: String },
@@ -90,11 +89,11 @@ class MockResponse {
 describe('controllers/index.js', () => {
   // Create fresh DB
   before((done) => {
-    console.log('   Preparing testing environment');
-    console.log('    ├ Preparing storage...');
+    console.log('    [Before]');
+    console.log('     * Preparing storage');
     mockgoose.prepareStorage().then(() => {
-      console.log('    └ Connecting to mongo...');
       mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
+      console.log('     * Connecting to mongo\n');
         should.not.exist(error);
         mongoose.model('DummyItem', DummyItemSchema);
         defaultController = new DefaultController('DummyItem');
@@ -117,6 +116,13 @@ describe('controllers/index.js', () => {
         done();
       });
     });
+  });
+
+  after((done) => {
+    console.log('\n    [After]');
+    console.log('     * Closing mongoose connection');
+    mongoose.disconnect();
+    done();
   });
 
   it('defaultModelParam', (done) => {

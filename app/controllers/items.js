@@ -31,7 +31,7 @@ class ItemsController extends DefaultController {
         return res.status(400).json({ error: err.message });
       }
 
-      return res.status(200).json(req.Loan);
+      return res.status(200).json(req.Item);
     });
   }
 
@@ -54,7 +54,7 @@ class ItemsController extends DefaultController {
   static getImage(req, res) {
     req.Item.fetchImageData((result) => {
       if (result instanceof Error) {
-        return res.status(400).json(result.message);
+        return res.status(400).json({ error: result.message });
       }
 
       // console.log('Image found, returning data : ' + JSON.stringify(result));
