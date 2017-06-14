@@ -98,7 +98,7 @@ class DefaultController extends EventEmitter {
     this._model.findByIdAndUpdate(req.params[this.modelName], req.body, updateOpts, (error, doc) => {
       if (error) {
         winston.warn(error);
-        res.status(300).json({ error: error.message });
+        res.status(400).json({ error: error.message });
       } else {
         this.emit('update', doc.toObject());
         res.json(doc);

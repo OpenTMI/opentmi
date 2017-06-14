@@ -102,6 +102,7 @@ describe('controllers/index.js', () => {
         delete check;
 
         Dummy = mongoose.model('DummyItem');
+        console.log('    [Tests]');
         done();
       });
     });
@@ -303,7 +304,7 @@ describe('controllers/index.js', () => {
         expect(value).to.containSubset(mockData1);
         next();
       }, (value) => {
-        expect(value).to.not.be.oneOf([300]);
+        expect(value).to.not.be.oneOf([400]);
       });
 
       // Call the tested function
@@ -318,7 +319,7 @@ describe('controllers/index.js', () => {
         should.exist(value.error);
         next();
       }, (value) => {
-        expect(value).to.equal(300);
+        expect(value).to.equal(400);
       });
 
       // Call the tested function

@@ -142,8 +142,7 @@ LoanSchema.methods.countReturns = function(delta_items) {
 	  }
       //else console.log('No return_date');
       //else return new Error('No return date defined');
-	}
-	else return new Error('Received invalid id');
+	} else return new Error(`Id:${delta_items[i]._id} was not found in items`);
   }
   
   // Convert counts to array of objects

@@ -68,6 +68,8 @@ describe('controllers/items.js', () => {
 
         // Some library, probably mockgoose, leaks this global variable that needs to be purged
         delete check;
+
+        console.log('    [Tests]');
         done();
       });
     });
