@@ -4,87 +4,28 @@ const should = require('should');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 chai.use(chaiSubset);
+const expect = chai.expect;
 
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const QueryPlugin = require('mongoose-query');
 const Mockgoose = require('mockgoose').Mockgoose;
+const mockgoose = new Mockgoose(mongoose);
 
 const winston = require('winston');
 winston.level = 'error';
 
 // Local components
 const DefaultController = require('./../../app/controllers/index.js');
-
-
-const expect = chai.expect;
-const mockgoose = new Mockgoose(mongoose);
 let defaultController = null;
 
-// Define testing schema
-const DummyItemSchema = new mongoose.Schema({
-  text_unique_sparse: { type: String, unique: true, sparse: true },
-  text_unique_required: { type: String, unique: true, required: true },
-  text_freeform: { type: String },
-  number_defaulted_pos: { type: Number, default: 0, min: 0 },
-  number_required: { type: Number, required: true },
-  number_freeform: { type: Number },
-  string_enum: {
-    type: String,
-    enum: [
-      'category1',
-      'category2',
-      'category3',
-      'category4',
-    ],
-    default: 'category1' },
-  date: { type: Date },
-});
-DummyItemSchema.plugin(QueryPlugin);
-
-// Add mock data
-const mockData1 = {
-  _id: mongoose.Types.ObjectId(),
-  text_unique_sparse: 'stuff_1_2_3',
-  text_unique_required: 'secondary_stuff_2_4_6',
-  text_freeform: 'random stuff',
-  number_defaulted_pos: 73,
-  number_required: 9314,
-  number_freeform: 42063,
-  string_enum: 'category2',
-  date: new Date('01.02.2017'),
-};
-const mockData2 = {
-  text_unique_sparse: 'another stuff',
-  text_unique_required: 'another secondary_stuff',
-  text_freeform: 'another random stuff',
-  number_defaulted_pos: 974,
-  number_required: 13046,
-  number_freeform: 15285,
-  string_enum: 'category3',
-  date: new Date('07.11.2017'),
-};
+const DummyItemSchema = require('./mocking/DummySchema.js');
+const mockDummies = require('./mocking/MockDummyItems.js');
 
 let mockItem1 = null;
 let Dummy = null;
+const MockResponse = require('./mocking/MockResponse.js');
 
-class MockResponse {
-  constructor(jsonTest, statusTest) {
-    this.jsonTest = jsonTest;
-    this.statusTest = statusTest;
-  }
-
-  json(value) {
-    if (this.jsonTest) this.jsonTest(value);
-  }
-
-  status(value) {
-    this.statusCalled = true;
-    if (this.statusTest) { this.statusTest(value); }
-    return this;
-  }
-}
 
 describe('controllers/index.js', () => {
   // Create fresh DB
@@ -96,7 +37,6 @@ describe('controllers/index.js', () => {
       console.log('     * Connecting to mongo\n');
         should.not.exist(error);
         mongoose.model('DummyItem', DummyItemSchema);
-        defaultController = new DefaultController('DummyItem');
 
         // Some library, probably mockgoose, leaks this global variable that needs to be purged
         delete check;
@@ -111,7 +51,7 @@ describe('controllers/index.js', () => {
   beforeEach((done) => {
     mockgoose.helper.reset().then(() => {
       // Load mock items
-      mockItem1 = new Dummy(mockData1);
+      mockItem1 = new Dummy(mockDummies[0]);
       mockItem1.save((error) => {
         should.not.exist(error);
         done();
@@ -126,15 +66,22 @@ describe('controllers/index.js', () => {
     done();
   });
 
+  it('constructor', (done) => {
+    // create controller to test
+    defaultController = new DefaultController('DummyItem');
+    should.exist(defaultController);
+    done();
+  });
+
   it('defaultModelParam', (done) => {
     // Generate defaultModelParam function
     const defaultModelParam = defaultController.defaultModelParam('DummyItem');
 
     // Mock request and response
-    const req = { params: { DummyItem: mockData1._id } };
+    const req = { params: { DummyItem: mockDummies[0]._id } };
     const res = new MockResponse((value) => {
       should.not.exist(value.error);
-      expect(req.DummyItem).to.containSubset(mockData1);
+      expect(req.DummyItem).to.containSubset(mockDummies[0]);
       done();
     }, (value) => {
       expect(value).to.not.be.oneOf([300, 404]);
@@ -142,7 +89,7 @@ describe('controllers/index.js', () => {
 
     // Call the tested function
     defaultModelParam(req, res, () => {
-      expect(req.DummyItem).to.containSubset(mockData1);
+      expect(req.DummyItem).to.containSubset(mockDummies[0]);
       done();
     }, undefined);
   });
@@ -163,7 +110,7 @@ describe('controllers/index.js', () => {
       const req = { DummyItem: mockItem1 };
       const res = new MockResponse((value) => {
         expect(value).to.be.an('object');
-        expect(value).to.containSubset(mockData1);
+        expect(value).to.containSubset(mockDummies[0]);
         next();
       }, (value) => {
         expect(value).to.not.be.oneOf([300, 404]);
@@ -203,7 +150,7 @@ describe('controllers/index.js', () => {
       const res = new MockResponse((list) => {
         expect(list).to.be.an('array');
         expect(list.length).to.equal(1);
-        expect(list[0]).to.containSubset(mockData1);
+        expect(list[0]).to.containSubset(mockDummies[0]);
         next();
       }, (value) => {
         expect(value).to.not.be.oneOf([300]);
@@ -256,10 +203,10 @@ describe('controllers/index.js', () => {
     // Correct case, create item with valid body
     function validBody(next) {
       // Mock request and response
-      const req = { body: mockData2 };
+      const req = { body: mockDummies[1] };
       const res = new MockResponse((value) => {
         should.not.exist(value.error);
-        expect(value).to.containSubset(mockData2);
+        expect(value).to.containSubset(mockDummies[1]);
         next();
       }, (value) => {
         expect(value).to.not.be.oneOf([400]);
@@ -295,13 +242,13 @@ describe('controllers/index.js', () => {
     // Correct case, update item with valid body
     function validBody(next) {
       // Mock request and response
-      const mockDataCopy = JSON.parse(JSON.stringify(mockData1));
+      const mockDataCopy = JSON.parse(JSON.stringify(mockDummies[0]));
       mockDataCopy.text_freeform = 'modified text';
 
       const req = { params: { DummyItem: mockItem1 }, body: mockDataCopy };
       const res = new MockResponse((value) => {
         should.not.exist(value.error);
-        expect(value).to.containSubset(mockData1);
+        expect(value).to.containSubset(mockDummies[0]);
         next();
       }, (value) => {
         expect(value).to.not.be.oneOf([400]);
@@ -379,7 +326,7 @@ describe('controllers/index.js', () => {
       expect(firstResult).to.equal(false);
 
       // Remove the one dummy element from the database
-      Dummy.findOneAndRemove({ _id: mockData1._id }).then(() => {
+      Dummy.findOneAndRemove({ _id: mockDummies[0]._id }).then(() => {
         // Result should now be true
         defaultController.isEmpty((secondResult) => {
           expect(secondResult).to.equal(true);

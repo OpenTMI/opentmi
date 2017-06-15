@@ -5,50 +5,25 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 chai.use(chaiSubset);
 
+const expect = chai.expect;
+
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const QueryPlugin = require('mongoose-query');
 const Mockgoose = require('mockgoose').Mockgoose;
+const mockgoose = new Mockgoose(mongoose);
 
 const winston = require('winston');
 winston.level = 'error';
 
 // Local components
 const ItemController = require('./../../app/controllers/items.js');
-let Item = undefined;
-
-const expect = chai.expect;
-const mockgoose = new Mockgoose(mongoose);
 let controller = null;
 
-// Add mock data
-const mockData1 = {
-  _id: mongoose.Types.ObjectId(),
-  name: 'testing_item',
-  in_stock: 35,
-  available: 10,
-  category : 'accessory',
-};
+const MockResponse = require('./mocking/MockResponse.js');
+const mockItems = require('./mocking/MockItems.js');
+
 let mockItem1 = null;
-
-class MockResponse {
-  constructor(jsonTest, statusTest) {
-    this.jsonTest = jsonTest;
-    this.statusTest = statusTest;
-  }
-
-  json(value) {
-    if (this.jsonTest) this.jsonTest(value);
-  }
-
-  status(value) {
-    this.statusCalled = true;
-    if (this.statusTest) { this.statusTest(value); }
-    return this;
-  }
-}
-
 
 describe('controllers/items.js', () => {
   // Create fresh DB
@@ -61,10 +36,11 @@ describe('controllers/items.js', () => {
         should.not.exist(error);
          
         // Loading model requires active mongo 
-        require('./../../app/models/item.js');
-
-        // Create controller to test
-        controller = new ItemController('Item');
+        try {
+          require('./../../app/models/item.js');
+        } catch(e) {
+          if (e.name !== 'OverwriteModelError') { throw (e); }
+        }
 
         // Some library, probably mockgoose, leaks this global variable that needs to be purged
         delete check;
@@ -78,11 +54,15 @@ describe('controllers/items.js', () => {
   beforeEach((done) => {
     mockgoose.helper.reset().then(() => {
       // Load mock items
-      mockItem1 = new controller.Model(mockData1);
-      mockItem1.save((error) => {
-        should.not.exist(error);
+      if (controller) {
+        mockItem1 = new controller.Model(mockItems[0]);
+        mockItem1.save((error) => {
+          should.not.exist(error);
+          done();
+        });
+      } else {
         done();
-      });
+      }
     });
   });
 
@@ -93,14 +73,21 @@ describe('controllers/items.js', () => {
     done();
   });
 
+  it('constructor', (done) => {
+    // Create controller to test
+    controller = new ItemController();
+    should.exist(controller);
+    done();
+  });
+
   it('update', (done) => {
     // Valid case, remove 7 items from stock, should be left with 3 available
     function validStockDecrease(next) {
       const req = { body: { in_stock: mockItem1.in_stock - 7 }, Item: mockItem1 };
       const res = new MockResponse((value) => {
         should.not.exist(value.error);
-        expect(value.in_stock).to.equal(mockData1.in_stock - 7);
-        expect(value.available).to.equal(mockData1.available - 7);
+        expect(value.in_stock).to.equal(mockItems[0].in_stock - 7);
+        expect(value.available).to.equal(mockItems[0].available - 7);
         next();
       }, (value) => {
         expect(value).to.equal(200);
@@ -114,8 +101,8 @@ describe('controllers/items.js', () => {
       const req = { body: { available: mockItem1.available + 5 }, Item: mockItem1 };
       const res = new MockResponse((value) => {
         should.not.exist(value.error);
-        expect(value.in_stock).to.equal(mockData1.in_stock - 7 + 5);
-        expect(value.available).to.equal(mockData1.available - 7 + 5);
+        expect(value.in_stock).to.equal(mockItems[0].in_stock - 7 + 5);
+        expect(value.available).to.equal(mockItems[0].available - 7 + 5);
         next();
       }, (value) => {
         expect(value).to.equal(200);

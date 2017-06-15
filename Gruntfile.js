@@ -30,7 +30,7 @@ module.exports = function(grunt) {
         exec: {
             restore_db: {
                 cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
-                stdout: true,
+                stdout: false,
                 stderr: true,
                 options: {
                     shell: 'bash',

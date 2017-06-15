@@ -5,11 +5,13 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 chai.use(chaiSubset);
 
+const expect = chai.expect;
+
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const QueryPlugin = require('mongoose-query');
 const Mockgoose = require('mockgoose').Mockgoose;
+const mockgoose = new Mockgoose(mongoose);
 
 const winston = require('winston');
 winston.level = 'error';
@@ -19,8 +21,6 @@ const LoanController = require('./../../app/controllers/loans.js');
 let Item = undefined;
 let User = undefined;
 
-const expect = chai.expect;
-const mockgoose = new Mockgoose(mongoose);
 let controller = null;
 
 // Mock user schema
@@ -29,53 +29,15 @@ const mockUserSchema = new mongoose.Schema({
 });
 
 // Add mock data
-const mockItemData1 = {
-  _id: mongoose.Types.ObjectId(),
-  name: 'testing_item',
-  in_stock: 18,
-  available: 18,
-  category : 'accessory',
-};
-const mockUserData1 = {
-  _id: mongoose.Types.ObjectId(),
-  name: 'Kari-Pekka',
-};
-const mockLoanData1 = {
-  _id: mongoose.Types.ObjectId(),
-  loan_date: new Date(),
-  loaner: mockUserData1._id,
-  items : [{
-    item: mockItemData1._id,
-    resource: undefined,
-  }, {
-    item: mockItemData1._id,
-    resource: undefined,
-  }, {
-    item: mockItemData1._id,
-    resource: undefined,
-  }],
-};
+const mockItems = require('./mocking/MockItems.js');
+const mockUsers = require('./mocking/MockUsers.js');
+const mockLoans = require('./mocking/MockLoans.js');
 
 let mockItem1 = null;
 let mockUser1 = null;
 let mockLoan1 = null;
 
-class MockResponse {
-  constructor(jsonTest, statusTest) {
-    this.jsonTest = jsonTest;
-    this.statusTest = statusTest;
-  }
-
-  json(value) {
-    if (this.jsonTest) this.jsonTest(value);
-  }
-
-  status(value) {
-    this.statusCalled = true;
-    if (this.statusTest) { this.statusTest(value); }
-    return this;
-  }
-}
+const MockResponse = require('./mocking/MockResponse.js');
 
 
 describe('controllers/loans.js', () => {
@@ -89,15 +51,26 @@ describe('controllers/loans.js', () => {
         should.not.exist(error);
          
         // Loading models requires active mongo
-        mongoose.model('User', mockUserSchema);
-        require('./../../app/models/item.js');
-        require('./../../app/models/loan.js');
+        try {
+          require('./../../app/models/user.js');
+        } catch(e) {
+          if (e.name !== 'OverwriteModelError') { throw (e); }
+        }
+
+        try {
+          require('./../../app/models/item.js');
+        } catch(e) {
+          if (e.name !== 'OverwriteModelError') { throw (e); }
+        }
+
+        try {
+          require('./../../app/models/loan.js');
+        } catch(e) {
+          if (e.name !== 'OverwriteModelError') { throw (e); }
+        }
 
         User = mongoose.model('User');
         Item = mongoose.model('Item');
-
-        // Create controller to test
-        controller = new LoanController('Loan');
 
         // Some library, probably mockgoose, leaks this global variable that needs to be purged
         delete check;
@@ -111,18 +84,22 @@ describe('controllers/loans.js', () => {
   beforeEach((done) => {
     mockgoose.helper.reset().then(() => {
       // Load mock item
-      mockItem1 = new Item(mockItemData1);
+      mockItem1 = new Item(mockItems[0]);
       mockItem1.save((error) => {
         should.not.exist(error);
         // Load mock user
-        mockUser1 = new User(mockUserData1);
+        mockUser1 = new User(mockUsers[0]);
         mockUser1.save((error) => {
           // Load mock loan
-          mockLoan1 = new controller.Model(mockLoanData1);
-          mockLoan1.save((error) => {
-            should.not.exist(error);
+          if (controller) {
+            mockLoan1 = new controller.Model(mockLoans[0]);
+            mockLoan1.save((error) => {
+              should.not.exist(error);
+              done();
+            });
+          } else {
             done();
-          });
+          }
         });
       });
     });
@@ -132,6 +109,13 @@ describe('controllers/loans.js', () => {
     console.log('\n    [After]');
     console.log('     * Closing mongoose connection');
     mongoose.disconnect();
+    done();
+  });
+
+  it('constructor', (done) => {
+    // Create controller to test
+    controller = new LoanController();
+    should.exist(controller);
     done();
   });
 
