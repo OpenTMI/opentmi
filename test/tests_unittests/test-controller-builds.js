@@ -1,4 +1,6 @@
 // Third party components
+const colors = require('colors');
+
 const should = require('should');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
@@ -23,10 +25,10 @@ const MockResponse = require('./mocking/MockResponse.js');
 describe('controllers/builds.js', () => {
   // Create fresh DB
   before((done) => {
-    console.log('    [Before]');
-    console.log('     * Preparing storage');
+    console.log('    [Before]'.gray);
+    console.log('    * Preparing storage'.gray);
     mockgoose.prepareStorage().then(() => {
-      console.log('     * Connecting to mongo\n');
+      console.log('    * Connecting to mongo\n'.gray);
       mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
         should.not.exist(error);
          
@@ -40,7 +42,7 @@ describe('controllers/builds.js', () => {
         // Some library, probably mockgoose, leaks this global variable that needs to be purged
         delete check;
 
-        console.log('    [Tests]');
+        console.log('    [Tests]'.gray);
         done();
       });
     });
@@ -54,8 +56,8 @@ describe('controllers/builds.js', () => {
   });
 
   after((done) => {
-    console.log('\n    [After]');
-    console.log('     * Closing mongoose connection');
+    console.log('\n    [After]'.gray);
+    console.log('    * Closing mongoose connection'.gray);
     mongoose.disconnect();
     done();
   });

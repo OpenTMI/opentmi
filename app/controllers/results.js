@@ -5,9 +5,10 @@
 // native modules
 
 // 3rd party modules
+const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const colors = require('colors');
-const JunitParser = require('junit-xml-parser').parser;
+const JunitXmlParser = require('junit-xml-parser').parser;
 const uuid = require('node-uuid');
 const async = require('async');
 const winston = require('winston');
@@ -30,11 +31,10 @@ class ResultsController extends DefaultController {
 
     this.on('create', (data) => {
       if (data.exec && data.exec.verdict === 'pass') {
-        // Code below will not compile without some wacky magick \/ needs fix?
-        //data.exec.duration
-        //console.log("Got new "+"PASS".green+" result: "+data.tcid);
+        // data.exec.duration
+        console.log('Got new ' + 'PASS'.green + ` result: ${data.tcid}`);
       } else {
-        //console.log("Got new "+"FAIL".red+" result: "+data.tcid + "("+data._id+")");
+        console.log('Got new ' + 'FAIL'.red + ` result: ${data.tcid} (${data._id})`);
       }
 
       const duration = Object.resolve('exec.duration', data, null);
@@ -44,64 +44,67 @@ class ResultsController extends DefaultController {
     });
   }
 
-  static streamToString(stream, cb) {
-    const chunks = [];
-    stream.on('data', (chunk) => {
-      chunks.push(chunk);
-    });
-    stream.on('end', () => {
-      cb(chunks.join(''));
+  static streamToString(stream) {
+    return new Promise((resolve) => {
+      const chunks = [];
+      stream.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
+      stream.on('end', () => {
+        resolve(chunks.join(''));
+      });
     });
   }
 
-  static handleJunit(req, res) {
-    JunitParser.parse(req.junit).then((results) => {
+  _doResult(jobId, value, callback) {
+    const result = new this.Model({
+      tcid: value.name,
+      cre: { name: 'tmt' },
+      exec: {
+        verdict: value.failure ? 'fail' : 'pass',
+        duration: value.time,
+      },
+      job: { id: jobId },
+    });
+
+    if (value.failure.message) result.exec.note = value.failure.message + "\n\n";
+    if (value.failure.type) result.exec.note += value.failure.type + "\n\n";
+    // if (value.failure.raw) result.exec.note += value.failure.raw.join('\n');
+
+    result.save(callback);
+  }
+
+  handleJunitXml(junitXml) {
+    return JunitXmlParser.parse(junitXml).then((results) => {
       const jobId = uuid.v1();
-      function doResult(value, key, callback) {
-        const result = new this.Model({
-          tcid: value.name,
-          cre: { name: 'tmt' },
-          exec: {
-            verdict: value.failure ? 'FAIL' : 'PASS',
-            duration: value.time,
-          },
-          job: { id: jobId },
-        });
 
-        if (value.failure.message) result.exec.note = value.failure.message + "\n\n";
-        if (value.failure.type) result.exec.note += value.failure.type + "\n\n";
-        if (value.failure.raw) result.exec.note += value.failure.raw.join('\n');
-
-        result.save(callback);
-      }
-      async.each(results.tests, doResult, (err) => {
-        if (err) {
-          winston.error(err);
-          res.json({ err });
-        } else {
+      return new Promise((resolve, reject) => {
+        // async.eachSeries(results.suite.tests, this._doResult.bind(this, jobId), (err) => {
+        Promise.each(results.suite.tests, this._doResult.bind(this, jobId)).then(() => {
           winston.info('Store new results');
-          res.json({ ok: 1, message: `created ${results.tests.length} results` });
-        }
+          resolve({ ok: 1, message: `created ${results.suite.tests.length} results` });
+        }).catch(err => reject(err));
       });
     });
   }
 
-  static createFromJunit(req, res) {
-    console.log('Got new Junit file');
-    if (req.busboy) {
-      req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-        ResultsController.streamToString(file, (data) => {
-          req.junit = data;
-          try {
-            ResultsController.handleJunit(req, res);
-          } catch (e) {
-            console.log(e);
-            res.json({ error: e.toString() });
-          }
+  createFromJunitXml(req, res) {
+    winston.info('Got new Junit file');
+    return new Promise((resolve, reject) => {
+      if (req.busboy) {
+        req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+          this.streamToString(file).then((data) => {
+            this.handleJunitXml(data).then((value) => {
+              resolve(value);
+            });
+          }).catch((err) => {
+            res.status(400).json({ error: err.message });
+            reject(err);
+          });
         });
-      });
-    }
-    req.pipe(req.busboy);
+      }
+      // req.pipe(req.busboy);
+    });
   }
 
   static buildDownload(req, res) {

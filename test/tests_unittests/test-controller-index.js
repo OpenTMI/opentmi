@@ -1,4 +1,6 @@
 // Third party components
+const colors = require('colors');
+
 const async = require('async');
 const should = require('should');
 const chai = require('chai');
@@ -30,11 +32,11 @@ const MockResponse = require('./mocking/MockResponse.js');
 describe('controllers/index.js', () => {
   // Create fresh DB
   before((done) => {
-    console.log('    [Before]');
-    console.log('     * Preparing storage');
+    console.log('    [Before]'.gray);
+    console.log('    * Preparing storage'.gray);
     mockgoose.prepareStorage().then(() => {
       mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
-      console.log('     * Connecting to mongo\n');
+      console.log('    * Connecting to mongo\n'.gray);
         should.not.exist(error);
         mongoose.model('DummyItem', DummyItemSchema);
 
@@ -42,7 +44,7 @@ describe('controllers/index.js', () => {
         delete check;
 
         Dummy = mongoose.model('DummyItem');
-        console.log('    [Tests]');
+        console.log('    [Tests]'.gray);
         done();
       });
     });
@@ -60,8 +62,8 @@ describe('controllers/index.js', () => {
   });
 
   after((done) => {
-    console.log('\n    [After]');
-    console.log('     * Closing mongoose connection');
+    console.log('\n    [After]'.gray);
+    console.log('    * Closing mongoose connection'.gray);
     mongoose.disconnect();
     done();
   });
