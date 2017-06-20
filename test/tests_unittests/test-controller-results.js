@@ -28,6 +28,8 @@ const mockJunitXml = require('./mocking/MockJunitXmlTests.js');
 describe('controllers/results.js', () => {
   // Create fresh DB
   before(function (done) {
+    mockgoose.helper.setDbVersion('3.2.1');
+
     console.log('    [Before]'.gray);
     console.log('    * Preparing storage'.gray);
     mockgoose.prepareStorage().then(() => {

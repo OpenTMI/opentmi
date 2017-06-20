@@ -25,20 +25,22 @@ const MockResponse = require('./mocking/MockResponse.js');
 describe('controllers/users.js', function () {
   // Create fresh DB
   before(function (done) {
+    mockgoose.helper.setDbVersion('3.2.1');
+
     console.log('    [Before]'.gray);
     console.log('    * Preparing storage'.gray);
     mockgoose.prepareStorage().then(() => {
       console.log('    * Connecting to mongo\n'.gray);
       mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
         expect(error).to.not.exist;
-         
+
         // Loading models requires active mongo
         try {
           require('./../../app/models/group.js');
         } catch (e) {
           if (e.name !== 'OverwriteModelError') { throw e; }
         }
-   
+
         try {
           require('./../../app/models/user.js');
         } catch (e) {

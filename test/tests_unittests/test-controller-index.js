@@ -32,6 +32,8 @@ const MockResponse = require('./mocking/MockResponse.js');
 describe('controllers/index.js', () => {
   // Create fresh DB
   before((done) => {
+    mockgoose.helper.setDbVersion('3.2.1');
+
     console.log('    [Before]'.gray);
     console.log('    * Preparing storage'.gray);
     mockgoose.prepareStorage().then(() => {
