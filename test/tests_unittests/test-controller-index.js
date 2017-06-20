@@ -1,15 +1,15 @@
 // Third party components
 const colors = require('colors');
 
-const async = require('async');
-const should = require('should');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
+const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiSubset);
+chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
+mongoose.Promise = require('bluebird');
 
 const Mockgoose = require('mockgoose').Mockgoose;
 const mockgoose = new Mockgoose(mongoose);
@@ -37,11 +37,12 @@ describe('controllers/index.js', () => {
     mockgoose.prepareStorage().then(() => {
       mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
       console.log('    * Connecting to mongo\n'.gray);
-        should.not.exist(error);
+        expect(error).to.not.exist;
         mongoose.model('DummyItem', DummyItemSchema);
 
-        // Some library, probably mockgoose, leaks this global variable that needs to be purged
-        delete check;
+        // create controller to test
+        defaultController = new DefaultController('DummyItem');
+        expect(defaultController).to.exist;
 
         Dummy = mongoose.model('DummyItem');
         console.log('    [Tests]'.gray);
@@ -55,7 +56,7 @@ describe('controllers/index.js', () => {
       // Load mock items
       mockItem1 = new Dummy(mockDummies[0]);
       mockItem1.save((error) => {
-        should.not.exist(error);
+        expect(error).to.not.exist;
         done();
       });
     });
@@ -68,13 +69,6 @@ describe('controllers/index.js', () => {
     done();
   });
 
-  it('constructor', (done) => {
-    // create controller to test
-    defaultController = new DefaultController('DummyItem');
-    should.exist(defaultController);
-    done();
-  });
-
   it('defaultModelParam', (done) => {
     // Generate defaultModelParam function
     const defaultModelParam = defaultController.defaultModelParam('DummyItem');
@@ -82,7 +76,7 @@ describe('controllers/index.js', () => {
     // Mock request and response
     const req = { params: { DummyItem: mockDummies[0]._id } };
     const res = new MockResponse((value) => {
-      should.not.exist(value.error);
+      expect(value.error).to.not.exist;
       expect(req.DummyItem).to.containSubset(mockDummies[0]);
       done();
     }, (value) => {
@@ -97,7 +91,7 @@ describe('controllers/index.js', () => {
   });
 
   it('Model - getter', (done) => {
-    defaultController.Model.modelName.should.equal('DummyItem');
+    expect(defaultController.Model.modelName).to.equal('DummyItem');
     done();
   });
 
@@ -105,221 +99,221 @@ describe('controllers/index.js', () => {
     defaultController.all({}, {}, done);
   });
 
-  it('get', (done) => {
+  it('get', () => {
     // Optimal case, return item
-    function itemExists(next) {
+    const itemExists = new Promise((resolve) => {
       // Mock request and response
       const req = { DummyItem: mockItem1 };
       const res = new MockResponse((value) => {
         expect(value).to.be.an('object');
         expect(value).to.containSubset(mockDummies[0]);
-        next();
+        resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([300, 404]);
       });
 
       // Call the tested function
       defaultController.get(req, res);
-    }
+    });
 
     // Case where DummyItem has not been defined
-    function itemDoesNotExist(next) {
+    const itemDoesNotExist = new Promise((resolve) => {
       // Mock request and response
       const req = {};
       const res = new MockResponse((value) => {
-        should.exist(value.error);
-        next();
+        expect(value.error).to.exist;
+        resolve();
       }, (value) => {
         expect(value).to.equal(500);
       });
 
       // Call the tested function
       defaultController.get(req, res);
-    }
+    });
 
-    // Waterfall tasks
-    async.waterfall([
-      itemExists,
-      itemDoesNotExist,
-    ], done);
+    // Run all promises
+    return Promise.all([
+      expect(itemExists).to.not.be.rejected,
+      expect(itemDoesNotExist).to.not.be.rejected,
+    ]);
   });
 
-  it('find', (done) => {
+  it('find', () => {
     // Correct case, find an item that exists
-    function itemExists(next) {
+    const itemExists = new Promise((resolve) => {
       // Mock request and response
       const req = { query: { _id: mockItem1._id.toString() } };
       const res = new MockResponse((list) => {
         expect(list).to.be.an('array');
         expect(list.length).to.equal(1);
         expect(list[0]).to.containSubset(mockDummies[0]);
-        next();
+        resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([300]);
       });
 
       // Call the tested function
       defaultController.find(req, res);
-    }
+    });
 
     // Case where no items match given options
-    function itemDoesNotExist(next) {
+    const itemDoesNotExist = new Promise((resolve) => {
       // Mock request and response
       const req = { query: { _id: '000000000000000000000000' } };
       const res = new MockResponse((list) => {
         expect(list).to.be.an('array');
         expect(list.length).to.equal(0);
-        next();
+        resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([300]);
       });
 
       // Call the tested function
       defaultController.find(req, res);
-    }
+    });
 
     // Case where given options are invalid
-    function optionsAreInvalid(next) {
+    const optionsAreInvalid = new Promise((resolve) => {
       // Mock request and response
       const req = { query: { _id: 'invalidID' } };
       const res = new MockResponse((list) => {
-        should.exist(list.error);
-        next();
+        expect(list.error).to.exist;
+        resolve();
       }, (value) => {
         expect(value).to.equal(300);
       });
 
       // Call the tested function
       defaultController.find(req, res);
-    }
+    });
 
-    // Waterfall cases
-    async.waterfall([
-      itemExists,
-      itemDoesNotExist,
-      optionsAreInvalid,
-    ], done);
+    // Run all promises
+    return Promise.all([
+      expect(itemExists).to.not.be.rejected,
+      expect(itemDoesNotExist).to.not.be.rejected,
+      expect(optionsAreInvalid).to.not.be.rejeced,
+    ]);
   });
 
-  it('create', (done) => {
+  it('create', () => {
     // Correct case, create item with valid body
-    function validBody(next) {
+    const validBody = new Promise((resolve) => {
       // Mock request and response
       const req = { body: mockDummies[1] };
       const res = new MockResponse((value) => {
-        should.not.exist(value.error);
+        expect(value.error).to.not.exist;
         expect(value).to.containSubset(mockDummies[1]);
-        next();
+        resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([400]);
       });
 
       // Call the tested function
       defaultController.create(req, res);
-    }
+    });
 
     // Invalid body case
-    function invalidBody(next) {
+    const invalidBody = new Promise((resolve) => {
       // Mock request and response
       const req = { body: {} };
       const res = new MockResponse((value) => {
-        should.exist(value.error);
-        next();
+        expect(value.error).to.exist;
+        resolve();
       }, (value) => {
         expect(value).to.equal(400);
       });
 
       // Call the tested function
       defaultController.create(req, res);
-    }
+    });
 
     // Waterfall cases
-    async.waterfall([
-      validBody,
-      invalidBody,
-    ], done);
+    return Promise.all([
+      expect(validBody).to.not.be.rejected,
+      expect(invalidBody).to.not.be.rejected,
+    ]);
   });
 
-  it('update', (done) => {
+  it('update', () => {
     // Correct case, update item with valid body
-    function validBody(next) {
+    const validBody = new Promise((resolve) => {
       // Mock request and response
       const mockDataCopy = JSON.parse(JSON.stringify(mockDummies[0]));
       mockDataCopy.text_freeform = 'modified text';
 
       const req = { params: { DummyItem: mockItem1 }, body: mockDataCopy };
       const res = new MockResponse((value) => {
-        should.not.exist(value.error);
+        expect(value.error).to.not.exist;
         expect(value).to.containSubset(mockDummies[0]);
-        next();
+        resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([400]);
       });
 
       // Call the tested function
       defaultController.update(req, res);
-    }
+    });
 
     // Invalid body case
-    function invalidBody(next) {
+    const invalidBody = new Promise((resolve) => {
       // Mock request and response
       const req = { params: { DummyItem: mockItem1 }, body: { number_defaulted_pos: -2 } };
       const res = new MockResponse((value) => {
-        should.exist(value.error);
-        next();
+        expect(value.error).to.exist;
+        resolve();
       }, (value) => {
         expect(value).to.equal(400);
       });
 
       // Call the tested function
       defaultController.update(req, res);
-    }
+    });
 
     // Waterfall cases
-    async.waterfall([
-      validBody,
-      invalidBody,
-    ], done);
+    return Promise.all([
+      expect(validBody).to.not.be.rejected,
+      expect(invalidBody).to.not.be.rejected,
+    ]);
   });
 
-  it('remove', (done) => {
+  it('remove', () => {
     // Correct case, item is found and deleted
-    function itemExists(next) {
+    const itemExists = new Promise((resolve) => {
       // Mock request and response
       const req = { params: { DummyItem: 'DummyItem' }, DummyItem: mockItem1 };
       const res = new MockResponse((value) => {
-        should.not.exist(value.error);
+        expect(value.error).to.not.exist;
         expect(value).to.be.an('object');
         expect(Object.keys(value).length).to.equal(0);
-        next();
+        resolve();
       }, (value) => {
         expect(value).to.equal(200);
       });
 
       // Call the tested function
       defaultController.remove(req, res);
-    }
+    });
 
     // Invalid case, item does not exist
-    function itemDoesNotExist(next) {
+    const itemDoesNotExist = new Promise((resolve) => {
       // Mock request and response
       const req = { params: { DummyItem: 'DummyItem' } };
       const res = new MockResponse((value) => {
-        should.exist(value.error);
-        next();
+        expect(value.error).to.exist;
+        resolve();
       }, (value) => {
         expect(value).to.equal(500);
       });
 
       // Call the tested function
       defaultController.remove(req, res);
-    }
+    });
 
-    // Waterfall cases
-    async.waterfall([
-      itemExists,
-      itemDoesNotExist,
-    ], done);
+    // Run all promises
+    return Promise.all([
+      expect(itemExists).to.not.be.rejected,
+      expect(itemDoesNotExist).to.not.be.rejected,
+    ]);
   });
 
   it('isEmpty', (done) => {

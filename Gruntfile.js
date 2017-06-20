@@ -31,15 +31,15 @@ module.exports = function(grunt) {
             restore_db: {
                 cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
                 stdout: false,
-                stderr: true,
+                stderr: false,
                 options: {
                     shell: 'bash',
-                }            
+                }                 
             }
         },
         simplemocha: {
             options: {
-                globals: ["should"],
+                globals: ["should", "check"],
                 timeout: 120000,
                 ignoreLeaks: false,
             },

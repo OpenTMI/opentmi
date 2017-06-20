@@ -1,15 +1,13 @@
 // Third party components
 const colors = require('colors');
 
-const should = require('should');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 chai.use(chaiSubset);
-
 const expect = chai.expect;
 
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
+mongoose.Promise = require('bluebird');
 
 const Mockgoose = require('mockgoose').Mockgoose;
 const mockgoose = new Mockgoose(mongoose);
@@ -20,7 +18,6 @@ winston.level = 'error';
 // Local components
 const GroupsController = require('./../../app/controllers/groups.js');
 let controller = null;
-
 const MockResponse = require('./mocking/MockResponse.js');
 
 
@@ -32,17 +29,14 @@ describe('controllers/groups.js', () => {
     mockgoose.prepareStorage().then(() => {
       console.log('    * Connecting to mongo\n'.gray);
       mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
-        should.not.exist(error);
+        expect(error).to.not.exist;
          
         // Loading models requires active mongo
         try {
-            require('./../../app/models/group.js');
+          require('./../../app/models/group.js');
         } catch (e) {
-            if (e.name !== 'OverwriteModelError') { throw (e); }
+          if (e.name !== 'OverwriteModelError') { throw (e); }
         }
-
-        // Some library, probably mockgoose, leaks this global variable that needs to be purged
-        delete check;
 
         console.log('    [Tests]'.gray);
         done();
@@ -66,7 +60,7 @@ describe('controllers/groups.js', () => {
 
   it('constructor', (done) => {
     controller = new GroupsController();
-    should.exist(controller);
+    expect(controller).to.exist;
     done();
   });
 });
