@@ -40,7 +40,7 @@ module.exports = function(grunt) {
         simplemocha: {
             options: {
                 globals: ["should", "check"],
-                timeout: 120000,
+                timeout: 300000,
                 ignoreLeaks: false,
             },
             api: {
