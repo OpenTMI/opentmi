@@ -5,9 +5,7 @@ const colors = require('colors');
 
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
-const chaiString = require('chai-string');
 chai.use(chaiSubset);
-chai.use(chaiString);
 const expect = chai.expect;
 
 const mongoose = require('mongoose');
