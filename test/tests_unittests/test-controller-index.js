@@ -50,8 +50,10 @@ describe('controllers/index.js', () => {
   });
 
   beforeEach(function () {
-    mockItem1 = new Dummy(mockDummies[0]);
-    return mockgoose.helper.reset().then(mockItem1.save());
+    return mockgoose.helper.reset().then(() => {
+      mockItem1 = new Dummy(mockDummies[0]);
+      return mockItem1.save();
+    });
   });
 
   after(function (done) {

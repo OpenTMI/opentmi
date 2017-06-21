@@ -5,6 +5,7 @@
 // native modules
 
 // 3rd party modules
+const winston = require('winston');
 const async = require('async');
 
 // own modules
@@ -20,7 +21,11 @@ class ResourcesController extends DefaultController {
 
   static solveRoute(req, res) {
     req.Resource.solveRoute((error, route) => {
-      res.json(route);
+      if (error) {
+        res.status(400).json({ error });
+      } else {
+        res.json(route);
+      }
     });
   }
 
@@ -29,11 +34,11 @@ class ResourcesController extends DefaultController {
       if (error) {
         res.status(404).json({ error });
       } else if (docs.length > 0) {
-        console.log(`found many devices: ${docs.length}`);
+        winston.info(`found many devices: ${docs.length}`);
         req.allocated = docs;
         next();
       } else {
-        console.log(`not found allocated resources with id: ${req.params.Alloc}`);
+        winston.info(`not found allocated resources with id: ${req.params.Alloc}`);
         res.status(404).json({ error: 'not found' });
       }
     });
@@ -52,7 +57,7 @@ class ResourcesController extends DefaultController {
   static alloc(req, res) {
     req.Resource.alloc((error, doc) => {
       if (error) {
-        res.status(500).json(error);
+        res.status(500).json({ error });
       } else {
         res.json(req.allocated);
       }
@@ -62,7 +67,7 @@ class ResourcesController extends DefaultController {
   static release(req, res) {
     req.Resource.release((error, doc) => {
       if (error) {
-        res.status(500).json(error);
+        res.status(500).json({ error });
       } else {
         res.json(req.allocated);
       }
@@ -72,7 +77,7 @@ class ResourcesController extends DefaultController {
   static allocMultiple(req, res) {
     req.Resource.allocateResources(req.body, (error, allocated) => {
       if (error) {
-        res.status(404).json(error);
+        res.status(404).json({ error });
       } else {
         res.json(allocated);
       }
@@ -80,18 +85,17 @@ class ResourcesController extends DefaultController {
   }
 
   static releaseMultiple(req, res) {
-    console.log(`Releasing: ${req.allocated.length}`);
-    async.map(
-      req.allocated,
-      (resource, cb) => {
-        console.log(`try to release: ${resource._id}`);
-        resource.release(cb);
-      },
-      (error, results) => {
-        if (!error) {
-          res.json(results);
-        }
-      });
+    winston.info(`Releasing: ${req.allocated.length}`);
+    async.map(req.allocated, (resource, cb) => {
+      winston.info(`try to release: ${resource._id}`);
+      resource.release(cb);
+    }, (error, results) => {
+      if (!error) {
+        res.json(results);
+      } else {
+        res.status(500).json({ error });
+      }
+    });
   }
 }
 
