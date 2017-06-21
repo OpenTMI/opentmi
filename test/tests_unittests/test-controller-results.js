@@ -1,3 +1,5 @@
+/* global describe before beforeEach after it */
+/* eslint-disable */
 // Third party components
 const colors = require('colors');
 const stream = require('stream');
@@ -15,6 +17,10 @@ mongoose.Promise = require('bluebird');
 const Mockgoose = require('mockgoose').Mockgoose;
 const mockgoose = new Mockgoose(mongoose);
 
+require('./../../app/models/build.js');
+require('./../../app/models/testcase.js');
+require('./../../app/models/results.js');
+
 const winston = require('winston');
 winston.level = 'error';
 
@@ -24,56 +30,29 @@ let controller = null;
 
 const MockResponse = require('./mocking/MockResponse.js');
 const mockJunitXml = require('./mocking/MockJunitXmlTests.js');
+/* eslint-enable */
+
 
 describe('controllers/results.js', () => {
   // Create fresh DB
-  before(function (done) {
+  before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
 
     console.log('    [Before]'.gray);
     console.log('    * Preparing storage'.gray);
-    mockgoose.prepareStorage().then(() => {
+    return mockgoose.prepareStorage().then(() => {
       console.log('    * Connecting to mongo\n'.gray);
-      mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
-        expect(error).to.not.exist;
-        
-        // Loading models requires active mongo
-        try {
-          require('./../../app/models/build.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-
-        try {
-          require('./../../app/models/testcase.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-        
-        try {
-          require('./../../app/models/results.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-
+      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
         // Test that controller can be initialized before other tests
         controller = new ResultsController();
-        expect(controller).to.exist;
-
         console.log('    [Tests]'.gray);
-        done();
       });
     });
   });
 
-
-  beforeEach(function (done) {
-    mockgoose.helper.reset().then(() => {
-      // Load mock items
-      done();
-    });
+  beforeEach(function () {
+    return mockgoose.helper.reset();
   });
-
 
   after(function (done) {
     console.log('\n    [After]'.gray);
@@ -82,9 +61,8 @@ describe('controllers/results.js', () => {
     done();
   });
 
-
   it('streamToString', function () {
-    const mockedStream = require('stream').Readable();
+    const mockedStream = stream.Readable();
     mockedStream._read = function (size) { };
 
     const stringPromise = ResultsController.streamToString(mockedStream);
@@ -100,12 +78,11 @@ describe('controllers/results.js', () => {
 
 
   it('handleJunitXml', function () {
-    // Valid case, proper junit xml   
-    const promiseValid = controller.handleJunitXml(mockJunitXml.valid).then(value => {
-      expect(value.error).to.not.exist;
-      expect(value.ok).to.exist;
-      expect(value.message).to.exist;
-      expect(value.message).to.equal('created 2 results');
+    // Valid case, proper junit xml
+    const promiseValid = controller.handleJunitXml(mockJunitXml.valid).then((value) => {
+      expect(value).to.not.have.property('error');
+      expect(value).to.have.property('ok');
+      expect(value).to.have.property('message', 'created 2 results');
     });
 
     const promiseInvalid = controller.handleJunitXml('Invalid xml! 823y49');
@@ -124,37 +101,37 @@ describe('controllers/results.js', () => {
     req.busboy._read = function (size) { };
 
     const res = new MockResponse((value) => {
-      expect(value.error).to.exist;
+      expect(value).to.have.property('error');
     }, (value) => {
       expect(value).to.equal(400);
     });
 
     // Everything goes ok
     let modifiedController = new ResultsController();
-    modifiedController.streamToString = paramStream => new Promise((resolve) => {
+    modifiedController.streamToString = () => new Promise((resolve) => {
       resolve('combined_stream_string');
     });
-    modifiedController.handleJunitXml = paramText => new Promise((resolve) => {
+    modifiedController.handleJunitXml = () => new Promise((resolve) => {
       resolve('ok');
     });
     const validCreationPromise = modifiedController.createFromJunitXml(req, res);
 
     // StreamToString is rejected
     modifiedController = new ResultsController();
-    modifiedController.streamToString = paramStream => new Promise((resolve, reject) => {
+    modifiedController.streamToString = () => new Promise((resolve, reject) => {
       reject(new Error('Make-believe error from streamToString'));
     });
-    modifiedController.handleJunitXml = paramText => new Promise((resolve) => {
+    modifiedController.handleJunitXml = () => new Promise((resolve) => {
       resolve('ok');
     });
     const invalidStreamCreationPromise = modifiedController.createFromJunitXml(req, res);
 
     // HandleJunitXml is rejected
     modifiedController = new ResultsController();
-    modifiedController.streamToString = paramStream => new Promise((resolve, reject) => {
+    modifiedController.streamToString = () => new Promise((resolve, reject) => {
       reject(new Error('Make-believe error from streamToString'));
     });
-    modifiedController.handleJunitXml = paramText => new Promise((resolve) => {
+    modifiedController.handleJunitXml = () => new Promise((resolve) => {
       resolve('ok');
     });
     const invalidHandleJunitCreationPromise = modifiedController.createFromJunitXml(req, res);

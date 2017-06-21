@@ -1,3 +1,5 @@
+/* global describe before beforeEach after it */
+/* eslint-disable */
 // Third party components
 const colors = require('colors');
 
@@ -14,6 +16,11 @@ mongoose.Promise = require('bluebird');
 const Mockgoose = require('mockgoose').Mockgoose;
 const mockgoose = new Mockgoose(mongoose);
 
+require('./../../app/models/group.js');
+require('./../../app/models/user.js');
+require('./../../app/models/item.js')
+require('./../../app/models/loan.js')
+
 const winston = require('winston');
 winston.level = 'error';
 
@@ -21,8 +28,8 @@ winston.level = 'error';
 const LoanController = require('./../../app/controllers/loans.js');
 let controller = null;
 
-let Item = undefined;
-let User = undefined;
+const User = mongoose.model('User');
+const Item = mongoose.model('Item');
 
 // Mock user schema
 const mockUserSchema = new mongoose.Schema({
@@ -39,75 +46,37 @@ let mockUser1 = null;
 let mockLoan1 = null;
 
 const MockResponse = require('./mocking/MockResponse.js');
+/* eslint-enable */
 
 
 describe('controllers/loans.js', function () {
   // Create fresh DB
-  before(function (done) {
+  before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
 
     console.log('    [Before]'.gray);
     console.log('    * Preparing storage'.gray);
-    mockgoose.prepareStorage().then(() => {
+    return mockgoose.prepareStorage().then(() => {
       console.log('    * Connecting to mongo\n'.gray);
-      mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
-        expect(error).to.not.exist;
-
-        // Loading models requires active mongo
-        try {
-          require('./../../app/models/group.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-
-        try {
-          require('./../../app/models/user.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-
-        try {
-          require('./../../app/models/item.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-
-        try {
-          require('./../../app/models/loan.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-
-        User = mongoose.model('User');
-        Item = mongoose.model('Item');
-
-         // Create controller to test
+      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
+        // Create controller to test
         controller = new LoanController();
-        expect(controller).to.exist;
-
         console.log('    [Tests]'.gray);
-        done();
       });
     });
   });
 
-  beforeEach(function (done) { 
-    mockgoose.helper.reset().then(() => {
-      // Load mock item
+  beforeEach(function () {
+    return mockgoose.helper.reset().then(() => {
+       // Load mock item
       mockItem1 = new Item(mockItems[0]);
-      mockItem1.save((error) => {
-        expect(error).to.not.exist;
-        // Load mock user
-        mockUser1 = new User(mockUsers[0]);
-        mockUser1.save((error) => {
-          // Load mock loan
-          mockLoan1 = new controller.Model(mockLoans[0]);
-          mockLoan1.save((error) => {
-            expect(error).to.not.exist;
-            done();
-          });
-        });
-      });
+      mockUser1 = new User(mockUsers[0]);
+      mockLoan1 = new controller.Model(mockLoans[0]);
+      return Promise.all([
+        mockItem1.save(),
+        mockUser1.save(),
+        mockLoan1.save(),
+      ]);
     });
   });
 
@@ -121,10 +90,10 @@ describe('controllers/loans.js', function () {
   it('update', function () {
     // Valid case, return 1 item from loan
     const validReturn = new Promise((resolve) => {
-      const req = { params: { Loan: mockLoan1._id }, body: { items: [ { _id: mockLoan1.items[1]._id, return_date: new Date() } ] }, Loan: mockLoan1 };
+      const req = { params: { Loan: mockLoan1._id }, body: { items: [{ _id: mockLoan1.items[1]._id, return_date: new Date() }] }, Loan: mockLoan1 };
       const res = new MockResponse((value) => {
-        expect(value.error).to.not.exist;
-        expect(value.items[1].return_date).to.exist;
+        expect(value).to.not.have.property('error');
+        expect(value.items[1]).to.have.property('return_date');
         resolve();
       }, (value) => {
         expect(value).to.equal(200);
@@ -135,9 +104,9 @@ describe('controllers/loans.js', function () {
 
     // Invalid case, return 1 item that is not in the loan
     const invalidReturnMissingId = new Promise((resolve) => {
-      const req = { params: { Loan: mockLoan1._id}, body: { items: [ { _id: mockUser1._id, return_date: new Date() } ] }, Loan: mockLoan1 };
+      const req = { params: { Loan: mockLoan1._id }, body: { items: [{ _id: mockUser1._id, return_date: new Date() }] }, Loan: mockLoan1 };
       const res = new MockResponse((value) => {
-        expect(value.error).to.exist;
+        expect(value).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(400);
@@ -150,7 +119,7 @@ describe('controllers/loans.js', function () {
     const invalidUpdate = new Promise((resolve) => {
       const req = { params: { Loan: mockLoan1._id }, body: { loan_date: 'fake_date' }, Loan: mockLoan1 };
       const res = new MockResponse((value) => {
-        expect(value.error).to.exist;
+        expect(value).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(400);
@@ -159,52 +128,52 @@ describe('controllers/loans.js', function () {
       controller.update(req, res);
     });
 
-    // Chain and test all promises 
+    // Chain and test all promises
     return validReturn.then(invalidReturnMissingId).then(invalidUpdate);
   });
-  
+
   it('_handleItemsInUpdate', function () {
     // Handle single valid item
     const validSingleItem = new Promise((resolve) => {
       const req = {
         params: { Loan: mockLoan1._id },
-        body: { items: [ { _id: mockLoan1.items[0]._id, return_date: new Date() }, ] },
-        Loan: mockLoan1
-      }
+        body: { items: [{ _id: mockLoan1.items[0]._id, return_date: new Date() }] },
+        Loan: mockLoan1,
+      };
 
       LoanController._handleItemsInUpdate(req, (err) => {
         expect(err).to.not.exist;
-        expect(req.body.items).to.not.exist; // should be dereferenced by _handleItemsInUpdate
-        expect(mockLoan1.items[0].return_date).to.exist;
+        expect(req.body).to.not.have.property('items'); // should be dereferenced by _handleItemsInUpdate
+        expect(mockLoan1.items[0]).to.have.property('return_date');
         resolve();
       });
     });
-  
+
     // Handle multiple valid items
     const validMultipleItems = new Promise((resolve) => {
       const req = {
         params: { Loan: mockLoan1._id },
-        body: { items: [ { _id: mockLoan1.items[1]._id, return_date: new Date() }, 
-                         { _id: mockLoan1.items[2]._id, return_date: new Date() }, ] },
-        Loan: mockLoan1
-      }
+        body: { items: [{ _id: mockLoan1.items[1]._id, return_date: new Date() },
+                        { _id: mockLoan1.items[2]._id, return_date: new Date() }] },
+        Loan: mockLoan1,
+      };
 
       LoanController._handleItemsInUpdate(req, (err) => {
         expect(err).to.not.exist;
-        expect(req.body.items).to.not.exist; // should be dereferenced by _handleItemsInUpdate
-        expect(mockLoan1.items[1].return_date).to.exist;
-        expect(mockLoan1.items[2].return_date).to.exist;
+        expect(req.body).to.not.have.property('items'); // should be dereferenced by _handleItemsInUpdate
+        expect(mockLoan1.items[1]).to.have.property('return_date');
+        expect(mockLoan1.items[2]).to.have.property('return_date');
         resolve();
       });
     });
- 
+
     // Handle invalid item
     const invalidItem = new Promise((resolve) => {
       const req = {
         params: { Loan: mockLoan1._id },
-        body: { items: [ { return_date: new Date() }, ] },
-        Loan: mockLoan1
-      }
+        body: { items: [{ return_date: new Date() }] },
+        Loan: mockLoan1,
+      };
 
       LoanController._handleItemsInUpdate(req, (err) => {
         expect(err).to.exist;
@@ -222,21 +191,22 @@ describe('controllers/loans.js', function () {
       const req = { user: { sub: mockUser1._id.toString() } };
       const res = new MockResponse((value) => {
         expect(value).to.exist;
-        expect(value.error).to.not.exist;
-        
+        expect(value).to.not.have.property('error');
+
         // Check loan fields
-        expect(value).to.not.be.empty;
-        expect(value[0]._id).to.exist;
-        expect(value[0].loaner).to.exist;
-        expect(value[0].__v).to.exist;
-        expect(value[0].items).to.exist;
+        const objDoc = value[0].toObject();
+        expect(objDoc).to.have.property('_id');
+        expect(objDoc).to.have.property('loaner');
+        expect(objDoc).to.have.property('__v');
+        expect(objDoc).to.have.property('items');
 
         // Check items
-        expect(value[0].items).to.not.be.empty;
+        expect(objDoc.items).to.not.be.empty;
+
         for (let i = 0; i < 3; i += 1) {
-          expect(value[0].items[i]._id.toString()).to.equal(mockLoan1.items[i]._id.toString());
-          expect(value[0].items[i].item.toString()).to.equal(mockLoan1.items[i].item.toString());
-          expect(value[0].items[i].return_date).to.not.exist;
+          expect(objDoc.items[i]._id.toString()).to.equal(mockLoan1.items[i]._id.toString());
+          expect(objDoc.items[i].item.toString()).to.equal(mockLoan1.items[i].item.toString());
+          expect(objDoc.items[i]).to.not.have.property('return_date');
         }
 
         resolve();
@@ -246,12 +216,12 @@ describe('controllers/loans.js', function () {
 
       controller.findUsersLoans(req, res);
     });
-  
-    // Get loans for invalid user, should return status 500 
+
+    // Get loans for invalid user, should return status 500
     const invalidUser = new Promise((resolve) => {
       const req = { user: { sub: 42 } };
       const res = new MockResponse((value) => {
-        expect(value.error).to.exist;
+        expect(value).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(500);
@@ -260,7 +230,7 @@ describe('controllers/loans.js', function () {
       controller.findUsersLoans(req, res);
     });
 
-    // Chain and test all promises 
+    // Chain and test all promises
     return validUserWithLoans.then(invalidUser);
   });
 });

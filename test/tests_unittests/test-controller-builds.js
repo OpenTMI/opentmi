@@ -1,3 +1,5 @@
+/* global describe before beforeEach after it */
+/* eslint-disable */
 // Third party components
 const colors = require('colors');
 
@@ -12,6 +14,8 @@ mongoose.Promise = require('bluebird');
 const Mockgoose = require('mockgoose').Mockgoose;
 const mockgoose = new Mockgoose(mongoose);
 
+require('./../../app/models/build.js');
+
 const winston = require('winston');
 winston.level = 'error';
 
@@ -19,38 +23,24 @@ winston.level = 'error';
 const BuildsController = require('./../../app/controllers/builds.js');
 let controller = null;
 const MockResponse = require('./mocking/MockResponse.js');
+/* eslint-enable */
 
 
 describe('controllers/builds.js', function () {
   // Create fresh DB
-  before(function (done) {
+  before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
 
     console.log('    [Before]'.gray);
     console.log('    * Preparing storage'.gray);
-    mockgoose.prepareStorage().then(() => {
+    return mockgoose.prepareStorage().then(() => {
       console.log('    * Connecting to mongo\n'.gray);
-      mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
-        expect(error).to.not.exist;
-
-        // Loading models requires active mongo
-        try {
-          require('./../../app/models/build.js');
-        } catch (e) {
-          if (e.name !== 'OverwriteModelError') { throw (e); }
-        }
-
-        console.log('    [Tests]'.gray);
-        done();
-      });
+      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => console.log('    [Tests]'.gray));
     });
   });
 
-  beforeEach(function (done) {
-    mockgoose.helper.reset().then(() => {
-      // Load mock items
-      done();
-    });
+  beforeEach(function () {
+    return mockgoose.helper.reset();
   });
 
   after(function (done) {
@@ -62,7 +52,7 @@ describe('controllers/builds.js', function () {
 
   it('constructor', function (done) {
     controller = new BuildsController();
-    expect(controller).to.exist;
+    expect(controller).to.exist; // eslint-disable-line no-unused-expressions
     done();
   });
 });

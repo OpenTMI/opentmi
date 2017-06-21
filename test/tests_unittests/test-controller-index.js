@@ -1,3 +1,5 @@
+/* global describe before beforeEach after it */
+/* eslint-disable */
 // Third party components
 const colors = require('colors');
 
@@ -21,64 +23,52 @@ winston.level = 'error';
 const DefaultController = require('./../../app/controllers/index.js');
 let defaultController = null;
 
-const DummyItemSchema = require('./mocking/DummySchema.js');
+mongoose.model('DummyItem', require('./mocking/DummySchema.js'));
+const Dummy = mongoose.model('DummyItem');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
 let mockItem1 = null;
-let Dummy = null;
 const MockResponse = require('./mocking/MockResponse.js');
+/* eslint-enable */
 
 
 describe('controllers/index.js', () => {
   // Create fresh DB
-  before((done) => {
+  before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
 
     console.log('    [Before]'.gray);
     console.log('    * Preparing storage'.gray);
-    mockgoose.prepareStorage().then(() => {
-      mongoose.connect('mongodb://testmock.com/TestingDB', (error) => {
+    return mockgoose.prepareStorage().then(() => {
       console.log('    * Connecting to mongo\n'.gray);
-        expect(error).to.not.exist;
-        mongoose.model('DummyItem', DummyItemSchema);
-
+      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
         // create controller to test
         defaultController = new DefaultController('DummyItem');
-        expect(defaultController).to.exist;
-
-        Dummy = mongoose.model('DummyItem');
         console.log('    [Tests]'.gray);
-        done();
       });
     });
   });
 
-  beforeEach((done) => {
-    mockgoose.helper.reset().then(() => {
-      // Load mock items
-      mockItem1 = new Dummy(mockDummies[0]);
-      mockItem1.save((error) => {
-        expect(error).to.not.exist;
-        done();
-      });
-    });
+  beforeEach(function () {
+    mockItem1 = new Dummy(mockDummies[0]);
+    return mockgoose.helper.reset().then(mockItem1.save());
   });
 
-  after((done) => {
+  after(function (done) {
     console.log('\n    [After]'.gray);
     console.log('    * Closing mongoose connection'.gray);
     mongoose.disconnect();
     done();
   });
 
-  it('defaultModelParam', (done) => {
+  it('defaultModelParam', function (done) {
     // Generate defaultModelParam function
     const defaultModelParam = defaultController.defaultModelParam('DummyItem');
 
     // Mock request and response
     const req = { params: { DummyItem: mockDummies[0]._id } };
     const res = new MockResponse((value) => {
-      expect(value.error).to.not.exist;
+      expect(value).to.not.have.property('error');
       expect(req.DummyItem).to.containSubset(mockDummies[0]);
       done();
     }, (value) => {
@@ -86,22 +76,22 @@ describe('controllers/index.js', () => {
     });
 
     // Call the tested function
-    defaultModelParam(req, res, () => {
+    defaultModelParam(req, res, function () {
       expect(req.DummyItem).to.containSubset(mockDummies[0]);
       done();
     }, undefined);
   });
 
-  it('Model - getter', (done) => {
+  it('Model - getter', function (done) {
     expect(defaultController.Model.modelName).to.equal('DummyItem');
     done();
   });
 
-  it('all', (done) => {
+  it('all', function (done) {
     defaultController.all({}, {}, done);
   });
 
-  it('get', () => {
+  it('get', function () {
     // Optimal case, return item
     const itemExists = new Promise((resolve) => {
       // Mock request and response
@@ -123,7 +113,7 @@ describe('controllers/index.js', () => {
       // Mock request and response
       const req = {};
       const res = new MockResponse((value) => {
-        expect(value.error).to.exist;
+        expect(value).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(500);
@@ -140,7 +130,7 @@ describe('controllers/index.js', () => {
     ]);
   });
 
-  it('find', () => {
+  it('find', function () {
     // Correct case, find an item that exists
     const itemExists = new Promise((resolve) => {
       // Mock request and response
@@ -179,7 +169,7 @@ describe('controllers/index.js', () => {
       // Mock request and response
       const req = { query: { _id: 'invalidID' } };
       const res = new MockResponse((list) => {
-        expect(list.error).to.exist;
+        expect(list).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(300);
@@ -197,13 +187,13 @@ describe('controllers/index.js', () => {
     ]);
   });
 
-  it('create', () => {
+  it('create', function () {
     // Correct case, create item with valid body
     const validBody = new Promise((resolve) => {
       // Mock request and response
       const req = { body: mockDummies[1] };
       const res = new MockResponse((value) => {
-        expect(value.error).to.not.exist;
+        expect(value).to.not.have.property('error');
         expect(value).to.containSubset(mockDummies[1]);
         resolve();
       }, (value) => {
@@ -219,7 +209,7 @@ describe('controllers/index.js', () => {
       // Mock request and response
       const req = { body: {} };
       const res = new MockResponse((value) => {
-        expect(value.error).to.exist;
+        expect(value).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(400);
@@ -236,7 +226,7 @@ describe('controllers/index.js', () => {
     ]);
   });
 
-  it('update', () => {
+  it('update', function () {
     // Correct case, update item with valid body
     const validBody = new Promise((resolve) => {
       // Mock request and response
@@ -245,7 +235,7 @@ describe('controllers/index.js', () => {
 
       const req = { params: { DummyItem: mockItem1 }, body: mockDataCopy };
       const res = new MockResponse((value) => {
-        expect(value.error).to.not.exist;
+        expect(value).to.not.have.property('error');
         expect(value).to.containSubset(mockDummies[0]);
         resolve();
       }, (value) => {
@@ -261,7 +251,7 @@ describe('controllers/index.js', () => {
       // Mock request and response
       const req = { params: { DummyItem: mockItem1 }, body: { number_defaulted_pos: -2 } };
       const res = new MockResponse((value) => {
-        expect(value.error).to.exist;
+        expect(value).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(400);
@@ -278,13 +268,13 @@ describe('controllers/index.js', () => {
     ]);
   });
 
-  it('remove', () => {
+  it('remove', function () {
     // Correct case, item is found and deleted
     const itemExists = new Promise((resolve) => {
       // Mock request and response
       const req = { params: { DummyItem: 'DummyItem' }, DummyItem: mockItem1 };
       const res = new MockResponse((value) => {
-        expect(value.error).to.not.exist;
+        expect(value).to.not.have.property('error');
         expect(value).to.be.an('object');
         expect(Object.keys(value).length).to.equal(0);
         resolve();
@@ -301,7 +291,7 @@ describe('controllers/index.js', () => {
       // Mock request and response
       const req = { params: { DummyItem: 'DummyItem' } };
       const res = new MockResponse((value) => {
-        expect(value.error).to.exist;
+        expect(value).to.have.property('error');
         resolve();
       }, (value) => {
         expect(value).to.equal(500);
@@ -318,7 +308,7 @@ describe('controllers/index.js', () => {
     ]);
   });
 
-  it('isEmpty', (done) => {
+  it('isEmpty', function (done) {
     defaultController.isEmpty((firstResult) => {
       // There should be one element in the database so result should be false
       expect(firstResult).to.equal(false);
