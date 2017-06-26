@@ -1,30 +1,28 @@
-var express = require('express');
+const express = require('express');
+const TargetController = require('./../controllers/targets');
 
-var Route = function(app, passport){
+const Route = function (app, passport) {
+  const router = express.Router();
+  const controller = new TargetController();
 
-  var router = express.Router();
-  var controller = require('./../controllers/targets')();
+  router.param('Target', controller.modelParam.bind(controller));
 
-  router.param('Target', controller.paramTarget );
-  router.param('format', controller.paramFormat );
-
-  
   router.route('/api/v0/targets.:format?')
-    .all( controller.all )
-    .get( controller.find )
-    .post(controller.create );
-  
+    .all(controller.all.bind(controller))
+    .get(controller.find.bind(controller))
+    .post(controller.create.bind(controller));
+
   router.route('/api/v0/targets/:Target.:format?')
-    .all( controller.all )
-    .get( controller.get )
-    .put( controller.update )
-    .delete( controller.remove );
+    .all(controller.all.bind(controller))
+    .get(controller.get.bind(controller))
+    .put(controller.update.bind(controller))
+    .delete(controller.remove.bind(controller));
 
   router.route('/api/v0/targets/:Target/gt')
-    .all( controller.all )
-    .get( controller.getGt )
-  
-  app.use( router );
-}
+    .all(controller.all.bind(controller))
+    .get(TargetController.getGt);
+
+  app.use(router);
+};
 
 module.exports = Route;

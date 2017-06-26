@@ -36,7 +36,7 @@ describe('Loans', function () {
     // Initialize nconf
     nconf.argv({ cfg:{ default:'development' } })
          .env()
-         .defaults(require('./../config/config.js'));  
+         .defaults(require('./../../config/config.js'));  
     
     // Create token for requests
     var payload = { sub:test_user_id,
