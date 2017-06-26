@@ -10,12 +10,14 @@ const winston = require('winston');
 
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
+const EMAIL_DOMAIN = nconf.get("email_domain");
+
 
 class AuthenticationController {
   constructor() {
     this.config = {
       GOOGLE_SECRET: nconf.get('google_secret'),
-      TOKEN_SECRET: nconf.get('webtoken'),
+      TOKEN_SECRET: nconf.get('webtoken')
     };
   }
 
@@ -176,10 +178,26 @@ class AuthenticationController {
         if (err) {
           winston.info('Github auth: getProfile error');
           callback({ status: 500, msg: err.toString() });
-        } else if (!err && response.statusCode !== 200) {
+          return;
+        }
+        if (response.statusCode !== 200) {
           winston.info('Github auth: bad profile response');
           callback({ status: 409, msg: 'Did not get github profile.' });
-        } else if (!profile.email) {
+          return;
+        }
+        let doEmail = (name) => {
+          let parts = _.map(name.split(" "), _.toLower);
+          if(parts.length<2) {
+            return '';
+          }
+          let email = `${parts[0]}.${parts[parts.length-1]}@${EMAIL_DOMAIN}`;
+          winston.debug("Generated email: ", email);
+          return email;
+        };
+        if (!profile.email && EMAIL_DOMAIN) {
+          profile.email = doEmail(profile.name);
+        }
+        if (!profile.email) {
           winston.info('Github auth: no email error');
           callback({ status: 409, msg: 'Did not get email address.' });
         } else {

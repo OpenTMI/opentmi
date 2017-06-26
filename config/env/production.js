@@ -10,6 +10,7 @@ module.exports = {
     url: process.env.LDAP_URL
   },
   webtoken:'OpenTMI-toP-SeCRet-tOKEn',
+  email_doman: process.env.EMAIL_DOMAIN,
   admin: {
     //default values
     'user': 'admin',
@@ -31,7 +32,7 @@ module.exports = {
     clientSecret: process.env.GITHUB_SECRET,
     callbackURL: process.env.GITHUB_CBURL,
     organization: process.env.GITHUB_ORG,
-    adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
+    adminTeam: process.env.GITHUB_ADMINTEAM || 'admins',
   },
   linkedin: {
     clientID: process.env.LINKEDIN_CLIENTID,
