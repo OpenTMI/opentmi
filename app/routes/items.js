@@ -22,7 +22,7 @@ var Route = function(app){
     .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, controller.remove);
 
   router.route('/api/v0/items/:Item/image')
-    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, controller.getImage);
+    .get(controller.getImage);
 
   app.use(router);
 };
