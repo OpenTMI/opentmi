@@ -105,39 +105,39 @@ ResultSchema.pre('validate', function (next) {
 
   var logs = _.get(this, 'exec.logs');
   if (_.isArray(logs)) {
-        for (i = 0; i < logs.length; i++) {
-            var file = logs[i];
-            if (!file.name) {
-                err = new Error('file[' + i + '].name missing');
-                break;
-            }
-            if (file.base64) {
-                file.data = new Buffer(file.base64, 'base64');
-                file.base64 = undefined;
-            }
-            if (file.data) {
-                file.size = file.data.length;
-                //file.type = mimetype(file.name(
-                file.sha1 = checksum(file.data, 'sha1');
-                file.sha256 = checksum(file.data, 'sha256');
-                if (file_provider === 'mongodb') {
-                    //use mongodb document
-                    winston.warn('store file %s to mongodb', file.name);
-                } else if (file_provider) {
-                    // store to filesystem
-                    filedb.storeFile(file);
-                    file.data = undefined;
-                } else {
-                    //do not store at all..
-                    file.data = undefined;
-                    winston.warn('filedb is not configured');
-                }
-            }
+    for (const i = 0; i < logs.length; i++) {
+      var file = logs[i];
+      if (!file.name) {
+        err = new Error('file[' + i + '].name missing');
+        break;
+      }
+      if (file.base64) {
+        file.data = new Buffer(file.base64, 'base64');
+        file.base64 = undefined;
+      }
+      if (file.data) {
+        file.size = file.data.length;
+        //file.type = mimetype(file.name(
+        file.sha1 = checksum(file.data, 'sha1');
+        file.sha256 = checksum(file.data, 'sha256');
+        if (file_provider === 'mongodb') {
+          //use mongodb document
+          winston.warn('store file %s to mongodb', file.name);
+        } else if (file_provider) {
+          // store to filesystem
+          filedb.storeFile(file);
+          file.data = undefined;
+        } else {
+          //do not store at all..
+          file.data = undefined;
+          winston.warn('filedb is not configured');
         }
+      }
     }
-    if (err) {
-        return next(err);
-    }
+  }
+  if (err) {
+    return next(err);
+  }
 
   if (buildSha1) {
     winston.debug('result build sha1: ', buildSha1);

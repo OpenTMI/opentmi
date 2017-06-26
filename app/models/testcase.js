@@ -240,7 +240,9 @@ TestCaseSchema.static({
  * Register
  */
 TestCaseSchema.plugin( QueryPlugin ); //install QueryPlugin
+
 var Testcase = mongoose.model('Testcase', TestCaseSchema);
-Testcase.ensureIndexes(function (err) {
-  if (err) return handleError(err);
-});
+// TODO figure out how to synchronously ensureIndexes so we do not close db connection before the process is completed
+//Testcase.ensureIndexes(function (err) {
+//  if (err) return handleError(err);
+//});
