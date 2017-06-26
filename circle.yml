@@ -8,16 +8,31 @@ machine:
     node:
         version: 6.1.0
         
+database:
+    # Circle will execute the below commands
+    pre:
+        # Stop current MongoDB
+        - sudo service mongodb stop
+        # Download MongoDB 3.2.3
+        - curl -Ol https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.2.3.tgz
+        # Untar it
+        - tar -zxvf mongodb-linux-x86_64-ubuntu1204-3.2.3.tgz
+        # Create data directories
+        - mkdir -p ./db
+        - mkdir -p ./db.log
+        # Fork MongoDB and log to './db.log/mongo.log'.
+        - ./mongodb-linux-x86_64-ubuntu1204-3.2.3/bin/mongod --dbpath ./db --logpath ./db.log/mongo.log --fork
+
 dependencies:
     pre:
         - npm install -g grunt-cli
         - mkdir -p shippable/testresults
         - mkdir -p shippable/codecoverage
-        
+
 test:
     override:
         - npm test
-        
+
 general:
     artifacts:
-        - shippable/testresults
+        - "shippable/testresults"
