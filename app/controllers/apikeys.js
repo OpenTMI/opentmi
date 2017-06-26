@@ -1,8 +1,8 @@
-var _ = require('lodash');
-var mongoose = require('mongoose');
+const _ = require('lodash');
+const mongoose = require('mongoose');
 
-var User = mongoose.model('User');
-var ApiKey = mongoose.model('ApiKey');
+const User = mongoose.model('User');
+const ApiKey = mongoose.model('ApiKey');
 
 module.exports = {
   keys: (req, res) => {
@@ -38,7 +38,7 @@ module.exports = {
         return res.status(401).send({ message: error });
       }
 
-      return res.send({ ok: ok });
+      return res.send({ ok });
     });
   },
 };

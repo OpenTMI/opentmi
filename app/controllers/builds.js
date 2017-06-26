@@ -5,35 +5,17 @@
 // native modules
 
 // 3rd party modules
-var mongoose = require('mongoose');
 
 // own modules
-var DefaultController = require('./');
+const DefaultController = require('./');
 
-var Controller = function () {
-  var Build = mongoose.model('Build');
-  var defaultCtrl = new DefaultController(Build, 'Build');
+class BuildsController extends DefaultController {
+  constructor() { super('Build'); }
 
-  this.paramFormat = defaultCtrl.format();
-  this.paramBuild = defaultCtrl.modelParam();
-
-  this.all = (req, res, next) => {
-    // dummy middleman function..
-    next();
-  };
-
-  this.get = defaultCtrl.get;
-  this.find = defaultCtrl.find;
-  this.create = defaultCtrl.create;
-  this.update = defaultCtrl.update;
-  this.remove = defaultCtrl.remove;
-
-  this.download = (req, res) => {
+  static download(req, res) {
     req.Build.download(req.params.Index, res);
-  };
-
-  return this;
-};
+  }
+}
 
 
-module.exports = Controller;
+module.exports = BuildsController;

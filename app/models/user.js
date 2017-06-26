@@ -26,7 +26,7 @@ var validateEmail = function(email) {
  */
 var UserSchema = new Schema({
   name: { type: String },
-  
+
   email: { type: String, unique: true, lowercase: true },
   password: { type: String, select: false },
   displayName: String,
@@ -98,7 +98,6 @@ UserSchema.path('username').validate(function (username) {
  * Pre-save hook
  */
 UserSchema.pre('save', function(next) {
-  console.log('save-pre-hook-pwd')
   var self = this;
   if (!self.isModified('password')) {
     return next();
