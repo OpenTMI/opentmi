@@ -17,3 +17,7 @@ dependencies:
 test:
     override:
         - npm test
+        
+general:
+    artifacts:
+        - shippable/testresults
