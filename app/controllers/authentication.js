@@ -10,7 +10,7 @@ const winston = require('winston');
 
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
-const EMAIL_DOMAIN = nconf.get("email_domain");
+const emailDomain = nconf.get("emailDomain");
 const githubAdminTeam = nconf.get('github').adminTeam;
 const githubOrganization = nconf.get('github').organization;
 const clientId = nconf.get('github').clientID;
@@ -194,11 +194,11 @@ class AuthenticationController {
           if(parts.length<2) {
             return '';
           }
-          let email = `${parts[0]}.${parts[parts.length-1]}@${EMAIL_DOMAIN}`;
+          let email = `${parts[0]}.${parts[parts.length-1]}@${emailDomain}`;
           winston.debug("Generated email: ", email);
           return email;
         };
-        if (!profile.email && EMAIL_DOMAIN) {
+        if (!profile.email && emailDomain) {
           profile.email = doEmail(profile.name);
         }
         if (!profile.email) {
