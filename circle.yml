@@ -1,0 +1,19 @@
+machine:
+    environment:
+        XUNIT_FILE: shippable/testresults/result.xml
+        
+    services:
+        # MongoDB is running in the background by default
+        
+    node:
+        version: 6.1.0
+        
+dependencies:
+    pre:
+        - npm install -g grunt-cli
+        - mkdir -p shippable/testresults
+        - mkdir -p shippable/codecoverage
+        
+test:
+    override:
+        - npm test
