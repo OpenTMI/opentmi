@@ -11,7 +11,10 @@ const winston = require('winston');
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 const EMAIL_DOMAIN = nconf.get("email_domain");
-
+const githubAdminTeam = nconf.get('github').adminTeam;
+const githubOrganization = nconf.get('github').organization;
+const clientId = nconf.get('github').clientID;
+const clientSecret = nconf.get('github').clientSecret;
 
 class AuthenticationController {
   constructor() {
@@ -133,8 +136,9 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   static getGithubClientId(req, res) {
-    winston.log('Github auth: return github clientID');
-    const id = nconf.get('github').clientID;
+    winston.log('Github auth: returning github clientID');
+    const id = clientId;
+
     if (id === undefined) {
       res.status(400).json({ error: 'found client id is undefined' });
     } else {
@@ -153,19 +157,19 @@ class AuthenticationController {
       const params = {
         code: req.body.code,
         client_id: req.body.clientId,
-        client_secret: nconf.get('github').clientSecret,
+        client_secret: clientSecret,
         redirect_uri: req.body.redirectUri,
       };
 
       request.get({ url: accessTokenUrl, qs: params }, (err, response, accessToken) => {
         if (err) {
-          winston.info('Github auth: authorization error');
+          winston.warn(`Github auth: authorization error at url: ${accessTokenUrl} with redirect_uri: ${params.redirect_uri} and client_id: ${params.client_id}`);
           callback({ status: 500, msg: err.toString() });
         } else {
-          accessToken = qs.parse(accessToken);
+          const parsedAccessToken = qs.parse(accessToken);
           const headers = { 'User-Agent': 'Satellizer' };
 
-          callback(null, accessToken, headers);
+          callback(null, parsedAccessToken, headers);
         }
       });
     };
@@ -176,12 +180,12 @@ class AuthenticationController {
     const getProfile = (accessToken, headers, callback) => {
       request.get({ url: userApiUrl, qs: accessToken, headers, json: true }, (err, response, profile) => {
         if (err) {
-          winston.info('Github auth: getProfile error');
+          winston.warn(`Github auth: getProfile error, failed to fetch user profile information from url: ${userApiUrl}`);
           callback({ status: 500, msg: err.toString() });
           return;
         }
         if (response.statusCode !== 200) {
-          winston.info('Github auth: bad profile response');
+          winston.warn(`Github auth: bad profile response with status code: ${response.statusCode}`);
           callback({ status: 409, msg: 'Did not get github profile.' });
           return;
         }
@@ -198,8 +202,8 @@ class AuthenticationController {
           profile.email = doEmail(profile.name);
         }
         if (!profile.email) {
-          winston.info('Github auth: no email error');
-          callback({ status: 409, msg: 'Did not get email address.' });
+          winston.warn('Github auth: no email error, could not find email from profile');
+          callback({ status: 409, msg: 'Could not find email address from profile.' });
         } else {
           callback(null, accessToken, headers, profile);
         }
@@ -210,18 +214,19 @@ class AuthenticationController {
       Ensure the user belongs to the required organization.
     */
     const checkOrganization = (accessToken, headers, profile, callback) => {
-      request.get({ url: `${userApiUrl}/orgs`, qs: accessToken, headers, json: true }, (err, response) => {
+      const orgUrl = `${userApiUrl}/orgs`;
+      request.get({ url: orgUrl, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
-          winston.info('Github auth: checkOrganization error');
+          winston.warn(`Github auth: checkOrganization error, failed to fetch user organization information from url: ${orgUrl}`);
           callback({ status: 500, msg: err.toString() });
         } else {
-          const belongsOrg = _.find(response.body, { login: nconf.get('github').organization });
+          const belongsOrg = _.find(response.body, { login: githubOrganization });
 
           if (belongsOrg) {
             callback(null, accessToken, headers, profile);
           } else {
-            winston.info('Github auth: user not in organization');
-            callback({ status: 401, msg: 'You do not have required access.' });
+            winston.warn(`Github auth: user not in ${githubOrganization} organization`);
+            callback({ status: 401, msg: `You do not have required access to ${githubOrganization}.` });
           }
         }
       });
@@ -231,13 +236,14 @@ class AuthenticationController {
       Check if the user is an administrator or a normal employee in the organization.
     */
     const checkAdmin = (accessToken, headers, profile, callback) => {
-      request.get({ url: `${userApiUrl}/teams`, qs: accessToken, headers, json: true }, (err, response) => {
+      const teamUrl = `${userApiUrl}/teams`;
+      request.get({ url: teamUrl, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
-          winston.info('Github auth: checkAdmin error');
+          winston.warn(`Github auth: checkAdmin error, failed to fetch user team information from url: ${teamUrl}`);
           callback({ status: 500, msg: err.toString() });
         } else {
           const isAdmin = _.find(response.body, (team) => {
-            return team.name === nconf.get('github').adminTeam && team.organization.login === nconf.get('github').organization;
+            return team.name === githubAdminTeam && team.organization.login === githubOrganization;
           });
           profile.group = isAdmin ? 'admins' : '';
 
@@ -253,24 +259,24 @@ class AuthenticationController {
       User.findOne({ $or: [{ github: profile.login }, { email: profile.email }] }, (err, existingUser) => {
         // Check if the user account exists.
         if (existingUser) {
-          winston.info('Return an existing user account.');
+          winston.info('Github auth: returning an existing user account');
 
           if (req.headers.authorization) {
-            winston.info('Github auth: user authorized already');
-            callback({ status: 409, msg: 'There is already a GitHub account that belongs to you' });
+            winston.warn(`Github auth: user: ${existingUser._id} is authorized already`);
+            callback({ status: 409, msg: `There is already a GitHub account that belongs to you with id: ${existingUser._id}` });
           } else if (existingUser.github !== profile.login) {
-            winston.info('Github auth: updated github username');
+            winston.info(`Github auth: updating github username from ${existingUser.github} to ${profile.login}`);
             existingUser.github = profile.login;
             callback(null, existingUser, profile.group);
           } else {
             callback(null, existingUser, profile.group);
           }
         } else if (req.headers.authorization) {
-          winston.info('Link user account with github account.');
+          winston.info('Github auth: linking user account with github account');
 
           User.findById(req.user.sub, (err, user) => {
             if (!user) {
-              winston.info('Github auth: no user found');
+              winston.warn(`Github auth: no user found with id: ${req.user.sub}`);
               return callback({ status: 400, msg: 'User not found' });
             }
 
@@ -284,7 +290,7 @@ class AuthenticationController {
             return undefined;
           });
         } else {
-          winston.info('Create a new user account.');
+          winston.info('Github auth: creating a new user account.');
 
           const user = new User();
           user.github = profile.login;
@@ -301,7 +307,7 @@ class AuthenticationController {
       Update the user's admin status.
     */
     const updateUser = (pUser, groupname, callback) => {
-      winston.log('Github auth: update user');
+      winston.info('Github auth: updating user');
       Group.findOne({ users: pUser, name: 'admins' }, (err, group) => {
         if (group && groupname !== 'admins') {
           pUser.removeFromGroup('admins', (user) => {
