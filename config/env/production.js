@@ -10,7 +10,7 @@ module.exports = {
     url: process.env.LDAP_URL
   },
   webtoken:'OpenTMI-toP-SeCRet-tOKEn',
-  email_doman: process.env.EMAIL_DOMAIN,
+  emailDomain: process.env.EMAIL_DOMAIN,
   admin: {
     //default values
     'user': 'admin',
