@@ -37,3 +37,4 @@ general:
     artifacts:
         - "shippable/testresults"
         - "db.log"
+        - "log"
