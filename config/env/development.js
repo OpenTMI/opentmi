@@ -27,7 +27,7 @@ module.exports = {
   host: '0.0.0.0',
   port: 3000,
   webtoken:'OpenTMI-toP-SeCRet-tOKEn',
-  email_doman: process.env.EMAIL_DOMAIN,
+  emailDomain: process.env.EMAIL_DOMAIN,
   db: 'mongodb://localhost/opentmi_dev',
   admin: {
     //default values
