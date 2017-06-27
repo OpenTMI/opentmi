@@ -48,7 +48,7 @@ var Issue = new Schema({
  */
 var BuildSchema = new Schema({
     name: {type: String, required: true},
-    type: {type: String, enum: ['app', 'lib'], default: 'app'},
+    type: {type: String, enum: ['app', 'lib', 'test'], default: 'app'},
     cre: {
         user: {type: String},
         time: {type: Date, default: Date.now},
