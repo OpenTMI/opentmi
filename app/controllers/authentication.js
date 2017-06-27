@@ -10,7 +10,7 @@ const winston = require('winston');
 
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
-
+const emailDomain = nconf.get("emailDomain");
 const githubAdminTeam = nconf.get('github').adminTeam;
 const githubOrganization = nconf.get('github').organization;
 const clientId = nconf.get('github').clientID;
@@ -20,9 +20,22 @@ class AuthenticationController {
   constructor() {
     this.config = {
       GOOGLE_SECRET: nconf.get('google_secret'),
-      TOKEN_SECRET: nconf.get('webtoken'),
+      TOKEN_SECRET: nconf.get('webtoken')
     };
   }
+  
+  static generateEmail(name) {
+    // @todo more robust mechanism needed
+    // This assumes that name is "<first-name> (<second-name> )<last-name>"
+    // and EMAIL_DOMAIN is specified
+    let parts = _.map(name.split(" "), _.toLower);
+    if(parts.length<2) {
+      return '';
+    }
+    let email = `${parts[0]}.${parts[parts.length-1]}@${emailDomain}`;
+    winston.debug("Generated email: ", email);
+    return email;
+  };
 
   static loginRequiredResponse(req, res) {
     res.status(404).json({ error: 'login required' });
@@ -138,6 +151,7 @@ class AuthenticationController {
   static getGithubClientId(req, res) {
     winston.log('Github auth: returning github clientID');
     const id = clientId;
+
     if (id === undefined) {
       res.status(400).json({ error: 'found client id is undefined' });
     } else {
@@ -181,10 +195,17 @@ class AuthenticationController {
         if (err) {
           winston.warn(`Github auth: getProfile error, failed to fetch user profile information from url: ${userApiUrl}`);
           callback({ status: 500, msg: err.toString() });
-        } else if (!err && response.statusCode !== 200) {
+          return;
+        }
+        if (response.statusCode !== 200) {
           winston.warn(`Github auth: bad profile response with status code: ${response.statusCode}`);
-          callback({ status: 409, msg: 'Could not fetch github profile.' });
-        } else if (!profile.email) {
+          callback({ status: 409, msg: 'Did not get github profile.' });
+          return;
+        }
+        if (!profile.email && emailDomain) {
+          profile.email = AuthenticationController.generateEmail(profile.name);
+        }
+        if (!profile.email) {
           winston.warn('Github auth: no email error, could not find email from profile');
           callback({ status: 409, msg: 'Could not find email address from profile.' });
         } else {
