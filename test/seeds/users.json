@@ -1,0 +1,77 @@
+[
+{
+    "_id" : { "$oid":  "5825bb7afe7545132c88c761" },
+    "name": "admin",
+    "apikeys":[],
+    "groups":[{ "$oid":  "000000000000000000001337" }],
+    "loggedIn": false,
+    "lastVisited": "2016-11-11T12:37:14.383Z",
+    "registered": "2016-11-11T12:37:14.383Z"
+},
+{
+    "_id" : { "$oid":  "5825bb7cfe7545132c88c773" },
+    "name": "Juhani Mäkelä",
+    "email": "juhani@fakemail.se",
+    "displayName": "Juhani",
+    "apikeys":[],
+    "groups":[],
+    "loggedIn": false,
+    "lastVisited": "2016-11-11T12:37:16.000Z",
+    "registered": "2016-11-11T12:37:16.000Z"
+},
+{
+    "_id" : { "$oid":  "5825bb7cfe7545132c88c777" },
+    "name": "Seppo Taalasmaa",
+    "email": "seppo@fakemail.se",
+    "displayName": "Seppo",
+    "apikeys":[],
+    "groups":[],
+    "loggedIn": false,
+    "lastVisited": "2016-11-11T12:37:16.000Z",
+    "registered": "2016-11-11T12:37:16.000Z"
+},
+{
+    "_id" : { "$oid":  "5825bb7cfe7545132c88c77c" },
+    "name": "Simo Kouva",
+    "email": "simo@fakemail.se",
+    "displayName": "Simo",
+    "apikeys":[],
+    "groups":[],
+    "loggedIn": false,
+    "lastVisited": "2016-11-11T12:37:16.000Z",
+    "registered": "2016-11-11T12:37:16.000Z"
+},
+{
+    "_id" : { "$oid":  "5825bb7cfe7545132c88c780" },
+    "name": "Viljami Näätä",
+    "email": "viljami@fakemail.se",
+    "displayName": "Viljami",
+    "apikeys":[],
+    "groups":[],
+    "loggedIn": false,
+    "lastVisited": "2016-11-11T12:37:16.000Z",
+    "registered": "2016-11-11T12:37:16.000Z"
+},
+{
+    "_id" : { "$oid":  "5825bb7cfe7545132c88c784" },
+    "name": "Make Kolehmainen",
+    "email": "make@fakemail.se",
+    "displayName": "Make",
+    "apikeys":[],
+    "groups":[],
+    "loggedIn": false,
+    "lastVisited": "2016-11-11T12:37:16.000Z",
+    "registered": "2016-11-11T12:37:16.000Z"
+},
+{
+    "_id" : { "$oid":  "5825bb7cfe7545132c88c787" },
+    "name": "Kalle Mätitahna",
+    "email": "kalle@fakemail.se",
+    "displayName": "Kalle",
+    "apikeys":[],
+    "groups":[],
+    "loggedIn": false,
+    "lastVisited": "2016-11-11T12:37:16.000Z",
+    "registered": "2016-11-11T12:37:16.000Z"
+}
+]

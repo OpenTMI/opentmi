@@ -15,6 +15,7 @@ module.exports = {
     'user': 'admin',
     'pwd': 'admin',
   },
+  filedb: process.env.FILE_DB || './data',
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
     clientSecret: process.env.FACEBOOK_SECRET,
@@ -28,7 +29,9 @@ module.exports = {
   github: {
     clientID: process.env.GITHUB_CLIENTID,
     clientSecret: process.env.GITHUB_SECRET,
-    callbackURL: 'http://nodejs-express-demo.herokuapp.com/auth/github/callback'
+    callbackURL: process.env.GITHUB_CBURL,
+    organization: process.env.GITHUB_ORG,
+    adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
   },
   linkedin: {
     clientID: process.env.LINKEDIN_CLIENTID,

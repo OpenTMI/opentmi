@@ -8,7 +8,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
-var _ = require('underscore');
+var _ = require('lodash');
 
 var QueryPlugin = require('mongoose-query');
 /**

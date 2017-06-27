@@ -5,3 +5,6 @@ db
 node_modules
 xunit.xml
 db.log
+data/
+sslcert
+.idea/

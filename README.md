@@ -1,5 +1,5 @@
 # OpenTMI - Open Source Test Management Infrastructure
- 
+
  [![Build Status][build-image]][build-url]
  [![Test Coverage][coveralls-image]][coveralls-url]
 
@@ -7,7 +7,7 @@ OpenTMI is Open Source Test Management System. It is written in Node.js / Javasc
 
 ![screenshot](doc/screenshot.jpg)
 
-OpenTMI is extremely customizable through plugins. 
+OpenTMI is extremely customizable through plugins.
 
 # Ideology
 
@@ -43,12 +43,18 @@ Usage: npm start -- (options)
 
 Options:
   --listen, -l   set binding interface             [string] [default: "0.0.0.0"]
+  --https        use https                                      [default: false]
   --port         set listen port                      [required] [default: 3000]
   --cfg, -c      Select configuration (development,test,production)
                                                [string] [default: "development"]
   --verbose, -v  verbose level                                           [count]
   --silent, -s   Silent mode                                    [default: false]
 ```
+
+**https:**
+Generate ssl certifications:
+* `./scripts/gencerts.sh`
+* start daemon with `--https` -options (`npm start -- -https`)
 
 ## Available Plugins:
 
@@ -122,7 +128,7 @@ Accounts provide information and configuration related individual accounts. It a
 (not yet fully implemented)
 Groups provide access policy to other API's. Access policy is very similar than linux has, we have users (=Accounts), groups and others.
 ### admin -API ###
-admin API is allowed only admin -users. It provide remote control service configuration. For example, it can be use to install new addons, or control addon configurations. 
+admin API is allowed only admin -users. It provide remote control service configuration. For example, it can be use to install new addons, or control addon configurations.
 
 ### Test Case ###
 Test Case provide global registry for Test Case -related informations. Informations are for example TC type, owner, features under test (FUT), components under test (CUT), requirements, specification, etc. It could contains also TC implementation, or at least it should contain detail where implementation can be found (url). Test Case API could be extended also to fetch actual test implementation from GIT for example.
@@ -139,7 +145,7 @@ Test Automation is new intelligent way to manage test execution phase.
 It contains rules like what should be test for each build. Backend contains job scheduler, which map test execution to most optimal resource we have in this system.
 
 #### Jobs ####
-Job contains information what should be done in Slave machine. For example, it could contains information like what test cases should be run in this type of DUT, or this software X should be update to version Y. So there is several different job types like "maintenance-job", "test-job", etc.. 
+Job contains information what should be done in Slave machine. For example, it could contains information like what test cases should be run in this type of DUT, or this software X should be update to version Y. So there is several different job types like "maintenance-job", "test-job", etc..
 
 ### Resources ###
 (partially implemented)

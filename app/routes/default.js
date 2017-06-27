@@ -1,9 +1,8 @@
 var express = require('express');
-var _ = require('underscore');
+var _ = require('lodash');
 var nconf = require('nconf');
 
 var Route = function(app, passport){
-
   api = express()
   global.api_v0 = api_v0 = express()
   app.use('/api', api);

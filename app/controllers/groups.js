@@ -2,40 +2,16 @@
   Groups Controller
 */
 
-//native modules
-var util = require("util");
+// native modules
 
-//3rd party modules
-var express = require('express');
-var mongoose = require('mongoose');
+// 3rd party modules
 
-//own modules
-var DefaultController = require('./');
+// own modules
+const DefaultController = require('./');
 
-var Controller = function(){
-
-  var Group = mongoose.model('Group');
-  var defaultCtrl = new DefaultController(Group, 'Group');
-
-  this.paramFormat = defaultCtrl.format();
-  this.paramGroup = defaultCtrl.modelParam();
-
-  this.all = function(req, res, next){
-    // dummy middleman function..
-    next(); 
-  }
-  
-  this.get = defaultCtrl.get;
-  this.find = defaultCtrl.find;
-  this.create = defaultCtrl.create;
-  this.update = defaultCtrl.update;
-  this.remove = defaultCtrl.remove;
-  
-
-  //util.inherits(this, defaultCtrl);
-
-  return this;
+class GroupsController extends DefaultController {
+  constructor() { super('Group'); }
 }
 
 
-module.exports = Controller;
+module.exports = GroupsController;

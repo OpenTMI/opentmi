@@ -1,64 +1,82 @@
-//3rd party modules
-var express = require('express');
-var mongoose = require('mongoose');
-var nconf = require('nconf');
-var restify = require('express-restify-mongoose');
-var logger = require('winston');
+// 3rd party modules
+const express = require('express');
+const mongoose = require('mongoose');
+const nconf = require('nconf');
+const logger = require('winston');
+const jwt = require('express-jwt');
 
+const TOKEN_SECRET = nconf.get('webtoken');
 
-var auth = require('./../../config/middlewares/authorization');
+const auth = require('./../../config/middlewares/authorization');
+const apiKeys = require('./../controllers/apikeys');
+
+const UserController = require('./../controllers/users');
+const AuthController = require('./../controllers/authentication');
+
+const userController = new UserController();
+const authController = new AuthController();
+
+const User = mongoose.model('User');
+
+function createDefaultAdmin() {
+  const admin = new User();
+  admin.name = nconf.get('admin').user;
+  admin.password = nconf.get('admin').pwd;
+  admin.save((err, user) => {
+    if (err) {
+      return console.log(err);
+    }
+
+    user.addToGroup('admins', (error, user) => {
+      if (error) logger.error(error);
+      else logger.debug(user);
+    });
+
+    return undefined;
+  });
+}
 
 /**
  * Route middlewares
  */
-
-var Route = function(app){
-
-  var User = mongoose.model('User');
-  User.count( {}, function(err, count){
-    if(count===0 ){
-      var admin = new User();
-      admin.name = nconf.get('admin').user;
-      admin.password = nconf.get('admin').pwd;
-      admin.save( function(err, user){
-        if(err)return console.log(err);
-        else {
-          user.addToGroup('admins', function(error, user){
-            if( error ) {
-              logger.error(error);
-            } else {
-              logger.debug(user);
-            }
-          });
-        }
-      });
-    }
+const Route = function (app) {
+  // Create a default admin if there is no users in the database
+  User.count({}, (err, count) => {
+    if (count === 0) { createDefaultAdmin(); }
   });
 
-  restify.serve(app, User, {
-    version: '/v0',
-    name: 'users',
-    idProperty: '_id',
-    protected: '__v,password',
-  });
-  
+  // Create user routes
+  const router = express.Router();
+  router.param('User', userController.modelParam.bind(userController));
 
-  //create authentication routes:
-  var controller = require('./../controllers/authentication')();
-  var apiKeys = require('./../controllers/apikeys');
-  app.get('/api/v0/apikeys', auth.ensureAdmin, apiKeys.keys);
-  app.get('/api/v0/users/:User/apikeys', auth.ensureAuthenticated, apiKeys.userKeys);
-  app.get('/api/v0/users/:User/apikeys/new', auth.ensureAuthenticated, apiKeys.createKey)
-  app.delete('/api/v0/users/:User/apikeys/:Key', auth.ensureAuthenticated, apiKeys.deleteKey);
-  
-  
-  app.post('/auth/login', controller.login );
-  app.get('/auth/me', auth.ensureAuthenticated, controller.getme );  
-  app.put('/auth/me', auth.ensureAuthenticated, controller.putme );
-  app.post('/auth/signup', controller.signup );
-  app.post('/auth/logout', controller.logout );
-  app.post('/auth/github', controller.github );
-  app.post('/auth/google', controller.google );
-}
+  // Route for operations that target all users
+  router.route('/api/v0/users.:format?')
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, userController.find.bind(userController))
+    .post(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, userController.create.bind(userController));
+
+    // Route for operations that target individual users
+  router.route('/api/v0/users/:User.:format?')
+    .get(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, userController.get.bind(userController))
+    .put(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, userController.update.bind(userController))
+    .delete(jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, userController.remove.bind(userController));
+
+  app.use(router);
+
+  // Create authentication routes:
+  app.get('/api/v0/apikeys', jwt({ secret: TOKEN_SECRET }), auth.ensureAdmin, apiKeys.keys);
+  app.get('/api/v0/users/:User/apikeys', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.userKeys);
+  app.get('/api/v0/users/:User/apikeys/new', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.createKey);
+  app.delete('/api/v0/users/:User/apikeys/:Key', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, apiKeys.deleteKey);
+
+  app.post('/auth/login', authController.login.bind(authController));
+  app.get('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, authController.getme.bind(authController));
+  app.put('/auth/me', jwt({ secret: TOKEN_SECRET }), auth.ensureAuthenticated, authController.putme.bind(authController));
+  app.post('/auth/signup', authController.signup.bind(authController));
+  app.post('/auth/logout', authController.logout.bind(authController));
+  app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), AuthController.github);
+  app.post('/auth/google', authController.google.bind(authController));
+  app.get('/auth/github/id', AuthController.getGithubClientId);
+};
+
 
 module.exports = Route;

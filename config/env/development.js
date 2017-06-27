@@ -33,6 +33,7 @@ module.exports = {
     'user': 'admin',
     'pwd': 'admin',
   },
+  filedb: process.env.FILE_DB || './data',
   ldap: {
     url: process.env.LDAP_URL
   },
@@ -55,13 +56,9 @@ module.exports = {
   github: {
     clientID: process.env.GITHUB_CLIENTID,
     clientSecret: process.env.GITHUB_SECRET,
-    callbackURL: 'http://localhost:3000/auth/github/callback',
-    /*authentication: {
-      type: 'oauth',
-      token: 'my-token'
-    },
-    orgId: 'my-organization'
-    */
+    callbackURL: process.env.GITHUB_CBURL || 'http://localhost:3000/auth/github/callback',
+    organization: process.env.GITHUB_ORG,
+    adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
   },
   linkedin: {
     clientID: process.env.LINKEDIN_CLIENTID,

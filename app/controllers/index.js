@@ -1,145 +1,138 @@
 'use strict';
-var util = require('util');
-var winston = require('winston');
-var EventEmitter = require('events').EventEmitter;
+
+const winston = require('winston');
+const EventEmitter = require('events').EventEmitter;
+const mongoose = require('mongoose');
+
 /*
-  General ontrollers for "Restfull" services 
+  General ontrollers for "Restfull" services
 */
-var DefaultController = function(Model, defaultModelName, docId){
+class DefaultController extends EventEmitter {
+  constructor(pModelName, docId) {
+    super();
 
-  var self = this;
-  var docId = docId || '_id';
+    this._model = mongoose.model(pModelName);
+    this.modelName = pModelName;
+    this.docId = docId || '_id';
+    EventEmitter.call(this);
 
-  this.format = function(){
-    return function(req, res, next, id){
-      if( req.params.format === 'html' ) {
-        var redirurl = '/#'+req.url.match(/\/api\/v0(.*)\.html/)[1];
-        res.redirect( redirurl );
-      } else {
-        next();
-      }
-    }
+    this.modelParam = this.defaultModelParam();
   }
-  this.modelParam = function(modelname, errorCb, successCb){
-    //find from db
-    modelname = modelname || defaultModelName
 
-    return function(req, res, next, id){
-      winston.debug('do param '+JSON.stringify(req.params) );
-      var find = {};
-      find[docId] = req.params[modelname];
-      
-      Model.findOne( find, function(error, data){
-        if( error ) {
-          if( errorCb ) errorCb(error);
-          else res.status(300).json( {error: error} );
-        } else if( data ) {
-          if(typeof modelname === 'string')  req[modelname] = data;
-          if( successCb ) successCb();
+  defaultModelParam(pModelname, errorCb, successCb) {
+    // Find from db
+    const modelname = pModelname || this.modelName;
+
+    return (req, res, next, id) => {
+      winston.debug(`do param ${JSON.stringify(req.params)}`);
+      const find = {};
+      find[this.docId] = req.params[modelname];
+
+      this.Model.findOne(find, (error, data) => {
+        if (error) {
+          if (errorCb) errorCb(error);
+          else res.status(300).json({ error });
+        } else if (data) {
+          if (typeof modelname === 'string') req[modelname] = data;
+          if (successCb) successCb();
           else next();
         } else {
-          res.status(404).json( {msg: 'not found'} );
+          res.status(404).json({ msg: 'not found' });
         }
-      })
+      });
+    };
+  }
+
+  get Model() {
+    return this._model;
+  }
+
+  all(req, res, next) {
+    // dummy middleman function..
+    next();
+  }
+
+  get(req, res) {
+    if (req[this.modelName]) {
+      this.emit('get', req[this.modelName].toObject());
+      res.json(req[this.modelName]);
+    } else {
+      const errorMsg = `get failed: Cannot get model, request does not have a value linked to key: ${this.modelName}`;
+      winston.warn(errorMsg);
+      res.status(500).json({ error: errorMsg });
     }
   }
 
-  this.get = function(req, res){
-    if( req[defaultModelName] ) {
-      self.emit('get', req[defaultModelName].toObject());
-      res.json( req[defaultModelName] );
-    } else { 
-      winston.warn('should not be there!');
-      res.status(300).json( {error: 'some strange problemo'} );
-    }
-  }
-  
-  this.find = function(req, res){
-    Model.query( req.query, function(error, list){
-      if( error ) {
-        res.status(300).json({error: error});
+  find(req, res) {
+    this._model.query(req.query, (error, list) => {
+      if (error) {
+        winston.warn(error);
+        res.status(300).json({ error: error.message });
       } else {
-        self.emit('find', list);
+        this.emit('find', list);
         res.json(list);
       }
     });
   }
-  this.create = function(req, res){
-    var item = new Model(req.body);
-    item.save( function(error){
-      if(error) {
+
+  create(req, res) {
+    const item = new this._model(req.body);
+    item.save((error) => {
+      if (error) {
         winston.warn(error);
-        if(res) res.status(300).json({error: error});
-      } else {
-        if(res){
-          req.query = req.body;
-          self.emit('create', item.toObject());
-          res.json(item);
-        }
+        if (res) res.status(400).json({ error: error.message });
+      } else { // if (res) {
+        req.query = req.body;
+        this.emit('create', item.toObject());
+        res.json(item);
       }
     });
   }
-  
-  this.update = function(req, res){
-      delete req.body._id;
-      delete req.body.__v;
-      winston.debug(req.body);
-      Model.findByIdAndUpdate( req.params[defaultModelName], req.body, function(error, doc){
-        if( error ) {
-          res.status(300).json({error: error});
-        } else {
-          self.emit('update', doc.toObject());
-          res.json(doc);
-        } 
-      });
-  }
-  
-  this.remove = function(req, res){
-    var find = {};
-    find[docId] = req.params[defaultModelName];
-    Model.findByIdAndRemove( find, function(error, ok){
-        if( error ) {
-          res.status(300).json({error: error});
-        } else {
-          self.emit('remove', req.params[defaultModelName]);
-          res.json({});
-        } 
-      });
-  }
 
-  //extra functions
-  this.isEmpty = function( cb ){
-    Model.count( {}, function(error, count){
-      if( error ) cb(error);
-      else if( count === 0 ) cb(true);
-      else cb(false);
+  update(req, res) {
+    delete req.body._id;
+    delete req.body.__v;
+    winston.debug(req.body);
+
+    const updateOpts = { runValidators: true };
+    this._model.findByIdAndUpdate(req.params[this.modelName], req.body, updateOpts, (error, doc) => {
+      if (error) {
+        winston.warn(error);
+        res.status(400).json({ error: error.message });
+      } else {
+        this.emit('update', doc.toObject());
+        res.json(doc);
+      }
     });
   }
 
-  this.generateDummyData = function( doItem, count, done ){
-    if( count > 0 ){
-      var o = new Model( doItem(count) );
-      o.save( function(err){
-        if( err ) done(err );
-        else self.generateDummyData( doItem, count-1, done );
+  remove(req, res) {
+    if (req[this.modelName]) {
+      req[this.modelName].remove((err) => {
+        if (err) {
+          winston.warn(err.message);
+          return res.status(400).json({ error: err.message });
+        }
+
+        this.emit('remove', req.params[this.defaultModelName]);
+        return res.status(200).json({});
       });
     } else {
-      done()
+      const errorMsg = `remove failed: Cannot get model, request does not have a value linked to key: ${this.modelName}`;
+      winston.warn(errorMsg);
+      res.status(500).json({ error: errorMsg });
     }
   }
-  this.randomIntInc = function(low, high) {
-      return Math.floor(Math.random() * (high - low + 1) + low);
-  }
-  this.randomText = function ( list ){
-    var i = self.randomIntInc( 0, list.length-1 )
-    return list[i]
-  }
 
-  EventEmitter.call(this);
-  return this;
+  // extra functions
+  isEmpty(cb) {
+    this._model.count({}, (error, count) => {
+      if (error) cb(error);
+      else if (count === 0) cb(true);
+      else cb(false);
+    });
+  }
 }
 
-// Inherit functions from `EventEmitter`'s prototype
-util.inherits(DefaultController, EventEmitter);
 
 module.exports = DefaultController;
