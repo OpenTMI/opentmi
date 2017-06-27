@@ -13,7 +13,7 @@ var checksum = require('./checksum');
 
 module.exports.provider = filedb;
 module.exports.readFile = function readFile(file, callback) {
-    var source = path.join(filedb, file.sha1+'.gz');
+    var source = path.join(nconf.get('filedb'), file.sha1+'.gz');
     winston.debug('loading source: ', source);
     fs.readFile(source, function(err, buffer) {
         if(err) {
@@ -39,7 +39,7 @@ module.exports.storeFile = function storeFile(file, callback) {
       callback = function(){};
   }
 
-  var target = path.join(filedb, file.sha1+'.gz');
+  var target = path.join(nconf.get('filedb'), file.sha1+'.gz');
   var fileData = file.data;
   fs.exists(target, function(exists) {
     if (exists) {
