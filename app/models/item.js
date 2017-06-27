@@ -22,6 +22,7 @@ var ItemSchema = new Schema({
                      'other'],
                default:'other' }
 });
+//ItemSchema.index({barcode:1}, {unique:true});
 
 /**
  * Query plugin

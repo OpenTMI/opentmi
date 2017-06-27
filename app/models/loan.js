@@ -51,6 +51,9 @@ LoanSchema.pre('save', function(next) {
   if (!this.isNew) return next();
   
   var item_counts = self.extractItemIds();
+  if (item_counts.length === 0)
+    return next(new Error('cannot process post without items field'));
+  
   self.ensureAvailability(item_counts, function(err) {
 	if (err) return next(err);
 	
@@ -139,8 +142,7 @@ LoanSchema.methods.countReturns = function(delta_items) {
 	  }
       //else console.log('No return_date');
       //else return new Error('No return date defined');
-	}
-	else return new Error('Received invalid id');
+	} else return new Error(`Id:${delta_items[i]._id} was not found in items`);
   }
   
   // Convert counts to array of objects

@@ -21,21 +21,20 @@ var production = require('./env/production');
 
 var defaults = {
   root: path.normalize(__dirname + '/..'),
-  cfg: nconf.get('cfg')
+  cfg: nconf.get('cfg'),
 };
 
 /**
  * Expose
  */
-
 module.exports = {
   development: extend(development, defaults),
   test: extend(test, defaults),
-  production: extend(production, defaults)
+  production: extend(production, defaults),
 }[nconf.get('cfg')];
 
-filedb = module.exports.filedb;
-if(filedb && filedb !== 'mongodb') {
+var filedb = module.exports.filedb;
+if (filedb && filedb !== 'mongodb') {
   if (!fs.existsSync(filedb)){
     winston.info('create %s folder for filedb', filedb);
     fs.mkdirSync(filedb);
