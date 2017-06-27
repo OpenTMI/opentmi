@@ -1,10 +1,10 @@
-var winston = require('winston')
+var logger = require('winston')
 /**
  * Error handling
  */
  
 var Route = function(app, passport){
-  winston.log('-AddRoute: error');
+  logger.log('-AddRoute: error');
   app.use(function (err, req, res, next) {
     // treat as 404
     if (err.message
@@ -12,7 +12,7 @@ var Route = function(app, passport){
       || (~err.message.indexOf('Cast to ObjectId failed')))) {
       return next();
     }
-    winston.error(err.stack);
+    logger.error(err.stack);
     // error page
     res.status(500).json({ 
       url: req.originalUrl,

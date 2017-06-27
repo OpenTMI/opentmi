@@ -6,7 +6,7 @@
 const mongoose = require('mongoose');
 //var userPlugin = require('mongoose-user');
 const QueryPlugin = require('mongoose-query');
-const winston = require('winston');
+const logger = require('winston');
 const _ = require('lodash');
 const Schema = mongoose.Schema;
 
@@ -120,7 +120,7 @@ ResultSchema.pre('validate', function (next) {
         file.sha256 = checksum(file.data, 'sha256');
         if (file_provider === 'mongodb') {
           //use mongodb document
-          winston.warn('store file %s to mongodb', file.name);
+          logger.warn('store file %s to mongodb', file.name);
         } else if (file_provider) {
           // store to filesystem
           filedb.storeFile(file);
@@ -128,7 +128,7 @@ ResultSchema.pre('validate', function (next) {
         } else {
           //do not store at all..
           file.data = undefined;
-          winston.warn('filedb is not configured');
+          logger.warn('filedb is not configured');
         }
       }
     }
@@ -138,7 +138,7 @@ ResultSchema.pre('validate', function (next) {
   }
 
   if (buildSha1) {
-    winston.debug('result build sha1: ', buildSha1);
+    logger.debug('result build sha1: ', buildSha1);
     Build.findOne({'files.sha1': buildSha1}, (err, build) => {
       if(build) {
         this.exec.sut.ref = build._id;
@@ -159,7 +159,7 @@ ResultSchema.methods.setBuild = function(cb) {
 
 };
 ResultSchema.methods.getBuild = function(cb) {
-  winston.debug('lookup build..');
+  logger.debug('lookup build..');
   Build.findOne({_id: _.get(this, 'exec.sut.ref')}, cb);
 };
 

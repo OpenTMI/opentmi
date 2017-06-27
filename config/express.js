@@ -20,7 +20,7 @@ var cors = require('cors');
 
 var mongoStore = require('connect-mongo')(session);
 
-var winston = require('winston');
+var logger = require('winston');
 var expressWinston = require('winston-express-middleware');
 
 /* Project libraries */
@@ -41,7 +41,7 @@ module.exports = function (app) {
 
   // Logging middleware
   app.use(expressWinston.logger({
-    winstonInstance: winston,
+    winstonInstance: logger,
     meta: false, // optional: control whether you want to log the meta data about the request (default to true)
     //msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
     expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true
@@ -105,7 +105,7 @@ module.exports = function (app) {
     // This could be moved to view-helpers :-)
     //app.use(function(req, res, next){
     //  res.locals.csrf_token = req.csrfToken();
-    //  winston.debug( res.locals.csrf_token )
+    //  logger.debug( res.locals.csrf_token )
     //  next();
     //});
   }

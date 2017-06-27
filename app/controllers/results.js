@@ -11,7 +11,7 @@ const colors = require('colors');
 const JunitXmlParser = require('junit-xml-parser').parser;
 const uuid = require('node-uuid');
 const async = require('async');
-const winston = require('winston');
+const logger = require('winston');
 
 // own modules
 const DefaultController = require('./');
@@ -81,7 +81,7 @@ class ResultsController extends DefaultController {
       return new Promise((resolve, reject) => {
         // async.eachSeries(results.suite.tests, this._doResult.bind(this, jobId), (err) => {
         Promise.each(results.suite.tests, this._doResult.bind(this, jobId)).then(() => {
-          winston.info('Store new results');
+          logger.info('Store new results');
           resolve({ ok: 1, message: `created ${results.suite.tests.length} results` });
         }).catch(err => reject(err));
       });
@@ -89,7 +89,7 @@ class ResultsController extends DefaultController {
   }
 
   createFromJunitXml(req, res) {
-    winston.info('Got new Junit file');
+    logger.info('Got new Junit file');
     return new Promise((resolve, reject) => {
       if (req.busboy) {
         req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {

@@ -16,8 +16,8 @@ const mockgoose = new Mockgoose(mongoose);
 
 require('./../../app/models/targets.js');
 
-const winston = require('winston');
-winston.level = 'error';
+const logger = require('winston');
+logger.level = 'error';
 
 // Local components
 const TargetsController = require('./../../app/controllers/targets.js');

@@ -1,4 +1,4 @@
-var winston = require('winston');
+var logger = require('winston');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
@@ -14,21 +14,21 @@ var connect = function() {
 };
 
 mongoose.connection.on('error', function() {
-    winston.error('Could not connect to MongoDB: ' + dbUrl);
+    logger.error('Could not connect to MongoDB: ' + dbUrl);
 });
 
 mongoose.connection.on('disconnected', function(){
-    winston.warn('Lost MongoDB connection...');
+    logger.warn('Lost MongoDB connection...');
     if (!isConnectedBefore)
         connect();
 });
 mongoose.connection.on('connected', function() {
     isConnectedBefore = true;
-    winston.info('Connection established to MongoDB: ' + dbUrl);
+    logger.info('Connection established to MongoDB: ' + dbUrl);
 });
 
 mongoose.connection.on('reconnected', function() {
-    winston.info('Reconnected to MongoDB: ' + dbUrl);
+    logger.info('Reconnected to MongoDB: ' + dbUrl);
 });
 
 // Close the Mongoose connection, when receiving SIGINT

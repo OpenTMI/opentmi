@@ -16,8 +16,8 @@ mongoose.Promise = require('bluebird');
 const Mockgoose = require('mockgoose').Mockgoose;
 const mockgoose = new Mockgoose(mongoose);
 
-const winston = require('winston');
-winston.level = 'error';
+const logger = require('winston');
+logger.level = 'error';
 
 // Local components
 const DefaultController = require('./../../app/controllers/index.js');

@@ -62,8 +62,8 @@
     "request": "^2.72.0",
     "satellizer": "^0.15.5",
     "socket.io": "^1.4.8",
-    "winston": "^2.2.0",
-    "winston-daily-rotate-file": "^1.1.4",
+    "winston": "^2.3.1",
+    "winston-daily-rotate-file": "^1.4.6",
     "winston-express-middleware": "^0.1.0"
   },
   "devDependencies": {

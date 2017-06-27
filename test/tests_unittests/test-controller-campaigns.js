@@ -16,8 +16,8 @@ const mockgoose = new Mockgoose(mongoose);
 
 require('./../../app/models/campaign.js');
 
-const winston = require('winston');
-winston.level = 'error';
+const logger = require('winston');
+logger.level = 'error';
 
 // Local components
 const CampaignController = require('./../../app/controllers/campaigns.js');
