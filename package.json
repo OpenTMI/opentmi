@@ -33,6 +33,7 @@
     "async": "^1.5.2",
     "bcryptjs": "^2.3.0",
     "body-parser": "*",
+    "bluebird": "3.5.0",
     "colors": "^1.1.2",
     "compression": "*",
     "connect-busboy": "0.0.2",
