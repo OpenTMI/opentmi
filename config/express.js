@@ -21,7 +21,7 @@ var cors = require('cors');
 var mongoStore = require('connect-mongo')(session);
 
 var logger = require('winston');
-var expressWinston = require('winston-express-middleware');
+var expressWinston = require('express-winston');
 
 /* Project libraries */
 var nconf = require('nconf');
@@ -45,13 +45,8 @@ module.exports = function (app) {
     meta: false, // optional: control whether you want to log the meta data about the request (default to true)
     //msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
     expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true
-    colorStatus: true, // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
-    ignoreRoute: function (req, res) {
-      // skip web page requests
-      skip = true;
-      if (req.url.match(/^\/api/)!==null) skip = false;
-      return skip;
-    },
+    colorize: true, // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
+    ignoreRoute: (req, res) => (req.url.match(/^\/api/) !== null && req.method === 'GET'),
   }));
 
   // set views path, template engine and default layout

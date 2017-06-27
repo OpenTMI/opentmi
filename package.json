@@ -24,7 +24,7 @@
     "node": "0.10.x"
   },
   "scripts": {
-"start": "NODE_ENV=development node index.js",
+    "start": "NODE_ENV=development node index.js",
     "debug": "NODE_ENV=development node --inspect index.js",
     "test": "grunt",
     "test-inventory": "grunt inventory" 
@@ -64,7 +64,7 @@
     "socket.io": "^1.4.8",
     "winston": "^2.3.1",
     "winston-daily-rotate-file": "^1.4.6",
-    "winston-express-middleware": "^0.1.0"
+    "express-winston": "^2.4.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
