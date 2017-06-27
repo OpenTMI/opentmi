@@ -23,6 +23,19 @@ class AuthenticationController {
       TOKEN_SECRET: nconf.get('webtoken')
     };
   }
+  
+  static generateEmail(name) {
+    // @todo more robust mechanism needed
+    // This assumes that name is "<first-name> (<second-name> )<last-name>"
+    // and EMAIL_DOMAIN is specified
+    let parts = _.map(name.split(" "), _.toLower);
+    if(parts.length<2) {
+      return '';
+    }
+    let email = `${parts[0]}.${parts[parts.length-1]}@${emailDomain}`;
+    winston.debug("Generated email: ", email);
+    return email;
+  };
 
   static loginRequiredResponse(req, res) {
     res.status(404).json({ error: 'login required' });
@@ -189,17 +202,8 @@ class AuthenticationController {
           callback({ status: 409, msg: 'Did not get github profile.' });
           return;
         }
-        let doEmail = (name) => {
-          let parts = _.map(name.split(" "), _.toLower);
-          if(parts.length<2) {
-            return '';
-          }
-          let email = `${parts[0]}.${parts[parts.length-1]}@${emailDomain}`;
-          winston.debug("Generated email: ", email);
-          return email;
-        };
         if (!profile.email && emailDomain) {
-          profile.email = doEmail(profile.name);
+          profile.email = AuthenticationController.generateEmail(profile.name);
         }
         if (!profile.email) {
           winston.warn('Github auth: no email error, could not find email from profile');
