@@ -2,12 +2,9 @@
 /*!
  * Module dependencies
  */
-
-var mongoose = require('mongoose');
-//var userPlugin = require('mongoose-user');
-var Schema = mongoose.Schema;
-
-var QueryPlugin = require('mongoose-query');
+const mongoose = require('mongoose');
+const QueryPlugin = require('mongoose-query');
+const Schema = mongoose.Schema;
 
 /**
  * User schema
@@ -50,7 +47,7 @@ var ResultSchema = new Schema({
       cut: [{type: String}], // Component Under Test
       fut: [{type: String}], // Feature Under Test
     },
-    dut: {  //device(s) under test
+    dut: {  // Device(s) Under Test
       count: {type: Number},
       type: {type: String, enum: ['hw','simulator', 'process']},
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
