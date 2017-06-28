@@ -3,7 +3,7 @@ var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
 
-var winston = require('winston');
+var logger = require('winston');
 var async = require('async');
 var QueryPlugin = require('mongoose-query');
 
@@ -35,7 +35,7 @@ LoanSchema.plugin( QueryPlugin ); //install QueryPlugin
  */
 // Make sure loaner is a user
 LoanSchema.pre('save', function(next) {
-  winston.info('Loan first pre-save hook started');
+  logger.info('Loan first pre-save hook started');
   var User = mongoose.model('User');
   User.findById(this.loaner, function(err, user) {
 	if (err) next(new Error('Error while trying to find user, save interrupted'));
@@ -46,7 +46,7 @@ LoanSchema.pre('save', function(next) {
 
 // Takes care of decreasing availability of items before loaning
 LoanSchema.pre('save', function(next) {
-  winston.info('Loan second pre-save hook started');
+  logger.info('Loan second pre-save hook started');
   var self = this;
   if (!this.isNew) return next();
   
@@ -67,7 +67,7 @@ LoanSchema.pre('save', function(next) {
  * Pre-remove hook
  */
 LoanSchema.pre('remove', function(next) {
-  winston.info('Loan pre-remove hook started');
+  logger.info('Loan pre-remove hook started');
   var self = this;
   
   var unreturned = self.countUnreturnedItems();
@@ -92,7 +92,7 @@ LoanSchema.methods.extractItemIds = function() {
   return objectToArrayOfObjects(counts);
 };
 LoanSchema.methods.ensureAvailability = function(item_counts, next) {  
-  winston.info('Ensuring item availablities');
+  logger.info('Ensuring item availablities');
   
   // Ensure that there is enough items to loan
   async.eachSeries(item_counts, ensureItemAvailability, function(err) {
@@ -112,7 +112,7 @@ LoanSchema.methods.pushIdsToItemsArray = function(ids) {
   }
 }
 LoanSchema.methods.modifyAvailability = function(item_counts, next) {
-  winston.info('Preparing to modify availability...');
+  logger.info('Preparing to modify availability...');
   async.eachSeries(item_counts, modifyItemAvailability, next);
 }
 LoanSchema.methods.countReturns = function(delta_items) {
@@ -198,7 +198,7 @@ function ensureItemAvailability(item_count_obj, next) {
 
 // modify availability of an item
 function modifyItemAvailability(item_count_obj, next) {
-  winston.info('modifying item: ' + item_count_obj.id + ' by ' + item_count_obj.count);
+  logger.info('modifying item: ' + item_count_obj.id + ' by ' + item_count_obj.count);
   Item.findById(item_count_obj.id, function(err, item) {
 	if (err) return next(new Error('Error while finding a provided item, item:' + item_count_obj.id + ' is very likely now corrupted')); // Should not happen
 	if (item === null) return next(new Error('Could not find item, item:' + item_count_obj.id + ' is very likely now corrupted')); // Should not happen either

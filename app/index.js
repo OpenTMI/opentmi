@@ -8,7 +8,7 @@ var EventEmitter = require('events').EventEmitter
 
 // 3rd party modules
 var express = require('express');
-var winston = require('winston');
+var logger = require('winston');
 var nconf = require('nconf');
 
 // read configurations
@@ -65,16 +65,16 @@ if (nconf.get('verbose') >= 1) { consoleLevel = 'verbose'; }
 if (nconf.get('verbose') >= 2) { consoleLevel = 'debug'; }
 if (nconf.get('verbose') >= 3) { consoleLevel = 'silly'; }
 if (nconf.get('silent')) { consoleLevel = 'error'; }
-winston.level = consoleLevel;
+logger.level = consoleLevel;
 // Add winston file logger, which rotate daily
-winston.add(require('winston-daily-rotate-file'), {
+logger.add(require('winston-daily-rotate-file'), {
   filename: 'log/app.log',
   json: false,
   handleExceptions: false,
   level: fileLevel,
   datePatter: '.yyyy-MM-dd_HH-mm'
 });
-winston.debug('Use cfg: %s', nconf.get('cfg'));
+logger.debug('Use cfg: %s', nconf.get('cfg'));
 
 var app = express();
 /**
@@ -85,11 +85,11 @@ var sslcert_key = 'sslcert/server.key';
 var sslcert_crt = 'sslcert/server.crt';
 if( nconf.get('https') ) {
     if( !fs.existsSync(sslcert_key) ) {
-        winston.error('ssl cert key is missing: %s', sslcert_key);
+        logger.error('ssl cert key is missing: %s', sslcert_key);
         process.exit(1);
     }
     if( !fs.existsSync(sslcert_crt) ) {
-        winston.error('ssl cert crt is missing: %s', sslcert_crt);
+        logger.error('ssl cert crt is missing: %s', sslcert_crt);
         process.exit(1);
     }
     var privateKey = fs.readFileSync(sslcert_key);
@@ -109,10 +109,10 @@ global.pubsub = new EventEmitter();
 require('./db');
 
 // Connect models
-winston.info("Register models..");
+logger.info("Register models..");
 fs.readdirSync(__dirname + '/models').forEach(function (file) {
   if (file.match(/\.js$/) && !file.match(/^\./)){
-    winston.verbose(' * '+file);
+    logger.verbose(' * '+file);
     require(__dirname + '/models/' + file);
   }
 });
@@ -121,11 +121,11 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
 require('../config/express')(app);
 
 // Bootstrap routes
-winston.info("Add Routers..");
+logger.info("Add Routers..");
 fs.readdirSync(__dirname + '/routes').forEach(function (file) {
   if ( file.match(/\.js$/) &&
       !file.match(/error\.js$/)) {
-    winston.verbose(' * '+file);
+    logger.verbose(' * '+file);
     require(__dirname + '/routes/' + file)(app);
   }
 });
@@ -140,10 +140,10 @@ require(__dirname + '/routes/error.js')(app);
 
 var onError = function(error){
   if( error.code === 'EACCES' && nconf.get('port') < 1024 ) {
-    winston.error("You haven't access to open port below 1024");
-    winston.error("Please use admin rights if you wan't to use port %d!", nconf.get('port'));
+    logger.error("You haven't access to open port below 1024");
+    logger.error("Please use admin rights if you wan't to use port %d!", nconf.get('port'));
   } else {
-    winston.error(error);
+    logger.error(error);
   }
   process.exit(-1);
 };

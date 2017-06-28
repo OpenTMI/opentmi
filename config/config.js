@@ -11,7 +11,7 @@ var extend = require('util')._extend;
 var fs = require('fs');
 
 // 3rd party modules
-var winston = require('winston');
+var logger = require('winston');
 var nconf = require('nconf');
 
 // configurations
@@ -36,7 +36,7 @@ module.exports = {
 var filedb = module.exports.filedb;
 if (filedb && filedb !== 'mongodb') {
   if (!fs.existsSync(filedb)){
-    winston.info('create %s folder for filedb', filedb);
+    logger.info('create %s folder for filedb', filedb);
     fs.mkdirSync(filedb);
   }
 }

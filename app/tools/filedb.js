@@ -5,7 +5,7 @@ const zlib = require('zlib');
 
 // 3rd party modules
 var _ = require('lodash');
-var winston = require('winston');
+var logger = require('winston');
 var nconf = require('nconf');
 
 var filedb = nconf.get('filedb');
@@ -14,14 +14,14 @@ var checksum = require('./checksum');
 module.exports.provider = filedb;
 module.exports.readFile = function readFile(file, callback) {
     var source = path.join(filedb, file.sha1+'.gz');
-    winston.debug('loading source: ', source);
+    logger.debug('loading source: ', source);
     fs.readFile(source, function(err, buffer) {
         if(err) {
             return callback(err);
         }
-        winston.debug("file readed");
+        logger.debug("file readed");
         zlib.gunzip(buffer, function (error, data) {
-            winston.debug("data gunzipped");
+            logger.debug("data gunzipped");
             callback(error, data?_.merge({}, file, {data: data}):null);
         });
     });
@@ -43,18 +43,18 @@ module.exports.storeFile = function storeFile(file, callback) {
   var fileData = file.data;
   fs.exists(target, function(exists) {
     if (exists) {
-      winston.warn('File %s exists already (filename: %s)', file.name, target);
+      logger.warn('File %s exists already (filename: %s)', file.name, target);
       return callback();
     }
-    winston.warn('Store file %s (filename: %s)', file.name, target);
+    logger.warn('Store file %s (filename: %s)', file.name, target);
     zlib.gzip(fileData, function (error, result) {
       if (error) {
-        winston.warn(error);
+        logger.warn(error);
         return callback(error);
       }
       fs.writeFile(target, result, function (err) {
         if (err) {
-          winston.warn(err);
+          logger.warn(err);
           return callback(err);
         }
         callback();

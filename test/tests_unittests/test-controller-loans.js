@@ -21,8 +21,8 @@ require('./../../app/models/user.js');
 require('./../../app/models/item.js')
 require('./../../app/models/loan.js')
 
-const winston = require('winston');
-winston.level = 'error';
+const logger = require('winston');
+logger.level = 'error';
 
 // Local components
 const LoanController = require('./../../app/controllers/loans.js');

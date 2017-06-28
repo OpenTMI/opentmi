@@ -7,7 +7,7 @@ var path = require('path');
 const zlib = require('zlib');
 
 // 3rd party modules
-var winston = require('winston');
+var logger = require('winston');
 var _ = require('lodash');
 var uuid = require('node-uuid');
 var mongoose = require('mongoose');
@@ -181,7 +181,7 @@ BuildSchema.pre('validate', function (next) {
                 file.sha256 = checksum(file.data, 'sha256');
                 if (file_provider === 'mongodb') {
                     //use mongodb document
-                    winston.warn('store file %s to mongodb', file.name);
+                    logger.warn('store file %s to mongodb', file.name);
                 } else if (file_provider) {
                     // store to filesystem
                     filedb.storeFile(file);
@@ -189,7 +189,7 @@ BuildSchema.pre('validate', function (next) {
                 } else {
                     //do not store at all..
                     file.data = undefined;
-                    winston.warn('filedb is not configured');
+                    logger.warn('filedb is not configured');
                 }
             }
         }

@@ -6,7 +6,7 @@ const auth = require('./../../config/middlewares/authorization');
 const jwt = require('jwt-simple');
 const async = require('async');
 const _ = require('lodash');
-const winston = require('winston');
+const logger = require('winston');
 
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
@@ -136,7 +136,7 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   static getGithubClientId(req, res) {
-    winston.log('Github auth: returning github clientID');
+    logger.log('Github auth: returning github clientID');
     const id = clientId;
     if (id === undefined) {
       res.status(400).json({ error: 'found client id is undefined' });
@@ -162,7 +162,7 @@ class AuthenticationController {
 
       request.get({ url: accessTokenUrl, qs: params }, (err, response, accessToken) => {
         if (err) {
-          winston.warn(`Github auth: authorization error at url: ${accessTokenUrl} with redirect_uri: ${params.redirect_uri} and client_id: ${params.client_id}`);
+          logger.warn(`Github auth: authorization error at url: ${accessTokenUrl} with redirect_uri: ${params.redirect_uri} and client_id: ${params.client_id}`);
           callback({ status: 500, msg: err.toString() });
         } else {
           const parsedAccessToken = qs.parse(accessToken);
@@ -179,13 +179,13 @@ class AuthenticationController {
     const getProfile = (accessToken, headers, callback) => {
       request.get({ url: userApiUrl, qs: accessToken, headers, json: true }, (err, response, profile) => {
         if (err) {
-          winston.warn(`Github auth: getProfile error, failed to fetch user profile information from url: ${userApiUrl}`);
+          logger.warn(`Github auth: getProfile error, failed to fetch user profile information from url: ${userApiUrl}`);
           callback({ status: 500, msg: err.toString() });
         } else if (!err && response.statusCode !== 200) {
-          winston.warn(`Github auth: bad profile response with status code: ${response.statusCode}`);
+          logger.warn(`Github auth: bad profile response with status code: ${response.statusCode}`);
           callback({ status: 409, msg: 'Could not fetch github profile.' });
         } else if (!profile.email) {
-          winston.warn('Github auth: no email error, could not find email from profile');
+          logger.warn('Github auth: no email error, could not find email from profile');
           callback({ status: 409, msg: 'Could not find email address from profile.' });
         } else {
           callback(null, accessToken, headers, profile);
@@ -200,7 +200,7 @@ class AuthenticationController {
       const orgUrl = `${userApiUrl}/orgs`;
       request.get({ url: orgUrl, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
-          winston.warn(`Github auth: checkOrganization error, failed to fetch user organization information from url: ${orgUrl}`);
+          logger.warn(`Github auth: checkOrganization error, failed to fetch user organization information from url: ${orgUrl}`);
           callback({ status: 500, msg: err.toString() });
         } else {
           const belongsOrg = _.find(response.body, { login: githubOrganization });
@@ -208,7 +208,7 @@ class AuthenticationController {
           if (belongsOrg) {
             callback(null, accessToken, headers, profile);
           } else {
-            winston.warn(`Github auth: user not in ${githubOrganization} organization`);
+            logger.warn(`Github auth: user not in ${githubOrganization} organization`);
             callback({ status: 401, msg: `You do not have required access to ${githubOrganization}.` });
           }
         }
@@ -222,7 +222,7 @@ class AuthenticationController {
       const teamUrl = `${userApiUrl}/teams`;
       request.get({ url: teamUrl, qs: accessToken, headers, json: true }, (err, response) => {
         if (err) {
-          winston.warn(`Github auth: checkAdmin error, failed to fetch user team information from url: ${teamUrl}`);
+          logger.warn(`Github auth: checkAdmin error, failed to fetch user team information from url: ${teamUrl}`);
           callback({ status: 500, msg: err.toString() });
         } else {
           const isAdmin = _.find(response.body, (team) => {
@@ -242,24 +242,24 @@ class AuthenticationController {
       User.findOne({ $or: [{ github: profile.login }, { email: profile.email }] }, (err, existingUser) => {
         // Check if the user account exists.
         if (existingUser) {
-          winston.info('Github auth: returning an existing user account');
+          logger.info('Github auth: returning an existing user account');
 
           if (req.headers.authorization) {
-            winston.warn(`Github auth: user: ${existingUser._id} is authorized already`);
+            logger.warn(`Github auth: user: ${existingUser._id} is authorized already`);
             callback({ status: 409, msg: `There is already a GitHub account that belongs to you with id: ${existingUser._id}` });
           } else if (existingUser.github !== profile.login) {
-            winston.info(`Github auth: updating github username from ${existingUser.github} to ${profile.login}`);
+            logger.info(`Github auth: updating github username from ${existingUser.github} to ${profile.login}`);
             existingUser.github = profile.login;
             callback(null, existingUser, profile.group);
           } else {
             callback(null, existingUser, profile.group);
           }
         } else if (req.headers.authorization) {
-          winston.info('Github auth: linking user account with github account');
+          logger.info('Github auth: linking user account with github account');
 
           User.findById(req.user.sub, (err, user) => {
             if (!user) {
-              winston.warn(`Github auth: no user found with id: ${req.user.sub}`);
+              logger.warn(`Github auth: no user found with id: ${req.user.sub}`);
               return callback({ status: 400, msg: 'User not found' });
             }
 
@@ -273,7 +273,7 @@ class AuthenticationController {
             return undefined;
           });
         } else {
-          winston.info('Github auth: creating a new user account.');
+          logger.info('Github auth: creating a new user account.');
 
           const user = new User();
           user.github = profile.login;
@@ -290,7 +290,7 @@ class AuthenticationController {
       Update the user's admin status.
     */
     const updateUser = (pUser, groupname, callback) => {
-      winston.info('Github auth: updating user');
+      logger.info('Github auth: updating user');
       Group.findOne({ users: pUser, name: 'admins' }, (err, group) => {
         if (group && groupname !== 'admins') {
           pUser.removeFromGroup('admins', (user) => {

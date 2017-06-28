@@ -3,7 +3,7 @@
 */
 
 // 3rd party modules
-const winston = require('winston');
+const logger = require('winston');
 
 // own modules
 const DefaultController = require('./');
@@ -13,10 +13,10 @@ class LoansController extends DefaultController {
 
   update(req, res) {
     if (req.body.items !== undefined) {
-      winston.info('PUT request with items property received');
+      logger.info('PUT request with items property received');
       LoansController._handleItemsInUpdate(req, (handlingError) => {
         if (handlingError) {
-          winston.warn(handlingError.message);
+          logger.warn(handlingError.message);
           return res.status(400).json({ error: handlingError.message });
         }
 
@@ -28,11 +28,11 @@ class LoansController extends DefaultController {
         // Save the result
         req.Loan.save((saveError) => {
           if (saveError) {
-            winston.warn(saveError.message);
+            logger.warn(saveError.message);
             return res.status(400).json({ error: saveError.message });
           }
 
-          winston.info('Update completed successfully');
+          logger.info('Update completed successfully');
           return res.status(200).json(req.Loan);
         });
 
@@ -73,7 +73,7 @@ class LoansController extends DefaultController {
       .populate('items')
       .exec((err, loans) => {
         if (err) {
-          winston.warn(err.message);
+          logger.warn(err.message);
           return res.status(500).json({ error: err.message });
         }
 

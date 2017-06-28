@@ -2,7 +2,7 @@ var jwt = require('jwt-simple');
 var moment = require('moment');
 var mongoose = require('mongoose');
 var nconf = require('nconf');
-var winston = require('winston');
+var logger = require('winston');
 var TOKEN_SECRET = nconf.get('webtoken');
 var _ = require('lodash');
 
@@ -29,7 +29,7 @@ var getUserGroups = module.exports.getUserGroups = function getUserGroups(req, r
 
 var ensureAuthenticated = module.exports.ensureAuthenticated = function ensureAuthenticated(err, req, res, next) {
   if (err) {
-    winston.info(err);
+    logger.info(err);
     if (err.message) {
       return res.status(401).send({ message: err.message });
     }
