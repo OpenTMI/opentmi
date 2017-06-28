@@ -6,6 +6,8 @@ var logger = require('winston');
 var TOKEN_SECRET = nconf.get('webtoken');
 var _ = require('lodash');
 
+var logger = require('winston');
+
 var User = mongoose.model('User');
 var Group = mongoose.model('Group');
 /*
@@ -60,7 +62,7 @@ var ensureAdmin = module.exports.ensureAdmin = function ensureAdmin(err, req, re
  |--------------------------------------------------------------------------
  */
 module.exports.createJWT = function (user, group) {
-  console.log('createJWT token');
+  logger.info('Auth middleware: creating JWT token');
   var payload = {
     sub: user._id,
     group,

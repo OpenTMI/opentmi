@@ -59,14 +59,14 @@ if (nconf.get('help') || nconf.get('h')) {
   return nconf.stores.argv.showHelp()
 }
 
+// Define logger behaviour
+logger.cli(); // activates colors
+
+// define console logging level
+logger.level = ['info', 'debug', 'verbose', 'silly'][nconf.get('verbose') % 4];
+
+// Add winston file logger, which rotates daily
 var fileLevel = 'silly';
-var consoleLevel = 'info';
-if (nconf.get('verbose') >= 1) { consoleLevel = 'verbose'; }
-if (nconf.get('verbose') >= 2) { consoleLevel = 'debug'; }
-if (nconf.get('verbose') >= 3) { consoleLevel = 'silly'; }
-if (nconf.get('silent')) { consoleLevel = 'error'; }
-logger.level = consoleLevel;
-// Add winston file logger, which rotate daily
 logger.add(require('winston-daily-rotate-file'), {
   filename: 'log/app.log',
   json: false,
@@ -74,7 +74,7 @@ logger.add(require('winston-daily-rotate-file'), {
   level: fileLevel,
   datePatter: '.yyyy-MM-dd_HH-mm'
 });
-logger.debug('Use cfg: %s', nconf.get('cfg'));
+logger.debug('Using cfg: %s', nconf.get('cfg'));
 
 var app = express();
 /**
