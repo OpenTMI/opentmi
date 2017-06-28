@@ -18,8 +18,8 @@ const mockgoose = new Mockgoose(mongoose);
 
 require('./../../app/models/item.js');
 
-const winston = require('winston');
-winston.level = 'error';
+const logger = require('winston');
+logger.level = 'error';
 
 // Local components
 const ItemController = require('./../../app/controllers/items.js');

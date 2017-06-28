@@ -5,7 +5,7 @@
 // native modules
 
 // 3rd party modules
-const winston = require('winston');
+const logger = require('winston');
 const async = require('async');
 
 // own modules
@@ -34,11 +34,11 @@ class ResourcesController extends DefaultController {
       if (error) {
         res.status(404).json({ error });
       } else if (docs.length > 0) {
-        winston.info(`found many devices: ${docs.length}`);
+        logger.info(`found many devices: ${docs.length}`);
         req.allocated = docs;
         next();
       } else {
-        winston.info(`not found allocated resources with id: ${req.params.Alloc}`);
+        logger.info(`not found allocated resources with id: ${req.params.Alloc}`);
         res.status(404).json({ error: 'not found' });
       }
     });
@@ -85,9 +85,9 @@ class ResourcesController extends DefaultController {
   }
 
   static releaseMultiple(req, res) {
-    winston.info(`Releasing: ${req.allocated.length}`);
+    logger.info(`Releasing: ${req.allocated.length}`);
     async.map(req.allocated, (resource, cb) => {
-      winston.info(`try to release: ${resource._id}`);
+      logger.info(`try to release: ${resource._id}`);
       resource.release(cb);
     }, (error, results) => {
       if (!error) {

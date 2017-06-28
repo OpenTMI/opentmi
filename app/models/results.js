@@ -3,28 +3,26 @@
  */
 
 //3rd party modules
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 //var userPlugin = require('mongoose-user');
-var QueryPlugin = require('mongoose-query');
-var winston = require('winston');
-var _ = require('lodash');
-var Schema = mongoose.Schema;
+const QueryPlugin = require('mongoose-query');
+const logger = require('winston');
+const _ = require('lodash');
+const Schema = mongoose.Schema;
 
 
-var FileSchema = require('./file');
+const FileSchema = require('./file');
+const tools = require('../tools');
+const checksum = tools.checksum;
+const filedb = tools.filedb;
+const file_provider = filedb.provider;
 
-var tools = require('../tools');
-var checksum = tools.checksum;
-var filedb = tools.filedb;
-var file_provider = filedb.provider;
-
-var Build = mongoose.model('Build');
+const Build = mongoose.model('Build');
 
 FileSchema.add({
     ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
     from: {type: String, enum: ['dut', 'framework', 'env', 'other']}
 });
-
 
 /**
  * User schema
@@ -69,9 +67,9 @@ var ResultSchema = new Schema({
       cut: [{type: String}], // Component Under Test
       fut: [{type: String}] // Feature Under Test
     },
-    dut: {  //device(s) under test
+    dut: {  // Device(s) Under Test
       count: {type: Number},
-      type: {type: String, enum: ['hw','simulator', 'process'], default: 'hw'},
+      type: {type: String, enum: ['hw','simulator', 'process']},
       ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
       vendor: {type: String},
       model: {type: String},
@@ -122,7 +120,7 @@ ResultSchema.pre('validate', function (next) {
         file.sha256 = checksum(file.data, 'sha256');
         if (file_provider === 'mongodb') {
           //use mongodb document
-          winston.warn('store file %s to mongodb', file.name);
+          logger.warn('store file %s to mongodb', file.name);
         } else if (file_provider) {
           // store to filesystem
           filedb.storeFile(file);
@@ -130,7 +128,7 @@ ResultSchema.pre('validate', function (next) {
         } else {
           //do not store at all..
           file.data = undefined;
-          winston.warn('filedb is not configured');
+          logger.warn('filedb is not configured');
         }
       }
     }
@@ -140,7 +138,7 @@ ResultSchema.pre('validate', function (next) {
   }
 
   if (buildSha1) {
-    winston.debug('result build sha1: ', buildSha1);
+    logger.debug('result build sha1: ', buildSha1);
     Build.findOne({'files.sha1': buildSha1}, (err, build) => {
       if(build) {
         this.exec.sut.ref = build._id;
@@ -161,7 +159,7 @@ ResultSchema.methods.setBuild = function(cb) {
 
 };
 ResultSchema.methods.getBuild = function(cb) {
-  winston.debug('lookup build..');
+  logger.debug('lookup build..');
   Build.findOne({_id: _.get(this, 'exec.sut.ref')}, cb);
 };
 

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const restify = require('express-restify-mongoose');
 const _ = require('lodash');
-const winston = require('winston');
+const logger = require('winston');
 
 const Route = function (app, passport) {
   // easy way, but not support format -functionality..
@@ -22,7 +22,7 @@ const Route = function (app, passport) {
 
   Group.getUsers('admins', (error, users) => {
     const admins = _.map(users, (user) => { return user.name || user.displayName || user.email; });
-    winston.info('Admin Users: ' + admins.join(','));
+    logger.info('Admin Users: ' + admins.join(','));
   });
 };
 

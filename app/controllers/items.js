@@ -3,7 +3,7 @@
 */
 
 // 3rd party modules
-const winston = require('winston');
+const logger = require('winston');
 
 // own modules
 const DefaultController = require('./');
@@ -27,7 +27,7 @@ class ItemsController extends DefaultController {
     // Regular save
     req.Item.save((err) => {
       if (err) {
-        winston.warn(err.message);
+        logger.warn(err.message);
         return res.status(400).json({ error: err.message });
       }
 
@@ -39,7 +39,7 @@ class ItemsController extends DefaultController {
     const deltaStock = req.body.in_stock - req.Item.in_stock;
 
     // Increase availability with the same amount that in_stock was changed
-    winston.info(`Received only in_stock in PUT, automatically modifying available with the same amount: ${deltaStock}`);
+    logger.info(`Received only in_stock in PUT, automatically modifying available with the same amount: ${deltaStock}`);
     req.body.available = req.Item.available + deltaStock;
   }
 
@@ -47,7 +47,7 @@ class ItemsController extends DefaultController {
     const deltaStock = req.body.available - req.Item.available;
 
     // Update in_stock in accordance with received delta in_stock
-    winston.info(`Received only available in PUT, automatically modifying in_stock with the same amount: ${deltaStock}`);
+    logger.info(`Received only available in PUT, automatically modifying in_stock with the same amount: ${deltaStock}`);
     req.body.in_stock = req.Item.in_stock + deltaStock;
   }
 

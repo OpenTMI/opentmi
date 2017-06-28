@@ -4,7 +4,7 @@ var path = require('path');
 
 //3rd party modules
 var _ = require('lodash')
-var winston = require('winston')
+var logger = require('winston');
 var async = require('async');
 
 function AddonManager (app, server, io){
@@ -12,10 +12,10 @@ function AddonManager (app, server, io){
   var addons = [];
 
   this.RegisterAddons = function() {
-    winston.info("Loading addons..");
+    logger.info("Loading addons..");
     fs.readdirSync(__dirname).forEach(function (file) {
       if (!file.match(/\.js$/) && !file.match(/^\./) ) {
-         winston.verbose(" * "+file);
+         logger.verbose(" * "+file);
          var addonPath = path.join(__dirname, file)
          try {
            let packageJsonFile = path.join(addonPath, 'package.json');
@@ -25,7 +25,7 @@ function AddonManager (app, server, io){
               try {
                   require.resolve(dep);
               } catch(e) {
-                  winston.warn(dep + " npm package is not found, required by addon "+file);
+                  logger.warn(dep + " npm package is not found, required by addon "+file);
                   deps = false;
               }
            });
@@ -33,12 +33,12 @@ function AddonManager (app, server, io){
              return;
            }
          } catch(e){
-           winston.debug(e);
+           logger.debug(e);
          }
          try {
            var Addon = require(addonPath);
            if(Addon.disabled) {
-             winston.info('Addon %s is disabled', file);
+             logger.info('Addon %s is disabled', file);
              return;
            }
            var addon = new Addon(app, server, io);
@@ -46,8 +46,8 @@ function AddonManager (app, server, io){
            addons.push( addon  );
          } catch(e) {
             addonPath = path.relative('.', addonPath)
-            winston.error('Cannot load addon "%s": %s', addonPath, e.toString());
-            winston.debug(e.stack);
+            logger.error('Cannot load addon "%s": %s', addonPath, e.toString());
+            logger.debug(e.stack);
          }
       }
     });

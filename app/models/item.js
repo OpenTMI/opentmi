@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var winston = require('winston');
+var logger = require('winston');
 var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
@@ -33,7 +33,7 @@ ItemSchema.plugin( QueryPlugin ); //install QueryPlugin
  * Pre-save hook
  */
 ItemSchema.pre('save', function(next) {
-  winston.info('Item pre-save hook started');
+  logger.info('Item pre-save hook started');
   if (this.available > this.in_stock) { return next(new Error('availability cannot be higher than in_stock')); }
   next();
 });
@@ -42,7 +42,7 @@ ItemSchema.pre('save', function(next) {
  * Pre-remove hook
  */
 ItemSchema.pre('remove', function(next) {
-  winston.info('Item pre-remove hook started');
+  logger.info('Item pre-remove hook started');
   
   var self = this;
   var Loan = mongoose.model('Loan');

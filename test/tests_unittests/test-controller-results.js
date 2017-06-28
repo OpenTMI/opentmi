@@ -21,8 +21,8 @@ require('./../../app/models/build.js');
 require('./../../app/models/testcase.js');
 require('./../../app/models/results.js');
 
-const winston = require('winston');
-winston.level = 'error';
+const logger = require('winston');
+logger.level = 'error';
 
 // Local components
 const ResultsController = require('./../../app/controllers/results.js');
