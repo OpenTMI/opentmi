@@ -4,129 +4,62 @@ const path = require('path');
 const zlib = require('zlib');
 
 // 3rd party modules
-const logger = require('winston');
 const nconf = require('nconf');
+const logger = require('winston');
+const Promise = require('bluebird');
 
-const filedbPath = nconf.get('filedb');
-const checksum = require('./checksum');
+// Local modules
+const FileSchema = require('../models/file.js');
 
-
-/**
- * Data structure that represents a file in the filedbPath, which may or may not be already stored
- * filename will default to the sha1 checksum of pData
- * @param {string|Buffer|Uint8Array} pData - data that the file contains
- * @param {boolean} pIsCompressed - states the initial compression state of the file
- * @param {string} customFilename - custom filename to use instead of sha1 checksum of pData
- */
-class File {
-  constructor(pData, pIsCompressed = false, customFilename = undefined) {
-    this.isCompressed = pIsCompressed;
-
-    this.data = pData;
-    this.size = pData.length;
-
-    this.checksum = checksum(pData, 'sha1');
-    this.filename = customFilename || `${this.checksum}.gz`;
-  }
-
-  /**
-   * Compress the file with zlib.gzip
-   * Compressed data overwrites the current data in file
-   * Will not compress already compressed files
-   * @returns {Promise} promise to compress the data in this file
-   */
-  compress() {
-    if (this.isCompressed) {
-      return Promise.reject('This file is already compressed, compressing it again would be moot');
-    }
-
-    return new Promise((resolve, reject) => {
-      zlib.gzip(this.data, (error, compressedData) => {
-        if (error) {
-          logger.warn(error);
-          return reject(error);
-        }
-
-        this.data = compressedData;
-        this.size = this.data.length;
-        this.isCompressed = true;
-        return resolve(this);
-      });
-
-      return undefined;
-    });
-  }
-
-  /**
-   * Uncompresses the file with zlib.gunzip
-   * Uncompressed data overwrites the compressed data
-   * Will not uncompress already uncompressed files
-   * @returns {Promise} promise to uncrompress the data in this file
-   */
-  uncompress() {
-    if (!this.isCompressed) {
-      return Promise.reject('this file is not compressed, uncompressing this file is not recommended');
-    }
-
-    return new Promise((resolve, reject) => {
-      zlib.gunzip(this.data, (error, uncompressedData) => {
-        if (error) {
-          logger.warn(error);
-          return reject(error);
-        }
-
-        this.data = uncompressedData;
-        this.size = this.data.length;
-        this.isCompressed = false;
-        return resolve(this);
-      });
-
-      return undefined;
-    });
-  }
-}
+const filedb = nconf.get('filedb');
+const fileEnding = '.gz';
 
 /**
- * Data structure consisting of static functions that can be used to manipulate filedb
- * includes reading and storing operations, remove not yet supported
+ * Collection of static functions that can be used to manipulate the filedb
+ * includes reading and storing operations, find and remove not yet supported
  */
 class FileDB {
   /**
-   * Reads and uncompresses a stored file with a specific filename
-   * @param {string|Buffer|integer} pFilename - filename or file descriptor, is usually the sha1 checksum of the data
+   * Reads and uncompresses stored data that is related to provided file
+   * @param {FileSchema} pFile - valid instance of FileSchema, used to resolve the filename
    * @returns {Promise} promise to read a file with a File as resolve parameter
    */
-  static readFile(pFilename) {
-    const filename = !pFilename.endsWith('.gz') ? pFilename : `${pFilename}.gz`;
-    return FileDB._readFile(filename).then(file => file.uncompress());
-  }
-
-  /**
-   * Compresses and stores data with sha1 checksum as the filename
-   * @param {string|Buffer|Uint8Array} pData - data to store
-   * @returns {Promise} promise to write a compressed file with a File as resolve parameter
-   */
-  static storeData(pData) {
-    if (!(pData instanceof Array)) {
-      return Promise.reject('provided data is not a subtype of Array');
+  static readFile(pFile) {
+    if (!(pFile instanceof FileSchema)) {
+      return Promise.reject(new Error('provided file is not an instance of FileSchema'));
     }
 
-    const file = new File(pData, false);
-    return FileDB.storeFile(file);
+    if (!pFile.checksum()) {
+      return Promise.reject(new Error('Could not resolve a checksum for the file'));
+    }
+
+    logger.info(`reading file ${pFile.name} (filename: ${pFile.checksum()}).`);
+    return FileDB._readFile(pFile.checksum()).then(fileData => FileDB._uncompress(fileData));
   }
 
   /**
    * Compresses and stores a file with the file instances filename.
-   * @param {File} pFile - instance of an uncompressed File
+   * @param {FileSchema} pFile - instance of an uncompressed File
    * @returns {Promise} promise to write a compressed file with a File as resolve parameter
    */
   static storeFile(pFile) {
-    if (!(pFile instanceof File)) {
-      return Promise.reject('provided file is not instance of File');
+    if (!(pFile instanceof FileSchema)) {
+      return Promise.reject(new Error('provided file is not an instance of FileSchema'));
     }
 
-    logger.warn('Storing file %s (filename: %s)', pFile.filename, pFile.checksum);
-    return FileDB._filenameFree(pFile.filename).then(pFile.compress()).then(FileDB._writeFile(pFile));
+    if (!pFile.checksum()) {
+      return Promise.reject(new Error('Could not resolve a checksum for the file'));
+    }
+
+    logger.info(`storing file ${pFile.name} (filename: ${pFile.checksum()}).`);
+    return FileDB._checkFilenameAvailability(pFile.filename).then((available) => {
+      if (available) {
+        return pFile.compress().then(FileDB._writeFile(pFile));
+      }
+
+      logger.info('File already exists, no need to store a duplicate');
+      return Promise.resolve;
+    });
   }
 
   /**
@@ -135,19 +68,15 @@ class FileDB {
    * @returns {Promise} promise that there is no file with the given name with
    *                    boolean variable as the resolve parameter
    */
-  static _filenameFree(pFilename) {
-    logger.verbose(`resolving filePath from filedbPath: ${filedbPath} and filename: ${pFilename}`);
-    const filePath = path.join(filedbPath, pFilename);
+  static _checkFilenameAvailability(pFilename) {
+    const filePath = FileDB._resolveFilename(pFilename);
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       logger.debug('checking if file exists in path: %s', filePath);
       fs.exists(filePath, (exists) => {
-        if (exists) {
-          logger.warn('File %s already exists with full path: %s', pFilename, filePath);
-          return reject(`filename is not free, file: ${filePath} exists.`);
-        }
+        if (exists) logger.debug('file %s already exists in path: %s', pFilename, filePath);
+        else        logger.debug(`path: ${filePath} is confirmed to be empty`); // eslint-disable-line
 
-        logger.debug(`path: ${filePath} is confirmed to be empty`);
         return resolve(exists);
       });
     });
@@ -156,49 +85,101 @@ class FileDB {
   /**
    * Reads a stored file with a specific filename
    * @param {string|Buffer|integer} pFilename - filename or file descriptor, is usually the sha1 checksum of the data
-   * @returns {Promise} promise to read a file with a File as the resolve parameter
+   * @returns {Promise} promise to read a file with a dataBuffer as the resolve parameter
    */
   static _readFile(pFilename) {
-    const filePath = path.join(filedbPath, pFilename);
+    const filePath = FileDB._resolveFilename(pFilename);
 
     return new Promise((resolve, reject) => {
-      logger.debug(`reading file from: ${filePath}`);
+      logger.debug(`reading file from: ${filePath}.`);
       fs.readFile(filePath, (error, dataBuffer) => {
         if (error) {
           logger.warn(`could not read file with path: ${filePath}, error: ${error.message}.`);
           return reject(error);
         }
 
-        const file = new File(dataBuffer, true);
-        file.filePath = filePath;
-
-        logger.debug(`file of size: ${file.size} read`);
-        return resolve(file);
+        logger.debug(`read file (filename: ${pFilename} size: ${dataBuffer.size}).`);
+        return resolve(dataBuffer);
       });
     });
   }
 
   /**
-   * Writes an instance of File to filedbPath
+   * Writes an instance of File to filedb
    * @param {File} pFile - valid instance of File with data
-   * @returns {Promise} promise to write the file to filedbPath with a File as resolve parameter
+   * @returns {Promise} promise to write the file to filedb
    */
   static _writeFile(pFile) {
-    const filePath = path.join(filedbPath, pFile.filename);
+    const filePath = FileDB._resolveFilename(pFile.sha1);
 
     return new Promise((resolve, reject) => {
-      logger.debug(`writing file to file system with path: ${filePath}`);
+      logger.debug(`writing file to file system with path: ${filePath}.`);
       fs.writeFile(filePath, pFile.data, (error) => {
         if (error) {
           logger.warn(`could not write data to path: ${filePath}, error: ${error.message}.`);
           return reject(error);
         }
 
-        logger.debug(`file successfully written to path: ${filePath}`);
-        pFile.filePath = filePath;
-        return resolve(pFile);
+        logger.debug(`wrote file (filename: ${pFile.name} size: ${pFile.data.length}).`);
+        return resolve();
       });
     });
+  }
+
+  /**
+   * Compress the file with zlib.gzip
+   * @returns {Promise} promise to compress the data in this file with compressed data as resolve parameter
+   */
+  static _compress(pUncompressedData) {
+    return new Promise((resolve, reject) => {
+      logger.debug(`compressing data of size: ${pUncompressedData.length}`);
+      zlib.gzip(pUncompressedData, (error, compressedData) => {
+        if (error) {
+          logger.warn(`could not compress file, error with message: ${error.message}`);
+          return reject(error);
+        }
+
+        logger.verbose('Compress result:');
+        logger.verbose(`  uncompressed size: ${pUncompressedData.length}`);
+        logger.verbose(`  compressed size  : ${compressedData.length}`);
+        return resolve(compressedData);
+      });
+
+      return undefined;
+    });
+  }
+
+  /**
+   * Uncompresses the file with zlib.gunzip
+   * @returns {Promise} promise to uncrompress the data in this file with uncompressed data as resolve parameter
+   */
+  static _uncompress(pCompressedData) {
+    return new Promise((resolve, reject) => {
+      logger.debug(`uncompressing file with filename: ${this.filename}`);
+      zlib.gunzip(pCompressedData, (error, uncompressedData) => {
+        if (error) {
+          logger.warn(`could not uncompress file with filename: ${this.filename}, error with message: ${error.message}`);
+          return reject(error);
+        }
+
+        logger.verbose('Uncompress result:');
+        logger.verbose(`  compressed size  : ${pCompressedData.length}`);
+        logger.verbose(`  uncompressed size: ${uncompressedData.length}`);
+        return resolve(uncompressedData);
+      });
+
+      return undefined;
+    });
+  }
+
+  /**
+   * Uses defined filedb, name and fileEncding to create a valid path for a file
+   * @param {String} name - name of the file, usually the sha1 checksum of the file
+   * @returns {String} valid storage path for file with the provided name
+   */
+  static _resolveFilename(pName) {
+    logger.verbose(`resolving filePath from filedb: ${filedb} and filename: ${pName} with ending: ${fileEnding}`);
+    return path.join(filedb, `${pName}.${fileEnding}`);
   }
 }
 
