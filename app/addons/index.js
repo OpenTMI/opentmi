@@ -1,78 +1,98 @@
 //internal modules
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
 //3rd party modules
-var _ = require('lodash')
-var logger = require('winston');
-var async = require('async');
+const _ = require('lodash')
+const logger = require('winston');
+const async = require('async');
 
-function AddonManager (app, server, io){
-  var self = this;
-  var addons = [];
+class AddonManager {
+  constructor(app, server, io) {
+     const addons = [];
+  }
 
-  this.RegisterAddons = function() {
-    logger.info("Loading addons..");
+  registerAddons() {
+    logger.info('Loading addons...');
+
+    // Iterate through all files in the addons folder
     fs.readdirSync(__dirname).forEach(function (file) {
+      // Ignore files that end with .js or do not have a dot in them at all
       if (!file.match(/\.js$/) && !file.match(/^\./) ) {
-         logger.verbose(" * "+file);
-         var addonPath = path.join(__dirname, file)
-         try {
-           let packageJsonFile = path.join(addonPath, 'package.json');
-           let packageJson = require(packageJsonFile);
-           let deps = Object.keys(_.get(packageJson, 'dependencies', {}));
-           _.each(deps, (dep) => {
-              try {
-                  require.resolve(dep);
-              } catch(e) {
-                  logger.warn(dep + " npm package is not found, required by addon "+file);
-                  deps = false;
-              }
-           });
-           if(deps === false) {
-             return;
-           }
-         } catch(e){
-           logger.debug(e);
-         }
-         try {
-           var Addon = require(addonPath);
-           if(Addon.disabled) {
-             logger.info('Addon %s is disabled', file);
-             return;
-           }
-           var addon = new Addon(app, server, io);
-           addon.register();
-           addons.push( addon  );
-         } catch(e) {
-            addonPath = path.relative('.', addonPath)
-            logger.error('Cannot load addon "%s": %s', addonPath, e.toString());
-            logger.debug(e.stack);
-         }
+        logger.verbose(` * ${file}`);
+        const addonPath = path.join(__dirname, file);
+        const packageJsonFile = path.join(addonPath, 'package.json');
+
+        try {
+          const packageJson = require(packageJsonFile);
+
+          // ensure addons dependencies are installed
+          if (!AddonManager._addonDependenciesInstalled(packageJson)) {
+            return;
+          }
+        } catch (e) {
+          logger.debug(e);
+        }
+        try {
+          var Addon = require(addonPath);
+          if(Addon.disabled) {
+            logger.info('Addon %s is disabled', file);
+            return;
+          }
+
+          this._registerAddon(new Addon(app, server, io));
+        } catch(e) {
+          addonPath = path.relative('.', addonPath)
+          logger.error('Cannot load addon "%s": %s', addonPath, e.toString());
+          logger.debug(e.stack);
+        }
       }
     });
 
     app.get('/addons', listAddons);
+  }
 
-  };
-  var listAddons = function(req, res){
+  static _addonDependenciesInstalled(file, pPackageJson) {
+    const dependencies = Object.keys(_.get(pPackageJson, 'dependencies', {}));
+
+    _.each(dependencies, (dependency) => {
+      try {
+        require.resolve(dependency);
+      } catch (e) {
+        logger.warn(`npm package: ${dependency} is not found, required by addon ${file}`);
+        return false;
+      }
+    });
+
+    return true;
+  }
+
+  listAddons(req, res) {
     var list = []
     _.each(addons, function(addon){
       lis.push( addon );
     })
     res.json(list);
   }
-  this.AvailableModules = function() {
-    return _.map(addons, function(addon){return {name: addon.name, state: 'active'}});
-  };
 
-  this.UnregisterModule = function(i, cb){
-    if( addons.length < i ) return false;
+  get availableModules() {
+    return _.map(addons, function(addon){return {name: addon.name, state: 'active'}});
+  }
+
+  _registerModule(addon) {
+    addon.register();
+    addons.push(addon);
+  }
+
+  unregisterModule(i, cb) {
+    if (addons.length < i) {
+      return false;
+    }
+
     addons[i].unregister(cb);
     addons.splice(i, 1);
   }
+} 
 
-  return this;
-}
 
 exports = module.exports = AddonManager;
