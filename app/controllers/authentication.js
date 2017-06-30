@@ -1,3 +1,5 @@
+require('colors');
+
 const qs = require('querystring');
 const nconf = require('nconf');
 const mongoose = require('mongoose');
@@ -11,19 +13,16 @@ const logger = require('winston');
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 
+const googleSecret = nconf.get('google_secret');
+const tokenSecret = nconf.get('webtoken');
 const githubAdminTeam = nconf.get('github').adminTeam;
 const githubOrganization = nconf.get('github').organization;
 const clientId = nconf.get('github').clientID;
 const clientSecret = nconf.get('github').clientSecret;
 
-class AuthenticationController {
-  constructor() {
-    this.config = {
-      GOOGLE_SECRET: nconf.get('google_secret'),
-      TOKEN_SECRET: nconf.get('webtoken'),
-    };
-  }
+let loginCount = 0;
 
+class AuthenticationController {
   static loginRequiredResponse(req, res) {
     res.status(404).json({ error: 'login required' });
   }
@@ -81,6 +80,7 @@ class AuthenticationController {
   }
 
   login(req, res) {
+    logger.info('Logging in');
     User.findOne({ email: req.body.email }, '+password', (err, user) => {
       if (!user) {
         return res.status(401).send({ message: 'Invalid email and/or password' });
@@ -139,6 +139,7 @@ class AuthenticationController {
     logger.log('Github auth: returning github clientID');
     const id = clientId;
     if (id === undefined) {
+      logger.warn('Github auth: clientId was undefined, perhaps it is not defined in the config.');
       res.status(400).json({ error: 'found client id is undefined' });
     } else {
       res.status(200).json({ clientID: id });
@@ -146,6 +147,13 @@ class AuthenticationController {
   }
 
   static github(req, res) {
+    // Setup logging
+    const loginId = loginCount;
+    loginCount += 1;
+    const addPrefix = msg => `Github login #${loginId}: ${msg}`;
+
+    // Authentication process
+    logger.info(addPrefix('starting authentication process via github.'));
     const userApiUrl = 'https://api.github.com/user';
     const accessTokenUrl = 'https://github.com/login/oauth/access_token';
 
@@ -153,6 +161,7 @@ class AuthenticationController {
       Authorize the user using github by exchanging authorization code for access token.
     */
     const authorization = (callback) => {
+      logger.debug(addPrefix('fetching access token from github.'));
       const params = {
         code: req.body.code,
         client_id: req.body.clientId,
@@ -160,16 +169,21 @@ class AuthenticationController {
         redirect_uri: req.body.redirectUri,
       };
 
+      logger.verbose(addPrefix('requesting github access token.'));
       request.get({ url: accessTokenUrl, qs: params }, (err, response, accessToken) => {
-        if (err) {
-          logger.warn(`Github auth: authorization error at url: ${accessTokenUrl} with redirect_uri: ${params.redirect_uri} and client_id: ${params.client_id}`);
-          callback({ status: 500, msg: err.toString() });
-        } else {
-          const parsedAccessToken = qs.parse(accessToken);
-          const headers = { 'User-Agent': 'Satellizer' };
+        logger.verbose(addPrefix(`response from: ${accessTokenUrl} received.`));
 
-          callback(null, parsedAccessToken, headers);
+        // Process error if one happened
+        if (err) {
+          logger.warn(addPrefix(`authorization error at url: ${accessTokenUrl} with redirect_uri: ${params.redirect_uri} and client_id: ${params.client_id}.`));
+          return callback({ status: 500, msg: err.message });
         }
+
+        const parsedAccessToken = qs.parse(accessToken);
+        const headers = { 'User-Agent': 'Satellizer' };
+
+        logger.verbose(addPrefix('github access token parsed and ready.'));
+        return callback(null, parsedAccessToken, headers);
       });
     };
 
@@ -177,19 +191,32 @@ class AuthenticationController {
       Retrieve the user's github profile.
     */
     const getProfile = (accessToken, headers, callback) => {
+      logger.debug(addPrefix('fetching user profile information from github.'));
+
+      logger.verbose(addPrefix('requesting profile information.'));
       request.get({ url: userApiUrl, qs: accessToken, headers, json: true }, (err, response, profile) => {
+        logger.verbose(addPrefix(`response from: ${userApiUrl} received.`));
+
+        // Process error if one happened
         if (err) {
-          logger.warn(`Github auth: getProfile error, failed to fetch user profile information from url: ${userApiUrl}`);
-          callback({ status: 500, msg: err.toString() });
-        } else if (!err && response.statusCode !== 200) {
-          logger.warn(`Github auth: bad profile response with status code: ${response.statusCode}`);
-          callback({ status: 409, msg: 'Could not fetch github profile.' });
-        } else if (!profile.email) {
-          logger.warn('Github auth: no email error, could not find email from profile');
-          callback({ status: 409, msg: 'Could not find email address from profile.' });
-        } else {
-          callback(null, accessToken, headers, profile);
+          logger.warn(addPrefix(`getProfile error, failed to fetch user profile information from url: ${userApiUrl}.`));
+          return callback({ status: 500, msg: err.toString() });
         }
+
+        // Make sure response was a 200 success
+        if (response.statusCode !== 200) {
+          logger.warn(addPrefix(`bad profile response with status code: ${response.statusCode}.`));
+          return callback({ status: 409, msg: `Could not fetch github profile. Response body: ${JSON.stringify(response.body)}` });
+        }
+
+        // Make sure profile contains an email
+        if (!profile.email) {
+          logger.warn(addPrefix('could not find email from fetched profile.'));
+          return callback({ status: 409, msg: 'Could not find email address from profile.' });
+        }
+
+        logger.verbose(addPrefix('response contained a valid profile.'));
+        return callback(null, accessToken, headers, profile);
       });
     };
 
@@ -197,21 +224,28 @@ class AuthenticationController {
       Ensure the user belongs to the required organization.
     */
     const checkOrganization = (accessToken, headers, profile, callback) => {
+      logger.debug(addPrefix('fetching list of organizations user belongs to.'));
+
+      logger.verbose(addPrefix('requesting organization information.'));
       const orgUrl = `${userApiUrl}/orgs`;
       request.get({ url: orgUrl, qs: accessToken, headers, json: true }, (err, response) => {
-        if (err) {
-          logger.warn(`Github auth: checkOrganization error, failed to fetch user organization information from url: ${orgUrl}`);
-          callback({ status: 500, msg: err.toString() });
-        } else {
-          const belongsOrg = _.find(response.body, { login: githubOrganization });
+        logger.verbose(addPrefix(`response from: ${orgUrl} received.`));
 
-          if (belongsOrg) {
-            callback(null, accessToken, headers, profile);
-          } else {
-            logger.warn(`Github auth: user not in ${githubOrganization} organization`);
-            callback({ status: 401, msg: `You do not have required access to ${githubOrganization}.` });
-          }
+        // Process error if one happened
+        if (err) {
+          logger.warn(addPrefix(`checkOrganization error, failed to fetch user organization information from url: ${orgUrl}.`));
+          return callback({ status: 500, msg: err.toString() });
         }
+
+        // Attempt to find the defined organization from a list of the users organizations
+        const belongsOrg = _.find(response.body, { login: githubOrganization });
+        if (!belongsOrg) {
+          logger.warn(addPrefix(`user not in ${githubOrganization} organization.`));
+          return callback({ status: 401, msg: `You do not have required access to ${githubOrganization}.` });
+        }
+
+        logger.verbose(addPrefix(`user belongs to organization: ${githubOrganization}, which has access to this server.`));
+        return callback(null, accessToken, headers, profile);
       });
     };
 
@@ -219,117 +253,191 @@ class AuthenticationController {
       Check if the user is an administrator or a normal employee in the organization.
     */
     const checkAdmin = (accessToken, headers, profile, callback) => {
+      logger.debug(addPrefix('checking if the user is in the administrator team.'));
+
+      logger.verbose(addPrefix('requesting list of teams where user is a member.'));
       const teamUrl = `${userApiUrl}/teams`;
       request.get({ url: teamUrl, qs: accessToken, headers, json: true }, (err, response) => {
-        if (err) {
-          logger.warn(`Github auth: checkAdmin error, failed to fetch user team information from url: ${teamUrl}`);
-          callback({ status: 500, msg: err.toString() });
-        } else {
-          const isAdmin = _.find(response.body, (team) => {
-            return team.name === githubAdminTeam && team.organization.login === githubOrganization;
-          });
-          profile.group = isAdmin ? 'admins' : '';
+        logger.verbose(addPrefix(`response from: ${teamUrl} received`));
 
-          callback(null, profile);
+        // Process error if one happened
+        if (err) {
+          logger.warn(addPrefix(`checkAdmin error, failed to fetch user's team information from url: ${teamUrl}`));
+          return callback({ status: 500, msg: err.toString() });
         }
+
+        // Attempt to find the correct admin team from list of teams the user belongs to
+        const isAdmin = _.find(response.body, team => (team.name === githubAdminTeam && team.organization.login === githubOrganization));
+        profile.group = isAdmin ? 'admins' : '';
+
+        logger.verbose(addPrefix(`user belongs to group: ${profile.group}`));
+        return callback(null, profile);
       });
     };
 
     /*
     Retrieve the user from the database, or create a new entry if the user does not exist.
     */
-    const prepareUser = (profile, callback) => {
+    const updateUser = (profile, callback) => {
+      logger.debug(addPrefix('updating user information with profile information.'));
+
+      logger.verbose(addPrefix('attempting to find user from the database.'));
       User.findOne({ $or: [{ github: profile.login }, { email: profile.email }] }, (err, existingUser) => {
+        logger.verbose(addPrefix('response from database received.'));
+
         // Check if the user account exists.
         if (existingUser) {
-          logger.info('Github auth: returning an existing user account');
+          logger.verbose(addPrefix(`user: ${existingUser._id} found from the database.`));
 
+          // Ensure user is not already authorized
           if (req.headers.authorization) {
-            logger.warn(`Github auth: user: ${existingUser._id} is authorized already`);
-            callback({ status: 409, msg: `There is already a GitHub account that belongs to you with id: ${existingUser._id}` });
-          } else if (existingUser.github !== profile.login) {
-            logger.info(`Github auth: updating github username from ${existingUser.github} to ${profile.login}`);
-            existingUser.github = profile.login;
-            callback(null, existingUser, profile.group);
-          } else {
-            callback(null, existingUser, profile.group);
+            logger.warn(addPrefix(`user: ${existingUser._id} is authorized already.`));
+            return callback({ status: 409, msg: `There is already an account linked to github that belongs to you with id: ${existingUser._id}.` });
           }
-        } else if (req.headers.authorization) {
-          logger.info('Github auth: linking user account with github account');
 
-          User.findById(req.user.sub, (err, user) => {
-            if (!user) {
-              logger.warn(`Github auth: no user found with id: ${req.user.sub}`);
-              return callback({ status: 400, msg: 'User not found' });
-            }
+          // Updating username if it has changed
+          if (existingUser.github !== profile.login) {
+            logger.debug(addPrefix(`updating github username from ${existingUser.github} to ${profile.login}.`));
+            existingUser.github = profile.login;
+            return callback(null, existingUser, profile.group);
+          }
 
-            user.github = profile.login;
-            user.picture = user.picture || profile.avatar_url;
-            user.displayName = user.displayName || profile.name;
-            user.name = user.displayName;
-            user.email = user.email;
-            callback(null, user, profile.group);
+          return callback(null, existingUser, profile.group);
+        }
 
-            return undefined;
-          });
-        } else {
-          logger.info('Github auth: creating a new user account.');
+        // Create new user account if we cannot find user linked to github and request header does not contain authorization
+        if (!req.headers.authorization) {
+          logger.info(addPrefix('creating a new account for user.'));
 
+          // Create new user and parse fields from profile
           const user = new User();
           user.github = profile.login;
           user.picture = profile.avatar_url;
           user.displayName = profile.name;
           user.name = user.displayName;
           user.email = profile.email;
-          callback(null, user, profile.group);
+
+          logger.verbose(addPrefix(`new account created with id: ${user._id}.`));
+          return callback(null, user, profile.group);
         }
+
+        // If we cannot find user linked to github but header contains authorization, link active account with github
+        logger.info(addPrefix('linking existing user account with github.'));
+        User.findById(req.user.sub, (err, user) => {
+          logger.verbose(addPrefix('response received from database.'));
+
+          if (!user) {
+            logger.warn(addPrefix(`no user found with id: ${req.user.sub}`));
+            return callback({ status: 400, msg: 'User already exists but could not be found.' });
+          }
+
+          // Parse fields from profile to existing user
+          user.github = profile.login;
+          user.picture = user.picture || profile.avatar_url;
+          user.displayName = user.displayName || profile.name;
+          user.name = user.displayName;
+          user.email = user.email;
+
+          logger.verbose(addPrefix('user linked to github.'));
+          return callback(null, user, profile.group);
+        });
+
+        return undefined;
       });
     };
 
     /*
       Update the user's admin status.
     */
-    const updateUser = (pUser, groupname, callback) => {
-      logger.info('Github auth: updating user');
+    const updateUsersGroup = (pUser, groupname, callback) => {
+      logger.debug(addPrefix('updating user\'s group to match current status.'));
       Group.findOne({ users: pUser, name: 'admins' }, (err, group) => {
+        logger.verbose(addPrefix('response received from database.'));
+
+        // If group was found but groupname is not admins, remove user from admins
         if (group && groupname !== 'admins') {
-          pUser.removeFromGroup('admins', (user) => {
+          logger.info(addPrefix(`removing user: ${pUser._id} from admins.`));
+          pUser.removeFromGroup('admins', (user) => {  // TODO: should use either promise or a more standard callback format (err, user)
+            logger.verbose(addPrefix('removing from group finished.'));
+
+            // If user has a message, error has occured
             if (user.message) {
-              callback({ status: 500, msg: user.message });
-            } else {
-              user.save(callback(null, auth.createJWT(user, groupname)));
+              logger.error(addPrefix(`user: ${pUser._id} could not be removed from admins group.`));
+              return callback({ status: 500, msg: user.message });
             }
+
+            // Save user and create token with groupname
+            logger.verbose(addPrefix('user removed from group successfully.'));
+            return callback(null, user, groupname);
           });
         } else if (!group && groupname === 'admins') {
+          logger.info(addPrefix(`adding user: ${pUser._id} to admins.`));
           pUser.addToGroup('admins', (user) => {
+            logger.verbose(addPrefix('adding to group finished.'));
+
+            // If user has a message, error has occured
             if (user.message) {
-              callback({ status: 500, msg: user.message });
-            } else {
-              user.save(callback(null, auth.createJWT(user, groupname)));
+              logger.error(addPrefix(`user: ${pUser._id} could not be added to the admins group.`));
+              return callback({ status: 500, msg: user.message });
             }
+
+            // Save user and create token with groupname
+            logger.verbose(addPrefix('user added to group successfully.'));
+            return callback(null, user, groupname);
           });
         } else {
-          pUser.save(callback(null, auth.createJWT(pUser, groupname)));
+          logger.verbose(addPrefix(`user is in the correct group: ${groupname}.`));
+
+          // Save user and create token with groupname
+          return callback(null, pUser, groupname);
         }
+
+        return undefined;
       });
     };
 
+    /*
+      Save changes made to user
+    */
+    const saveUser = (user, groupname, callback) => {
+      logger.debug(addPrefix('saving changes to user.'));
+      user.save((err) => {
+        logger.verbose(addPrefix('user saving finished.'));
+
+        // Handle saving error if necessary
+        if (err) {
+          logger.error(addPrefix(`could not save changes to user: ${user._id}.`));
+          return callback({ status: 500, msg: err.toString() });
+        }
+
+        logger.verbose(addPrefix('creating a token for the user.'));
+        return callback(null, auth.createJWT(user, groupname));
+      });
+
+      return undefined;
+    };
+
+    /*
+      Catches any errors that happened during authentication and sends results accordingly
+    */
     const final = function (err, token) {
+      logger.info(addPrefix('authentication via github finished.'));
       if (err) {
-        return res.status(err.status).json({
-          message: err.msg,
-        });
+        logger.warn(addPrefix(`authentication failed due to error with status: ${err.status} and message: "${err.msg}", see above for details.`));
+        return res.status(err.status).json({ message: err.toString() });
       }
       return res.send({ token });
     };
 
+    logger.verbose(addPrefix('starting waterfall of authentication tasks'));
     async.waterfall([
       authorization,
       getProfile,
       checkOrganization,
       checkAdmin,
-      prepareUser,
       updateUser,
+      updateUsersGroup,
+      saveUser,
     ], final);
   }
 
@@ -367,7 +475,7 @@ class AuthenticationController {
               return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
             }
             token = req.headers.authorization.split(' ')[1];
-            const payload = jwt.decode(token, this.config.TOKEN_SECRET);
+            const payload = jwt.decode(token, tokenSecret);
             User.findById(payload.sub, (err, user) => {
               if (!user) {
                 return res.status(400).send({ message: 'User not found' });
