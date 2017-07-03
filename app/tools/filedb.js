@@ -39,7 +39,7 @@ module.exports.storeFile = function storeFile(file, callback) {
       callback = function(){};
   }
 
-  var target = path.join(filedb, file.sha1+'.gz');
+  var target = path.join(nconf.get('filedb'), file.sha1+'.gz');
   var fileData = file.data;
   fs.exists(target, function(exists) {
     if (exists) {
