@@ -1,9 +1,9 @@
 var jwt = require('jwt-simple');
 var moment = require('moment');
 var mongoose = require('mongoose');
-var nconf = require('nconf');
+const nconf = require('../../config');
 var logger = require('winston');
-var TOKEN_SECRET = nconf.get('webtoken');
+const TOKEN_SECRET = nconf.get('webtoken');
 var _ = require('lodash');
 
 var logger = require('winston');

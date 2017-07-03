@@ -5,7 +5,7 @@ var path = require('path');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var nconf = require('nconf');
+var nconf = require('../../config');
 var file_provider = nconf.get('filedb');
 
 var FileSchema = new Schema({

@@ -24,7 +24,7 @@ var logger = require('winston');
 var expressWinston = require('express-winston');
 
 /* Project libraries */
-var nconf = require('nconf');
+const nconf = require('../config');
 var pkg = require('../package.json');
 var env = process.env.NODE_ENV || 'development';
 
