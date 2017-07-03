@@ -1,6 +1,6 @@
 var express = require('express');
 var _ = require('lodash');
-var nconf = require('nconf');
+var nconf = require('../../config');
 
 var Route = function(app, passport){
   api = express()

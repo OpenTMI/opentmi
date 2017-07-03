@@ -9,64 +9,20 @@ var EventEmitter = require('events').EventEmitter
 // 3rd party modules
 var express = require('express');
 var logger = require('winston');
-var nconf = require('nconf');
-
-// read configurations
-nconf.argv({
-    listen: {
-        alias: 'l',
-        default: '0.0.0.0',
-        type: 'string',
-        describe: 'set binding interface',
-        nargs: 1
-    },
-    https: {
-      describe: 'use https',
-      type: 'bool',
-      default: false
-    },
-    port: {
-      describe: 'set listen port',
-      type: 'number',
-      demand: true,
-      default: 3000,
-      nargs: 1
-    },
-    cfg: {
-        alias: 'c',
-        default: process.env.NODE_ENV || 'development',
-        type: 'string',
-        describe: 'Select configuration (development,test,production)',
-        nargs: 1
-    },
-    verbose: {
-        alias: 'v',
-        type: 'number',
-        describe: 'verbose level',
-        count: 'v'
-    },
-    silent: {
-        alias: 's',
-        default: false,
-        type: 'bool',
-        describe: 'Silent mode'
-    }
-  }, 'Usage: npm start -- (options)')
-  .env()
-  .defaults( require( './../config/config.js' ) );
+const nconf = require('../config');
 
 if (nconf.get('help') || nconf.get('h')) {
   return nconf.stores.argv.showHelp()
 }
 
+// Define logger behaviour
+logger.cli(); // activates colors
+
+// define console logging level
+logger.level = nconf.get('silent') ? 'error' : ['info', 'debug', 'verbose', 'silly'][nconf.get('verbose') % 4];
+
+// Add winston file logger, which rotates daily
 var fileLevel = 'silly';
-var consoleLevel = 'info';
-if (nconf.get('verbose') >= 1) { consoleLevel = 'verbose'; }
-if (nconf.get('verbose') >= 2) { consoleLevel = 'debug'; }
-if (nconf.get('verbose') >= 3) { consoleLevel = 'silly'; }
-if (nconf.get('silent')) { consoleLevel = 'error'; }
-logger.level = consoleLevel;
-// Add winston file logger, which rotate daily
 logger.add(require('winston-daily-rotate-file'), {
   filename: 'log/app.log',
   json: false,
@@ -74,7 +30,7 @@ logger.add(require('winston-daily-rotate-file'), {
   level: fileLevel,
   datePatter: '.yyyy-MM-dd_HH-mm'
 });
-logger.debug('Use cfg: %s', nconf.get('cfg'));
+logger.debug('Using cfg: %s', nconf.get('cfg'));
 
 var app = express();
 /**
@@ -118,7 +74,7 @@ fs.readdirSync(__dirname + '/models').forEach(function (file) {
 });
 
 // Bootstrap application settings
-require('../config/express')(app);
+require('./express')(app);
 
 // Bootstrap routes
 logger.info("Add Routers..");

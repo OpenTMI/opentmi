@@ -5,6 +5,9 @@ var should = require("should");
 
 var api = "http://localhost:3000/api/v0";
 
+const logger = require('winston');
+logger.level = 'error';
+
 describe("Resource", function () {
   var resource_id;
   it("add resource", function (done) {

@@ -1,4 +1,4 @@
-//native modules
+// native modules
 const path = require('path');
 
 // 3rd party modules
@@ -6,7 +6,7 @@ const logger = require('winston');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const nconf = require('nconf');
+const nconf = require('../../config');
 const fileProvider = nconf.get('filedb');
 
 // local modules

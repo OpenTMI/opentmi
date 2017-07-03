@@ -4,7 +4,7 @@ const path = require('path');
 const zlib = require('zlib');
 
 // 3rd party modules
-const nconf = require('nconf');
+const nconf = require('../../config');
 const logger = require('winston');
 const Promise = require('bluebird');
 
