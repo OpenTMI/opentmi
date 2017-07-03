@@ -6,7 +6,7 @@ const zlib = require('zlib');
 // 3rd party modules
 var _ = require('lodash');
 var logger = require('winston');
-var nconf = require('nconf');
+const nconf = require('../../config');
 
 var filedb = nconf.get('filedb');
 var checksum = require('./checksum');

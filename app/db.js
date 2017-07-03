@@ -2,7 +2,7 @@ var logger = require('winston');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-var nconf = require('nconf');
+const nconf = require('../config');
 const dbUrl = nconf.get('db');
 
 var isConnectedBefore = false;

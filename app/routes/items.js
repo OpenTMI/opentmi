@@ -1,5 +1,5 @@
 const express = require('express');
-const nconf = require('nconf');
+const nconf = require('../../config');
 const auth = require('./../../config/middlewares/authorization');
 const jwt = require('express-jwt');
 const ItemController = require('./../controllers/items');
