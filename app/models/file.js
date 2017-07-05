@@ -9,9 +9,8 @@ const Schema = mongoose.Schema;
 const nconf = require('../../config');
 const fileProvider = nconf.get('filedb');
 
-// local modules
-const tools = require('../tools');
-const checksum = tools.checksum;
+// local module
+const checksum = require('../tools/checksum.js');
 
 const FileSchema = new Schema({
   // buffer limit 16MB when attached to document!
@@ -29,7 +28,7 @@ FileSchema.virtual('hrefs').get(function () {
   return (fileProvider && fileProvider !== 'mongodb' && this.sha1) ? path.join(fileProvider, this.sha1) : undefined;
 });
 
-FileSchema.methods.prepareDataForStorage = () => {
+FileSchema.methods.prepareDataForStorage = function () {
   logger.info(`preparing file (name: ${this.name}) for storage`);
   if (this.base64) {
     this.data = new Buffer(this.base64, 'base64');
@@ -38,30 +37,38 @@ FileSchema.methods.prepareDataForStorage = () => {
 
   if (this.data) {
     this.size = this.data.length;
-    //file.type = mimetype(file.name(
+    // file.type = mimetype(file.name(
     this.sha1 = checksum(this.data, 'sha1');
     this.sha256 = checksum(this.data, 'sha256');
   }
 };
 
-FileSchema.methods.storeInFileDB = () => {
-  if (!this.name) {
-    throw new Error('filename is missing');
-  }
-
-  return tools.filedb.storeFile(this).catch((error) => {
-    logger.error(`could not save file to filedb, reason: ${error.message}`);
+FileSchema.methods.storeInFileDB = function () {
+  // filedb is reuired here because it causes a circular dependency otherwise
+  const filedb = require('../tools/filedb.js'); // eslint-disable-line
+  return filedb.storeFile(this).catch((error) => {
+    logger.error(`Could not save file to filedb, reason: ${error.message}.`);
+    throw error;
   });
 };
 
-FileSchema.methods.checksum = () => {
+FileSchema.methods.retrieveFromFileDB = function () {
+  // filedb is reuired here because it causes a circular dependency otherwise
+  const filedb = require('../tools/filedb.js'); // eslint-disable-line
+  return filedb.readFile(this).catch((error) => {
+    logger.error(`Could not read file from filedb, reason: ${error.message}.`);
+    throw error;
+  });
+};
+
+FileSchema.methods.checksum = function () {
   if (!this.sha1) {
     logger.warn('file without sha1 checksum processed, prepareData not called?');
 
     if (this.data) {
       this.sha1 = checksum(this.data, 'sha1');
     } else {
-      logger.error('could not calculate checksum for file without data');
+      logger.warn('could not calculate checksum for file without data');
       return null;
     }
   }
@@ -69,4 +76,5 @@ FileSchema.methods.checksum = () => {
   return this.sha1;
 };
 
+mongoose.model('File', FileSchema);
 module.exports = FileSchema;
