@@ -47,7 +47,7 @@ let sampleDataToRead = [];
 const filedbLocation = nconf.get('filedb');
 
 
-describe.only('tools/filedb.js', function () {
+describe('tools/filedb.js', function () {
   // Run this before tests
   before(function (done) {
     logger.verbose('[Before]'.gray);
@@ -93,15 +93,15 @@ describe.only('tools/filedb.js', function () {
   describe('readFile', function () {
     it('readFile - valid file', function () {
       const sampleFile = new File({ sha1: 'test_read_name' });
-      const compressedData = new Buffer('Data received from file');
+      const compressedData = new Buffer('data received from file');
       const uncompressedData = 'uncompressed_data';
 
       filedb._readFile = (filename) => {
-        expect(filename).to.equal(sampleFile.sha1);
+        expect(filename).to.equal(sampleFile.sha1, 'filename should be passed without modifications to _readFile');
         return Promise.resolve(compressedData);
       };
       filedb._uncompress = (data) => {
-        expect(data).to.deep.equal(compressedData);
+        expect(data).to.deep.equal(compressedData, 'data that is to be uncompressed should be the data provided by the _readFile');
         return Promise.resolve(uncompressedData);
       };
 
@@ -125,7 +125,7 @@ describe.only('tools/filedb.js', function () {
 
     it('readFile - read is rejected', function () {
       // Read file that does not exist, should fail
-      filedb._readFile = () => Promise.reject(new Error('could not find file'));
+      filedb._readFile = () => Promise.reject(new Error('could not find file.'));
       return expect(filedb.readFile(new File({ sha1: 'checksum' }))).to.be.rejectedWith(Error);
     });
   });
@@ -219,9 +219,6 @@ describe.only('tools/filedb.js', function () {
       logger.verbose('Creating promises to write valid files for tests to read.'.gray);
       sampleDataToRead.forEach(obj => fs.writeFileSync(path.join(filedbLocation, `${obj.filename}.gz`), obj.data));
 
-      logger.verbose('Writing a corrupted file for tests to read.'.gray);
-      fs.writeFileSync(path.join(filedbLocation, 'corrupted_file.gz'), 'not a valid compressed package');
-
       done();
     });
 
@@ -234,12 +231,12 @@ describe.only('tools/filedb.js', function () {
 
     it('_readFile - nonexistent file', function () {
       filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._readFile('nonexistent_file')).to.be.rejectedWith(Error);
+      return expect(filedb._readFile('nonexistent_file')).to.be.rejectedWith(Error, undefined, '_readFile should be rejected if a nonexistent file is provided');
     });
 
     it('_readFile - no filename', function () {
       filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._readFile(undefined)).to.be.rejectedWith(Error);
+      return expect(filedb._readFile(undefined)).to.be.rejectedWith(Error, undefined, '_readFile should be rejected if no filename is provided');
     });
   });
 
@@ -260,7 +257,7 @@ describe.only('tools/filedb.js', function () {
       filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
       const writePromises = sampleFilesToStore.map(obj => filedb._writeFile(obj.filename, obj.data).then(() => {
         const newFilePath = path.join(filedbLocation, `${obj.filename}.gz`);
-        expect(fs.existsSync(newFilePath)).to.equal(true, 'newly created file does not exist.');
+        expect(fs.existsSync(newFilePath)).to.equal(true, `newly created file at path: ${newFilePath} does not exist.`);
         expect(fs.readFileSync(newFilePath)).to.deep.equal(new Buffer(obj.data));
         return Promise.resolve;
       }));
@@ -270,12 +267,12 @@ describe.only('tools/filedb.js', function () {
 
     it('_writeFile - no data', function () {
       filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._writeFile('empty_file', undefined)).to.be.rejectedWith(Error);
+      return expect(filedb._writeFile('empty_file', undefined)).to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no data is provided');
     });
 
     it('_writeFile - no filename', function () {
       filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._writeFile(undefined, undefined)).to.be.rejectedWith(Error);
+      return expect(filedb._writeFile(undefined, undefined)).to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no filename is provided');
     });
   });
 
@@ -292,7 +289,7 @@ describe.only('tools/filedb.js', function () {
     });
 
     it('_compress - no data', function () {
-      return expect(filedb._compress(undefined)).to.be.rejectedWith(Error);
+      return expect(filedb._compress(undefined)).to.be.rejectedWith(Error, undefined, '_compress should throw an error if no data is provided');
     });
   });
 
@@ -309,7 +306,7 @@ describe.only('tools/filedb.js', function () {
     });
 
     it('_uncompress - no data', function () {
-      return expect(filedb._uncompress(undefined)).to.be.rejectedWith(Error);
+      return expect(filedb._uncompress(undefined)).to.be.rejectedWith(Error, undefined, '_uncompress should throw an error if no data is provided');
     });
   });
 
