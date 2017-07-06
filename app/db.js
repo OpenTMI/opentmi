@@ -11,10 +11,12 @@ let isConnectedBefore = false;
 const connect = function() {
     const options = {
         useMongoClient: true,
-        socketOptions: { keepAlive: 1 },
-        auto_reconnect: true
+        keepAlive: 120,
+        autoReconnect: true,
+        logger: logger,
+        loggerLevel: 'warning'
     };
-    logger.warn('Create MongoDB connection..');
+    logger.info(`Create MongoDB connection: ${dbUrl}`);
     mongoose.connect(dbUrl, options);
 };
 

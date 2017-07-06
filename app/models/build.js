@@ -18,7 +18,7 @@ var tools = require('../tools');
 var checksum = tools.checksum;
 var filedb = tools.filedb;
 var file_provider = filedb.provider;
-var FileSchema = require('./file');
+var FileSchema = require('./extends/file');
 
 var Schema = mongoose.Schema;
 

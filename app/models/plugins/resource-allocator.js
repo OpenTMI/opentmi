@@ -13,7 +13,7 @@ var logger = require('winston');
  * @param {String}          [options.path='random']
  */
 var ResourceAllocator = function(schema, options){
-  
+
   var v = new Validator();
 
   schema.add({ 'status.allocId': {type: String } });
@@ -46,7 +46,7 @@ var ResourceAllocator = function(schema, options){
   schema.methods.release = function(cb){
     if( this.status.availability !== 'free') {
       this.status.availability = 'free';
-      if(this.status.allocId) 
+      if(this.status.allocId)
         this.status.allocId = undefined;
       this.save(cb);
       logger.silly('release resource');
@@ -84,7 +84,7 @@ var ResourceAllocator = function(schema, options){
     var allocateResource = function( request, alloc_cb ){
 
       var createQueryObject = function(cb_q){
-        var q = { 
+        var q = {
           'status.value': 'active',
           'status.availability': 'free'
         }
@@ -113,15 +113,15 @@ var ResourceAllocator = function(schema, options){
           }
         });
       });
-    }  
+    }
     logger.debug('allocateReources: '+JSON.stringify(alloc_request));
     var result = v.validate(alloc_request, allocRequest);
     if(result.errors.length === 0){
       async.map(alloc_request, allocateResource, cb);
     }
     else { cb(result); }
-  }
-  logger.debug("ResourceAllocator registered");
-}
+  };
+  logger.silly("ResourceAllocator registered to model");
+};
 
 module.exports = exports = ResourceAllocator;

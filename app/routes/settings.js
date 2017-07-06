@@ -1,13 +1,13 @@
-var express = require('express');
-var mongoose = require('mongoose');
+const express = require('express');
+const mongoose = require('mongoose');
 const nconf = require('../../config');
 
 
-var Route = function(app, passport){
+const Route = function(app){
 
-  var router = express.Router();
+  const router = express.Router();
 
-  var isAdmin = function(req, res, next){
+  const isAdmin = function(req, res, next){
     var admin = nconf.get('admin');
       if( req.query.pwd && admin &&
           req.query.pwd === admin.pwd ){
@@ -15,8 +15,8 @@ var Route = function(app, passport){
       } else {
         res.status(500).json({error: 'Not allowed'});
       }
-  } 
-  
+  };
+
   router.route('/api/v0/settings.:format?')
     .all( isAdmin)
     .get( function(req, res){
@@ -26,8 +26,8 @@ var Route = function(app, passport){
       //req.body
       res.json(501, {error: 'not implemented'});
     });
-    
+
     app.use( router );
-}
+};
 
 module.exports = Route;

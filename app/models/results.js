@@ -11,7 +11,7 @@ const _ = require('lodash');
 const Schema = mongoose.Schema;
 
 
-const FileSchema = require('./file');
+const FileSchema = require('./extends/file');
 const tools = require('../tools');
 const checksum = tools.checksum;
 const filedb = tools.filedb;
@@ -175,5 +175,4 @@ ResultSchema.static({
  * Register
  */
 let Result = mongoose.model('Result', ResultSchema);
-
-module.exports = {Model: Result, Schema: ResultSchema};
+module.exports = {Model: Result, Collection: 'Result'};

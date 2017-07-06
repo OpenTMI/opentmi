@@ -2,6 +2,7 @@
 const fs = require('fs');
 
 // 3rd party modules
+const _ = require('lodash');
 const bluebird = require('bluebird');
 const logger = require('winston');
 
@@ -37,13 +38,25 @@ function ensureIndexes() {
 function registerModels(app) {
     logger.info("Register models..");
     fs.readdirSync(__dirname).forEach((file) =>{
-        if (!file.match(/index\.js$/) &&
-             file.match(/\.js$/) &&
+        if ( file.match(/\.js$/) &&
+            !file.match(/^index\.js$/) &&
             !file.match(/^\./)) {
-            logger.verbose(' * '+file);
-            let model = require(`${__dirname}/${file}`);
-            if(model.Collection) {
-              models[model.Collection] = model.Model;
+            try {
+                let filename = `${__dirname}/${file}`;
+                logger.silly(`Reading: ${filename}`);
+                let model = require(filename);
+                if(_.get(model,'Collection') && _.isString(model.Collection)) {
+                  if(!_.has(models, model.Collection)) {
+                      models[model.Collection] = model.Model;
+                      logger.verbose(' * '+model.Collection);
+                  } else {
+                      logger.error("Two models registered to same collection!")
+                  }
+                } else {
+                    console.log(model);
+                }
+            } catch(err){
+                logger.warn(err);
             }
         }
     });
