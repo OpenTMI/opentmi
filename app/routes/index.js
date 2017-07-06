@@ -4,10 +4,9 @@ const fs = require('fs');
 // 3rd party modules
 const logger = require('winston');
 
-function registerRoutes(app)
-{
+function registerRoutes(app) {
   logger.info("Add Routers..");
-  fs.readdirSync(__dirname).forEach(function (file) {
+  fs.readdirSync(__dirname).forEach((file) => {
     if (!file.match(/index\.js$/) &&
          file.match(/\.js$/) &&
         !file.match(/error\.js$/)) {
@@ -18,8 +17,8 @@ function registerRoutes(app)
 }
 module.exports.registerRoutes = registerRoutes;
 
-function registerErrorRoute(app)
-{
+function registerErrorRoute(app) {
   require(`${__dirname}/error.js`)(app);
 }
+
 module.exports.registerErrorRoute = registerErrorRoute;

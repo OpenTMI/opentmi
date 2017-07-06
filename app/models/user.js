@@ -8,7 +8,7 @@ var QueryPlugin = require('mongoose-query');
 var bcrypt = require('bcryptjs');
 var _ = require('lodash');
 
-/* Implementation */   
+/* Implementation */
 var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
@@ -44,7 +44,7 @@ var UserSchema = new Schema({
   apikeys: [{ type: ObjectId, ref: 'ApiKey' } ]
 })
 .post('save', function(){
-  if( this.isNew ) { 
+  if( this.isNew ) {
   }
 });
 
@@ -54,7 +54,7 @@ var UserSchema = new Schema({
 //UserSchema.plugin(userPlugin, {});
 
 /**
- * Query Plugin 
+ * Query Plugin
  */
 UserSchema.plugin( QueryPlugin ); //install QueryPlugin
 
@@ -79,7 +79,7 @@ UserSchema.path('email').validate(function (email) {
 UserSchema.path('email').validate(function (email, fn) {
   var User = mongoose.model('User');
   if (this.skipValidation()) fn(true);
-  
+
   // Check only when it is a new user or when email field is modified
   if (this.isNew || this.isModified('email')) {
     User.find({ email: email }).exec(function (err, users) {
@@ -112,7 +112,7 @@ UserSchema.pre('save', function(next) {
 /*
 UserSchema.pre('save', function(next){
   console.log('save-pre-hook')
-  if( this.isNew ){  
+  if( this.isNew ){
     var self=this,
         groups = this.groups;
     this.groups = [];
@@ -132,7 +132,7 @@ UserSchema.pre('save', function(next){
 UserSchema.pre('remove', function(next) {
   var self = this;
   var Loan = mongoose.model('Loan');
-  
+
   Loan.find({ loaner:self._id }, function(err, loans) {
 	if (loans.length > 0) return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
 	next();
@@ -257,7 +257,7 @@ UserSchema.static({
   },
 
   getApiKeys: function(user, cb){
-    this.findOne({_id: user}).populate('apikeys').exec( 
+    this.findOne({_id: user}).populate('apikeys').exec(
       function(error, doc){
         if(error){
           return cb(error);
@@ -278,4 +278,5 @@ UserSchema.static({
 /**
  * Register
  */
-mongoose.model('User', UserSchema);
+let User = mongoose.model('User', UserSchema);
+module.exports = {Model: User, Collection: 'User'};

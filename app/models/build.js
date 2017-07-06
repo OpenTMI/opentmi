@@ -261,4 +261,5 @@ BuildSchema.virtual('file').get(
 /**
  * Register
  */
-mongoose.model('Build', BuildSchema);
+let Build = mongoose.model('Build', BuildSchema);
+module.exports = {Model: Build, Collection: 'Build'};

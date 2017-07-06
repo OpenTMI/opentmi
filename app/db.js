@@ -1,43 +1,50 @@
-var logger = require('winston');
-var mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
+const logger = require('winston');
+const mongoose = require('mongoose');
+const Promise = require('bluebird');
+mongoose.Promise = Promise;
 
 const nconf = require('../config');
 const dbUrl = nconf.get('db');
 
-var isConnectedBefore = false;
-var connect = function() {
-    var options = { server: { 
-                        socketOptions: { keepAlive: 1 },
-                        auto_reconnect: true } };
+let isConnectedBefore = false;
+
+const connect = function() {
+    const options = {
+        useMongoClient: true,
+        socketOptions: { keepAlive: 1 },
+        auto_reconnect: true
+    };
+    logger.warn('Create MongoDB connection..');
     mongoose.connect(dbUrl, options);
 };
 
-mongoose.connection.on('error', function() {
+mongoose.connection.on('error', () => {
     logger.error('Could not connect to MongoDB: ' + dbUrl);
 });
 
-mongoose.connection.on('disconnected', function(){
-    logger.warn('Lost MongoDB connection...');
-    if (!isConnectedBefore)
+mongoose.connection.on('disconnected', () => {
+    logger.warn('MongoDB connection lost');
+    if (!isConnectedBefore) {
         connect();
+    }
 });
-mongoose.connection.on('connected', function() {
+mongoose.connection.on('connected', () => {
     isConnectedBefore = true;
     logger.info('Connection established to MongoDB: ' + dbUrl);
 });
 
-mongoose.connection.on('reconnected', function() {
+mongoose.connection.on('reconnected', () => {
     logger.info('Reconnected to MongoDB: ' + dbUrl);
 });
 
-// Close the Mongoose connection, when receiving SIGINT
-process.on('SIGINT', function() {
-    mongoose.connection.close(function () {
-        console.log('Force to close the MongoDB conection: ' + dbUrl);
-        process.exit(0);
-    });
-});
+const close = Promise.promisify(mongoose.connection.close.bind(mongoose.connection));
+function disconnect() {
+    logger.info(`Force to close the MongoDB connection: ${dbUrl}`);
+    return close();
+}
 
-// Connect to mongodb
-connect();
+module.exports = {
+    connect,
+    disconnect,
+    mongoose
+};

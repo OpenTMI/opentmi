@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 var _ = require('lodash');
 var Schema = mongoose.Schema;
 var QueryPlugin = require('mongoose-query');
-/* Implementation */   
+/* Implementation */
 var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
@@ -22,7 +22,7 @@ var GroupSchema = new Schema({
   priority: {
     //max priority, 0=highest
     max: {type: Number, default: 3, min: 0, max: 5 },
-  },                             
+  },
   description: {type: String },
 });
 
@@ -57,13 +57,13 @@ GroupSchema.method({
         console.log({message: 'group already exists'})
       } else {
         user.groups.push(self._id);
-        user.save();  
+        user.save();
       }
       if( self.users.indexOf(user._id)>=0){
         cb({message: 'user has already in group'})
       } else {
         self.users.push( user._id );
-        self.save(cb);  
+        self.save(cb);
       }
     })
   },
@@ -78,7 +78,7 @@ GroupSchema.method({
 
 GroupSchema.static({
   getUsers: function(group, cb){
-    this.findOne({name: group}).select('users').populate('users').exec( 
+    this.findOne({name: group}).select('users').populate('users').exec(
       function(error, docs){
         if(error)return cb(error);
         if(docs) return cb(error, docs.users)
@@ -91,4 +91,5 @@ GroupSchema.static({
 /**
  * Register
  */
-mongoose.model('Group', GroupSchema);
+let Group = mongoose.model('Group', GroupSchema);
+module.exports = {Model: Group, Collection: 'Group'};

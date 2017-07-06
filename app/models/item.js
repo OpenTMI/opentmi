@@ -43,20 +43,20 @@ ItemSchema.pre('save', function(next) {
  */
 ItemSchema.pre('remove', function(next) {
   logger.info('Item pre-remove hook started');
-  
+
   var self = this;
   var Loan = mongoose.model('Loan');
- 
+
   Loan.find({}, function(err, loans) {
 	if (err) return next(new Error('Something mysterious went wrong while fetching loans'));
-	
+
 	for (var i = 0; i < loans.length; i++) {
 	  for (var j = 0; j < loans[i].items.length; j++) {
 		if (loans[i].items[j].item.toString() === self._id.toString()) {
 		  return next(new Error('Cannot delete this item, loans that refer to this item exist'));
 	    }
 	  }
-	} 
+	}
 	next();
   });
 });
@@ -66,7 +66,7 @@ ItemSchema.pre('remove', function(next) {
  */
 ItemSchema.methods.fetchImageData = function(next) {
   var self = this;
-  var request = require('request').defaults({ encoding:null });	
+  var request = require('request').defaults({ encoding:null });
   request.get(self.image_src, function(err, res, body) {
 	if (err) return next(new Error('could not process image get request'));
 
@@ -77,8 +77,9 @@ ItemSchema.methods.fetchImageData = function(next) {
     };
     next(image_data);
 	}
-	else return next(new Error('image get request returned with an unexpected code:' + res.statusCode));  
-  });  
-}
+	else return next(new Error('image get request returned with an unexpected code:' + res.statusCode));
+  });
+};
 
-mongoose.model("Item", ItemSchema);
+let Item = mongoose.model("Item", ItemSchema);
+module.exports = {Model: Item, Collection: 'Item'};
