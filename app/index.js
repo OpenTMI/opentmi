@@ -2,18 +2,20 @@
 
 // native modules
 const fs = require('fs');
-const http = require('http');
-const https = require('https');
 
 // 3rd party modules
-const express = require('express');
+const Express = require('express');
 const logger = require('winston');
+const SocketIO = require('socket.io');
 
 // application modules
+const express = require('./express')
+const Server = require('./server')
 const nconf = require('../config');
 const eventBus = require('./tools/eventBus');
 const models = require('./models');
 const routes = require('./routes');
+const AddonManager = require('./addons');
 
 if (nconf.get('help') || nconf.get('h')) {
   nconf.stores.argv.showHelp()
@@ -37,31 +39,14 @@ logger.add(require('winston-daily-rotate-file'), {
 });
 logger.debug('Using cfg: %s', nconf.get('cfg'));
 
-var app = express();
-/**
- * Create HTTP server.
- */
-var server;
-var sslcert_key = 'sslcert/server.key';
-var sslcert_crt = 'sslcert/server.crt';
-if( nconf.get('https') ) {
-    if( !fs.existsSync(sslcert_key) ) {
-        logger.error('ssl cert key is missing: %s', sslcert_key);
-        process.exit(1);
-    }
-    if( !fs.existsSync(sslcert_crt) ) {
-        logger.error('ssl cert crt is missing: %s', sslcert_crt);
-        process.exit(1);
-    }
-    var privateKey = fs.readFileSync(sslcert_key);
-    var certificate = fs.readFileSync(sslcert_crt);
-    var credentials = {key: privateKey, cert: certificate};
-    server = https.createServer(credentials, app);
-} else {
-    server = http.createServer(app);
-}
+// create express instance
+const app = Express();
 
-var io = require('socket.io')(server);
+// Create HTTP server.
+const server = Server(app);
+
+// register socket io
+const io = SocketIO(server);
 
 // Initialize database connetion
 require('./db');
@@ -70,20 +55,19 @@ require('./db');
 models.registerModels();
 
 // Bootstrap application settings
-require('./express')(app);
+express(app);
 
 // Bootstrap routes
 routes.registerRoutes(app);
 
 // Bootsrap addons, like default webGUI
-var AddonManager = require('./addons');
 global.AddonManager = new AddonManager(app, server, io);
 global.AddonManager.RegisterAddons();
 
 // Add final route for error
 routes.registerErrorRoute(app);
 
-var onError = function(error){
+function onError(error) {
   if( error.code === 'EACCES' && nconf.get('port') < 1024 ) {
     logger.error("You haven't access to open port below 1024");
     logger.error("Please use admin rights if you wan't to use port %d!", nconf.get('port'));
@@ -92,8 +76,8 @@ var onError = function(error){
   }
   process.exit(-1);
 };
-var onListening = function(){
-  var listenurl = (nconf.get('https')?'https':'http:')+'://'+nconf.get('listen')+':'+nconf.get('port');
+function onListening() {
+  let listenurl = (nconf.get('https')?'https':'http:')+'://'+nconf.get('listen')+':'+nconf.get('port');
   console.log('OpenTMI started on ' +listenurl+ ' in '+ nconf.get('cfg')+ ' mode');
   eventBus.emit('start_listening', {url: listenurl});
 };
@@ -101,3 +85,9 @@ var onListening = function(){
 server.listen(nconf.get('port'), nconf.get('listen'));
 server.on('error', onError);
 server.on('listening', onListening);
+
+// this would be usefull for testing
+module.exports = {
+  server: server,
+  eventBus: eventBus
+}
