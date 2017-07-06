@@ -1,5 +1,5 @@
 var jwt_s = require('jwt-simple');
-var nconf = require('nconf');
+var nconf = require('../../config');
 var moment = require('moment');
 
 var superagent = require('superagent');
@@ -13,6 +13,9 @@ var api = 'http://localhost:3000/api/v0';
 var mongodbUri = 'mongodb://localhost/opentmi_dev';
 var test_user_id = '5825bb7afe7545132c88c761';
 
+const logger = require('winston');
+logger.level = 'error';
+
 describe('Users', function () {
   var auth_string;	
 
@@ -20,16 +23,12 @@ describe('Users', function () {
   before(function(done) {
     this.timeout(5000);
     
-    // Initialize nconf
-    nconf.argv({ cfg:{ default:'development' } })
-         .env()
-         .defaults(require('./../../config/config.js'));  
-    
     // Create token for requests
-    var payload = { sub:test_user_id,
-		                group:'admins',
-		                iat:moment().unix(), 
-		                exp:moment().add(2, 'h').unix()
+    var payload = { 
+      sub:test_user_id,
+      group:'admins',
+      iat:moment().unix(), 
+      exp:moment().add(2, 'h').unix()
     };
     var token = jwt_s.encode(payload, nconf.get('webtoken')); 
     auth_string = 'Bearer ' + token;

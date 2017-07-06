@@ -1,6 +1,6 @@
 var express = require('express');
 var mongoose = require('mongoose');
-var nconf = require('nconf');
+const nconf = require('../../config');
 
 
 var Route = function(app, passport){

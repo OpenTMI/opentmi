@@ -13,15 +13,13 @@ const test_user_id = '5825bb7afe7545132c88c761';
 
 const authString = '';
 
+const logger = require('winston');
+logger.level = 'error';
+
 describe('Builds', function () {
   // Create fresh DB
   before(function (done) {
     this.timeout(5000);
-
-    // Initialize nconf
-    nconf.argv({ cfg: { default: 'development' } })
-         .env()
-         .defaults(require('./../../config/config.js'));
 
     // Create token for requests
     const payload = {
