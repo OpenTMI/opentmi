@@ -9,13 +9,20 @@ const dbUrl = nconf.get('db');
 let isConnectedBefore = false;
 
 const connect = function() {
+    var options = {
+        server: {
+            socketOptions: { keepAlive: 1 },
+            auto_reconnect: true
+        }
+    };
+    /** @todo figure out valid configurations
     const options = {
         useMongoClient: true,
         keepAlive: 120,
         autoReconnect: true,
         logger: logger,
         loggerLevel: 'warning'
-    };
+    };*/
     logger.info(`Create MongoDB connection: ${dbUrl}`);
     mongoose.connect(dbUrl, options);
 };
