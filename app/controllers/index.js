@@ -30,7 +30,7 @@ class DefaultController extends EventEmitter {
           res.status(300).json({ error });
         } else if (data) {
           if (typeof modelname === 'string') req[modelname] = data;
-          else next();
+          next();
         } else {
           res.status(404).json({ msg: 'not found' });
         }
@@ -59,7 +59,9 @@ class DefaultController extends EventEmitter {
   }
 
   find(req, res) {
+    console.log('finding...')
     this._model.query(req.query, (error, list) => {
+      console.log('results...')
       if (error) {
         logger.warn(error);
         res.status(300).json({ error: error.message });
