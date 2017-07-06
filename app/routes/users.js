@@ -1,7 +1,7 @@
 // 3rd party modules
 const express = require('express');
 const mongoose = require('mongoose');
-const nconf = require('nconf');
+const nconf = require('../../config');
 const logger = require('winston');
 const jwt = require('express-jwt');
 

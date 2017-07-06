@@ -8,21 +8,20 @@ const https = require('https');
 // 3rd party modules
 const express = require('express');
 const logger = require('winston');
-const args = require('./tools/arguments');
+const nconf = require('../config');
 const eventBus = require('./tools/eventBus');
 
-// application modules
-const models = require('./models');
+// read configurations
 const routes = require('./routes');
 
+// Define logger behaviour
+logger.cli(); // activates colors
+
+// define console logging level
+logger.level = nconf.get('silent') ? 'error' : ['info', 'debug', 'verbose', 'silly'][nconf.get('verbose') % 4];
+
+// Add winston file logger, which rotates daily
 var fileLevel = 'silly';
-var consoleLevel = 'info';
-if (args.get('verbose') >= 1) { consoleLevel = 'verbose'; }
-if (args.get('verbose') >= 2) { consoleLevel = 'debug'; }
-if (args.get('verbose') >= 3) { consoleLevel = 'silly'; }
-if (args.get('silent')) { consoleLevel = 'error'; }
-logger.level = consoleLevel;
-// Add winston file logger, which rotate daily
 logger.add(require('winston-daily-rotate-file'), {
   filename: 'log/app.log',
   json: false,
@@ -30,7 +29,7 @@ logger.add(require('winston-daily-rotate-file'), {
   level: fileLevel,
   datePatter: '.yyyy-MM-dd_HH-mm'
 });
-logger.debug('Use cfg: %s', args.get('cfg'));
+logger.debug('Using cfg: %s', nconf.get('cfg'));
 
 var app = express();
 /**
@@ -65,7 +64,7 @@ require('./db');
 models.registerModels();
 
 // Bootstrap application settings
-require('../config/express')(app);
+require('./express')(app);
 
 // Bootstrap routes
 routes.registerRoutes(app);
