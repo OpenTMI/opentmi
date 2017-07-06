@@ -8,11 +8,17 @@ const https = require('https');
 // 3rd party modules
 const express = require('express');
 const logger = require('winston');
+
+// application modules
 const nconf = require('../config');
 const eventBus = require('./tools/eventBus');
-
-// read configurations
+const models = require('./models');
 const routes = require('./routes');
+
+if (nconf.get('help') || nconf.get('h')) {
+  nconf.stores.argv.showHelp()
+  process.exit(0);
+}
 
 // Define logger behaviour
 logger.cli(); // activates colors
@@ -38,7 +44,7 @@ var app = express();
 var server;
 var sslcert_key = 'sslcert/server.key';
 var sslcert_crt = 'sslcert/server.crt';
-if( args.get('https') ) {
+if( nconf.get('https') ) {
     if( !fs.existsSync(sslcert_key) ) {
         logger.error('ssl cert key is missing: %s', sslcert_key);
         process.exit(1);
@@ -78,20 +84,20 @@ global.AddonManager.RegisterAddons();
 routes.registerErrorRoute(app);
 
 var onError = function(error){
-  if( error.code === 'EACCES' && args.get('port') < 1024 ) {
+  if( error.code === 'EACCES' && nconf.get('port') < 1024 ) {
     logger.error("You haven't access to open port below 1024");
-    logger.error("Please use admin rights if you wan't to use port %d!", args.get('port'));
+    logger.error("Please use admin rights if you wan't to use port %d!", nconf.get('port'));
   } else {
     logger.error(error);
   }
   process.exit(-1);
 };
 var onListening = function(){
-  var listenurl = (args.get('https')?'https':'http:')+'://'+args.get('listen')+':'+args.get('port');
-  console.log('OpenTMI started on ' +listenurl+ ' in '+ args.get('cfg')+ ' mode');
+  var listenurl = (nconf.get('https')?'https':'http:')+'://'+nconf.get('listen')+':'+nconf.get('port');
+  console.log('OpenTMI started on ' +listenurl+ ' in '+ nconf.get('cfg')+ ' mode');
   eventBus.emit('start_listening', {url: listenurl});
 };
 
-server.listen(args.get('port'), args.get('listen'));
+server.listen(nconf.get('port'), nconf.get('listen'));
 server.on('error', onError);
 server.on('listening', onListening);

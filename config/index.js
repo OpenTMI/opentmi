@@ -44,9 +44,4 @@ nconf.argv({
 .env()
 .defaults(require('./../config/config.js'));
 
-if (nconf.get('help') || nconf.get('h')) {
-  nconf.stores.argv.showHelp()
-  process.exit(0);
-}
-
 module.exports = nconf;
