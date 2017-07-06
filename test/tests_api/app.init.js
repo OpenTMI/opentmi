@@ -48,11 +48,6 @@ describe('Basic Get API', function () {
     superagent.get(api+'/testcases')
       .type('json')
       .end(function(e, res){
-        if (e)
-          console.log(e.toString());
-        else
-          console.log('no errors');
-           
         res.should.be.json;
         res.status.should.equal(200);
         res.body.should.be.instanceof(Array);
