@@ -1,25 +1,32 @@
-function AddonSample (app, server, io, passport){
+const logger = require('winston');
 
-	this.name = 'sample addon';
-	this.description = 'Just an very simple Example';
+class AddonCore {
+  constructor(app, server, io, passport) {
+    this.name = 'default addon name';
+    this.description = 'default addon description';
 
+    this.app = app;
+    this.server = server;
+    this.io = io;
+  }
 
-	this.register = function(){
-		app.get('/test', function(req, res){
-		  res.json({ok: 1});
-		});
+  // Default implementation of register
+  register() {
+    logger.warn('registering instance of AddonCore class');
+    this.app.get('/test', (req, res) => {
+      res.json({ ok: 1 });
+    });
 
-    io.on('connection', function (socket) {
-      console.log('someone are there! :)');
+    this.io.on('connection', function (socket) {
+      logger.info('Io connection made.');
       socket.emit('test', 'hello client');
-      socket.on('hello', function(data){
-        console.log(data);
+      socket.on('hello', function (data) {
+        logger.info(data);
       });
       socket.broadcast.emit('test', 'broadcast msg!');
       socket.emit('test', 'hello-world');
     });
-	}
-  return this;
+  }
 }
 
-exports = module.exports = AddonSample;
+module.exports = AddonCore;
