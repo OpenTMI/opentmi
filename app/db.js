@@ -6,8 +6,6 @@ mongoose.Promise = Promise;
 const nconf = require('../config');
 const dbUrl = nconf.get('db');
 
-let isConnectedBefore = false;
-
 const connect = function() {
     var options = {
         server: {
@@ -32,13 +30,10 @@ mongoose.connection.on('error', () => {
 });
 
 mongoose.connection.on('disconnected', () => {
-    logger.warn('MongoDB connection lost');
-    if (!isConnectedBefore) {
-        connect();
-    }
+    logger.warn('MongoDB connection lost, try again');
+    connect();
 });
 mongoose.connection.on('connected', () => {
-    isConnectedBefore = true;
     logger.info('Connection established to MongoDB: ' + dbUrl);
 });
 

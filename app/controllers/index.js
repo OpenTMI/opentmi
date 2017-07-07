@@ -27,7 +27,7 @@ class DefaultController extends EventEmitter {
       find[docId] = req.params[modelname];
       this.Model.findOne(find, (error, data) => {
         if (error) {
-          res.status(300).json({ error });
+          res.status(500).json({ error });
         } else if (data) {
           if (typeof modelname === 'string') req[modelname] = data;
           next();
@@ -59,9 +59,7 @@ class DefaultController extends EventEmitter {
   }
 
   find(req, res) {
-    console.log('finding...')
     this._model.query(req.query, (error, list) => {
-      console.log('results...')
       if (error) {
         logger.warn(error);
         res.status(300).json({ error: error.message });
