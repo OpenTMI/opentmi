@@ -5,26 +5,25 @@ const nconf = require('../../../config');
 const path = require('path');
 const zlib = require('zlib');
 const fs = require('fs');
+const Promise = require('bluebird');
+const logger = require('winston');
 
 const mongoose = require('mongoose');
 require('../../../app/models/file.js');
 
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
-const Promise = require('bluebird');
-const logger = require('winston');
-logger.level = 'error';
-
-const File = mongoose.model('File');
-
 // Local modules
 const checksum = require('../../../app/tools/checksum.js');
-const filedbPath = path.resolve('app/tools/filedb.js');
 
+const File = mongoose.model('File');
+const filedbPath = path.resolve('app/tools/filedb.js');
 let filedb;
+logger.level = 'error';
 
 // const tempStoragePath = './test/tests_unittests/tests_tools/temp_files';
 const sampleTextsToStore = [
@@ -224,18 +223,18 @@ describe('tools/filedb.js', function () {
 
     it('_readFile - valid files', function () {
       // Test read and unzip dummy files
-      filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
+      filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
       const readPromises = sampleDataToRead.map(obj => expect(filedb._readFile(obj.filename)).to.eventually.deep.equal(new Buffer(obj.data)));
       return Promise.all(readPromises);
     });
 
     it('_readFile - nonexistent file', function () {
-      filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
+      filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
       return expect(filedb._readFile('nonexistent_file')).to.be.rejectedWith(Error, undefined, '_readFile should be rejected if a nonexistent file is provided');
     });
 
     it('_readFile - no filename', function () {
-      filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
+      filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
       return expect(filedb._readFile(undefined)).to.be.rejectedWith(Error, undefined, '_readFile should be rejected if no filename is provided');
     });
   });
@@ -254,7 +253,7 @@ describe('tools/filedb.js', function () {
     });
 
     it('_writeFile - valid files', function () {
-      filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
+      filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
       const writePromises = sampleFilesToStore.map(obj => filedb._writeFile(obj.filename, obj.data).then(() => {
         const newFilePath = path.join(filedbLocation, `${obj.filename}.gz`);
         expect(fs.existsSync(newFilePath)).to.equal(true, `newly created file at path: ${newFilePath} does not exist.`);
@@ -266,12 +265,12 @@ describe('tools/filedb.js', function () {
     });
 
     it('_writeFile - no data', function () {
-      filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
+      filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
       return expect(filedb._writeFile('empty_file', undefined)).to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no data is provided');
     });
 
     it('_writeFile - no filename', function () {
-      filedb._resolveFilename = filename => path.join(filedbLocation, `${filename}.gz`);
+      filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
       return expect(filedb._writeFile(undefined, undefined)).to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no filename is provided');
     });
   });
@@ -311,15 +310,15 @@ describe('tools/filedb.js', function () {
   });
 
 
-  describe('_resolveFilename', function () {
-    it('_resolveFilename - valid filename', function (done) {
+  describe('_resolveFilePath', function () {
+    it('_resolveFilePath - valid filename', function (done) {
       const correctPath = path.join(filedbLocation, 'file_name.gz');
-      expect(filedb._resolveFilename('file_name')).to.equal(correctPath, 'given a valid filename _resolveFilename should return data/file_name.gz');
+      expect(filedb._resolveFilePath('file_name')).to.equal(correctPath, 'given a valid filename _resolveFilePath should return data/file_name.gz');
       done();
     });
 
-    it('_resolveFilename - no filename', function (done) {
-      expect(filedb._resolveFilename).to.throw(Error, undefined, '_resolveFilename should throw an Error if called without filename');
+    it('_resolveFilePath - no filename', function (done) {
+      expect(filedb._resolveFilePath).to.throw(Error, undefined, '_resolveFilePath should throw an Error if called without filename');
       done();
     });
   });

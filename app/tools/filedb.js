@@ -57,11 +57,14 @@ class FileDB {
     logger.info(`Storing file ${pFile.name} (filename: ${pFile.checksum()}.${fileEnding}).`);
     return FileDB._checkFilenameAvailability(pFile.checksum()).then((available) => {
       if (available) {
-        return FileDB._compress(pFile.data).then(compressedData => FileDB._writeFile(pFile.checksum(), compressedData));
+        return FileDB._compress(pFile.data).then((compressedData) => { 
+          const filename = pFile.checksum();
+          return FileDB._writeFile(filename, compressedData);
+        });
       }
 
       logger.warn('File already exists, no need to store a duplicate.');
-      return Promise.resolve;
+      return Promise.resolve();
     });
   }
 
@@ -72,7 +75,7 @@ class FileDB {
    *                    boolean variable as the resolve parameter
    */
   static _checkFilenameAvailability(pFilename) {
-    const filePath = FileDB._resolveFilename(pFilename);
+    const filePath = FileDB._resolveFilePath(pFilename);
 
     logger.debug(`Checking if file exists in path: ${filePath}.`);
     return fs.exists(filePath).then((exists) => {
@@ -87,16 +90,20 @@ class FileDB {
    * Reads a stored file with a specific filename
    * @param {string|Buffer|integer} pFilename - filename or file descriptor, is usually the sha1 checksum of the data
    * @returns {Promise} promise to read a file with a dataBuffer as the resolve parameter
+   *
+   * @todo Large files will most likely cause problems, stream support would solve this
+   * @todo Read file size before reading the whole file, needs streams
    */
   static _readFile(pFilename) {
-    const filePath = FileDB._resolveFilename(pFilename);
+    const filePath = FileDB._resolveFilePath(pFilename);
 
-    logger.debug(`Reading file from: ${filePath}.`);
+    logger.debug(`Reading file from file system with path: ${filePath}.`);
     return fs.readFile(filePath).then((dataBuffer) => {
       logger.debug(`Read file (filename: ${pFilename} size: ${dataBuffer.size}).`);
       return dataBuffer;
     }).catch((error) => {
-      logger.warn(`Could not read file with path: ${filePath}, error: ${error.message}.`);
+      const errorMessage = `Could not read file with path: ${filePath}, error: ${error.message}.`;
+      logger.warn(errorMessage);
       throw error;
     });
   }
@@ -106,9 +113,11 @@ class FileDB {
    * @param {File} pFilename - name of the file to write, without the file ending
    * @param {string|Buffer} pData - data to write
    * @returns {Promise} promise to write the file to filedb
+   *
+   * @todo Large files will most likely cause problems, stream support would solve this
    */
   static _writeFile(pFilename, pData) {
-    const filePath = FileDB._resolveFilename(pFilename);
+    const filePath = FileDB._resolveFilePath(pFilename);
 
     // Ensure there is data to write
     if (!pData) {
@@ -121,8 +130,9 @@ class FileDB {
     return fs.writeFile(filePath, pData).then(() => {
       logger.debug(`Wrote file (filename: ${pFilename} size: ${pData.length || '0'}).`);
     }).catch((error) => {
-      logger.warn(`Could not write data to path: ${filePath}, error: ${error.message}.`);
-      throw error;
+      const errorMessage = `Could not write data to path: ${filePath}, error: ${error.message}.`;
+      logger.warn(errorMessage);
+      return Promise.reject(new Error(errorMessage));
     });
   }
 
@@ -143,8 +153,9 @@ class FileDB {
       logger.debug(`Compressing data of size: ${pUncompressedData.length}.`);
       zlib.gzip(pUncompressedData, (error, compressedData) => {
         if (error) {
-          logger.warn(`Could not compress file, error with message: ${error.message}.`);
-          return reject(error);
+          const errorMessage = `Could not compress file, error with message: ${error.message}.`;
+          logger.warn(errorMessage);
+          return reject(errorMessage);
         }
 
         logger.verbose('Compress result:');
@@ -171,11 +182,12 @@ class FileDB {
     }
 
     return new Promise((resolve, reject) => {
-      logger.debug(`Uncompressing file with filename: ${this.filename}.`);
+      logger.debug(`Uncompressing data of size: ${pCompressedData.length}.`);
       zlib.gunzip(pCompressedData, (error, uncompressedData) => {
         if (error) {
-          logger.warn(`Could not uncompress file with filename: ${this.filename}, error with message: ${error.message}.`);
-          return reject(error);
+          const errorMessage = `Could not uncompress, error with message: ${error.message}.`;
+          logger.warn(errorMessage);
+          return reject(errorMessage);
         }
 
         logger.verbose('Uncompress result:');
@@ -193,15 +205,15 @@ class FileDB {
    * @param {String} pName - name of the file, usually the sha1 checksum of the file
    * @returns {String} valid storage path for file with the provided name
    */
-  static _resolveFilename(pName) {
-    if (!pName) {
-      const errorMessage = `cannot resolve filename, no name provided, received: ${pName}`;
+  static _resolveFilePath(pFilename) {
+    if (!pFilename) {
+      const errorMessage = `cannot resolve filename, no name provided, received: ${pFilename}`;
       logger.warn(errorMessage);
-      throw Error(errorMessage);
+      throw new Error(errorMessage);
     }
 
-    logger.verbose(`resolving filePath from filedb: ${filedb} and filename: ${pName} with ending: ${fileEnding}`);
-    return path.join(filedb, `${pName}.${fileEnding}`);
+    logger.verbose(`resolving filePath from filedb: ${filedb} and filename: ${pFilename} with ending: ${fileEnding}`);
+    return path.join(filedb, `${pFilename}.${fileEnding}`);
   }
 }
 

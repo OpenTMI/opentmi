@@ -23,7 +23,9 @@ const FileSchema = new mongoose.Schema({
 FileSchema.set('toObject', { virtuals: true });
 
 FileSchema.virtual('hrefs').get(function () {
-  return (fileProvider && fileProvider !== 'mongodb' && this.sha1) ? path.join(fileProvider, this.sha1) : undefined;
+  const hasHref = fileProvider && (fileProvider !== 'mongodb') && this.sha1;
+  const pathToFile = path.join(fileProvider, this.sha1);
+  return hasHref ? pathToFile : undefined;
 });
 
 FileSchema.methods.prepareDataForStorage = function () {
