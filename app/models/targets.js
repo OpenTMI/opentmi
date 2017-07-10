@@ -38,7 +38,7 @@ var TargetSchema = new Schema({
     description: { type: String},
     components: [{
         type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
-        sn: {type: String}, 
+        sn: {type: String},
         mac: {type: String},
     }],
     hw: {
@@ -51,7 +51,7 @@ var TargetSchema = new Schema({
         score: {type: Number},
       },
       cpu: {
-        vendor: {type: String}, 
+        vendor: {type: String},
         model:  {type: String},
         count: {type: Number},
         freq:   {type: Number},
@@ -64,7 +64,7 @@ var TargetSchema = new Schema({
         score: {type: Number},
       },
       components:[{
-        
+
       }]*/
     },
     /*
@@ -74,9 +74,9 @@ var TargetSchema = new Schema({
         version: {type: String},      // Windows 7 Service Pack 1 32-bit
     },
     specifications :{
-        system_unit:  {type: String, enum: ['SI', 'BIS'], default: 'SI'}, // SI-system-unit or British Imperial System 
+        system_unit:  {type: String, enum: ['SI', 'BIS'], default: 'SI'}, // SI-system-unit or British Imperial System
         electrical: {
-            acceptable_input_voltage: { 
+            acceptable_input_voltage: {
                 min: { type: Number },
                 max: { type: Number },
             },  //Volts
@@ -131,7 +131,7 @@ var TargetSchema = new Schema({
 
 
 /** install QueryPlugin */
-TargetSchema.plugin( QueryPlugin ); 
+TargetSchema.plugin( QueryPlugin );
 
 /**
  * Add your
@@ -175,4 +175,5 @@ TargetSchema.static({
 /**
  * Register
  */
-mongoose.model('Target', TargetSchema);
+let Target = mongoose.model('Target', TargetSchema);
+module.exports = {Model: Target, Collection: 'Target'};

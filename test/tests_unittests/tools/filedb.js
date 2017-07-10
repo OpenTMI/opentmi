@@ -9,7 +9,7 @@ const Promise = require('bluebird');
 const logger = require('winston');
 
 const mongoose = require('mongoose');
-require('../../../app/models/file.js');
+require('../../../app/models/extends/file.js');
 
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');

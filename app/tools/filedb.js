@@ -10,7 +10,7 @@ const fs = require('fs-extra');
 
 // Local modules
 const mongoose = require('mongoose');
-require('../models/file.js');
+require('../models/extends/file.js');
 
 const usedEncoding = 'utf8';
 const File = mongoose.model('File');
@@ -57,7 +57,7 @@ class FileDB {
     logger.info(`Storing file ${pFile.name} (filename: ${pFile.checksum()}.${fileEnding}).`);
     return FileDB._checkFilenameAvailability(pFile.checksum()).then((available) => {
       if (available) {
-        return FileDB._compress(pFile.data).then((compressedData) => { 
+        return FileDB._compress(pFile.data).then((compressedData) => {
           const filename = pFile.checksum();
           return FileDB._writeFile(filename, compressedData);
         });

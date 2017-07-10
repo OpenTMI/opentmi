@@ -8,34 +8,29 @@ const mongoose = require('mongoose');
   General ontrollers for "Restfull" services
 */
 class DefaultController extends EventEmitter {
-  constructor(pModelName, docId) {
+  constructor(pModelName) {
     super();
-
     this._model = mongoose.model(pModelName);
     this.modelName = pModelName;
-    this.docId = docId || '_id';
-    EventEmitter.call(this);
-
+    this.docId = '_id';
     this.modelParam = this.defaultModelParam();
   }
 
-  defaultModelParam(pModelname, errorCb, successCb) {
+  defaultModelParam() {
     // Find from db
-    const modelname = pModelname || this.modelName;
+    const modelname = this.modelName;
+    const docId = this.docId;
 
     return (req, res, next, id) => {
       logger.debug(`do param ${JSON.stringify(req.params)}`);
       const find = {};
-      find[this.docId] = req.params[modelname];
-
+      find[docId] = req.params[modelname];
       this.Model.findOne(find, (error, data) => {
         if (error) {
-          if (errorCb) errorCb(error);
-          else res.status(300).json({ error });
+          res.status(500).json({ error });
         } else if (data) {
           if (typeof modelname === 'string') req[modelname] = data;
-          if (successCb) successCb();
-          else next();
+          next();
         } else {
           res.status(404).json({ msg: 'not found' });
         }
