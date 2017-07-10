@@ -133,25 +133,27 @@ fs.readdirSync(__dirname + '/routes').forEach(function (file) {
 // Bootsrap addons, like default webGUI
 var AddonManager = require('./addons');
 global.AddonManager = new AddonManager(app, server, io);
-global.AddonManager.RegisterAddons();
+global.AddonManager.loadAddons().then(() => {
+  global.AddonManager.registerAddons().then(() => {
+    // Add error router
+    require(__dirname + '/routes/error.js')(app);
 
-// Add error router
-require(__dirname + '/routes/error.js')(app);
+    var onError = function(error){
+      if( error.code === 'EACCES' && nconf.get('port') < 1024 ) {
+        logger.error("You haven't access to open port below 1024");
+        logger.error("Please use admin rights if you wan't to use port %d!", nconf.get('port'));
+      } else {
+        logger.error(error);
+      }
+      process.exit(-1);
+    };
+    var onListening = function(){
+      var listenurl = (nconf.get('https')?'https':'http:')+'://'+nconf.get('listen')+':'+nconf.get('port');
+      console.log('OpenTMI started on ' +listenurl+ ' in '+ nconf.get('cfg')+ ' mode');
+    };
 
-var onError = function(error){
-  if( error.code === 'EACCES' && nconf.get('port') < 1024 ) {
-    logger.error("You haven't access to open port below 1024");
-    logger.error("Please use admin rights if you wan't to use port %d!", nconf.get('port'));
-  } else {
-    logger.error(error);
-  }
-  process.exit(-1);
-};
-var onListening = function(){
-  var listenurl = (nconf.get('https')?'https':'http:')+'://'+nconf.get('listen')+':'+nconf.get('port');
-  console.log('OpenTMI started on ' +listenurl+ ' in '+ nconf.get('cfg')+ ' mode');
-};
-
-server.listen(nconf.get('port'), nconf.get('listen'));
-server.on('error', onError);
-server.on('listening', onListening);
+    server.listen(nconf.get('port'), nconf.get('listen'));
+    server.on('error', onError);
+    server.on('listening', onListening);
+  });
+});
