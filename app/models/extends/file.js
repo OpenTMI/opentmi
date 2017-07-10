@@ -6,8 +6,8 @@ const logger = require('winston');
 const mongoose = require('mongoose');
 
 // local module
-const nconf = require('../../config');
-const checksum = require('../tools/checksum.js');
+const nconf = require('../../../config');
+const checksum = require('../../tools/checksum.js');
 const fileProvider = nconf.get('filedb');
 
 const FileSchema = new mongoose.Schema({

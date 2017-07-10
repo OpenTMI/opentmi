@@ -1,7 +1,7 @@
 const express = require('express');
 const TargetController = require('./../controllers/targets');
 
-const Route = function (app, passport) {
+const Route = function (app) {
   const router = express.Router();
   const controller = new TargetController();
 

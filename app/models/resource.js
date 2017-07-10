@@ -19,21 +19,21 @@ var ResourceAllocationPlugin = require('./plugins/resource-allocator');
 var ResourceSchema = new Schema({
   name: {type: String, unique: true, required: true}, // Resource Name (more like nickname)
   type: {type: String, required: true, enum: [        // Resource type
-        'system', 
-        'dut', 
-        'sim', 
+        'system',
+        'dut',
+        'sim',
         'instrument',
-        'accessorie', 
-        'computer', 
+        'accessorie',
+        'computer',
         'room'
       ]},
-  status: { 
+  status: {
     value: { type: String, enum: [
-      "active", 
-      "maintenance", 
-      "storage", 
-      "broken"], 
-      default: "active"}, 
+      "active",
+      "maintenance",
+      "storage",
+      "broken"],
+      default: "active"},
     availability: {type: String, enum: ['free', 'reserved']},
     installed: {
       os: {
@@ -41,7 +41,7 @@ var ResourceSchema = new Schema({
         id: {type: ObjectId, ref: 'Build'}
       }
     },
-    time: {type: Date, default: Date.now } 
+    time: {type: Date, default: Date.now }
   },
   cre: {
       user: {type: String, default: ""},              // Resource creator
@@ -73,22 +73,22 @@ var ResourceSchema = new Schema({
   },
   usage: {
     type: {type: String, enum: [
-      'automation', 
-      'shared', 
-      'manual', 
-      'unknown'], 
+      'automation',
+      'shared',
+      'manual',
+      'unknown'],
       default: 'unknown' },
     group: {type: String, enum: [
-      'global', 
-      'department', 
-      'unknown'], 
+      'global',
+      'department',
+      'unknown'],
       default: 'unknown' },
     automation: {
       system: {type: String, enum: ['default']}
     }
   },
   //resource details - target details
-  target: {type: ObjectId, ref: 'Target'},  
+  target: {type: ObjectId, ref: 'Target'},
   ip: {
     hostname: {type: String, unique: true, sparse: true},
     domain: {type: String},
@@ -109,7 +109,7 @@ var ResourceSchema = new Schema({
   other_info: {
     nickname: [ {type: String} ],   // resource nickname
     location: {                     // Resource physical location
-      site: { type: String, default: 'unknown'},      // Site    
+      site: { type: String, default: 'unknown'},      // Site
       country: { type: String },      // Country
       city: { type: String },         // City
       adddress: { type: String },     // Street address
@@ -123,7 +123,7 @@ var ResourceSchema = new Schema({
     }
   },
   /*
-  configurations: {  
+  configurations: {
     defaults: {
       testcases: {
         path: [{type: String}]
@@ -137,11 +137,11 @@ var ResourceSchema = new Schema({
       rf: { type: Boolean }, // RF shield rack
   },
   app: [{
-      
+
       type: {type: String, enum: ['application', 'plugin','library']},  // optional
-      plugin: { 
+      plugin: {
           application: {type: String}
-      },  
+      },
       library:{
           application: {type: String}
       },
@@ -160,13 +160,13 @@ var ResourceSchema = new Schema({
 });
 ResourceSchema.set('toJSON', {
   virtuals: true,
-  getters: true, 
+  getters: true,
   minimize: true,
   transform: function(doc, ret, options) {
     if(!ret.id)ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
-    if( ret.ip && 
+    if( ret.ip &&
         ret.ip.remote_connection &&
         ret.ip.remote_connection.authentication )
       delete ret.ip.remote_connection.authentication;
@@ -200,7 +200,7 @@ ResourceSchema.method({
         Resource.find( {_id: resource.parent}, loop);
       } else {
         cb(error, route);
-      } 
+      }
     };
     loop(null, this);
   },
@@ -221,4 +221,5 @@ ResourceSchema.static({
 /**
  * Register
  */
-mongoose.model('Resource', ResourceSchema);
+let Resource = mongoose.model('Resource', ResourceSchema);
+module.exports = {Model: Resource, Collection: 'Resource'};

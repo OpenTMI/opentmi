@@ -67,14 +67,14 @@ CampaignSchema.plugin( QueryPlugin ); //install QueryPlugin
 
 CampaignSchema.method({
   findTestcases: function(query, cb) {
-  
+
     if( !this.tcs ) {
       cb('test_cases field missing!');
       return;
     }
     if( this.tcs[0] == '{' ) {
       _.extend(query, {q: this.tcs});
-    } else { 
+    } else {
       var parts = this.tcs.matches.split('&'), i;
       for(i=0;i<parts.length;i++){
         var x = parts[i].split('=');
@@ -114,4 +114,5 @@ CampaignSchema.static({
 /**
  * Register
  */
-mongoose.model('Campaign', CampaignSchema);
+let Campaign = mongoose.model('Campaign', CampaignSchema);
+module.exports = {Model: Campaign, Collection: 'Campaign'};
