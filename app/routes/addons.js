@@ -1,19 +1,43 @@
-var express = require('express');
-var mongoose = require('mongoose');
+const express = require('express');
 
-var Route = function(app, passport){
+const AddonManager = require('../addons');
+const AddonController = require('../controllers/addons');
 
-  var router = express.Router();
-  
-  router.route('/api/v0/addons.:format?')
-    .all( function(req, res, next){
+const Route = function (app, passport) {
+  const router = express.Router();
+  const defaultAll = (req, res, next) => next();
+
+  router.param('Addon', (req, res, next, name) => {
+    req.addon = AddonManager.findAddon(name);
+    if (!req.addon) {
+      res.sendStatus(404);
+    } else {
       next();
-    })
-    .get( function(req, res){
-      res.json( global.AddonManager.AvailableModules() );
-    })
-    
-    app.use( router );
-}
+    }
+  });
+
+  router.route('/api/v0/addons.:format?')
+  .all(defaultAll)
+  .get(AddonController.listAddons);
+
+  router.route('/api/v0/addons/register')
+  .all(defaultAll)
+  .post(AddonController.routePerformAction.bind(this, 'register'));
+
+  router.route('/api/v0/addons/unregister')
+  .all(defaultAll)
+  .post(AddonController.routePerformAction.bind(this, 'unregister'));
+
+  router.route('/api/v0/addons')
+  .all(defaultAll)
+  .post(AddonController.routeAddAddon);
+
+  router.route('/api/v0/addons/:Addon')
+  .all(defaultAll)
+  .get((req, res) => { res.status(200).json(req.addon); })
+  .delete(AddonController.routeRemoveAddon);
+
+  app.use(router);
+};
 
 module.exports = Route;
