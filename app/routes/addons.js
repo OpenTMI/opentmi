@@ -3,7 +3,7 @@ const express = require('express');
 const AddonManager = require('../addons');
 const AddonController = require('../controllers/addons');
 
-const Route = function (app, passport) {
+const Route = function (app) {
   const router = express.Router();
   const defaultAll = (req, res, next) => next();
 

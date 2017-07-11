@@ -9,7 +9,7 @@
 var mongoose = require('mongoose');
 var QueryPlugin = require('mongoose-query');
 
-/* Implementation */   
+/* Implementation */
 var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
@@ -28,27 +28,27 @@ var FeatureSchema = new Schema({
 var ComponentSchema = new Schema({
   name: {type: String, required: true},
   supported_versions: {
-    type: String, 
+    type: String,
     match: /[*\d]{1,}\.?[*\d]{1,}?\.?[*\d]{1,}?/,
     default: "*"
   },
-  features: [FeatureSchema]    
+  features: [FeatureSchema]
 });
 /**
  * Testcase schema
- */ 
+ */
 
 var TestCaseSchema = new Schema({
   tcid: {
-    type: String,     
-    minlength: 4, 
-    required: true, 
-    index: true, 
+    type: String,
+    minlength: 4,
+    required: true,
+    index: true,
     title: 'TC ID'
   },
   archive: {
     value: {type: Boolean, default: false,  //true when tc is archived
-            title: 'Archived'},             
+            title: 'Archived'},
     time: {type: Date},                //timestamp when tc is archived
     user: {type: String},                   //username who archive this case
   },
@@ -81,9 +81,9 @@ var TestCaseSchema = new Schema({
         "performance",
         "reliability"
     ]},
-    purpose: {type: String, title: 'Purpose' },               
+    purpose: {type: String, title: 'Purpose' },
     description: {type: String, title: 'Description' },   //Short description
-    layer: {type: String, 
+    layer: {type: String,
       enum: [ 'L1', 'L2', 'L3', 'unknown'],
       defaut: 'unknown', title: 'Layer'},
     sut: [ ComponentSchema ],
@@ -102,7 +102,7 @@ var TestCaseSchema = new Schema({
   },
   execution: {
     skip: {
-      value: {type: Boolean, default: false, index: true}, 
+      value: {type: Boolean, default: false, index: true},
       reason: { type: String },
       time: {type: Date}
     },
@@ -123,9 +123,9 @@ var TestCaseSchema = new Schema({
     href: {type: String },              //or external
   },
   status: {     //Current status
-    value: { type: String, default: "unknown", 
-      enum: [ 'unknown', 'released', 'development', 'maintenance', 'broken' ], 
-      index: true, title: 'Status' 
+    value: { type: String, default: "unknown",
+      enum: [ 'unknown', 'released', 'development', 'maintenance', 'broken' ],
+      index: true, title: 'Status'
     },
     verification: {  //verification details, if any
       value: {type: Boolean },
@@ -145,8 +145,8 @@ var TestCaseSchema = new Schema({
     },
     hardware: {
       yes: {type: Boolean, default: true},
-      target: [ 
-        { type: String, enum: [ "K64F" ] } 
+      target: [
+        { type: String, enum: [ "K64F" ] }
       ]
     },
     automation: {
@@ -166,9 +166,9 @@ var TestCaseSchema = new Schema({
 });
 
 
-TestCaseSchema.set('toJSON', { 
+TestCaseSchema.set('toJSON', {
   virtuals: true,
-  getters: true, 
+  getters: true,
   minimize: true,
   transform: function(doc, ret, options) {
     if(!ret.id)ret.id = ret._id;
@@ -241,8 +241,5 @@ TestCaseSchema.static({
  */
 TestCaseSchema.plugin( QueryPlugin ); //install QueryPlugin
 
-var Testcase = mongoose.model('Testcase', TestCaseSchema);
-// TODO figure out how to synchronously ensureIndexes so we do not close db connection before the process is completed
-//Testcase.ensureIndexes(function (err) {
-//  if (err) return handleError(err);
-//});
+let Testcase = mongoose.model('Testcase', TestCaseSchema);
+module.exports = {Model: Testcase, Collection: 'Testcase'};

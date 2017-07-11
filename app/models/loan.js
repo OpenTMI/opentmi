@@ -15,12 +15,12 @@ var LoanItemSchema = new Schema({
 	                validator: isValidDate,
                     message: '{VALUE} cannot be parsed to a date.'
 	              }},
-  resource    : { type:ObjectId, ref:'Resource' } 	
+  resource    : { type:ObjectId, ref:'Resource' }
 });
 
 var LoanSchema = new Schema({
   loan_date : { type:Date, required: true, default: Date.now },
-  loaner    : { type:ObjectId, ref:'User', required:true },                  
+  loaner    : { type:ObjectId, ref:'User', required:true },
   notes     : { type: String },
   items     : [ LoanItemSchema ]
 });
@@ -49,15 +49,15 @@ LoanSchema.pre('save', function(next) {
   logger.info('Loan second pre-save hook started');
   var self = this;
   if (!this.isNew) return next();
-  
+
   var item_counts = self.extractItemIds();
   if (item_counts.length === 0)
     return next(new Error('cannot process post without items field'));
-  
+
   self.ensureAvailability(item_counts, function(err) {
 	if (err) return next(err);
-	
-	// Errors after this point could corrupt item.available value 
+
+	// Errors after this point could corrupt item.available value
 	self.pushIdsToItemsArray();
 	self.modifyAvailability(item_counts, next);
   });
@@ -69,7 +69,7 @@ LoanSchema.pre('save', function(next) {
 LoanSchema.pre('remove', function(next) {
   logger.info('Loan pre-remove hook started');
   var self = this;
-  
+
   var unreturned = self.countUnreturnedItems();
   self.modifyAvailability(unreturned, next);
 });
@@ -79,34 +79,34 @@ LoanSchema.pre('remove', function(next) {
  */
 LoanSchema.methods.extractItemIds = function() {
   var self = this;
-  
-  // Get item counts 
+
+  // Get item counts
   var counts = {};
   for (var i = 0; i < this.items.length; i++) {
 	counts[this.items[i].item] = typeof counts[this.items[i].item] === 'undefined' ?
 	  -1 :
 	  counts[this.items[i].item] - 1;
   }
-  
+
   // Convert counts to array of objects
   return objectToArrayOfObjects(counts);
 };
-LoanSchema.methods.ensureAvailability = function(item_counts, next) {  
+LoanSchema.methods.ensureAvailability = function(item_counts, next) {
   logger.info('Ensuring item availablities');
-  
+
   // Ensure that there is enough items to loan
   async.eachSeries(item_counts, ensureItemAvailability, function(err) {
 	if (err) return next(err);
-	else next();  	
+	else next();
   });
 }
 LoanSchema.methods.pushIdsToItemsArray = function(ids) {
   // Make sure items array only contains relevant fields
   var self = this;
-  
+
   var copy_items = self.items;
   self.items = [];
-  
+
   for (var i = 0; i < copy_items.length; i++) {
 	self.items.push({item:copy_items[i].item});
   }
@@ -126,7 +126,7 @@ LoanSchema.methods.countReturns = function(delta_items) {
 	var item = self.findWithIndex(delta_items[i]._id);
     if (item !== null) { // A pair for the element in the database was found if not null
 	  //console.log('item_date' + item.data + (typeof item.data.return_date === 'undefined'));
-	  if (typeof item.data.return_date === 'undefined' && typeof delta_items[i].return_date !== 'undefined') { 
+	  if (typeof item.data.return_date === 'undefined' && typeof delta_items[i].return_date !== 'undefined') {
 		// We now know that the item did not have a return date and a new one is proposed
 		if (!isValidDate(new Date(delta_items[i].return_date))) {
 		  return Error('Received an invalid date');
@@ -144,13 +144,13 @@ LoanSchema.methods.countReturns = function(delta_items) {
       //else return new Error('No return date defined');
 	} else return new Error(`Id:${delta_items[i]._id} was not found in items`);
   }
-  
+
   // Convert counts to array of objects
   var array_counts = [];
   for (var key in counts) {
 	array_counts.push({id:key, index:counts[key].index, date:counts[key].date, count:counts[key].count});
   }
-  
+
   return array_counts;
 }
 LoanSchema.methods.findWithIndex = function(item_id) {
@@ -170,12 +170,12 @@ LoanSchema.methods.countUnreturnedItems = function() {
 	// Skip if return date has been defined
     if (typeof self.items[i].return_date !== 'undefined') continue;
 
-	// Increase count by one 
+	// Increase count by one
 	counts[self.items[i].item] = (typeof counts[self.items[i].item] === 'undefined') ?
 	  1 :
       counts[self.items[i].item] + 1;
   }
-  
+
   // Return as array of objects
   return objectToArrayOfObjects(counts);
 }
@@ -186,13 +186,13 @@ LoanSchema.methods.countUnreturnedItems = function() {
 // Should be executed before actually attempting to decrease availability
 function ensureItemAvailability(item_count_obj, next) {
   Item.findById(item_count_obj.id, function(err, item) {
-    if (err) return next(new Error('Error while finding a provided item, item: ' + item_count_obj.id)); 
-	if (item === null) return next(new Error('Could not find item, item: ' + item_count_obj.id)); 
-	
-	if (item.available + item_count_obj.count >= 0) 
+    if (err) return next(new Error('Error while finding a provided item, item: ' + item_count_obj.id));
+	if (item === null) return next(new Error('Could not find item, item: ' + item_count_obj.id));
+
+	if (item.available + item_count_obj.count >= 0)
 	  next();
-	else 
-	  return next(new Error('Not enough items to loan, expected ' + item_count_obj.count + ' found ' + item.available));  
+	else
+	  return next(new Error('Not enough items to loan, expected ' + item_count_obj.count + ' found ' + item.available));
   });
 }
 
@@ -202,7 +202,7 @@ function modifyItemAvailability(item_count_obj, next) {
   Item.findById(item_count_obj.id, function(err, item) {
 	if (err) return next(new Error('Error while finding a provided item, item:' + item_count_obj.id + ' is very likely now corrupted')); // Should not happen
 	if (item === null) return next(new Error('Could not find item, item:' + item_count_obj.id + ' is very likely now corrupted')); // Should not happen either
-	
+
 	item.available += item_count_obj.count;
 	item.save(function(err) {
 	  if (err) next(new Error('Could not save availability, item:' + item._id + ' is very likely now corrupted'));
@@ -224,4 +224,5 @@ function isValidDate(date) {
  return date !== "Invalid Date" && !isNaN(date);
 }
 
-mongoose.model("Loan", LoanSchema);
+let Loan = mongoose.model("Loan", LoanSchema);
+module.exports = {Model: Loan, Collection: "Loan"};

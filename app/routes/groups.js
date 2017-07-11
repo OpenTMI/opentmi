@@ -3,7 +3,7 @@ const restify = require('express-restify-mongoose');
 const _ = require('lodash');
 const logger = require('winston');
 
-const Route = function (app, passport) {
+const Route = function (app) {
   // easy way, but not support format -functionality..
   const Group = mongoose.model('Group');
   restify.serve(app, Group, {

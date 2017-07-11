@@ -7,7 +7,7 @@ var QueryPlugin = require('mongoose-query');
 var bcrypt = require('bcryptjs');
 var uuid = require('node-uuid');
 
-/* Implementation */   
+/* Implementation */
 var Schema = mongoose.Schema;
 var Types = Schema.Types;
 var ObjectId = Types.ObjectId;
@@ -20,7 +20,7 @@ var Schema = mongoose.Schema;
 
 var ApiKeySchema = new Schema({
   name: { type: String },
-  key: { type: String, default: uuid.v4, index: true },        
+  key: { type: String, default: uuid.v4, index: true },
   description: {type: String },
 });
 
@@ -50,4 +50,5 @@ ApiKeySchema.static({
 /**
  * Register
  */
-mongoose.model('ApiKey', ApiKeySchema);
+let ApiKey = mongoose.model('ApiKey', ApiKeySchema);
+module.exports = {Model: ApiKey, Collection: 'ApiKey'};

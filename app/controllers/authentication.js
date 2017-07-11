@@ -1,7 +1,7 @@
 require('colors');
 
 const qs = require('querystring');
-const nconf = require('nconf');
+const nconf = require('../../config');
 const mongoose = require('mongoose');
 const request = require('request');
 const auth = require('./../../config/middlewares/authorization');

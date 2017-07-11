@@ -1,9 +1,9 @@
-var logger = require('winston')
+const logger = require('winston');
 /**
  * Error handling
  */
- 
-var Route = function(app, passport){
+
+var Route = function(app){
   logger.log('-AddRoute: error');
   app.use(function (err, req, res, next) {
     // treat as 404
@@ -14,9 +14,9 @@ var Route = function(app, passport){
     }
     logger.error(err.stack);
     // error page
-    res.status(500).json({ 
+    res.status(500).json({
       url: req.originalUrl,
-      error: err.stack 
+      error: err.stack
     });
   });
 
@@ -27,6 +27,6 @@ var Route = function(app, passport){
       error: 'Not found'
     });
   });
-}
+};
 
 module.exports = Route;

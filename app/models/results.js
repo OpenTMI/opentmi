@@ -11,7 +11,7 @@ const _ = require('lodash');
 const Schema = mongoose.Schema;
 
 
-const FileSchema = require('./file');
+const FileSchema = require('./extends/file');
 const tools = require('../tools');
 const checksum = tools.checksum;
 const filedb = tools.filedb;
@@ -38,8 +38,8 @@ var ResultSchema = new Schema({
   cre: {
     time: {type: Date, default: Date.now, index: true},
     user: {type: String},
-    userRef: {type: Schema.Types.ObjectId, ref: 'User' } 
-  },  
+    userRef: {type: Schema.Types.ObjectId, ref: 'User' }
+  },
   exec: {
     verdict: { type: String, required: true, enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'] },
     note: {type: String, default: ''},
@@ -174,4 +174,5 @@ ResultSchema.static({
 /**
  * Register
  */
-mongoose.model('Result', ResultSchema);
+let Result = mongoose.model('Result', ResultSchema);
+module.exports = {Model: Result, Collection: 'Result'};

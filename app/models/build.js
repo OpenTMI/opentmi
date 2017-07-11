@@ -4,7 +4,6 @@
 // native modules
 var fs = require('fs');
 var path = require('path');
-const zlib = require('zlib');
 
 // 3rd party modules
 var logger = require('winston');
@@ -18,7 +17,7 @@ var tools = require('../tools');
 var checksum = tools.checksum;
 var filedb = tools.filedb;
 var file_provider = filedb.provider;
-var FileSchema = require('./file');
+var FileSchema = require('./extends/file');
 
 var Schema = mongoose.Schema;
 
@@ -166,31 +165,22 @@ BuildSchema.pre('validate', function (next) {
     if (_.isArray(this.files)) {
         for (i = 0; i < this.files.length; i++) {
             var file = this.files[i];
-            if (!file.name) {
-                err = new Error('file[' + i + '].name missing');
-                break;
-            }
-            if (file.base64) {
-                file.data = new Buffer(file.base64, 'base64');
-                file.base64 = undefined;
-            }
-            if (file.data) {
-                file.size = file.data.length;
-                //file.type = mimetype(file.name(
-                file.sha1 = checksum(file.data, 'sha1');
-                file.sha256 = checksum(file.data, 'sha256');
-                if (file_provider === 'mongodb') {
-                    //use mongodb document
-                    logger.warn('store file %s to mongodb', file.name);
-                } else if (file_provider) {
-                    // store to filesystem
-                    filedb.storeFile(file);
-                    file.data = undefined;
-                } else {
-                    //do not store at all..
-                    file.data = undefined;
-                    logger.warn('filedb is not configured');
-                }
+     
+            file.prepareDataForStorage();
+            if (file_provider === 'mongodb') {
+                //use mongodb document
+                logger.warn('storing file %s to mongodb', file.name);
+            } else if (file_provider) {
+                // store data to filesystem
+                logger.debug('storing file %s into filesystem', file.name);
+                file.storeInfileDB();
+
+                // stored data seperately, unassign data from schema
+                file.data = undefined;
+            } else {
+                //do not store at all..
+                logger.warn('filedb is not configured, ignoring data');
+                file.data = undefined;
             }
         }
     }
@@ -226,7 +216,7 @@ BuildSchema.methods.download = function (index, expressResponse) {
                 'Content-disposition': 'attachment;filename=' + file.name,
                 'Content-Length': file.data.length
             });
-            res.end(file.data);
+            res.send(file.data);
         } else {
             res.status(404).json(build);
         }
@@ -261,4 +251,5 @@ BuildSchema.virtual('file').get(
 /**
  * Register
  */
-mongoose.model('Build', BuildSchema);
+let Build = mongoose.model('Build', BuildSchema);
+module.exports = {Model: Build, Collection: 'Build'};

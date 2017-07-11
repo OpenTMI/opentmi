@@ -27,13 +27,13 @@
     "start": "NODE_ENV=development node index.js",
     "debug": "NODE_ENV=development node --inspect index.js",
     "test": "grunt",
-    "test-inventory": "grunt inventory" 
+    "test-inventory": "grunt inventory"
   },
   "dependencies": {
     "async": "^1.5.2",
     "bcryptjs": "^2.3.0",
-    "body-parser": "*",
     "bluebird": "3.5.0",
+    "body-parser": "*",
     "colors": "^1.1.2",
     "compression": "*",
     "connect-busboy": "0.0.2",
@@ -48,6 +48,8 @@
     "express-jwt": "^5.1.0",
     "express-restify-mongoose": "^0.7.5",
     "express-session": "^1.14.0",
+    "express-winston": "^2.4.0",
+    "fs-extra": "^3.0.1",
     "jsonschema": "^1.1.0",
     "junit-xml-parser": "0.0.3",
     "jwt-simple": "^0.5.0",
@@ -63,8 +65,7 @@
     "satellizer": "^0.15.5",
     "socket.io": "^1.4.8",
     "winston": "^2.3.1",
-    "winston-daily-rotate-file": "^1.4.6",
-    "express-winston": "^2.4.0"
+    "winston-daily-rotate-file": "^1.4.6"
   },
   "devDependencies": {
     "chai": "^3.5.0",
