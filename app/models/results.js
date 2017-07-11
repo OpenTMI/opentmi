@@ -28,7 +28,7 @@ FileSchema.add({
  * User schema
  */
 var ResultSchema = new Schema({
-  tcid: { type: String, required: true },
+  tcid: { type: String, required: true, index: true },
   tcRef: {type: Schema.Types.ObjectId, ref: 'Testcase' },
   job:{
     id: { type: String, default: ''}
@@ -41,7 +41,12 @@ var ResultSchema = new Schema({
     userRef: {type: Schema.Types.ObjectId, ref: 'User' }
   },
   exec: {
-    verdict: { type: String, required: true, enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'] },
+    verdict: {
+      type: String,
+      required: true,
+      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'],
+      index: true
+    },
     note: {type: String, default: ''},
     duration: {type: Number}, //seconds
     profiling: {type: Schema.Types.Mixed},
