@@ -22,11 +22,11 @@ const Route = function (app) {
 
   router.route('/api/v0/addons/register')
   .all(defaultAll)
-  .post(AddonController.routePerformAction.bind(this, 'registerAddon'));
+  .post(AddonController.routePerformAction.bind(AddonController, 'registerAddon'));
 
   router.route('/api/v0/addons/unregister')
   .all(defaultAll)
-  .post(AddonController.routePerformAction.bind(this, 'unregisterAddon'));
+  .post(AddonController.routePerformAction.bind(AddonController, 'unregisterAddon'));
 
   router.route('/api/v0/addons')
   .all(defaultAll)
@@ -34,8 +34,8 @@ const Route = function (app) {
 
   router.route('/api/v0/addons/:Addon')
   .all(defaultAll)
-  .get((req, res) => { res.status(200).json(req.addon); })
-  .delete(AddonController.routeRemoveAddon);
+  .get((req, res) => { res.status(200).json(req.addon.toJson); })
+  .delete(AddonController.routeRemoveAddon.bind(AddonController));
 
   app.use(router);
 };

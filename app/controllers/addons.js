@@ -17,13 +17,7 @@ class AddonController {
    * @param {Object} res - response object from express
    */
   static listAddons(req, res) {
-    const addonList = [];
-
-    // Collect array of jsonified addons
-    AddonManager.addons.forEach((addon) => {
-      addonList.push(addon.Json);
-    });
-
+    const addonList = AddonManager.addons.map(addon => addon.toJson);
     res.status(200).json(addonList);
   }
 
@@ -52,7 +46,7 @@ class AddonController {
    * @returns {Promise} promise to eventually send a result back to the requester
    */
   static routeRemoveAddon(req, res) {
-    const existingIndex = AddonManager.findAddonIndex(req.addon.name);
+    const existingIndex = AddonManager.findAddonIndex(req.addon);
     const removeResult = { name: req.addon.name };
 
     // Check that index was found exists
@@ -83,37 +77,28 @@ class AddonController {
    * @returns {Promise} promise to eventually send a list of operation results to requester
    */
   static routePerformAction(pActionName, req, res) {
-    const results = [];
-
     if (!req.body || !(req.body instanceof Array)) {
       return res.status(400).json({ error: 'Request body needs to be a json Array' });
     }
 
-    const actionPromises = [];
-    req.body.forEach((pAddonName) => {
+    const actionPromises = req.body.map((pAddonName) => {
       const currentAddon = AddonManager.findAddon(pAddonName);
-      const actionResult = { name: pAddonName };
+      const actionResult = { result: 'fail', name: pAddonName };
       if (currentAddon) {
-        actionPromises.push(AddonManager[pActionName](currentAddon)
+        return AddonManager[pActionName](currentAddon)
         .then(() => {
-          actionResult.needsRestart = currentAddon.hasStaticContent || false;
+          actionResult.needsRestart = (currentAddon.hasStaticContent) || false;
           actionResult.result = 'success';
-          return actionResult;
         })
-        .catch((pError) => {
-          actionResult.result = 'fail';
-          actionResult.error = pError.message;
-          return actionResult;
-        })
-        .then(pResult => results.push(pResult)));
-      } else {
-        actionResult.result = 'fail';
-        actionResult.error = 'No addon with such name.';
-        results.push(actionResult);
+        .catch((pError) => { actionResult.error = pError.message; })
+        .then(() => actionResult);
       }
+
+      actionResult.error = 'No addon with such name.';
+      return Promise.resolve(actionResult);
     });
 
-    return Promise.all(actionPromises).then(() => res.status(200).json(results));
+    return Promise.all(actionPromises).then(results => res.status(200).json(results));
   }
 }
 

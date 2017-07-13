@@ -34,8 +34,15 @@ class Addon {
    * Returns a json formatted packet of information about this addon
    * @return {string} json string
    */
-  get Json() {
-    return JSON.stringify({ name: this.name, description: this.description, status: this.Status });
+  get toJson() {
+    return {
+      name: this.name,
+      description: this.description,
+      version: this.version,
+      repository: this.repository,
+      status: this.Status,
+      hasStaticContent: this.hasStaticContent
+    };
   }
 
   /**
@@ -95,8 +102,10 @@ class Addon {
     logger.debug(`[${this.name}] Loading addon.`);
     this._status = { state: STATES.load, phase: PHASES.inProgress };
     return Addon._loadAddonModule(this)
-    .then((AddonModule) => {
-      this.Module = AddonModule;
+    .then((AddonModule) => { this.Module = AddonModule; })
+    .catch((pError) => {
+      this._status.phase = PHASES.failed;
+      return Promise.reject(pError);
     });
   }
 
@@ -131,7 +140,7 @@ class Addon {
    * @return promise to register the addon if possible
    */
   register(pApp, pDynamicRouter) {
-    if (this._status.state !== STATES.load || this.isBusy) {
+    if (!this.isLoaded || this.isRegistered || this.isBusy) {
       const error = `[${this.name}] Cannot register addon.`;
       const meta = { state: this.Status };
       return Promise.reject(new Error(global.createErrorMessage(error, meta)));
@@ -143,8 +152,10 @@ class Addon {
 
     logger.debug(`[${this.name}] Addon in correct state, registering addon.`);
     this._status = { state: STATES.register, phase: PHASES.inProgress };
-    try {
-      return this.instance.register().then(() => {
+
+    return new Promise(resolve =>
+      resolve(this.instance.register()))
+      .then(() => {
         this._registerRouter(pDynamicRouter);
         this._registerStaticPath(pApp);
 
@@ -159,15 +170,6 @@ class Addon {
         pError.message = global.createErrorMessage(error, meta);
         return Promise.reject(pError);
       });
-    } catch (pError) {
-      const error = `[${this.name}] Error thrown outside of promise while registering block.`;
-      const meta = {
-        message: pError.message,
-        solution: 'Addon probably defined wrongly, check that register returns a promise.'
-      };
-      pError.message = global.createErrorMessage(error, meta);
-      return Promise.reject(pError);
-    }
   }
 
   /**
@@ -193,8 +195,8 @@ class Addon {
       // Can only load static content during startup
       // otherwise it will be overridden by error route
       if (this.loadedDuringStartup) {
-        const pathToServe = path.join(this.addonPath, this.instance.staticPath);
-        pApp.use(`/${this.name}`, express.static(pathToServe));
+        const folderPath = path.join(this.addonPath, this.instance.staticPath.folder);
+        pApp.use(this.instance.staticPath.prefix, express.static(folderPath));
       }
     }
   }
@@ -214,8 +216,8 @@ class Addon {
 
     logger.debug(`[${this.name}] Addon in correct state, unregistering addon.`);
     this._status = { state: STATES.unregister, phase: PHASES.inProgress };
-    try {
-      return this.instance.unregister().then(() => {
+    return new Promise(resolve =>
+      resolve(this.instance.unregister())).then(() => {
         // Remove this addon from the router list
         pDynamicRouter.removeRouter(this);
         this._status = { state: STATES.load, phase: PHASES.done };
@@ -226,15 +228,6 @@ class Addon {
         const meta = { message: pError.message };
         return Promise.reject(new Error(global.createErrorMessage(error, meta)));
       });
-    } catch (pError) {
-      const error = `[${this.name}] Error thrown outside of promise while unregistering block.`;
-      const meta = {
-        message: pError.message,
-        solution: 'Addon probably defined wrongly, check that unregister returns a promise.'
-      };
-      pError.message = global.createErrorMessage(error, meta);
-      return Promise.reject(pError);
-    }
   }
 
   /**
@@ -248,10 +241,12 @@ class Addon {
     return Addon._requirePackageFile(pAddon)
     // Install dependencies and ensure that they are installed
     .then((pPackageFile) => {
-      const installPromise = Addon._installDependencies(pAddon)
-      .then(() => Addon._checkDependencies(pAddon, pPackageFile.dependencies || {}));
+      pAddon.description = pPackageFile.description;
+      pAddon.version = pPackageFile.version;
+      pAddon.repository = pPackageFile.repository;
 
-      return installPromise;
+      return Addon._installDependencies(pAddon)
+      .then(() => Addon._checkDependencies(pAddon, pPackageFile.dependencies || {}));
     })
     .catch((pError) => {
       if (pError.canContinue) { // If this error is from require package file, it will have this property
@@ -288,8 +283,16 @@ class Addon {
    * @return {Promise} promise to check dependencies
    */
   static _checkDependencies(pAddon, pDependencies) {
+    // Change require context to addons context
+    module.paths.push(pAddon.addonPath);
+
     const dependencyKeys = Object.keys(pDependencies);
-    return Promise.all(dependencyKeys.map(dependency => Addon._checkDependency(pAddon, dependency)));
+    return Promise.all(dependencyKeys.map(dependency => Addon._checkDependency(pAddon, dependency)))
+    .then(() => module.paths.pop())
+    .catch((pError) => {
+      module.paths.pop();
+      return Promise.reject(pError);
+    });
   }
 
   /**
@@ -299,20 +302,8 @@ class Addon {
    * @return {Promise} promise to try and resolve the dependency
    */
   static _checkDependency(pAddon, pDependency) {
-    const addonPath = path.join(module.paths[module.paths.length - 1], pAddon.name);
-
-    return (new Promise((resolve) => {
-      // Change require context to addons context
-      module.paths.push(addonPath);
-
-      // Try to resolve the dependency
-      require.resolve(pDependency);
-
-      module.paths.pop();
-      resolve();
-    }))
+    return new Promise(resolve => resolve(require.resolve(pDependency)))
     .catch((pError) => {
-      module.paths.pop();
       const error = `[${pAddon.name}] Dependency not found.`;
       const meta = {
         dependency: pDependency,
@@ -326,16 +317,14 @@ class Addon {
   /**
    * Attemps to require a package file from addon folder,
    * resolves the parsed contents of the file if successful
-   * @param {Addon} pAddon - isntance of an addon
+   * @param {Addon} pAddon - instance of an addon
    * @returns {Promise} promise that resolves parsed contents of a package.json file
    */
   static _requirePackageFile(pAddon) {
     const addonPackageFilePath = path.join(pAddon.addonPath, 'package.json');
 
-    return (new Promise((resolve) => {
-      const packageJson = require(addonPackageFilePath); // eslint-disable-line
-      resolve(packageJson);
-    })).catch((pError) => {
+    return new Promise(resolve => resolve(require(addonPackageFilePath))) // eslint-disable-line
+    .catch((pError) => {
       const error = `[${pAddon.name}] Failed to require package.json.`;
       const meta = {
         filepath: path.relative('.', addonPackageFilePath),
@@ -353,11 +342,11 @@ class Addon {
    * @return {Promise} promise that resolves a module from the addon folder
    */
   static _requireModule(pAddon) {
-    return (new Promise((resolve) => {
+    return new Promise((resolve) => {
       // disable eslint because we need dynamic require for addons
       const AddonModule = require(pAddon.addonPath); // eslint-disable-line
       resolve(AddonModule);
-    })).catch((pError) => {
+    }).catch((pError) => {
       const error = `[${pAddon.name}] Failed to require module.`;
       const meta = {
         filepath: path.relative('.', pAddon.addonPath),
