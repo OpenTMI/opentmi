@@ -1,30 +1,28 @@
 // 3rd party modules
 const logger = require('winston');
+const async = require('async');
 
+/**
+ * Collection of routers that act like a single router to allow addons to
+ * dynamically define and undefine routes
+ */
 class DynamicRouter {
   constructor() {
     this.addonRouters = [];
   }
 
-  router(req, res, next) {
-    if (this.addonRouters.length > 0) {
-      this.recursiveRoute(0, req, res, next);
-    } else {
-      next();
-    }
+  /**
+   * Route entrypoint that is fed to express app
+   */
+  router(pReq, pRes, pNext) {
+    const resolveRoute = (router, req, res, next) => { router(req, res, next); };
+    const routers = this.addonRouters.map(pAddonRouter => resolveRoute.bind(this, pAddonRouter.router, pReq, pRes));
+    async.waterfall(routers, pNext);
   }
 
-  recursiveRoute(i, req, res, next) {
-    logger.debug(`Addon: ${this.addonRouters[i].addon.name} is routing the request`);
-    if (i >= this.addonRouters.length - 1) {
-      // This is the last router, call the higher level next if nothing matches
-      this.addonRouters[i].router(req, res, next);
-    } else {
-      // If there is more routers, call this router with the next router as next parameter
-      this.addonRouters[i].router(req, res, () => this.recursiveRoute(i + 1, req, res, next));
-    }
-  }
-
+  /**
+   * Remove router that is linked to the provided addon
+   */
   removeRouter(addon) {
     for (let i = 0; i < this.addonRouters.length; i++) {
       if (this.addonRouters[i].addon.name === addon.name) {
