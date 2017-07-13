@@ -6,6 +6,9 @@ var ObjectId = Types.ObjectId;
 
 var QueryPlugin = require('mongoose-query');
 
+/**
+ * @todo dynamic categories
+ */
 var ItemSchema = new Schema({
   barcode : { type: String, unique:true, sparse:true },
   name : { type: String, required:true, unique:true },

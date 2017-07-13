@@ -82,7 +82,7 @@ class AddonController {
    * @param {Object} res - response object from express
    * @returns {Promise} promise to eventually send a list of operation results to requester
    */
-  static routePerformAction(actionName, req, res) {
+  static routePerformAction(pActionName, req, res) {
     const results = [];
 
     if (!req.body || !(req.body instanceof Array)) {
@@ -90,25 +90,26 @@ class AddonController {
     }
 
     const actionPromises = [];
-    req.body.forEach((addonName) => {
-      const currentAddon = AddonManager.findAddon(addonName);
-      const registerResult = { name: addonName };
+    req.body.forEach((pAddonName) => {
+      const currentAddon = AddonManager.findAddon(pAddonName);
+      const actionResult = { name: pAddonName };
       if (currentAddon) {
-        actionPromises.push(currentAddon[actionName]()
+        actionPromises.push(AddonManager[pActionName](currentAddon)
         .then(() => {
-          registerResult.result = 'success';
-          return registerResult;
+          actionResult.needsRestart = currentAddon.hasStaticContent || false;
+          actionResult.result = 'success';
+          return actionResult;
         })
-        .catch((error) => {
-          registerResult.result = 'fail';
-          registerResult.error = error.message;
-          return registerResult;
+        .catch((pError) => {
+          actionResult.result = 'fail';
+          actionResult.error = pError.message;
+          return actionResult;
         })
-        .then(result => results.push(result)));
+        .then(pResult => results.push(pResult)));
       } else {
-        registerResult.result = 'fail';
-        registerResult.error = 'No addon with such name';
-        results.push(registerResult);
+        actionResult.result = 'fail';
+        actionResult.error = 'No addon with such name.';
+        results.push(actionResult);
       }
     });
 

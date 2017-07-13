@@ -22,11 +22,11 @@ const Route = function (app) {
 
   router.route('/api/v0/addons/register')
   .all(defaultAll)
-  .post(AddonController.routePerformAction.bind(this, 'register'));
+  .post(AddonController.routePerformAction.bind(this, 'registerAddon'));
 
   router.route('/api/v0/addons/unregister')
   .all(defaultAll)
-  .post(AddonController.routePerformAction.bind(this, 'unregister'));
+  .post(AddonController.routePerformAction.bind(this, 'unregisterAddon'));
 
   router.route('/api/v0/addons')
   .all(defaultAll)

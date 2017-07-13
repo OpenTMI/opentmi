@@ -6,9 +6,9 @@ const path = require('path');
 const logger = require('winston');
 const Addon = require('./addon');
 
-const METADATA_KEY_LENGTH = 10;
+const DynamicRouter = require('./dynamic_router');
 
-process.on('warning', (err) => console.log(err));
+const METADATA_KEY_LENGTH = 10;
 
 // Pads a string to a certain length
 function padToLength(txt, length) {
@@ -25,7 +25,7 @@ function padToLength(txt, length) {
 // also works as a good storage for custom logging functions
 // Error generation function
 global.createErrorMessage = function (pError, pMetaInfo) {
-  let combinedError = pError;
+  let combinedError = `${pError}`;
 
   // Append meta data lines
   const keys = Object.keys(pMetaInfo);
@@ -44,24 +44,61 @@ global.createErrorMessage = function (pError, pMetaInfo) {
 class AddonManager {
   constructor() {
     this.addons = [];
+    this.dynamicRouter = new DynamicRouter();
   }
 
   init(app, server, io) {
     this.app = app;
     this.server = server;
     this.io = io;
+
+    this.app.use(this.dynamicRouter.router.bind(this.dynamicRouter));
   }
 
   get availableModules() {
-    return this.addons.map((addon) => {
-      const obj = { name: addon.name, state: 'active' };
+    return this.addons.map((pAddon) => {
+      const obj = { name: pAddon.name, state: pAddon.Status };
       return obj;
     });
   }
 
+  loadAddonsInOrder() {
+    logger.info('Loading addons in order...');
+    logger.debug(`Used directory: ${__dirname}`);
+
+    // Function that returns whether a file is a directory or not
+    function isAddon(file) {
+      return fs.lstatSync(path.join(__dirname, file)).isDirectory();
+    }
+
+    const addonNames = fs.readdirSync(__dirname).filter(isAddon);
+    const recursiveLoad = ((i) => {
+      if (i >= addonNames.length) {
+        return Promise.resolve();
+      }
+
+      const newAddon = new Addon(addonNames[i], true);
+      this.addons.push(newAddon);
+      logger.info(`[${newAddon.name}] Load started.`);
+
+      return newAddon.loadModule()
+      .then(() => newAddon.createInstance(this.server, this.io))
+      .catch((pError) => {
+        // Remove the error message from start for cleaner stack
+        const headerLength = pError.message.length + pError.name.length + 2;
+        const slicedStack = pError.stack.slice(headerLength, pError.stack.length);
+        logger.error(`[${newAddon.name}] Addon load failed.\n${pError.message}`);
+        logger.debug(slicedStack);
+      })
+      .then(() => recursiveLoad(i + 1));
+    });
+
+    return recursiveLoad(0);
+  }
+
   loadAddons() {
     logger.info('Loading addons...');
-    logger.debug(`used directory: ${__dirname}`);
+    logger.debug(`Used directory: ${__dirname}`);
 
     // Function that returns whether a file is a directory or not
     function isAddon(file) {
@@ -69,28 +106,36 @@ class AddonManager {
     }
 
     // Iterate through all directory files in the addons folder
-    return Promise.all(fs.readdirSync(__dirname).filter(isAddon).map((file) => {
-      const newAddon = new Addon(file);
+    const loadPromises = fs.readdirSync(__dirname).filter(isAddon).map((file) => {
+      const newAddon = new Addon(file, true);
       this.addons.push(newAddon);
-      return newAddon.loadModule(file)
-      .then(() => newAddon.createInstance(this.app, this.server, this.io))
+      logger.info(`[${newAddon.name}] Load started.`);
+
+      return newAddon.loadModule()
+      .then(() => newAddon.createInstance(this.server, this.io))
       .catch((pError) => {
-        logger.error(pError.message);
-        logger.debug(pError.stack);
+        // Remove the error message from start for cleaner stack
+        const headerLength = pError.message.length + pError.name.length + 2;
+        const slicedStack = pError.stack.slice(headerLength, pError.stack.length);
+        logger.error(`[${newAddon.name}] Addon load failed.\n${pError.message}`);
+        logger.debug(slicedStack);
       });
-    }));
+    });
+
+    return Promise.all(loadPromises);
   }
 
   registerAddons() {
     logger.info('Registering addons...');
 
     // Promise to register all addons
-    const registerPromises = this.addons.filter(addon => addon.isInstantiated)
-    .map(addon => addon.register()
+    const registerPromises = this.addons.filter(addon => addon.isLoaded)
+    .map(addon => addon.register(this.app, this.dynamicRouter)
       .catch((pError) => {
-        pError.message = `Addon register failed: ${addon.name}\n${pError.message}`;
-        logger.error(pError.message);
-        logger.debug(pError.stack);
+        // Remove the error message from start for cleaner stack
+        const slicedStack = pError.stack.slice(pError.message.length + pError.name.length + 2, pError.stack.length);
+        logger.error(`[${addon.name}] Addon register failed.\n${pError.message}`);
+        logger.debug(slicedStack);
       }));
 
     return Promise.all(registerPromises);
@@ -104,28 +149,14 @@ class AddonManager {
     return this.addons.findIndex(addon => addon.name === pAddon.name);
   }
 
-  registerAddon(index) {
-    if (index < this.addons.length) {
-      const addon = this.addons(index);
-      logger.info(`Registering module: {${addon.name}}`);
-      return addon.register();
-    }
-
-    const error = 'Cannot register addon with out of scope index';
-    const meta = { index, addon_count: this.addons.length };
-    return Promise.reject(new Error(global.createErrorMessage(error, meta)));
+  registerAddon(addon) {
+    logger.info(`[${addon.name}] Registering module.`);
+    return addon.register(this.app, this.dynamicRouter);
   }
 
-  unregisterAddon(index) {
-    if (index < this.addons.length) {
-      const addon = this.addons(index);
-      logger.info(`Unregistering module: {${addon.name}}`);
-      return addon.unregister();
-    }
-
-    const error = 'Cannot unregister addon with out of scope index';
-    const meta = { index, addon_count: this.addons.length };
-    return Promise.reject(new Error(global.createErrorMessage(error, meta)));
+  unregisterAddon(addon) {
+    logger.info(`[${addon.name}] Unregistering module.`);
+    return addon.unregister(this.dynamicRouter);
   }
 
   _removeAddon(index, force = false) {
@@ -134,30 +165,23 @@ class AddonManager {
 
       if (addon.safeToRemove || force) {
         // Safe to remove this addon
-        logger.info(`Removing module: {${addon.name}}`);
+        logger.info(`[${addon.name}}] Removing addon.`);
         this.addons.splice(index, 1);
         return Promise.resolve();
-      } else if (addon.isBusy) {
+      } else if (addon.isBusy || addon.isRegistered) {
         // Something is in progress, better not remove
-        const error = `Warning, should not remove addon: ${addon.name}.`;
+        const error = `[${addon.name}] Should not remove addon, either busy or registered.`;
         const meta = {
           current_status: addon.Status,
-          solution: 'wait for the addon to finish, or just use force remove.' };
-        return Promise.reject(new Error(global.createErrorMessage(error, meta)));
-      } else if (addon.isRegistered) {
-        // Addon is registered, should unregister before removing
-        const error = `Warning, should not remove addon: ${addon.name}.`;
-        const meta = {
-          current_status: addon.Status,
-          solution: 'please unregister the addon before removing, or just use force remove' };
+          solution: 'Unergister addon, wait for the addon to finish, or just use force remove.' };
         return Promise.reject(new Error(global.createErrorMessage(error, meta)));
       }
 
       // Expect the unexpected
-      return Promise.reject(new Error('Unexpected failure of removeAddon'));
+      return Promise.reject(new Error(`[${addon.name}] Unexpected failure of removeAddon.`));
     }
 
-    const error = 'Cannot remove module with out of scope index';
+    const error = 'Cannot remove module with out of scope index.';
     const meta = { index, addon_count: this.addons.length };
     return Promise.reject(new Error(global.createErrorMessage(error, meta)));
   }
