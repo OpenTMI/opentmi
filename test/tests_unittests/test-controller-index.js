@@ -185,7 +185,7 @@ describe('controllers/index.js', () => {
     return Promise.all([
       expect(itemExists).to.not.be.rejected,
       expect(itemDoesNotExist).to.not.be.rejected,
-      expect(optionsAreInvalid).to.not.be.rejeced,
+      expect(optionsAreInvalid).to.not.be.rejected,
     ]);
   });
 
