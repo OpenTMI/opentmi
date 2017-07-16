@@ -1,17 +1,31 @@
 const mongoose = require('mongoose');
-const restify = require('express-restify-mongoose');
 const _ = require('lodash');
 const logger = require('winston');
+const express = require('express');
+// application modules
+const GroupController = require('../controllers/groups');
 
 const Route = function (app) {
   // easy way, but not support format -functionality..
   const Group = mongoose.model('Group');
-  restify.serve(app, Group, {
-    version: '/v0',
-    name: 'groups',
-    idProperty: '_id',
-    protected: '__v',
-  });
+
+  const router = express.Router();
+  const controller = new GroupController();
+
+  router.param('Group', controller.modelParam.bind(controller));
+
+  router.route('/api/v0/groups.:format?')
+    .all(controller.all.bind(controller))
+    .get(controller.find.bind(controller))
+    .post(controller.create.bind(controller));
+
+  router.route('/api/v0/groups/:Group.:format?')
+    .all(controller.all.bind(controller))
+    .get(controller.get.bind(controller))
+    .put(controller.update.bind(controller))
+    .delete(controller.remove.bind(controller));
+
+  app.use(router);
 
   Group.count({}, (err, count) => {
     if (count === 0) {

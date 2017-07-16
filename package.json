@@ -46,7 +46,6 @@
     "csurf": "^1.9.0",
     "express": "^4.15.3",
     "express-jwt": "^5.1.0",
-    "express-restify-mongoose": "^0.7.5",
     "express-session": "^1.15.3",
     "express-winston": "^2.4.0",
     "fs-extra": "^4.0.0",
