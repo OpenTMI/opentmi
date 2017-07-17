@@ -73,7 +73,7 @@ routes.registerRoutes(app);
 // Bootstrap addons, like default webGUI
 AddonManager.init(app, server, io);
 
-AddonManager.loadAddonsInOrder().then(() => {
+AddonManager.loadAddons().then(() => {
   AddonManager.registerAddons().then(() => {
     // Error route should be initialized after addonmanager has served all static routes
     routes.registerErrorRoute(app);

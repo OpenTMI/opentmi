@@ -24,7 +24,7 @@ class DynamicRouter {
    * Remove router that is linked to the provided addon
    */
   removeRouter(addon) {
-    for (let i = 0; i < this.addonRouters.length; i++) {
+    for (let i = 0; i < this.addonRouters.length; i += 1) {
       if (this.addonRouters[i].addon.name === addon.name) {
         this.addonRouters.splice(i, 1);
 

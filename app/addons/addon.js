@@ -11,13 +11,14 @@ const Promise = require('bluebird');
 
 const exec = Promise.promisify(childProcess.exec, { multiArgs: true });
 
-const STATES = { introduce: 0, load: 1, register: 3, unregister: 4 };
+const STATES = { introduce: 0, load: 1, register: 2, unregister: 3 };
 const PHASES = { inProgress: 0, done: 1, failed: 2 };
 
 /**
  * Data structure for addon that is responsible for keeping track of the current status
  * @todo possibly count size of addon to spot rogue addons
  * @todo timeout for addon loading
+ * @todo store addon instances in database
  */
 class Addon {
   constructor(pName, pLoadedDuringStartup = false) {
@@ -159,10 +160,8 @@ class Addon {
         this._registerRouter(pDynamicRouter);
         this._registerStaticPath(pApp);
 
-        this.registered = true;
         this._status.phase = PHASES.done;
       }).catch((pError) => {
-        this.registered = false;
         this._status.phase = PHASES.failed;
 
         const error = `[${this.name}] Register raised an error.`;
