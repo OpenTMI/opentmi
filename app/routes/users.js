@@ -76,6 +76,10 @@ const Route = function (app) {
   app.post('/auth/github', jwt({ secret: TOKEN_SECRET, credentialsRequired: false }), AuthController.github);
   app.post('/auth/google', authController.google.bind(authController));
   app.get('/auth/github/id', AuthController.getGithubClientId);
+
+  app.get('/auth/redirect', function (req, res) {
+    res.sendStatus(200);
+  });
 };
 
 
