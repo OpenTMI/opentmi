@@ -27,7 +27,7 @@
     "start": "NODE_ENV=development node index.js",
     "debug": "NODE_ENV=development node --inspect index.js",
     "test": "grunt",
-    "test-inventory": "grunt inventory"
+    "lint": "node node_modules/eslint/bin/eslint ."
   },
   "dependencies": {
     "async": "^2.5.0",
