@@ -12,13 +12,19 @@ chai.use(chaiAsPromised);
 const cachePath = path.resolve('./app/addons/addon.js');
 
 let Addon;
+let STATES;
+let PHASES;
+
 let addon;
 let addonPrototype;
 
 describe('addon.js', function () {
   beforeEach(function (done) {
     delete require.cache[cachePath];
-    Addon = require('../../../app/addons/addon'); // eslint-disable-line
+    const AddonModule = require('../../../app/addons/addon'); // eslint-disable-line
+    Addon = AddonModule.Addon;
+    STATES = AddonModule.states;
+    PHASES = AddonModule.phases;
 
     addon = new Addon('naim', true);
     addon.addonPath = path.join(__dirname, 'mocking');
@@ -47,7 +53,7 @@ describe('addon.js', function () {
 
   describe('Status', function () {
     it('Status - valid state', function (done) {
-      addon._status = { state: 1, phase: 2 };
+      addon._status = { state: STATES.load, phase: PHASES.failed };
       expect(addon.Status).to.equal('load-failed');
       done();
     });
@@ -55,10 +61,10 @@ describe('addon.js', function () {
 
   describe('isBusy', function () {
     it('isBusy - true and false case', function (done) {
-      addon._status = { state: 0, phase: 1 };
+      addon._status = { state: STATES.introduce, phase: PHASES.done };
       expect(addon.isBusy).to.equal(false, 'not busy addon should return false.');
 
-      addon._status.phase = 0;
+      addon._status.phase = PHASES.inProgress;
       expect(addon.isBusy).to.equal(true, 'busy addon should return true');
 
       done();
@@ -67,10 +73,10 @@ describe('addon.js', function () {
 
   describe('isLoaded', function () {
     it('isLoaded - valid state', function (done) {
-      addon._status = { state: 1, phase: 1 };
+      addon._status = { state: STATES.load, phase: PHASES.done };
       expect(addon.isLoaded).to.equal(true, 'loaded addon should return true');
 
-      addon._status = { state: 0, phase: 2 };
+      addon._status = { state: STATES.load, phase: PHASES.failed };
       expect(addon.isLoaded).to.equal(false, 'unloaded addon should return false');
 
       done();
@@ -79,10 +85,10 @@ describe('addon.js', function () {
 
   describe('isRegistered', function () {
     it('isRegistered - valid state', function (done) {
-      addon._status = { state: 2, phase: 1 };
+      addon._status = { state: STATES.register, phase: PHASES.done };
       expect(addon.isRegistered).to.equal(true, 'registered addon should return true');
 
-      addon._status = { state: 2, phase: 2 };
+      addon._status = { state: STATES.register, phase: PHASES.failed };
       expect(addon.isRegistered).to.equal(false, 'unregistered addon should return false');
 
       done();
@@ -91,10 +97,10 @@ describe('addon.js', function () {
 
   describe('safeToRemove', function () {
     it('isRegistered - valid state', function (done) {
-      addon._status = { state: 1, phase: 1 };
+      addon._status = { state: STATES.load, phase: PHASES.done };
       expect(addon.safeToRemove).to.equal(true, 'safe to remove addon should return true');
 
-      addon._status = { state: 2, phase: 1 };
+      addon._status = { state: STATES.register, phase: PHASES.done };
       expect(addon.safeToRemove).to.equal(false, 'unsafe to remove addon should return false');
 
       done();
@@ -112,8 +118,8 @@ describe('addon.js', function () {
 
         expect(addon).to.have.property('Module', 'module');
         expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', 1);
-        expect(addon._status).to.have.property('phase', 0);
+        expect(addon._status).to.have.property('state', STATES.load);
+        expect(addon._status).to.have.property('phase', PHASES.inProgress);
         return Promise.resolve();
       });
     });
@@ -129,7 +135,7 @@ describe('addon.js', function () {
       };
 
       // Should be in load state at this point
-      addon._status.state = 1;
+      addon._status.state = STATES.load;
 
       return addon.createInstance('server', 'socket')
       .then(() => {
@@ -140,8 +146,8 @@ describe('addon.js', function () {
         expect(addon.instance).to.have.property('socketIO', 'socket');
 
         expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', 1);
-        expect(addon._status).to.have.property('phase', 1);
+        expect(addon._status).to.have.property('state', STATES.load);
+        expect(addon._status).to.have.property('phase', PHASES.done);
       });
     });
   });
@@ -150,7 +156,7 @@ describe('addon.js', function () {
     it('register - valid register sequence', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
-      addon._status = { state: 1, phase: 1 };
+      addon._status = { state: STATES.load, phase: PHASES.done };
       addon.Module = { disabled: false };
       addon.instance = { register: () => Promise.resolve() };
 
@@ -170,8 +176,8 @@ describe('addon.js', function () {
         expect(addon).to.have.property('t_pApp', 'app');
 
         expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', 2);
-        expect(addon._status).to.have.property('phase', 1);
+        expect(addon._status).to.have.property('state', STATES.register);
+        expect(addon._status).to.have.property('phase', PHASES.done);
         return Promise.resolve();
       });
     });
@@ -213,7 +219,7 @@ describe('addon.js', function () {
     it('unregister - ', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
-      addon._status = { state: 2, phase: 1 };
+      addon._status = { state: STATES.register, phase: STATES.done };
       addon.instance = { unregister: () => Promise.resolve() };
 
       let removeRouterCalled = false;
@@ -226,8 +232,8 @@ describe('addon.js', function () {
         expect(removeRouterCalled).to.equal(true, 'removeRouter should be called during successful unregister');
 
         expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', 1);
-        expect(addon._status).to.have.property('phase', 1);
+        expect(addon._status).to.have.property('state', STATES.load);
+        expect(addon._status).to.have.property('phase', PHASES.done);
         return Promise.resolve();
       });
     });

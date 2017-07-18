@@ -11,8 +11,8 @@ const Promise = require('bluebird');
 
 const exec = Promise.promisify(childProcess.exec, { multiArgs: true });
 
-const STATES = { introduce: 0, load: 1, register: 2, unregister: 3 };
-const PHASES = { inProgress: 0, done: 1, failed: 2 };
+const STATES = Object.freeze({ introduce: 0, load: 1, register: 2, unregister: 3 });
+const PHASES = Object.freeze({ inProgress: 0, done: 1, failed: 2 });
 
 /**
  * Data structure for addon that is responsible for keeping track of the current status
@@ -354,4 +354,8 @@ class Addon {
 }
 
 
-module.exports = Addon;
+module.exports = {
+  Addon,
+  states: STATES,
+  phases: PHASES
+};

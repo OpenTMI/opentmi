@@ -4,7 +4,7 @@ const path = require('path');
 
 // 3rd party modules
 const logger = require('winston');
-const Addon = require('./addon');
+const Addon = require('./addon').Addon;
 
 const DynamicRouter = require('./dynamic-router');
 
