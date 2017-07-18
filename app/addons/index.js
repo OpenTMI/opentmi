@@ -57,8 +57,6 @@ class AddonManager {
     this.app = app;
     this.server = server;
     this.io = io;
-
-    this.app.use(this.dynamicRouter.router.bind(this.dynamicRouter));
   }
 
   static _moduleLoadError(pAddon, message, pError) {
@@ -127,7 +125,11 @@ class AddonManager {
     .map(addon => addon.register(this.app, this.dynamicRouter)
       .catch(pError => AddonManager._moduleLoadError(addon, 'Addon register failed.', pError)));
 
-    return Promise.all(registerPromises);
+    return Promise.all(registerPromises)
+    .then((results) => {
+      this.app.use(this.dynamicRouter.router.bind(this.dynamicRouter));
+      return Promise.resolve(results);
+    });
   }
 
   /**
@@ -171,7 +173,7 @@ class AddonManager {
   /**
    * Attempt to remove an addon, checks are made to ensure it is safe
    * @param {Addon} pAddon - instance of addon
-   * @param {bool} force - remove addon without caring about its' state
+   * @param {bool} force - remove addon without caring about the state
    * @return {Promise} promise to try and remove the provided addon
    */
   removeAddon(pAddon, pForce = false) {

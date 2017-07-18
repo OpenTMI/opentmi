@@ -157,8 +157,8 @@ class Addon {
     return new Promise(resolve =>
       resolve(this.instance.register()))
       .then(() => {
-        this._registerRouter(pDynamicRouter);
         this._registerStaticPath(pApp);
+        this._registerRouter(pDynamicRouter);
 
         this._status.phase = PHASES.done;
       }).catch((pError) => {
@@ -283,15 +283,11 @@ class Addon {
    */
   static _checkDependencies(pAddon, pDependencies) {
     // Change require context to addons context
-    module.paths.push(pAddon.addonPath);
+    module.paths.push(path.join(pAddon.addonPath, 'node_modules'));
 
     const dependencyKeys = Object.keys(pDependencies);
     return Promise.all(dependencyKeys.map(dependency => Addon._checkDependency(pAddon, dependency)))
-    .then(() => module.paths.pop())
-    .catch((pError) => {
-      module.paths.pop();
-      return Promise.reject(pError);
-    });
+    .then(() => module.paths.pop());
   }
 
   /**
@@ -303,13 +299,13 @@ class Addon {
   static _checkDependency(pAddon, pDependency) {
     return new Promise(resolve => resolve(require.resolve(pDependency)))
     .catch((pError) => {
-      const error = `[${pAddon.name}] Dependency not found.`;
+      const error = `[${pAddon.name}] Could not resolve dependency.`;
       const meta = {
         dependency: pDependency,
         message: pError.message
       };
-      pError.message = global.createErrorMessage(error, meta);
-      return Promise.reject(pError);
+      logger.warn(global.createErrorMessage(error, meta));
+      return Promise.resolve();
     });
   }
 

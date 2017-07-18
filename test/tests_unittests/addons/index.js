@@ -44,15 +44,13 @@ describe('addons/index.js', function () {
 
   describe('init', function () {
     it('init - valid app, server, and io', function (done) {
-      const use = function () {
-        expect(AddonManager).to.have.property('app');
-        expect(AddonManager).to.have.property('server', 'grunt');
-        expect(AddonManager).to.have.property('io', 'klapperino');
+      AddonManager.init('appel', 'grunt', 'klapperino');
 
-        done();
-      };
+      expect(AddonManager).to.have.property('app', 'appel');
+      expect(AddonManager).to.have.property('server', 'grunt');
+      expect(AddonManager).to.have.property('io', 'klapperino');
 
-      AddonManager.init({ use }, 'grunt', 'klapperino');
+      done();
     });
   });
 
@@ -132,7 +130,7 @@ describe('addons/index.js', function () {
     });
   });
 
-  describe('_loadAddons', function () {
+  describe('loadAddons', function () {
     it('loadAddons - recursive 2 valid addons', function () {
       // Mock addon manager
       const addonProto = Object.getPrototypeOf(AddonManager);
@@ -149,6 +147,10 @@ describe('addons/index.js', function () {
 
   describe('registerAddons', function () {
     it('registerAddons - valid addons', function () {
+      AddonManager.app = { use: (pRouter) => {
+        expect(pRouter).to.be.a('Function');
+      } };
+
       const addons = [
         { register: () => Promise.resolve(), isLoaded: true },
         { register: () => Promise.resolve(), isLoaded: true },
