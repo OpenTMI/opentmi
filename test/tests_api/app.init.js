@@ -1,146 +1,155 @@
-var jwt_s = require('jwt-simple');
-var nconf = require('nconf');
-var moment = require('moment');
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
-var superagent = require('superagent');
-var should = require('should');
-var chai = require('chai');
-var expect = chai.expect;
-
-var api = 'http://localhost:3000/api/v0';
-var mongodbUri = 'mongodb://localhost/opentmi_dev';
-var test_user_id = '5825bb7afe7545132c88c761';
-
+// Third party components
+const jwtSimple = require('jwt-simple');
+const nconf = require('nconf');
+const moment = require('moment');
+const superagent = require('superagent');
+const chai = require('chai');
 const logger = require('winston');
+
+// Setup
 logger.level = 'error';
 
-describe('Basic Get API', function () {
-  var auth_string;	
+// Test variables
+const expect = chai.expect;
+const api = 'http://localhost:3000/api/v0';
+const testUserId = '5825bb7afe7545132c88c761';
+let authString;
 
+describe('Basic Get API', function () {
   // Create fresh DB
-  before(function(done) {
+  before(function (done) {
     this.timeout(5000);
 
     // Create token for requests
-    var payload = { 
-      sub:test_user_id,
-      group:'admins',
-      iat:moment().unix(), 
-      exp:moment().add(2, 'h').unix() 
+    const payload = {
+      sub: testUserId,
+      group: 'admins',
+      iat: moment().unix(),
+      exp: moment().add(2, 'h').unix()
     };
-    var token = jwt_s.encode(payload, nconf.get('webtoken')); 
-    auth_string = 'Bearer ' + token;
+
+    const token = jwtSimple.encode(payload, nconf.get('webtoken'));
+    authString = `Bearer ${token}`;
     done();
   });
-	
-  it('get api version', function(done) {
+
+  it('get api version', function (done) {
     superagent.get(api)
-      .end(function (e, res) {
-        res.should.be.json;
-        expect(res.status).to.equal(200);
-        expect(res.body).to.deep.equal({apiVersion:'v0'});
-        expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.deep.equal({apiVersion: 'v0'});
+        expect(pRes.body).to.not.be.empty;
         done();
       });
   });
 
-  it('get testcases', function(done) {
-    superagent.get(api+'/testcases')
+  it('get testcases', function (done) {
+    superagent.get(`${api}/testcases`)
       .type('json')
-      .end(function(e, res){
-        res.should.be.json;
-        res.status.should.equal(200);
-        res.body.should.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        expect(pRes.body).to.not.be.empty;
         done();
       });
   });
 
-  it('get campaigns', function(done) {
-    superagent.get(api+'/campaigns')
+  it('get campaigns', function (done) {
+    superagent.get(`${api}/campaigns`)
       .type('json')
-      .end(function(e, res){
-        res.should.be.json;
-        res.status.should.equal(200);
-        res.body.should.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        expect(pRes.body).to.not.be.empty;
         done();
       });
   });
 
-  it('get resources', function(done) {
-    superagent.get(api + '/resources')
+  it('get resources', function (done) {
+    superagent.get(`${api}/resources`)
       .type('json')
-      .end(function(e, res) {
-        res.should.be.json;
-        res.status.should.equal(200);
-        res.body.should.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        expect(pRes.body).to.not.be.empty;
         done();
       });
   });
 
-  it('get results', function(done) {
-    superagent.get(api + '/results')
+  it('get results', function (done) {
+    superagent.get(`${api}/results`)
       .type('json')
-      .end(function(e, res) {
-        res.should.be.json;
-        res.status.should.equal(200);
-        res.body.should.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        expect(pRes.body).to.not.be.empty;
         done();
       });
   });
 
-  it('get builds', function(done) {
-    superagent.get(api + '/duts/builds')
+  it('get builds', function (done) {
+    superagent.get(`${api}/duts/builds`)
       .type('json')
-      .end(function(e, res) {
-        res.should.be.json;
-        res.status.should.equal(200);
-        res.body.should.be.instanceof(Array);
-        //expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        // expect(res.body).not.to.be.empty;
         done();
       });
   });
 
-  it('get users', function(done) {
-    superagent.get(api + '/users')
-    .set('authorization', auth_string)
-    .type('json')
-      .end(function(e, res) {
-        res.should.be.json;
-        res.status.should.equal(200);
-        res.body.should.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
-        done();
-      });
-  })
-
-  it('get items', function(done) {
-    superagent.get(api + '/items')
-      .set('authorization', auth_string)
+  it('get users', function (done) {
+    superagent.get(`${api}/users`)
+      .set('authorization', authString)
       .type('json')
-      .end(function(e, res) {
-        res.should.be.json;
-        expect(e).to.equal(null);
-        res.status.should.equal(200);
-        res.body.should.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        expect(pRes.body).not.to.be.empty;
         done();
       });
   });
-  
-  it('get loans', function(done) {
-    superagent.get(api + '/loans')
-      .set('authorization', auth_string)
+
+  it('get items', function (done) {
+    superagent.get(`${api}/items`)
+      .set('authorization', authString)
       .type('json')
-      .end(function(e, res) {
-        res.should.be.json;
-        res.status.should.equal(200);
-        expect(e).to.equal(null);
-        res.body.should.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        expect(pRes.body).not.to.be.empty;
+        done();
+      });
+  });
+
+  it('get loans', function (done) {
+    superagent.get(`${api}/loans`)
+      .set('authorization', authString)
+      .type('json')
+      .end(function (pError, pRes) {
+        expect(pError).to.equal(null);
+        expect(pRes).to.be.a('Object');
+        expect(pRes).to.have.property('status', 200);
+        expect(pRes.body).to.be.instanceof(Array);
+        expect(pRes.body).not.to.be.empty;
         done();
       });
   });
