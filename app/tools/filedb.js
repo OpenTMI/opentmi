@@ -1,14 +1,14 @@
-// native modules
+// Native components
 const path = require('path');
 const zlib = require('zlib');
 
-// 3rd party modules
+// Third party components
 const nconf = require('../../config');
 const logger = require('winston');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
 
-// Local modules
+// Local components
 const mongoose = require('mongoose');
 require('../models/extends/file.js');
 

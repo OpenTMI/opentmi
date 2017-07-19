@@ -1,5 +1,5 @@
 // Internal modules
-var EventEmitter = require('events');
+const EventEmitter = require('events');
 
 const eventBus = new EventEmitter();
 module.exports = eventBus;
