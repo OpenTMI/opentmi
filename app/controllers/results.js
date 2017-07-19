@@ -5,12 +5,11 @@
 // native modules
 
 // 3rd party modules
+require('colors');
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
-const colors = require('colors');
 const JunitXmlParser = require('junit-xml-parser').parser;
 const uuid = require('node-uuid');
-const async = require('async');
 const logger = require('winston');
 
 // own modules
@@ -23,18 +22,17 @@ class ResultsController extends DefaultController {
     this.Testcase = mongoose.model('Testcase');
 
     const self = this;
-    Object.resolve = (path, obj, safe) => {
-      return path.split('.').reduce((prev, curr) => {
-        return !safe ? prev[curr] : (prev ? prev[curr] : undefined);
-      }, obj || self); // self is undefined
-    };
+    Object.resolve = (path, obj, safe) => path.split('.').reduce((prev, curr) => {
+      if (!safe) { return prev[curr]; }
+      return (prev ? prev[curr] : undefined);
+    }, obj || self); // self is undefined
 
     this.on('create', (data) => {
       if (data.exec && data.exec.verdict === 'pass') {
         // data.exec.duration
-        console.log('Got new ' + 'PASS'.green + ` result: ${data.tcid}`);
+        logger.info(`Got new ${'PASS'.green} result: ${data.tcid}`);
       } else {
-        console.log('Got new ' + 'FAIL'.red + ` result: ${data.tcid} (${data._id})`);
+        logger.info(`Got new ${'FAIL'.red} result: ${data.tcid}`);
       }
 
       const duration = Object.resolve('exec.duration', data, null);
@@ -59,16 +57,16 @@ class ResultsController extends DefaultController {
   _doResult(jobId, value, callback) {
     const result = new this.Model({
       tcid: value.name,
-      cre: { name: 'tmt' },
+      cre: {name: 'tmt'},
       exec: {
         verdict: value.failure ? 'fail' : 'pass',
-        duration: value.time,
+        duration: value.time
       },
-      job: { id: jobId },
+      job: {id: jobId}
     });
 
-    if (value.failure.message) result.exec.note = value.failure.message + "\n\n";
-    if (value.failure.type) result.exec.note += value.failure.type + "\n\n";
+    if (value.failure.message) result.exec.note = `${value.failure.message}\n\n`;
+    if (value.failure.type) result.exec.note += `${value.failure.type}\n\n`;
     // if (value.failure.raw) result.exec.note += value.failure.raw.join('\n');
 
     result.save(callback);
@@ -82,7 +80,7 @@ class ResultsController extends DefaultController {
         // async.eachSeries(results.suite.tests, this._doResult.bind(this, jobId), (err) => {
         Promise.each(results.suite.tests, this._doResult.bind(this, jobId)).then(() => {
           logger.info('Store new results');
-          resolve({ ok: 1, message: `created ${results.suite.tests.length} results` });
+          resolve({ok: 1, message: `created ${results.suite.tests.length} results`});
         }).catch(err => reject(err));
       });
     });
@@ -92,13 +90,13 @@ class ResultsController extends DefaultController {
     logger.info('Got new Junit file');
     return new Promise((resolve, reject) => {
       if (req.busboy) {
-        req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-          this.streamToString(file).then((data) => {
+        req.busboy.on('file', (pFieldname, pFile) => {
+          this.streamToString(pFile).then((data) => {
             this.handleJunitXml(data).then((value) => {
               resolve(value);
             });
           }).catch((err) => {
-            res.status(400).json({ error: err.message });
+            res.status(400).json({error: err.message});
             reject(err);
           });
         });
