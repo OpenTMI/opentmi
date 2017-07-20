@@ -33,7 +33,7 @@ ApiKeySchema.plugin(QueryPlugin); // install QueryPlugin
  * Methods
  */
 
- /**
+/**
  * Statics
  */
 

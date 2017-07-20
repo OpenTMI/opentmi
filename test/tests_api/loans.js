@@ -127,7 +127,7 @@ describe('Loans', function () {
       .end(function (pError, pRes) {
         expectResult(pRes, 400, errorBody);
         done();
-    });
+      });
   });
 
   it('should not accept POST with an empty items array', function (done) {
@@ -140,7 +140,7 @@ describe('Loans', function () {
       .end(function (e, res) {
         expectResult(res, 400, errorBody);
         done();
-    });
+      });
   });
 
   it('should not accept POST with item that does not have an item field', function (done) {

@@ -1,34 +1,36 @@
-// native modules
+// Native modules
 const path = require('path');
 
-// 3rd party modules
+// Third party modules
 const logger = require('winston');
 const mongoose = require('mongoose');
 
 // local module
 const nconf = require('../../../config');
 const checksum = require('../../tools/checksum.js');
+
+// Model variables
 const fileProvider = nconf.get('filedb');
 
 const FileSchema = new mongoose.Schema({
   // buffer limit 16MB when attached to document!
-  name: { type: String },
-  mime_type: { type: String },
-  encoding: { type: String, enum: ['raw', 'base64'], default: 'raw' },
-  data: { type: Buffer },
-  size: { type: Number },
-  sha1: { type: String, index: true, sparse: true },
-  sha256: { type: String }
+  name: {type: String},
+  mime_type: {type: String},
+  encoding: {type: String, enum: ['raw', 'base64'], default: 'raw'},
+  data: {type: Buffer},
+  size: {type: Number},
+  sha1: {type: String, index: true, sparse: true},
+  sha256: {type: String}
 });
-FileSchema.set('toObject', { virtuals: true });
+FileSchema.set('toObject', {virtuals: true});
 
-FileSchema.virtual('hrefs').get(function () {
+FileSchema.virtual('hrefs').get(function getHrefs() {
   const hasHref = fileProvider && (fileProvider !== 'mongodb') && this.sha1;
   const pathToFile = path.join(fileProvider, this.sha1);
   return hasHref ? pathToFile : undefined;
 });
 
-FileSchema.methods.prepareDataForStorage = function () {
+FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
   logger.info(`Preparing file (name: ${this.name}) for storage.`);
 
   if (this.encoding === 'base64') {
@@ -44,7 +46,7 @@ FileSchema.methods.prepareDataForStorage = function () {
   }
 };
 
-FileSchema.methods.storeInFileDB = function () {
+FileSchema.methods.storeInFileDB = function storeInFileDB() {
   // filedb is reuired here because it causes a circular dependency otherwise
   const filedb = require('../tools/filedb.js'); // eslint-disable-line
   return filedb.storeFile(this).catch((error) => {
@@ -53,7 +55,7 @@ FileSchema.methods.storeInFileDB = function () {
   });
 };
 
-FileSchema.methods.retrieveFromFileDB = function () {
+FileSchema.methods.retrieveFromFileDB = function retrieveFromFileDB() {
   // filedb is reuired here because it causes a circular dependency otherwise
   const filedb = require('../tools/filedb.js'); // eslint-disable-line
   return filedb.readFile(this).then((data) => {
@@ -65,7 +67,7 @@ FileSchema.methods.retrieveFromFileDB = function () {
   });
 };
 
-FileSchema.methods.checksum = function () {
+FileSchema.methods.checksum = function getChecksum() {
   if (!this.sha1) {
     logger.warn('File without sha1 checksum processed, prepareDataForStorage not called?');
 

@@ -280,9 +280,9 @@ UserSchema.static({
       logger.info(pUser);
       logger.info(pDoc);
       cb(pError, _.map(pDoc.apikeys, pKey => pKey.key));
-    });
 
-    return undefined;
+      return undefined;
+    });
   },
 
   generateApiKey(user, cb) {

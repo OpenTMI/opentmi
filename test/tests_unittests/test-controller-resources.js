@@ -268,7 +268,7 @@ describe('controllers/resources.js', () => {
       ResourceController.release(req, res);
     });
 
-     // Release is successful
+    // Release is successful
     const successPromise = new Promise((resolve) => {
       const req = {Resource: {release: (cb) => {
         req.allocated = 'releasation';
@@ -307,7 +307,7 @@ describe('controllers/resources.js', () => {
       ResourceController.allocMultiple(req, res);
     });
 
-     // allocateResources is successful
+    // allocateResources is successful
     const successPromise = new Promise((resolve) => {
       const req = {Resource: {allocateResources: (body, cb) => {
         cb(undefined, 'allocated_stuff');
