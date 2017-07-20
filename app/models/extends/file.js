@@ -17,7 +17,7 @@ const FileSchema = new mongoose.Schema({
   encoding: { type: String, enum: ['raw', 'base64'], default: 'raw' },
   data: { type: Buffer },
   size: { type: Number },
-  sha1: { type: String },
+  sha1: { type: String, index: true, sparse: true },
   sha256: { type: String }
 });
 FileSchema.set('toObject', { virtuals: true });
