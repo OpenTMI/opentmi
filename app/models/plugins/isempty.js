@@ -1,17 +1,21 @@
+const logger = require('winston');
+
 /**
  * @method isEmpty
- * @param {mongoose.Schema} schema
- * @param {Object}          options
- * @param {Function}        [options.fn=Math.random]
- * @param {String}          [options.path='random']
+ * @param {mongoose.Schema} pSchema
+ * @param {Object}          pOptions
+ * @param {Function}        [pOptions.fn=Math.random]
+ * @param {String}          [pOptions.path='random']
  */
-var IsEmpty = function(schema, options){
-  schema.statics.isEmpty = function(cb){
-    this.count({}, function(error, count){
-      cb(error, count===0);
+function IsEmpty(pSchema, pOptions) { // eslint-disable-line no-unused-vars
+  const schema = pSchema;
+  schema.statics.isEmpty = function isEmpty(cb) {
+    this.count({}, (error, count) => {
+      cb(error, count === 0);
     });
-  }
-  console.log("isEmpty registered");
+  };
+
+  logger.info('isEmpty registered');
 }
 
-module.exports = exports = IsEmpty;
+module.exports = IsEmpty;
