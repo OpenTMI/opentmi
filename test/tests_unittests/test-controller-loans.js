@@ -139,7 +139,7 @@ describe('controllers/loans.js', function () {
     });
 
     // Chain and test all promises
-    return validReturn.then(invalidReturnMissingId).then(invalidUpdate);
+    return validReturn.then(() => invalidReturnMissingId).then(() => invalidUpdate);
   });
 
   it('_handleItemsInUpdate', function () {
@@ -201,7 +201,7 @@ describe('controllers/loans.js', function () {
     });
 
     // Chain and test all promises
-    return validSingleItem.then(validMultipleItems).then(invalidItem);
+    return validSingleItem.then(() => validMultipleItems).then(() => invalidItem);
   });
 
   it('findUsersLoans', function () {
@@ -224,7 +224,7 @@ describe('controllers/loans.js', function () {
 
         for (let i = 0; i < 3; i += 1) {
           expect(objDoc.items[i]._id.toString()).to.equal(mockLoan1.items[i]._id.toString());
-          expect(objDoc.items[i].item.toString()).to.equal(mockLoan1.items[i].item.toString());
+          expect(objDoc.items[i].item._id.toString()).to.equal(mockLoan1.items[i].item.toString());
           expect(objDoc.items[i]).to.not.have.property('return_date');
         }
 
@@ -250,6 +250,6 @@ describe('controllers/loans.js', function () {
     });
 
     // Chain and test all promises
-    return validUserWithLoans.then(invalidUser);
+    return validUserWithLoans.then(() => invalidUser);
   });
 });

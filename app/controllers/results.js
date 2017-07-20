@@ -54,7 +54,7 @@ class ResultsController extends DefaultController {
     });
   }
 
-  _doResult(jobId, value, callback) {
+  _doResult(jobId, value) {
     const result = new this.Model({
       tcid: value.name,
       cre: {name: 'tmt'},
@@ -69,19 +69,24 @@ class ResultsController extends DefaultController {
     if (value.failure.type) result.exec.note += `${value.failure.type}\n\n`;
     // if (value.failure.raw) result.exec.note += value.failure.raw.join('\n');
 
-    result.save(callback);
+    return new Promise((resolve, reject) => {
+      result.save((pError) => {
+        if (pError) {
+          return reject(pError);
+        }
+
+        return resolve();
+      });
+    });
   }
 
   handleJunitXml(junitXml) {
     return JunitXmlParser.parse(junitXml).then((results) => {
       const jobId = uuid.v1();
 
-      return new Promise((resolve, reject) => {
-        // async.eachSeries(results.suite.tests, this._doResult.bind(this, jobId), (err) => {
-        Promise.each(results.suite.tests, this._doResult.bind(this, jobId)).then(() => {
-          logger.info('Store new results');
-          resolve({ok: 1, message: `created ${results.suite.tests.length} results`});
-        }).catch(err => reject(err));
+      return Promise.each(results.suite.tests, this._doResult.bind(this, jobId)).then(() => {
+        logger.info('Store new results');
+        return Promise.resolve({ok: 1, message: `created ${results.suite.tests.length} results`});
       });
     });
   }
