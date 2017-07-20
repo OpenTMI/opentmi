@@ -142,10 +142,10 @@ describe('tools/filedb.js', function () {
       filedb._writeFile = (filename, data) => {
         expect(filename).to.equal(sampleFile.sha1);
         expect(data).to.equal(compressedData);
-        Promise.resolve();
+        return Promise.resolve('file stored');
       };
 
-      return filedb.storeFile(sampleFile);
+      return expect(filedb.storeFile(sampleFile)).to.eventually.equal('file stored');
     });
 
     it('storeFile - not an instance', function () {
