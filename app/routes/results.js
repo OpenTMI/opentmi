@@ -1,7 +1,7 @@
 const express = require('express');
 const ResultController = require('./../controllers/results');
 
-var Route = function(app) {
+function Route(pApp) {
   const router = express.Router();
   const controller = new ResultController();
 
@@ -24,7 +24,7 @@ var Route = function(app) {
     .all(controller.all.bind(controller))
     .get(ResultController.buildDownload);
 
-  app.use(router);
+  pApp.use(router);
 }
 
 module.exports = Route;

@@ -1,7 +1,7 @@
 const express = require('express');
 const ResourceController = require('./../controllers/resources');
 
-const Route = function (app) {
+function Route(pApp) {
   const router = express.Router();
   const controller = new ResourceController();
 
@@ -14,7 +14,7 @@ const Route = function (app) {
     .post(controller.create.bind(controller));
 
   router.route('/api/v0/resources/allocation')
-    //.get( controller.list_allocs )
+    // .get( controller.list_allocs )
     .put(ResourceController.allocMultiple);
 
   // router.route('/api/v0/resources/allocation/:Alloc')
@@ -41,7 +41,7 @@ const Route = function (app) {
   router.route('/api/v0/resources/:Resource/route')
     .get(ResourceController.solveRoute);
 
-  app.use(router);
-};
+  pApp.use(router);
+}
 
 module.exports = Route;

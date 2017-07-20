@@ -1,7 +1,7 @@
 const express = require('express');
 const BuildController = require('./../controllers/builds');
 
-const Route = function (app) {
+function Route(pApp) {
   const router = express.Router();
   const controller = new BuildController();
 
@@ -21,7 +21,7 @@ const Route = function (app) {
   router.route('/api/v0/duts/builds/:Build/files/:Index/download')
     .get(BuildController.download);
 
-  app.use(router);
-};
+  pApp.use(router);
+}
 
 module.exports = Route;

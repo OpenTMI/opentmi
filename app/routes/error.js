@@ -1,32 +1,35 @@
 const logger = require('winston');
+
 /**
  * Error handling
  */
-
-var Route = function(app){
+function Route(pApp) {
   logger.log('-AddRoute: error');
-  app.use(function (err, req, res, next) {
+  pApp.use((pError, pReq, pRes, pNext) => {
     // treat as 404
-    if (err.message
-      && (~err.message.indexOf('not found')
-      || (~err.message.indexOf('Cast to ObjectId failed')))) {
-      return next();
+    const msg = pError.message;
+    if (msg && (msg.indexOf('not found') >= 0 || msg.indexOf('Cast to ObjectId failed') >= 0)) {
+      return pNext();
     }
-    logger.error(err.stack);
+
+    logger.error(pError.stack);
+
     // error page
-    res.status(500).json({
-      url: req.originalUrl,
-      error: err.stack
+    pRes.status(500).json({
+      url: pReq.originalUrl,
+      error: pError.stack
     });
+
+    return undefined;
   });
 
   // assume 404 since no middleware responded
-  app.use(function (req, res, next) {
-    res.status(404).json({
-      url: req.originalUrl,
+  pApp.use((pReq, pRes) => {
+    pRes.status(404).json({
+      url: pReq.originalUrl,
       error: 'Not found'
     });
   });
-};
+}
 
 module.exports = Route;

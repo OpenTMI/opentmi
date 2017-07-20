@@ -1,33 +1,33 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const nconf = require('../../config');
 
+const admin = nconf.get('admin');
 
-const Route = function(app){
+function isAdmin(req, res, next) {
+  if (req.query.pwd && admin && req.query.pwd === admin.pwd) {
+    next();
+  } else {
+    res.status(500).json({error: 'Not allowed'});
+  }
+}
 
+function get(req, res) {
+  res.json(nconf.get());
+}
+
+function put(req, res) {
+  res.json(501, {error: 'not implemented'});
+}
+
+function Route(pApp) {
   const router = express.Router();
 
-  const isAdmin = function(req, res, next){
-    var admin = nconf.get('admin');
-      if( req.query.pwd && admin &&
-          req.query.pwd === admin.pwd ){
-        next();
-      } else {
-        res.status(500).json({error: 'Not allowed'});
-      }
-  };
-
   router.route('/api/v0/settings.:format?')
-    .all( isAdmin)
-    .get( function(req, res){
-      res.json( nconf.get() );
-    })
-    .put( function(req, res){
-      //req.body
-      res.json(501, {error: 'not implemented'});
-    });
+    .all(isAdmin)
+    .get(get)
+    .put(put);
 
-    app.use( router );
-};
+  pApp.use(router);
+}
 
 module.exports = Route;
