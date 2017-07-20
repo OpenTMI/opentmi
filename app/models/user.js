@@ -2,33 +2,31 @@
 /*!
  * Module dependencies
  */
-
-var mongoose = require('mongoose');
-var QueryPlugin = require('mongoose-query');
-var bcrypt = require('bcryptjs');
-var _ = require('lodash');
+const mongoose = require('mongoose');
+const QueryPlugin = require('mongoose-query');
+const bcrypt = require('bcryptjs');
+const _ = require('lodash');
+const logger = require('winston');
 
 /* Implementation */
-var Schema = mongoose.Schema;
-var Types = Schema.Types;
-var ObjectId = Types.ObjectId;
-var Mixed = Types.Mixed;
-var Group = mongoose.model('Group');
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
+const Types = Schema.Types;
+const ObjectId = Types.ObjectId;
+const Group = mongoose.model('Group');
 
-var validateEmail = function(email) {
-    var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    return re.test(email)
-};
+function validateEmail(email) { // eslint-disable-line no-unused-vars
+  const regExp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // eslint-disable-line
+  return regExp.test(email);
+}
 
 /**
  * User schema
  */
-var UserSchema = new Schema({
-  name: { type: String },
+const UserSchema = new Schema({
+  name: {type: String},
 
-  email: { type: String, unique: true, lowercase: true },
-  password: { type: String, select: false },
+  email: {type: String, unique: true, lowercase: true},
+  password: {type: String, select: false},
   displayName: String,
   picture: String,
   bitbucket: String,
@@ -36,27 +34,25 @@ var UserSchema = new Schema({
   github: String,
 
   // statistics
-  registered: { type: Date, default: Date.now },
-  lastVisited: { type: Date, default: Date.now },
-  loggedIn: { type: Boolean, default: false },
+  registered: {type: Date, default: Date.now},
+  lastVisited: {type: Date, default: Date.now},
+  loggedIn: {type: Boolean, default: false},
 
-  groups: [ { type: ObjectId, ref: 'Group' } ],
-  apikeys: [{ type: ObjectId, ref: 'ApiKey' } ]
-})
-.post('save', function(){
-  if( this.isNew ) {
-  }
+  groups: [{type: ObjectId, ref: 'Group'}],
+  apikeys: [{type: ObjectId, ref: 'ApiKey'}]
+}).post('save', () => {
+  // if (this.isNew) { }
 });
 
 /**
  * User plugin
  */
-//UserSchema.plugin(userPlugin, {});
+// UserSchema.plugin(userPlugin, {});
 
 /**
  * Query Plugin
  */
-UserSchema.plugin( QueryPlugin ); //install QueryPlugin
+UserSchema.plugin(QueryPlugin); // install QueryPlugin
 
 /**
  * Add your
@@ -97,17 +93,20 @@ UserSchema.path('username').validate(function (username) {
 /**
  * Pre-save hook
  */
-UserSchema.pre('save', function(next) {
-  var self = this;
+UserSchema.pre('save', function preSave(pNext) {
+  const self = this;
   if (!self.isModified('password')) {
-    return next();
+    return pNext();
   }
-  bcrypt.genSalt(10, function(err, salt) {
-    bcrypt.hash(self.password, salt, function(err, hash) {
-      self.password = hash;
-      next();
+
+  bcrypt.genSalt(10, (pSaltError, pSalt) => {
+    bcrypt.hash(self.password, pSalt, (phashError, pHash) => {
+      self.password = pHash;
+      pNext();
     });
   });
+
+  return undefined;
 });
 /*
 UserSchema.pre('save', function(next){
@@ -129,63 +128,79 @@ UserSchema.pre('save', function(next){
 /**
  * Pre-remove hook
  */
-UserSchema.pre('remove', function(next) {
-  var self = this;
-  var Loan = mongoose.model('Loan');
+UserSchema.pre('remove', function preRemove(next) {
+  const self = this;
+  const Loan = mongoose.model('Loan');
 
-  Loan.find({ loaner:self._id }, function(err, loans) {
-	if (loans.length > 0) return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
-	next();
+  Loan.find({loaner: self._id}, (pError, pLoans) => {
+    if (pLoans.length > 0) {
+      return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
+    }
+
+    return next();
   });
+
+  return undefined;
 });
 
 /**
  * Methods
  */
-UserSchema.methods.addToGroup = function (groupname, done) {
-  var self = this;
-  Group.findOne({ name: groupname }, function (error, group) {
-    if (error) {
-      return done(error);
-    } else if (!group) {
-      return done({ message: 'group not found' });
-    } else if (_.find(group.users, function (user) { return user === self._id; })) {
-      return done({ message: 'user belongs to the group already' });
+UserSchema.methods.addToGroup = function addToGroup(pGroupName, pNext) {
+  const self = this;
+  Group.findOne({name: pGroupName}, (pError, pGroup) => {
+    if (pError) {
+      return pNext(pError);
+    }
+    if (!pGroup) {
+      return pNext({message: 'group not found'});
+    }
+    if (_.find(pGroup.users, user => user === self._id)) {
+      return pNext({message: 'user belongs to the group already'});
     }
 
-    self.groups.push(group._id);
-    group.users.push(self._id);
-    group.save();
-    self.save(function (error, user) {
-      if (error) {
-        return done(error);
+    self.groups.push(pGroup._id);
+    pGroup.users.push(self._id);
+    pGroup.save();
+    self.save((pSaveError, pUser) => {
+      if (pSaveError) {
+        return pNext(pSaveError);
       }
-      done(user);
+
+      return pNext(pUser);
     });
+
+    return undefined;
   });
 };
 
-UserSchema.methods.removeFromGroup = function(group, done) {
-  var self = this;
-  Group.findOne({name: group}, function(error, group){
-      if( error ){
-        return done(error);
+UserSchema.methods.removeFromGroup = function removeFromGroup(pGroupName, pNext) {
+  const self = this;
+  Group.findOne({name: pGroupName}, (pError, pGroup) => {
+    const group = pGroup;
+
+    if (pError) {
+      return pNext(pError);
+    }
+    if (!pGroup) {
+      return pNext({message: 'group not found'});
+    }
+
+    self.groups = _.without(self.groups, pGroup._id);
+    group.users = _.without(pGroup.users, self._id);
+    group.save();
+    self.save((pSaveError, pUser) => {
+      if (pSaveError) {
+        logger.error(pError);
+        return pNext(pSaveError);
       }
-      if(!group){
-        return done({message: 'group not found'});
-      }
-      self.groups = _.without(self.groups, group._id);
-      group.users = _.without(group.users, self._id);
-      group.save();
-      self.save(function(error, user){
-        if(error) {
-          console.log('error');
-          return done(error);
-        }
-        done(user);
-      });
+
+      return pNext(pUser);
+    });
+
+    return undefined;
   });
-}
+};
 
 /**
  * Authenticate - check if the passwords are the same
@@ -194,39 +209,38 @@ UserSchema.methods.removeFromGroup = function(group, done) {
  * @return {Boolean}
  * @api public
  */
-UserSchema.methods.comparePassword = function(password, done) {
-  bcrypt.compare(password, this.password, function(err, isMatch) {
-    done(err, isMatch);
+UserSchema.methods.comparePassword = function comparePassword(pPassword, pNext) {
+  bcrypt.compare(pPassword, this.password, (err, isMatch) => {
+    pNext(err, isMatch);
   });
-}
+};
 
 /**
  * Validation is not required if using OAuth
  */
-UserSchema.methods.createApiKey = function(cb){
-  var self = this;
-  var ApiKey = mongoose.model('ApiKey');
-  apikey = new ApiKey();
-  apikey.save( function(doc){
-    self.apikeys.push( doc._id );
-    self.save(cb)
-    cb(null, doc.key)
-  })
-},
-UserSchema.methods.listApiKeys = function(){
+UserSchema.methods.createApiKey = function createApiKey(cb) {
+  const self = this;
+  const ApiKey = mongoose.model('ApiKey');
+  const apikey = new ApiKey();
+  apikey.save((doc) => {
+    self.apikeys.push(doc._id);
+    self.save(cb);
+    cb(null, doc.key); // Callback gets called twice, usually not intended
+  });
+};
+
+UserSchema.methods.listApiKeys = function listApiKeys() {
   return this.apiKeys;
-},
-UserSchema.methods.deleteApiKey = function(key, cb){
-  if( this.apiKeys.indexOf(key) >= 0){
-    this.update( { $pull: { apiKeys: key } } );
+};
+
+UserSchema.methods.deleteApiKey = function deleteApiKey(pKey, cb) {
+  if (this.apiKeys.indexOf(pKey) >= 0) {
+    this.update({$pull: {apiKeys: pKey}});
     this.save(cb);
   }
-}
+};
 
-UserSchema.methods.skipValidation = function(){
-  return false;
-}
-
+UserSchema.methods.skipValidation = () => false;
 
 /**
  * Statics
@@ -235,42 +249,45 @@ UserSchema.static({
   /**
    * Load
    *
-   * @param {Object} options
+   * @param {Object} pOptions
    * @param {Function} cb
    * @api private
    */
 
-  load: function (options, cb) {
-    options.select = options.select || 'name username';
-    this.findOne(options.criteria)
-      .select(options.select)
+  load(pOptions, cb) {
+    const options = pOptions;
+    options.select = pOptions.select || 'name username';
+    this.findOne(pOptions.criteria)
+      .select(pOptions.select)
       .exec(cb);
   },
 
-  admins: function (done) {
-    var query = { 'account_level': 1 };
-    this.find(query, done);
+  admins(pNext) {
+    const query = {account_level: 1};
+    this.find(query, pNext);
   },
 
-  findByEmail: function(email, cb) {
-    this.find({ email : email }, cb);
+  findByEmail(pEmail, cb) {
+    this.find({email: pEmail}, cb);
   },
 
-  getApiKeys: function(user, cb){
-    this.findOne({_id: user}).populate('apikeys').exec(
-      function(error, doc){
-        if(error){
-          return cb(error);
-        }
-        console.log(user);
-        console.log(doc);
-        cb(error, _.map(doc.apikeys, function(key){return key.key;}));
+  getApiKeys(pUser, cb) {
+    this.findOne({_id: pUser}).populate('apikeys').exec((pError, pDoc) => {
+      if (pError) {
+        return cb(pError);
+      }
+
+      logger.info(pUser);
+      logger.info(pDoc);
+      cb(pError, _.map(pDoc.apikeys, pKey => pKey.key));
     });
+
+    return undefined;
   },
 
-  generateApiKey: function(user, cb){
-    this.findOne({_id: user}, function(error, doc){
-      cb(error, doc?doc.generateApiKey():null);
+  generateApiKey(user, cb) {
+    this.findOne({_id: user}, (error, doc) => {
+      cb(error, doc ? doc.generateApiKey() : null);
     });
   }
 });
@@ -278,5 +295,5 @@ UserSchema.static({
 /**
  * Register
  */
-let User = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
 module.exports = {Model: User, Collection: 'User'};

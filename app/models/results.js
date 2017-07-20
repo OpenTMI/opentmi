@@ -2,43 +2,49 @@
  * Module dependencies
  */
 
-//3rd party modules
+// Third party modules
 const mongoose = require('mongoose');
-//var userPlugin = require('mongoose-user');
+// var userPlugin = require('mongoose-user');
 const QueryPlugin = require('mongoose-query');
 const logger = require('winston');
 const _ = require('lodash');
-const Schema = mongoose.Schema;
 
-
+// Local components
 const FileSchema = require('./extends/file');
 const tools = require('../tools');
+
+const Schema = mongoose.Schema;
 const checksum = tools.checksum;
 const filedb = tools.filedb;
-const file_provider = filedb.provider;
-
+const fileProvider = filedb.provider;
 const Build = mongoose.model('Build');
 
 FileSchema.add({
-    ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
-    from: {type: String, enum: ['dut', 'framework', 'env', 'other']}
+  ref: {
+    type: Schema.Types.ObjectId,
+    ref: 'Resource'
+  },
+  from: {
+    type: String,
+    enum: ['dut', 'framework', 'env', 'other']
+  }
 });
 
 /**
  * User schema
  */
-var ResultSchema = new Schema({
-  tcid: { type: String, required: true, index: true },
-  tcRef: {type: Schema.Types.ObjectId, ref: 'Testcase' },
-  job:{
-    id: { type: String, default: ''}
+const ResultSchema = new Schema({
+  tcid: {type: String, required: true, index: true},
+  tcRef: {type: Schema.Types.ObjectId, ref: 'Testcase'},
+  job: {
+    id: {type: String, default: ''}
   },
   campaign: {type: String, default: '', index: true},
-  campaignRef: {type: Schema.Types.ObjectId, ref: 'Campaign' },
+  campaignRef: {type: Schema.Types.ObjectId, ref: 'Campaign'},
   cre: {
     time: {type: Date, default: Date.now, index: true},
     user: {type: String},
-    userRef: {type: Schema.Types.ObjectId, ref: 'User' }
+    userRef: {type: Schema.Types.ObjectId, ref: 'User'}
   },
   exec: {
     verdict: {
@@ -48,10 +54,10 @@ var ResultSchema = new Schema({
       index: true
     },
     note: {type: String, default: ''},
-    duration: {type: Number}, //seconds
+    duration: {type: Number}, // seconds
     profiling: {type: Schema.Types.Mixed},
-    env: { //environment information
-      ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
+    env: { // environment information
+      ref: {type: Schema.Types.ObjectId, ref: 'Resource'},
       rackId: {type: String},
       framework: {
         name: {type: String, default: ''},
@@ -59,12 +65,12 @@ var ResultSchema = new Schema({
       }
     },
     sut: { // software under test
-      ref: {type: Schema.Types.ObjectId, ref: 'Build' },
+      ref: {type: Schema.Types.ObjectId, ref: 'Build'},
       gitUrl: {type: String, default: ''},
       buildName: {type: String},
       buildDate: {type: Date},
       buildUrl: {type: String, default: ''},
-      buildSha1: {type: String },
+      buildSha1: {type: String},
       branch: {type: String, default: ''},
       commitId: {type: String, default: ''},
       tag: [{type: String}],
@@ -72,16 +78,16 @@ var ResultSchema = new Schema({
       cut: [{type: String}], // Component Under Test
       fut: [{type: String}] // Feature Under Test
     },
-    dut: {  // Device(s) Under Test
+    dut: { // Device(s) Under Test
       count: {type: Number},
-      type: {type: String, enum: ['hw','simulator', 'process']},
-      ref: {type: Schema.Types.ObjectId, ref: 'Resource' },
+      type: {type: String, enum: ['hw', 'simulator', 'process']},
+      ref: {type: Schema.Types.ObjectId, ref: 'Resource'},
       vendor: {type: String},
       model: {type: String},
       ver: {type: String},
       sn: {type: String}
     },
-    logs: [ FileSchema ]
+    logs: [FileSchema]
   }
 });
 
@@ -90,7 +96,7 @@ ResultSchema.set('toObject', {virtuals: true});
 /**
  * Query plugin
  */
-ResultSchema.plugin( QueryPlugin ); //install QueryPlugin
+ResultSchema.plugin(QueryPlugin); // install QueryPlugin
 
 /**
  * Add your
@@ -102,16 +108,16 @@ ResultSchema.plugin( QueryPlugin ); //install QueryPlugin
 /**
  * Methods
  */
-ResultSchema.pre('validate', function (next) {
-  var err;
-  var buildSha1 = _.get(this, 'exec.sut.buildSha1');
+ResultSchema.pre('validate', function preValidate(pNext) {
+  let pError;
+  const buildSha1 = _.get(this, 'exec.sut.buildSha1');
 
-  var logs = _.get(this, 'exec.logs');
+  const logs = _.get(this, 'exec.logs');
   if (_.isArray(logs)) {
-    for (const i = 0; i < logs.length; i++) {
-      var file = logs[i];
+    for (let i = 0; i < logs.length; i += 1) {
+      const file = logs[i];
       if (!file.name) {
-        err = new Error('file[' + i + '].name missing');
+        pError = new Error(`file[${i}].name missing`);
         break;
       }
       if (file.base64) {
@@ -120,50 +126,49 @@ ResultSchema.pre('validate', function (next) {
       }
       if (file.data) {
         file.size = file.data.length;
-        //file.type = mimetype(file.name(
+        // file.type = mimetype(file.name(
         file.sha1 = checksum(file.data, 'sha1');
         file.sha256 = checksum(file.data, 'sha256');
-        if (file_provider === 'mongodb') {
-          //use mongodb document
+        if (fileProvider === 'mongodb') {
+          // use mongodb document
           logger.warn('store file %s to mongodb', file.name);
-        } else if (file_provider) {
+        } else if (fileProvider) {
           // store to filesystem
           filedb.storeFile(file);
           file.data = undefined;
         } else {
-          //do not store at all..
+          // do not store at all..
           file.data = undefined;
           logger.warn('filedb is not configured');
         }
       }
     }
   }
-  if (err) {
-    return next(err);
+  if (pError) {
+    return pNext(pError);
   }
 
   if (buildSha1) {
     logger.debug('result build sha1: ', buildSha1);
-    Build.findOne({'files.sha1': buildSha1}, (err, build) => {
-      if(build) {
-        this.exec.sut.ref = build._id;
+    Build.findOne({'files.sha1': buildSha1}, (pFindError, pBuild) => {
+      if (pBuild) {
+        this.exec.sut.ref = pBuild._id;
       }
-      next();
+      pNext();
     });
-    return;
   }
 
-  next(err);
+  return pNext(pError);
 });
 ResultSchema.virtual('exec.sut.sha1');
-  /*.get()
-  .set(function(v) {
+/* .get()
+.set(function(v) {
 
-  });*/
-ResultSchema.methods.setBuild = function(cb) {
+});*/
+ResultSchema.methods.setBuild = function setBuild() {
 
 };
-ResultSchema.methods.getBuild = function(cb) {
+ResultSchema.methods.getBuild = function getBuild(cb) {
   logger.debug('lookup build..');
   Build.findOne({_id: _.get(this, 'exec.sut.ref')}, cb);
 };
@@ -179,5 +184,5 @@ ResultSchema.static({
 /**
  * Register
  */
-let Result = mongoose.model('Result', ResultSchema);
+const Result = mongoose.model('Result', ResultSchema);
 module.exports = {Model: Result, Collection: 'Result'};
