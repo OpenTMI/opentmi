@@ -203,7 +203,7 @@ class AuthenticationController {
       logger.debug(addPrefix('fetching user profile information from github.'));
 
       logger.verbose(addPrefix('requesting profile information.'));
-      request.get({url: userApiUrl, qs: pAccessToken, pHeaders, json: true}, (pError, pResponse, pProfile) => {
+      request.get({url: userApiUrl, qs: pAccessToken, headers: pHeaders, json: true}, (pError, pResponse, pProfile) => {
         logger.verbose(addPrefix(`response from: ${userApiUrl} received.`));
 
         // Process error if one happened
@@ -240,7 +240,7 @@ class AuthenticationController {
 
       logger.verbose(addPrefix('requesting organization information.'));
       const orgUrl = `${userApiUrl}/orgs`;
-      request.get({url: orgUrl, qs: pAccessToken, pHeaders, json: true}, (pError, pResponse) => {
+      request.get({url: orgUrl, qs: pAccessToken, headers: pHeaders, json: true}, (pError, pResponse) => {
         logger.verbose(addPrefix(`response from: ${orgUrl} received.`));
 
         // Process error if one happened
@@ -271,7 +271,7 @@ class AuthenticationController {
 
       logger.verbose(addPrefix('requesting list of teams where user is a member.'));
       const teamUrl = `${userApiUrl}/teams`;
-      request.get({url: teamUrl, qs: pAccessToken, pHeaders, json: true}, (pError, pResponse) => {
+      request.get({url: teamUrl, qs: pAccessToken, headers: pHeaders, json: true}, (pError, pResponse) => {
         logger.verbose(addPrefix(`response from: ${teamUrl} received`));
 
         // Process error if one happened
