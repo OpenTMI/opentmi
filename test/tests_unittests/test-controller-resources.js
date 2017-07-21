@@ -23,7 +23,7 @@ chai.use(chaiSubset);
 const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 
-describe('controllers/resources.js', () => {
+describe('controllers/resources.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
@@ -75,7 +75,7 @@ describe('controllers/resources.js', () => {
     done();
   });
 
-  it('solveRoute', () => {
+  it('solveRoute', function () {
     // solveRoute returns with error
     const errorPromise = new Promise((resolve) => {
       const req = {Resource: {solveRoute: (cb) => {

@@ -12,6 +12,9 @@ const JunitXmlParser = require('junit-xml-parser').parser;
 const uuid = require('node-uuid');
 const logger = require('winston');
 
+// Setup
+mongoose.Promise = Promise;
+
 // own modules
 const DefaultController = require('./');
 
@@ -69,15 +72,7 @@ class ResultsController extends DefaultController {
     if (value.failure.type) result.exec.note += `${value.failure.type}\n\n`;
     // if (value.failure.raw) result.exec.note += value.failure.raw.join('\n');
 
-    return new Promise((resolve, reject) => {
-      result.save((pError) => {
-        if (pError) {
-          return reject(pError);
-        }
-
-        return resolve();
-      });
-    });
+    return result.save();
   }
 
   handleJunitXml(junitXml) {
