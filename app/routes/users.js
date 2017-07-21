@@ -77,6 +77,9 @@ const Route = function (app) {
   app.post('/auth/google', authController.google.bind(authController));
   app.get('/auth/github/id', AuthController.getGithubClientId);
 
+  /**
+   * Empty callback route for addon OAuth 2 authentication flow to retain passed parameters in the url.
+   */
   app.get('/auth/redirect', function (req, res) {
     res.sendStatus(200);
   });
