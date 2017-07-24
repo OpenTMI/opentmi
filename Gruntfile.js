@@ -3,7 +3,11 @@ const fs = require('fs');
 
 function gruntSetup(grunt) {
   const testFilesApi = ['test/tests_api/*.js'];
-  const testFilesUnit = ['test/tests_unittests/*.js', 'test/tests_unittests/tools/*.js'];
+  const testFilesUnit = [
+    'test/tests_unittests/*.js',
+    'test/tests_unittests/tools/*.js',
+    'test/tests_unittests/addons/*.js'
+  ];
 
   grunt.initConfig({
     express: {
