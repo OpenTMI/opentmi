@@ -29,35 +29,35 @@ class ResourcesController extends DefaultController {
     });
   }
 
-  static paramAlloc(pReq, pRes, pNext) {
-    pReq.Resource.find({'status.allocId': pReq.params.Alloc}, (pFindError, pDocs) => {
-      if (pFindError) {
-        pRes.status(404).json({error: pFindError});
-      } else if (pDocs.length > 0) {
-        logger.info(`found many devices: ${pDocs.length}`);
-        pReq.allocated = pDocs; // eslint-disable-line no-param-reassign
-        pNext();
+  static paramAlloc(req, res, next) {
+    req.Resource.find({'status.allocId': req.params.Alloc}, (findError, docs) => {
+      if (findError) {
+        res.status(404).json({error: findError});
+      } else if (docs.length > 0) {
+        logger.info(`found many devices: ${docs.length}`);
+        req.allocated = docs; // eslint-disable-line no-param-reassign
+        next();
       } else {
-        logger.info(`no allocated resources with id: ${pReq.params.Alloc}`);
-        pRes.status(404).json({error: 'not found'});
+        logger.info(`no allocated resources with id: ${req.params.Alloc}`);
+        res.status(404).json({error: 'not found'});
       }
     });
   }
 
-  static getToBody(pReq, pRes, pNext) {
+  static getToBody(req, res, next) {
     try {
-      pReq.body = JSON.parse(pReq.query.alloc); // eslint-disable-line no-param-reassign
-    } catch (err) {
-      pRes.status(500).json({error: err});
+      req.body = JSON.parse(req.query.alloc); // eslint-disable-line no-param-reassign
+    } catch (error) {
+      res.status(500).json({error: error});
       return;
     }
-    pNext();
+    next();
   }
 
   static alloc(req, res) {
-    req.Resource.alloc((pError) => {
-      if (pError) {
-        res.status(500).json({error: pError});
+    req.Resource.alloc((error) => {
+      if (error) {
+        res.status(500).json({error: error});
       } else {
         res.json(req.allocated);
       }
@@ -77,7 +77,7 @@ class ResourcesController extends DefaultController {
   static allocMultiple(req, res) {
     req.Resource.allocateResources(req.body, (error, allocated) => {
       if (error) {
-        res.status(404).json({error});
+        res.status(404).json({error: error});
       } else {
         res.json(allocated);
       }
@@ -86,14 +86,14 @@ class ResourcesController extends DefaultController {
 
   static releaseMultiple(req, res) {
     logger.info(`Releasing: ${req.allocated.length}`);
-    async.map(req.allocated, (resource, cb) => {
+    async.map(req.allocated, (resource, next) => {
       logger.info(`try to release: ${resource._id}`);
-      resource.release(cb);
-    }, (pError, pResults) => {
-      if (!pError) {
-        res.json(pResults);
+      resource.release(next);
+    }, (error, results) => {
+      if (!error) {
+        res.json(results);
       } else {
-        res.status(500).json({error: pError});
+        res.status(500).json({error: error});
       }
     });
   }

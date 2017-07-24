@@ -6,10 +6,10 @@ const mongoose = require('mongoose');
   General ontrollers for "Restfull" services
 */
 class DefaultController extends EventEmitter {
-  constructor(pModelName) {
+  constructor(modelName) {
     super();
-    this._model = mongoose.model(pModelName);
-    this.modelName = pModelName;
+    this._model = mongoose.model(modelName);
+    this.modelName = modelName;
     this.docId = '_id';
     this.modelParam = this.defaultModelParam();
   }
@@ -19,18 +19,18 @@ class DefaultController extends EventEmitter {
     const modelname = this.modelName;
     const docId = this.docId;
 
-    return (pReq, pRes, pNext) => {
-      logger.debug(`do param ${JSON.stringify(pReq.params)}`);
+    return (req, res, next) => {
+      logger.debug(`do param ${JSON.stringify(req.params)}`);
       const find = {};
-      find[docId] = pReq.params[modelname];
+      find[docId] = req.params[modelname];
       this.Model.findOne(find, (error, data) => {
         if (error) {
-          pRes.status(500).json({error});
+          res.status(500).json({error});
         } else if (data) {
-          if (typeof modelname === 'string') pReq[modelname] = data; // eslint-disable-line no-param-reassign
-          pNext();
+          if (typeof modelname === 'string') req[modelname] = data; // eslint-disable-line no-param-reassign
+          next();
         } else {
-          pRes.status(404).json({msg: 'not found'});
+          res.status(404).json({msg: 'not found'});
         }
       });
     };
@@ -69,13 +69,14 @@ class DefaultController extends EventEmitter {
   }
 
   create(req, res) {
-    const item = new this._model(req.body);
+    const editedReq = req;
+    const item = new this._model(editedReq.body);
     item.save((error) => {
       if (error) {
         logger.warn(error);
         if (res) res.status(400).json({error: error.message});
       } else { // if (res) {
-        req.query = req.body;
+        editedReq.query = req.body;
         this.emit('create', item.toObject());
         res.json(item);
       }
@@ -83,12 +84,13 @@ class DefaultController extends EventEmitter {
   }
 
   update(req, res) {
-    delete req.body._id;
-    delete req.body.__v;
-    logger.debug(req.body);
+    const editedReq = req;
+    delete editedReq.body._id;
+    delete editedReq.body.__v;
+    logger.debug(editedReq.body);
 
     const updateOpts = {runValidators: true};
-    this._model.findByIdAndUpdate(req.params[this.modelName], req.body, updateOpts, (error, doc) => {
+    this._model.findByIdAndUpdate(editedReq.params[this.modelName], editedReq.body, updateOpts, (error, doc) => {
       if (error) {
         logger.warn(error);
         res.status(400).json({error: error.message});
@@ -101,10 +103,10 @@ class DefaultController extends EventEmitter {
 
   remove(req, res) {
     if (req[this.modelName]) {
-      req[this.modelName].remove((err) => {
-        if (err) {
-          logger.warn(err.message);
-          return res.status(400).json({error: err.message});
+      req[this.modelName].remove((error) => {
+        if (error) {
+          logger.warn(error.message);
+          return res.status(400).json({error: error.message});
         }
 
         this.emit('remove', req.params[this.defaultModelName]);
@@ -118,11 +120,11 @@ class DefaultController extends EventEmitter {
   }
 
   // extra functions
-  isEmpty(cb) {
+  isEmpty(next) {
     this._model.count({}, (error, count) => {
-      if (error) cb(error);
-      else if (count === 0) cb(true);
-      else cb(false);
+      if (error) next(error);
+      else if (count === 0) next(true);
+      else next(false);
     });
   }
 }

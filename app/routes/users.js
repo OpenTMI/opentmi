@@ -22,14 +22,14 @@ function createDefaultAdmin() {
   const admin = new User();
   admin.name = nconf.get('admin').user;
   admin.password = nconf.get('admin').pwd;
-  admin.save((pError, pUser) => {
-    if (pError) {
-      return logger.error(pError);
+  admin.save((error, user) => {
+    if (error) {
+      return logger.error(error);
     }
 
-    pUser.addToGroup('admins', (pAddError, pAddUser) => {
-      if (pAddError) logger.error(pAddError);
-      else logger.debug(pAddUser);
+    user.addToGroup('admins', (addError, addedUser) => {
+      if (addError) logger.error(addError);
+      else logger.debug(addedUser);
     });
 
     return undefined;
@@ -39,7 +39,7 @@ function createDefaultAdmin() {
 /**
  * Route middlewares
  */
-function Route(pApp) {
+function Route(app) {
   // Create a default admin if there is no users in the database
   User.count({}, (err, count) => {
     if (count === 0) { createDefaultAdmin(); }
@@ -60,25 +60,25 @@ function Route(pApp) {
     .put(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.update.bind(userController))
     .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.remove.bind(userController));
 
-  pApp.use(router);
+  app.use(router);
 
   // Create authentication routes:
-  pApp.get('/api/v0/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, apiKeys.keys);
-  pApp.get('/api/v0/users/:User/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.userKeys);
-  pApp.get('/api/v0/users/:User/apikeys/new', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.createKey);
-  pApp.delete('/api/v0/users/:User/apikeys/:Key', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated,
+  app.get('/api/v0/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, apiKeys.keys);
+  app.get('/api/v0/users/:User/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.userKeys);
+  app.get('/api/v0/users/:User/apikeys/new', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.createKey);
+  app.delete('/api/v0/users/:User/apikeys/:Key', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated,
     apiKeys.deleteKey);
 
-  pApp.post('/auth/login', authController.login.bind(authController));
-  pApp.get('/auth/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated,
+  app.post('/auth/login', authController.login.bind(authController));
+  app.get('/auth/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated,
     authController.getme.bind(authController));
-  pApp.put('/auth/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated,
+  app.put('/auth/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated,
     authController.putme.bind(authController));
-  pApp.post('/auth/signup', authController.signup.bind(authController));
-  pApp.post('/auth/logout', authController.logout.bind(authController));
-  pApp.post('/auth/github', jwt({secret: TOKEN_SECRET, credentialsRequired: false}), AuthController.github);
-  pApp.post('/auth/google', authController.google.bind(authController));
-  pApp.get('/auth/github/id', AuthController.getGithubClientId);
+  app.post('/auth/signup', authController.signup.bind(authController));
+  app.post('/auth/logout', authController.logout.bind(authController));
+  app.post('/auth/github', jwt({secret: TOKEN_SECRET, credentialsRequired: false}), AuthController.github);
+  app.post('/auth/google', authController.google.bind(authController));
+  app.get('/auth/github/id', AuthController.getGithubClientId);
 }
 
 
