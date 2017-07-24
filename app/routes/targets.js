@@ -1,7 +1,7 @@
 const express = require('express');
 const TargetController = require('./../controllers/targets');
 
-const Route = function (app) {
+function Route(app) {
   const router = express.Router();
   const controller = new TargetController();
 
@@ -23,6 +23,6 @@ const Route = function (app) {
     .get(TargetController.getGt);
 
   app.use(router);
-};
+}
 
 module.exports = Route;

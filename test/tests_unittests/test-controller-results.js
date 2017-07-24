@@ -1,51 +1,46 @@
-/* global describe before beforeEach after it */
-/* eslint-disable */
-// Third party components
-const colors = require('colors');
-const stream = require('stream');
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
+// Third party components
+require('colors');
+const stream = require('stream');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiSubset);
-chai.use(chaiAsPromised);
-const expect = chai.expect;
-
 const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
-
 const Mockgoose = require('mockgoose').Mockgoose;
-const mockgoose = new Mockgoose(mongoose);
+const Promise = require('bluebird');
+const logger = require('winston');
 
+// Local components
 require('./../../app/models/build.js');
 require('./../../app/models/testcase.js');
 require('./../../app/models/results.js');
-
-const logger = require('winston');
-logger.level = 'error';
-
-// Local components
 const ResultsController = require('./../../app/controllers/results.js');
-let controller = null;
-
 const MockResponse = require('./mocking/MockResponse.js');
 const mockJunitXml = require('./mocking/MockJunitXmlTests.js');
-/* eslint-enable */
 
+// Setup
+logger.level = 'error';
+mongoose.Promise = Promise;
+chai.use(chaiSubset);
+chai.use(chaiAsPromised);
+
+// Test variables
+const mockgoose = new Mockgoose(mongoose);
+const expect = chai.expect;
+let controller = null;
 
 describe('controllers/results.js', () => {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
 
-    console.log('    [Before]'.gray);
-    console.log('    * Preparing storage'.gray);
+    logger.debug('[Before] Preparing storage'.gray);
     return mockgoose.prepareStorage().then(() => {
-      console.log('    * Connecting to mongo\n'.gray);
+      logger.debug('[Before] Connecting to mongo\n'.gray);
       return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
         // Test that controller can be initialized before other tests
         controller = new ResultsController();
-        console.log('    [Tests]'.gray);
       });
     });
   });
@@ -55,15 +50,14 @@ describe('controllers/results.js', () => {
   });
 
   after(function (done) {
-    console.log('\n    [After]'.gray);
-    console.log('    * Closing mongoose connection'.gray);
+    logger.debug('[After] Closing mongoose connection'.gray);
     mongoose.disconnect();
     done();
   });
 
   it('streamToString', function () {
     const mockedStream = stream.Readable();
-    mockedStream._read = function (size) { };
+    mockedStream._read = function () { };
 
     const stringPromise = ResultsController.streamToString(mockedStream);
 
@@ -91,14 +85,14 @@ describe('controllers/results.js', () => {
     return Promise.all([
       expect(promiseValid).to.not.be.rejected,
       expect(promiseInvalid).to.be.rejectedWith(Error),
-      expect(promiseTypo).to.be.rejectedWith(TypeError),
+      expect(promiseTypo).to.be.rejectedWith(TypeError)
     ]);
   });
 
 
   it('createFromJunitXml', function () {
-    const req = { busboy: stream.Readable() };
-    req.busboy._read = function (size) { };
+    const req = {busboy: stream.Readable()};
+    req.busboy._read = function () { };
 
     const res = new MockResponse((value) => {
       expect(value).to.have.property('error');
@@ -143,7 +137,7 @@ describe('controllers/results.js', () => {
     return Promise.all([
       expect(validCreationPromise).to.eventually.equal('ok'),
       expect(invalidStreamCreationPromise).to.be.rejectedWith(Error),
-      expect(invalidHandleJunitCreationPromise).to.be.rejectedWith(Error),
+      expect(invalidHandleJunitCreationPromise).to.be.rejectedWith(Error)
     ]);
   });
 });

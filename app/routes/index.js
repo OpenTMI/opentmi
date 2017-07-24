@@ -1,36 +1,36 @@
-// internal modules
+// Native modules
 const fs = require('fs');
 
-// 3rd party modules
-const _ = require('lodash');
+// Third party modules
 const logger = require('winston');
 
 function registerRoutes(app) {
-  logger.info("Add Routers..");
+  logger.info('Add Routers...');
   fs.readdirSync(__dirname).forEach((file) => {
-    if ( file.match(/\.js$/) &&
-        !file.match(/^index\.js$/) &&
-        !file.match(/^error\.js$/)) {
-      logger.verbose(' * '+file);
+    if (file.match(/\.js$/) && !file.match(/^(index|error)\.js$/)) {
+      logger.debug(` * ${file}`);
+
       try {
-          let filename = `${__dirname}/${file}`;
-          logger.silly(`Loading file: ${filename}`);
-          let router = require(filename);
-          if(_.isFunction(router)) {
-              router(app);
-          } else {
-              logger.warn("Wasn't function!!!");
-          }
-      } catch(err) {
-          logger.warn(err);
+        logger.silly(`Loading file: ${file}`);
+
+        const router = require(`./${file}`); // eslint-disable-line global-require, import/no-dynamic-require
+        if (typeof router === 'function') {
+          router(app);
+        } else {
+          logger.warn('Router was not a function!');
+        }
+      } catch (error) {
+        logger.warn(error);
       }
     }
   });
 }
-module.exports.registerRoutes = registerRoutes;
 
 function registerErrorRoute(app) {
-  require(`${__dirname}/error.js`)(app);
+  require('./error')(app); // eslint-disable-line global-require, import/no-dynamic-require
 }
 
-module.exports.registerErrorRoute = registerErrorRoute;
+module.exports = {
+  registerRoutes,
+  registerErrorRoute
+};

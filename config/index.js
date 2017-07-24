@@ -1,7 +1,7 @@
 const nconf = require('nconf');
 
 // read configurations
-nconf.argv({
+const args = {
   listen: {
     alias: 'l',
     default: '0.0.0.0',
@@ -40,8 +40,11 @@ nconf.argv({
     type: 'bool',
     describe: 'Silent mode'
   }
-}, 'Usage: npm start -- (options)')
-.env()
-.defaults(require('./../config/config.js'));
+};
+
+nconf.argv(args, 'Usage: npm start -- (options)')
+  .env()
+  .defaults(require('./../config/config.js'));
+
 
 module.exports = nconf;

@@ -1,19 +1,18 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const AddonManager = require('../addons');
 
-const Route = function(app){
-
+function Route(app) {
   const router = express.Router();
 
   router.route('/api/v0/addons.:format?')
-    .all( function(req, res, next){
+    .all((req, res, next) => {
       next();
     })
-    .get( function(req, res){
-      res.json( global.AddonManager.AvailableModules() );
+    .get((req, res) => {
+      res.json(AddonManager.AvailableModules());
     });
 
-    app.use( router );
-};
+  app.use(router);
+}
 
 module.exports = Route;

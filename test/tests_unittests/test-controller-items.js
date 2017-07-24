@@ -1,50 +1,44 @@
-/* global describe before beforeEach after it */
-/* eslint-disable */
-// Third party components
-const colors = require('colors');
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
+// Third party components
+require('colors');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-chai.use(chaiSubset);
-chai.use(chaiAsPromised);
-const expect = chai.expect;
-
 const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
-
 const Mockgoose = require('mockgoose').Mockgoose;
-const mockgoose = new Mockgoose(mongoose);
-
-require('./../../app/models/item.js');
-
 const logger = require('winston');
-logger.level = 'error';
+const Promise = require('bluebird');
 
 // Local components
+require('./../../app/models/item.js');
 const ItemController = require('./../../app/controllers/items.js');
-let controller = null;
-
 const MockResponse = require('./mocking/MockResponse.js');
 const mockItems = require('./mocking/MockItems.js');
 
-let mockInstances = [];
-/* eslint-enable */
+// Setup
+logger.level = 'error';
+mongoose.Promise = Promise;
+chai.use(chaiSubset);
+chai.use(chaiAsPromised);
 
+// Test variables
+const mockgoose = new Mockgoose(mongoose);
+const expect = chai.expect;
+let mockInstances = [];
+let controller = null;
 
 describe('controllers/items.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
 
-    console.log('    [Before]'.gray);
-    console.log('    * Preparing storage'.gray);
+    logger.debug('[Before] Preparing storage'.gray);
     return mockgoose.prepareStorage().then(() => {
-      console.log('    * Connecting to mongo\n'.gray);
+      logger.debug('[Before] Connecting to mongo\n'.gray);
       return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
         // Create controller to test
         controller = new ItemController();
-        console.log('    [Tests]'.gray);
       });
     });
   });
@@ -62,8 +56,7 @@ describe('controllers/items.js', function () {
   });
 
   after(function (done) {
-    console.log('\n    [After]'.gray);
-    console.log('    * Closing mongoose connection'.gray);
+    logger.debug('[After] Closing mongoose connection'.gray);
     mongoose.disconnect();
     done();
   });
@@ -71,7 +64,7 @@ describe('controllers/items.js', function () {
   it('update', function () {
     // Valid case, remove 7 items from stock, should be left with 3 available
     const validStockDecrease = new Promise((resolve) => {
-      const req = { body: { in_stock: mockInstances[0].in_stock - 7 }, Item: mockInstances[0] };
+      const req = {body: {in_stock: mockInstances[0].in_stock - 7}, Item: mockInstances[0]};
       const res = new MockResponse((value) => {
         expect(value).to.not.have.property('error');
         expect(value).to.have.property('in_stock', mockItems[0].in_stock - 7);
@@ -86,7 +79,7 @@ describe('controllers/items.js', function () {
 
     // Valid case, tweaking availability by 5, should increase in_stock by 5
     const validAvailabilityTweak = new Promise((resolve) => {
-      const req = { body: { available: mockInstances[1].available + 5 }, Item: mockInstances[1] };
+      const req = {body: {available: mockInstances[1].available + 5}, Item: mockInstances[1]};
       const res = new MockResponse((value) => {
         expect(value).to.not.have.property('error');
         expect(value).to.have.property('in_stock', mockItems[1].in_stock + 5);
@@ -101,7 +94,7 @@ describe('controllers/items.js', function () {
 
     // Valid case, modifying both availability and in_stock
     const validInstockAvailableCombination = new Promise((resolve) => {
-      const req = { body: { in_stock: 6, available: 4 }, Item: mockInstances[2] };
+      const req = {body: {in_stock: 6, available: 4}, Item: mockInstances[2]};
       const res = new MockResponse((value) => {
         expect(value).to.not.have.property('error');
         expect(value).to.have.property('in_stock', 6);
@@ -116,7 +109,7 @@ describe('controllers/items.js', function () {
 
     // Invalid case, removing too many items from in_stock
     const invalidStockDecrease = new Promise((resolve) => {
-      const req = { body: { in_stock: mockInstances[3].in_stock - 16 }, Item: mockInstances[3] };
+      const req = {body: {in_stock: mockInstances[3].in_stock - 16}, Item: mockInstances[3]};
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
         resolve();
@@ -129,7 +122,7 @@ describe('controllers/items.js', function () {
 
     // Invalid case, tweaking available too hard
     const invalidAvailabilityTweak = new Promise((resolve) => {
-      const req = { body: { available: mockInstances[4].available - 4 }, Item: mockInstances[4] };
+      const req = {body: {available: mockInstances[4].available - 4}, Item: mockInstances[4]};
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
         resolve();
@@ -142,7 +135,7 @@ describe('controllers/items.js', function () {
 
     // Invalid case, modifying both availability and in_stock
     const invalidInstockAvailableCombination = new Promise((resolve) => {
-      const req = { body: { in_stock: 8, available: 10 }, Item: mockInstances[5] };
+      const req = {body: {in_stock: 8, available: 10}, Item: mockInstances[5]};
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
         resolve();
@@ -160,12 +153,12 @@ describe('controllers/items.js', function () {
       expect(validInstockAvailableCombination).to.not.be.rejected,
       expect(invalidStockDecrease).to.not.be.rejected,
       expect(invalidAvailabilityTweak).to.not.be.rejected,
-      expect(invalidInstockAvailableCombination).to.not.be.rejected,
+      expect(invalidInstockAvailableCombination).to.not.be.rejected
     ]);
   });
 
   it('_handleUpdateInStock', function (done) {
-    const req = { body: { in_stock: 10 }, Item: { in_stock: 8, available: 4 } };
+    const req = {body: {in_stock: 10}, Item: {in_stock: 8, available: 4}};
     ItemController._handleUpdateInStock(req);
 
     // Expect controller to automagically also increase available
@@ -176,7 +169,7 @@ describe('controllers/items.js', function () {
   });
 
   it('_handleUpdateAvailable', function (done) {
-    const req = { body: { available: 16 }, Item: { in_stock: 10, available: 8 } };
+    const req = {body: {available: 16}, Item: {in_stock: 10, available: 8}};
     ItemController._handleUpdateAvailable(req);
 
     // Expect controller to automagically also increase in_stock
@@ -189,9 +182,9 @@ describe('controllers/items.js', function () {
   it('getImage', function () {
     // Mock error happening
     const validCase = new Promise((resolve) => {
-      const req = { Item: { fetchImageData: (cb) => {
-        cb({ type: '*type_block', data: '*data_block' }); 
-      } } };
+      const req = {Item: {fetchImageData: (cb) => {
+        cb({type: '*type_block', data: '*data_block'});
+      }}};
       const res = new MockResponse();
       res.set = (key, value) => {
         expect(key).to.equal('Content-Type');
@@ -207,9 +200,9 @@ describe('controllers/items.js', function () {
 
     // Mock error happening
     const errorCase = new Promise((resolve) => {
-      const req = { Item: { fetchImageData: (cb) => {
+      const req = {Item: {fetchImageData: (cb) => {
         cb(new Error('This is serious - test'));
-      } } };
+      }}};
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
         resolve();
@@ -223,7 +216,7 @@ describe('controllers/items.js', function () {
     // Run all promises
     return Promise.all([
       expect(validCase).to.not.be.rejected,
-      expect(errorCase).to.not.be.rejected,
+      expect(errorCase).to.not.be.rejected
     ]);
   });
 });

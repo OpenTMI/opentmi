@@ -1,50 +1,51 @@
-/* global describe before after beforeEach afterEach it */
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
+
 // Third party modules
 require('colors');
 const nconf = require('../../../config');
 const path = require('path');
 const zlib = require('zlib');
 const fs = require('fs');
-const Promise = require('bluebird');
 const logger = require('winston');
-
+const Promise = require('bluebird');
 const mongoose = require('mongoose');
-require('../../../app/models/extends/file.js');
-
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 
-const expect = chai.expect;
-chai.use(chaiAsPromised);
-
 // Local modules
+require('../../../app/models/extends/file.js');
 const checksum = require('../../../app/tools/checksum.js');
 
+// Setup
+logger.level = 'error';
+chai.use(chaiAsPromised);
+
+// Test variables
+const expect = chai.expect;
 const File = mongoose.model('File');
 const filedbPath = path.resolve('app/tools/filedb.js');
 let filedb;
-logger.level = 'error';
 
 // const tempStoragePath = './test/tests_unittests/tests_tools/temp_files';
 const sampleTextsToStore = [
   'Lorem lapsem, udum masteruk sommersby',
   '{ "suite": { "results" : [ "fail", "pass", "pass", "destruction" ] } }',
-  'null',
+  'null'
 ];
 const sampleTextsToRead = [
   'The quick brown fox jumps over the lazy dog',
   'The fast brown fox jumps over the lazy dog',
   'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum ' +
     'has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer ' +
-    'took a galley of type and scrambled it to make a type specimen book.',
+    'took a galley of type and scrambled it to make a type specimen book.'
 ];
 
 let sampleFilesToStore = [];
 let sampleDataToRead = [];
 
-// Should probably use a separate folder just for testing, feasible only after test environment is configured and used
+// TODO Should probably use a separate folder just for testing
+// feasible only after test environment is configured and used
 const filedbLocation = nconf.get('filedb');
-
 
 describe('tools/filedb.js', function () {
   // Run this before tests
@@ -69,8 +70,7 @@ describe('tools/filedb.js', function () {
   });
 
   beforeEach(function (done) {
-    logger.verbose('[Before Each]'.gray);
-    logger.verbose('Requiring fresh filedb for test so we can mock some of its functionality.'.gray);
+    logger.debug('[Before Each] Requiring fresh filedb for test so we can mock some of its functionality.'.gray);
     delete require.cache[filedbPath];
     filedb = require('../../../app/tools/filedb.js'); // eslint-disable-line
 
@@ -79,8 +79,7 @@ describe('tools/filedb.js', function () {
 
   afterEach(function (done) {
     // Read and unlink files in temp storage folder
-    logger.verbose('[After Each]'.gray);
-    logger.verbose('Deleting all files from filedb location.'.gray);
+    logger.debug('[After Each] Deleting all files from filedb location.'.gray);
     const items = fs.readdirSync(filedbLocation);
     items.map(item => fs.unlinkSync(path.join(filedbLocation, item)));
 
@@ -91,7 +90,7 @@ describe('tools/filedb.js', function () {
 
   describe('readFile', function () {
     it('readFile - valid file', function () {
-      const sampleFile = new File({ sha1: 'test_read_name' });
+      const sampleFile = new File({sha1: 'test_read_name'});
       const compressedData = new Buffer('data received from file');
       const uncompressedData = 'uncompressed_data';
 
@@ -100,7 +99,7 @@ describe('tools/filedb.js', function () {
         return Promise.resolve(compressedData);
       };
       filedb._uncompress = (data) => {
-        expect(data).to.deep.equal(compressedData, 'data that is to be uncompressed should be the data provided by the _readFile');
+        expect(data).to.deep.equal(compressedData, 'the data to uncompress should be the data provided by _readFile');
         return Promise.resolve(uncompressedData);
       };
 
@@ -119,13 +118,13 @@ describe('tools/filedb.js', function () {
       filedb._readFile = () => Promise.resolve('corrupted data');
       filedb._uncompress = () => Promise.reject(new Error('corruption'));
 
-      return expect(filedb.readFile(new File({ sha1: 'checksum' }))).to.be.rejectedWith(Error);
+      return expect(filedb.readFile(new File({sha1: 'checksum'}))).to.be.rejectedWith(Error);
     });
 
     it('readFile - read is rejected', function () {
       // Read file that does not exist, should fail
       filedb._readFile = () => Promise.reject(new Error('could not find file.'));
-      return expect(filedb.readFile(new File({ sha1: 'checksum' }))).to.be.rejectedWith(Error);
+      return expect(filedb.readFile(new File({sha1: 'checksum'}))).to.be.rejectedWith(Error);
     });
   });
 
@@ -134,7 +133,7 @@ describe('tools/filedb.js', function () {
     it('storeFile - valid files', function () {
       // Store files
       const compressedData = 'compressed data';
-      const sampleFile = new File({ sha1: 'checksum', data: 'tested store data' });
+      const sampleFile = new File({sha1: 'checksum', data: 'tested store data'});
 
       filedb._compress = (data) => {
         expect(data).to.equal(sampleFile.data);
@@ -143,10 +142,10 @@ describe('tools/filedb.js', function () {
       filedb._writeFile = (filename, data) => {
         expect(filename).to.equal(sampleFile.sha1);
         expect(data).to.equal(compressedData);
-        Promise.resolve();
+        return Promise.resolve('file stored');
       };
 
-      return filedb.storeFile(sampleFile);
+      return expect(filedb.storeFile(sampleFile)).to.eventually.equal('file stored');
     });
 
     it('storeFile - not an instance', function () {
@@ -156,20 +155,20 @@ describe('tools/filedb.js', function () {
 
     it('storeFile - unresolvable checksum', function () {
       // Should fail
-      const sampleFile = new File({ name: 'test name' });
+      const sampleFile = new File({name: 'test name'});
       return expect(filedb.storeFile(sampleFile)).to.be.rejectedWith(Error);
     });
 
     it('storeFile - name already taken', function () {
       // Should pass
-      const sampleFile = new File({ sha1: 'checksum' });
+      const sampleFile = new File({sha1: 'checksum'});
       filedb._checkFilenameAvailability = () => Promise.resolve(false);
       return filedb.storeFile(sampleFile);
     });
 
     it('storeFile - compress is rejected', function () {
       // Should be rejected
-      const sampleFile = new File({ sha1: 'checksum', data: 'data' });
+      const sampleFile = new File({sha1: 'checksum', data: 'data'});
       filedb._checkFilenameAvailability = () => Promise.reject(new Error('compression failed'));
       filedb._writeFile = () => Promise.reject(new Error('error'));
       return expect(filedb.storeFile(sampleFile)).to.be.rejectedWith(Error);
@@ -177,7 +176,7 @@ describe('tools/filedb.js', function () {
 
     it('storeFile - write is rejected', function () {
       // Should be rejected
-      const sampleFile = new File({ sha1: 'checksum', data: 'data' });
+      const sampleFile = new File({sha1: 'checksum', data: 'data'});
       filedb._checkFilenameAvailability = () => Promise.resolve('data');
       filedb._writeFile = () => Promise.reject(new Error('write failed'));
       return expect(filedb.storeFile(sampleFile)).to.be.rejectedWith(Error);
@@ -192,11 +191,13 @@ describe('tools/filedb.js', function () {
     });
 
     it('_checkFilenameAvailability - available', function () {
-      return expect(filedb._checkFilenameAvailability('available_name')).to.eventually.equal(true, 'available filename should result in true');
+      return expect(filedb._checkFilenameAvailability('available_name'))
+        .to.eventually.equal(true, 'available filename should result in true');
     });
 
     it('_checkFilenameAvailability - unavailable', function () {
-      return expect(filedb._checkFilenameAvailability('existing_testing_filename')).to.eventually.equal(false, 'unavailable filename should result in false');
+      return expect(filedb._checkFilenameAvailability('existing_testing_filename'))
+        .to.eventually.equal(false, 'unavailable filename should result in false');
     });
   });
 
@@ -206,7 +207,7 @@ describe('tools/filedb.js', function () {
       // Store both compressed and uncompressed versions of samples that will be read
       logger.verbose('Composing sample files to read from mock data.'.gray);
       sampleDataToRead = sampleTextsToRead.map((text) => {
-        const obj = { filename: checksum(text), data: text };
+        const obj = {filename: checksum(text), data: text};
         return obj;
       });
 
@@ -224,18 +225,22 @@ describe('tools/filedb.js', function () {
     it('_readFile - valid files', function () {
       // Test read and unzip dummy files
       filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
-      const readPromises = sampleDataToRead.map(obj => expect(filedb._readFile(obj.filename)).to.eventually.deep.equal(new Buffer(obj.data)));
+      const readPromises = sampleDataToRead.map(obj => expect(filedb._readFile(obj.filename))
+        .to.eventually.deep.equal(new Buffer(obj.data)));
+
       return Promise.all(readPromises);
     });
 
     it('_readFile - nonexistent file', function () {
       filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._readFile('nonexistent_file')).to.be.rejectedWith(Error, undefined, '_readFile should be rejected if a nonexistent file is provided');
+      return expect(filedb._readFile('nonexistent_file'))
+        .to.be.rejectedWith(Error, undefined, '_readFile should be rejected if a nonexistent file is provided');
     });
 
     it('_readFile - no filename', function () {
       filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._readFile(undefined)).to.be.rejectedWith(Error, undefined, '_readFile should be rejected if no filename is provided');
+      return expect(filedb._readFile(undefined))
+        .to.be.rejectedWith(Error, undefined, '_readFile should be rejected if no filename is provided');
     });
   });
 
@@ -245,7 +250,7 @@ describe('tools/filedb.js', function () {
       logger.verbose('[BeforeEach - Store]'.gray);
       logger.verbose('Composing sample files to write from mock data'.gray);
       sampleFilesToStore = sampleTextsToStore.map((text) => {
-        const obj = { filename: checksum(text), data: text };
+        const obj = {filename: checksum(text), data: text};
         return obj;
       });
 
@@ -266,12 +271,14 @@ describe('tools/filedb.js', function () {
 
     it('_writeFile - no data', function () {
       filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._writeFile('empty_file', undefined)).to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no data is provided');
+      return expect(filedb._writeFile('empty_file', undefined))
+        .to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no data is provided');
     });
 
     it('_writeFile - no filename', function () {
       filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
-      return expect(filedb._writeFile(undefined, undefined)).to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no filename is provided');
+      return expect(filedb._writeFile(undefined, undefined))
+        .to.be.rejectedWith(Error, undefined, '_writeFile should be rejected if no filename is provided');
     });
   });
 
@@ -279,16 +286,19 @@ describe('tools/filedb.js', function () {
   describe('_compress', function () {
     it('_compress - valid data', function () {
       const sampleData = sampleTextsToStore.map((text) => {
-        const obj = { uncompressed: text, compressed: zlib.gzipSync(text) };
+        const obj = {uncompressed: text, compressed: zlib.gzipSync(text)};
         return obj;
       });
 
-      const compressPromises = sampleData.map(data => expect(filedb._compress(data.uncompressed)).to.eventually.deep.equal(data.compressed));
+      const compressPromises = sampleData.map(data => expect(filedb._compress(data.uncompressed))
+        .to.eventually.deep.equal(data.compressed));
+
       return Promise.all(compressPromises);
     });
 
     it('_compress - no data', function () {
-      return expect(filedb._compress(undefined)).to.be.rejectedWith(Error, undefined, '_compress should throw an error if no data is provided');
+      return expect(filedb._compress(undefined))
+        .to.be.rejectedWith(Error, undefined, '_compress should throw an error if no data is provided');
     });
   });
 
@@ -296,16 +306,19 @@ describe('tools/filedb.js', function () {
   describe('_uncompress', function () {
     it('_uncompress - valid data', function () {
       const sampleData = sampleTextsToRead.map((text) => {
-        const obj = { uncompressed: text, compressed: zlib.gzipSync(text) };
+        const obj = {uncompressed: text, compressed: zlib.gzipSync(text)};
         return obj;
       });
 
-      const uncompressPromises = sampleData.map(data => expect(filedb._uncompress(data.compressed)).to.eventually.deep.equal(data.uncompressed));
+      const uncompressPromises = sampleData.map(data => expect(filedb._uncompress(data.compressed))
+        .to.eventually.deep.equal(data.uncompressed));
+
       return Promise.all(uncompressPromises);
     });
 
     it('_uncompress - no data', function () {
-      return expect(filedb._uncompress(undefined)).to.be.rejectedWith(Error, undefined, '_uncompress should throw an error if no data is provided');
+      return expect(filedb._uncompress(undefined))
+        .to.be.rejectedWith(Error, undefined, '_uncompress should throw an error if no data is provided');
     });
   });
 
@@ -313,12 +326,16 @@ describe('tools/filedb.js', function () {
   describe('_resolveFilePath', function () {
     it('_resolveFilePath - valid filename', function (done) {
       const correctPath = path.join(filedbLocation, 'file_name.gz');
-      expect(filedb._resolveFilePath('file_name')).to.equal(correctPath, 'given a valid filename _resolveFilePath should return data/file_name.gz');
+      expect(filedb._resolveFilePath('file_name'))
+        .to.equal(correctPath, 'given a valid filename _resolveFilePath should return data/file_name.gz');
+
       done();
     });
 
     it('_resolveFilePath - no filename', function (done) {
-      expect(filedb._resolveFilePath).to.throw(Error, undefined, '_resolveFilePath should throw an Error if called without filename');
+      expect(filedb._resolveFilePath)
+        .to.throw(Error, undefined, '_resolveFilePath should throw an Error if called without filename');
+
       done();
     });
   });

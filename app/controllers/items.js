@@ -11,7 +11,7 @@ const DefaultController = require('./');
 class ItemsController extends DefaultController {
   constructor() { super('Item'); }
 
-  update(req, res) {
+  update(req, res) { // eslint-disable-line 
     // Handle requests that only provide available or in_stock in a special manner
     if (req.body.in_stock !== undefined && req.body.available === undefined) {
       ItemsController._handleUpdateInStock(req);
@@ -20,15 +20,15 @@ class ItemsController extends DefaultController {
     }
 
     // Updating the item body
-    for (const key in req.body) {
+    Object.keys(req.body).forEach((key) => {
       req.Item[key] = req.body[key];
-    }
+    });
 
     // Regular save
     req.Item.save((err) => {
       if (err) {
         logger.warn(err.message);
-        return res.status(400).json({ error: err.message });
+        return res.status(400).json({error: err.message});
       }
 
       return res.status(200).json(req.Item);
@@ -54,7 +54,7 @@ class ItemsController extends DefaultController {
   static getImage(req, res) {
     req.Item.fetchImageData((result) => {
       if (result instanceof Error) {
-        return res.status(400).json({ error: result.message });
+        return res.status(400).json({error: result.message});
       }
 
       // console.log('Image found, returning data : ' + JSON.stringify(result));
