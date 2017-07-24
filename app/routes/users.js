@@ -79,14 +79,14 @@ function Route(app) {
   app.post('/auth/github', jwt({secret: TOKEN_SECRET, credentialsRequired: false}), AuthController.github);
   app.post('/auth/google', authController.google.bind(authController));
   app.get('/auth/github/id', AuthController.getGithubClientId);
-  
+
   /**
    * Empty callback route for addon OAuth 2 authentication flow to retain passed parameters in the url.
    */
-  app.get('/auth/redirect', function (req, res) {
+  app.get('/auth/redirect', (req, res) => {
     res.sendStatus(200);
   });
-};
+}
 
 
 module.exports = Route;
