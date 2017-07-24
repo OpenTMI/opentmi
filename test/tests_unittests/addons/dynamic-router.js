@@ -1,15 +1,19 @@
-/* global describe beforeEach it */
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
+
+// Third party components
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const logger = require('winston');
 
+// Setup
 logger.level = 'error';
-
-const expect = chai.expect;
 chai.use(chaiAsPromised);
 
+// Local components
 const DynamicRouter = require('../../../app/addons/dynamic-router');
 
+// Test variables
+const expect = chai.expect;
 let dynamicRouter;
 
 describe('dynamic-router.js', function () {
@@ -29,7 +33,7 @@ describe('dynamic-router.js', function () {
 
       // Create testing routers
       for (let i = 0; i < 5; i += 1) {
-        dynamicRouter.addonRouters.push({ addon: { name: 'mockAddon' }, router });
+        dynamicRouter.addonRouters.push({addon: {name: 'mockAddon'}, router});
       }
 
       dynamicRouter.router(undefined, undefined, () => {
@@ -43,14 +47,14 @@ describe('dynamic-router.js', function () {
     it('removeRouter - existing router', function (done) {
       // Create testing routers
       for (let i = 0; i < 5; i += 1) {
-        dynamicRouter.addonRouters.push({ addon: { name: `mockAddon ${i}` } });
+        dynamicRouter.addonRouters.push({addon: {name: `mockAddon ${i}`}});
       }
 
-      dynamicRouter.removeRouter({ name: 'mockAddon 2' });
+      dynamicRouter.removeRouter({name: 'mockAddon 2'});
 
       expect(dynamicRouter.addonRouters.length).to.equal(4);
 
-      const removedRouter = dynamicRouter.addonRouters.find(pAddonRouter => pAddonRouter.addon.name === 'mockAddon 2');
+      const removedRouter = dynamicRouter.addonRouters.find(addonRouter => addonRouter.addon.name === 'mockAddon 2');
       expect(removedRouter).to.not.exist; // eslint-disable-line no-unused-expressions
 
       done();

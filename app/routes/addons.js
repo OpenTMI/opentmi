@@ -17,25 +17,25 @@ const Route = function (app) {
   });
 
   router.route('/api/v0/addons.:format?')
-  .all(defaultAll)
-  .get(AddonController.listAddons);
+    .all(defaultAll)
+    .get(AddonController.listAddons);
 
   router.route('/api/v0/addons/register')
-  .all(defaultAll)
-  .post(AddonController.routePerformAction.bind(AddonController, 'registerAddon'));
+    .all(defaultAll)
+    .post(AddonController.routePerformAction.bind(AddonController, 'registerAddon'));
 
   router.route('/api/v0/addons/unregister')
-  .all(defaultAll)
-  .post(AddonController.routePerformAction.bind(AddonController, 'unregisterAddon'));
+    .all(defaultAll)
+    .post(AddonController.routePerformAction.bind(AddonController, 'unregisterAddon'));
 
   router.route('/api/v0/addons')
-  .all(defaultAll)
-  .post(AddonController.routeAddAddon);
+    .all(defaultAll)
+    .post(AddonController.routeAddAddon);
 
   router.route('/api/v0/addons/:Addon')
-  .all(defaultAll)
-  .get((req, res) => { res.status(200).json(req.addon.toJson); })
-  .delete(AddonController.routeRemoveAddon.bind(AddonController));
+    .all(defaultAll)
+    .get((req, res) => { res.status(200).json(req.addon.toJson); })
+    .delete(AddonController.routeRemoveAddon.bind(AddonController));
 
   app.use(router);
 };

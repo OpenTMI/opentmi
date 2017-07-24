@@ -1,18 +1,23 @@
-/* global describe beforeEach afterEach it */
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
+
+// Native components
+const path = require('path');
+
+// Third party components
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const mock = require('mock-fs');
 const logger = require('winston');
 
-logger.level = 'error';
-
-const expect = chai.expect;
-chai.use(chaiAsPromised);
-
-const path = require('path');
-const mock = require('mock-fs');
-
+// Local components
 const addonMockFiles = require('./mocking/addon-mock-files');
 
+// Setup
+logger.level = 'error';
+chai.use(chaiAsPromised);
+
+// Test variables
+const expect = chai.expect;
 const cachePath = path.resolve('./app/addons/index.js');
 let AddonManager;
 
@@ -57,7 +62,7 @@ describe('addons/index.js', function () {
   describe('_moduleLoadError', function () {
     it('_moduleLoadError - valid error', function (done) {
       const error = new Error('test error');
-      Object.getPrototypeOf(AddonManager).constructor._moduleLoadError({ name: 'mock addon' }, 'all failed', error);
+      Object.getPrototypeOf(AddonManager).constructor._moduleLoadError({name: 'mock addon'}, 'all failed', error);
       done();
     });
   });
@@ -92,11 +97,12 @@ describe('addons/index.js', function () {
       }
 
       return Object.getPrototypeOf(AddonManager).constructor._recursiveLoad(addons)
-      .then(() => {
-        expect(loadCalled).to.equal(addons.length, 'load should be called as many times as there are addons.');
-        expect(instanceCalled).to.equal(addons.length, 'create instance should be called as many times as there are addons.');
-        return Promise.resolve();
-      });
+        .then(() => {
+          expect(loadCalled).to.equal(addons.length, 'load should be called as many times as there are addons.');
+          expect(instanceCalled).to.equal(addons.length,
+            'create instance should be called as many times as there are addons.');
+          return Promise.resolve();
+        });
     });
   });
 
@@ -118,15 +124,16 @@ describe('addons/index.js', function () {
       };
 
       for (let i = 0; i < 5; i += 1) {
-        addons.push({ loadModule, createInstance });
+        addons.push({loadModule, createInstance});
       }
 
       return Object.getPrototypeOf(AddonManager).constructor._recursiveLoad(addons)
-      .then(() => {
-        expect(loadCalled).to.equal(addons.length, 'load should be called as many times as there are addons.');
-        expect(instanceCalled).to.equal(addons.length, 'create instance should be called as many times as there are addons.');
-        return Promise.resolve();
-      });
+        .then(() => {
+          expect(loadCalled).to.equal(addons.length, 'load should be called as many times as there are addons.');
+          expect(instanceCalled).to.equal(addons.length,
+            'create instance should be called as many times as there are addons.');
+          return Promise.resolve();
+        });
     });
   });
 
@@ -147,14 +154,14 @@ describe('addons/index.js', function () {
 
   describe('registerAddons', function () {
     it('registerAddons - valid addons', function () {
-      AddonManager.app = { use: (pRouter) => {
-        expect(pRouter).to.be.a('Function');
-      } };
+      AddonManager.app = {use: (router) => {
+        expect(router).to.be.a('Function');
+      }};
 
       const addons = [
-        { register: () => Promise.resolve(), isLoaded: true },
-        { register: () => Promise.resolve(), isLoaded: true },
-        { register: () => Promise.resolve(), isLoaded: false }
+        {register: () => Promise.resolve(), isLoaded: true},
+        {register: () => Promise.resolve(), isLoaded: true},
+        {register: () => Promise.resolve(), isLoaded: false}
       ];
 
       AddonManager.addons = addons;
@@ -168,9 +175,9 @@ describe('addons/index.js', function () {
   describe('findAddon', function () {
     it('findAddon - existing addon', function (done) {
       const addons = [
-        { name: 'mockAddon 1', data: 'balbo biggins' },
-        { name: 'mockAddon 2', data: 'sum harris' },
-        { name: 'mockAddon 3', data: 'pepe' }
+        {name: 'mockAddon 1', data: 'balbo biggins'},
+        {name: 'mockAddon 2', data: 'sum harris'},
+        {name: 'mockAddon 3', data: 'pepe'}
       ];
 
       AddonManager.addons = addons;
@@ -183,9 +190,9 @@ describe('addons/index.js', function () {
   describe('findAddonIndex', function () {
     it('findAddonIndex - existing addon', function (done) {
       const addons = [
-        { name: 'mockAddon 1', data: 'balbo biggins' },
-        { name: 'mockAddon 2', data: 'sum harris' },
-        { name: 'mockAddon 3', data: 'pepe' }
+        {name: 'mockAddon 1', data: 'balbo biggins'},
+        {name: 'mockAddon 2', data: 'sum harris'},
+        {name: 'mockAddon 3', data: 'pepe'}
       ];
 
       AddonManager.addons = addons;
@@ -203,14 +210,14 @@ describe('addons/index.js', function () {
     it('registerAddon - valid addon', function () {
       const addon = {
         name: 'mock addon',
-        register: () => Promise.resolve('registered') };
+        register: () => Promise.resolve('registered')};
       return expect(AddonManager.registerAddon(addon)).to.eventually.equal('registered');
     });
   });
 
   describe('unregisterAddon', function () {
     it('unregisterAddon - valid addon', function () {
-      const addon = { unregister: () => Promise.resolve('unregistered') };
+      const addon = {unregister: () => Promise.resolve('unregistered')};
       return expect(AddonManager.unregisterAddon(addon)).to.eventually.equal('unregistered');
     });
   });
@@ -218,8 +225,8 @@ describe('addons/index.js', function () {
   describe('removeAddon', function () {
     it('removeAddon - existing addon', function () {
       const addons = [
-        { name: 'jousting harris', safeToRemove: true },
-        { name: 'nike mightley', safeToRemove: true }
+        {name: 'jousting harris', safeToRemove: true},
+        {name: 'nike mightley', safeToRemove: true}
       ];
       AddonManager.addons = addons;
 

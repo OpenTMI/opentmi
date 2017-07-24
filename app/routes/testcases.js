@@ -1,7 +1,7 @@
 const express = require('express');
 const TestCaseController = require('./../controllers/testcases');
 
-const Route = function (app) {
+function Route(app) {
   const router = express.Router();
   const controller = new TestCaseController();
 
@@ -23,6 +23,6 @@ const Route = function (app) {
     .get(controller.download.bind(controller));
 
   app.use(router);
-};
+}
 
 module.exports = Route;

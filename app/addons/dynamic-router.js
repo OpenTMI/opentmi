@@ -14,10 +14,10 @@ class DynamicRouter {
   /**
    * Route entrypoint that is fed to express app
    */
-  router(pReq, pRes, pNext) {
-    const resolveRoute = (router, req, res, next) => { router(req, res, next); };
-    const routers = this.addonRouters.map(pAddonRouter => resolveRoute.bind(this, pAddonRouter.router, pReq, pRes));
-    async.waterfall(routers, pNext);
+  router(req, res, next) {
+    const resolveRoute = (router, reqParam, resParam, nextParam) => { router(reqParam, resParam, nextParam); };
+    const routers = this.addonRouters.map(addonRouter => resolveRoute.bind(this, addonRouter.router, req, res));
+    async.waterfall(routers, next);
   }
 
   /**

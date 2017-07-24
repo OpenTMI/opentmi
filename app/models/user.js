@@ -2,33 +2,31 @@
 /*!
  * Module dependencies
  */
-
-var mongoose = require('mongoose');
-var QueryPlugin = require('mongoose-query');
-var bcrypt = require('bcryptjs');
-var _ = require('lodash');
+const mongoose = require('mongoose');
+const QueryPlugin = require('mongoose-query');
+const bcrypt = require('bcryptjs');
+const _ = require('lodash');
+const logger = require('winston');
 
 /* Implementation */
-var Schema = mongoose.Schema;
-var Types = Schema.Types;
-var ObjectId = Types.ObjectId;
-var Mixed = Types.Mixed;
-var Group = mongoose.model('Group');
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
+const Types = Schema.Types;
+const ObjectId = Types.ObjectId;
+const Group = mongoose.model('Group');
 
-var validateEmail = function(email) {
-    var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    return re.test(email)
-};
+function validateEmail(email) { // eslint-disable-line no-unused-vars
+  const regExp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // eslint-disable-line
+  return regExp.test(email);
+}
 
 /**
  * User schema
  */
-var UserSchema = new Schema({
-  name: { type: String },
+const UserSchema = new Schema({
+  name: {type: String},
 
-  email: { type: String, unique: true, lowercase: true },
-  password: { type: String, select: false },
+  email: {type: String, unique: true, lowercase: true},
+  password: {type: String, select: false},
   displayName: String,
   picture: String,
   bitbucket: String,
@@ -36,27 +34,25 @@ var UserSchema = new Schema({
   github: String,
 
   // statistics
-  registered: { type: Date, default: Date.now },
-  lastVisited: { type: Date, default: Date.now },
-  loggedIn: { type: Boolean, default: false },
+  registered: {type: Date, default: Date.now},
+  lastVisited: {type: Date, default: Date.now},
+  loggedIn: {type: Boolean, default: false},
 
-  groups: [ { type: ObjectId, ref: 'Group' } ],
-  apikeys: [{ type: ObjectId, ref: 'ApiKey' } ]
-})
-.post('save', function(){
-  if( this.isNew ) {
-  }
+  groups: [{type: ObjectId, ref: 'Group'}],
+  apikeys: [{type: ObjectId, ref: 'ApiKey'}]
+}).post('save', () => {
+  // if (this.isNew) { }
 });
 
 /**
  * User plugin
  */
-//UserSchema.plugin(userPlugin, {});
+// UserSchema.plugin(userPlugin, {});
 
 /**
  * Query Plugin
  */
-UserSchema.plugin( QueryPlugin ); //install QueryPlugin
+UserSchema.plugin(QueryPlugin); // install QueryPlugin
 
 /**
  * Add your
@@ -97,17 +93,20 @@ UserSchema.path('username').validate(function (username) {
 /**
  * Pre-save hook
  */
-UserSchema.pre('save', function(next) {
-  var self = this;
+UserSchema.pre('save', function preSave(next) {
+  const self = this;
   if (!self.isModified('password')) {
     return next();
   }
-  bcrypt.genSalt(10, function(err, salt) {
-    bcrypt.hash(self.password, salt, function(err, hash) {
+
+  bcrypt.genSalt(10, (saltError, salt) => {
+    bcrypt.hash(self.password, salt, (hashError, hash) => {
       self.password = hash;
       next();
     });
   });
+
+  return undefined;
 });
 /*
 UserSchema.pre('save', function(next){
@@ -129,63 +128,79 @@ UserSchema.pre('save', function(next){
 /**
  * Pre-remove hook
  */
-UserSchema.pre('remove', function(next) {
-  var self = this;
-  var Loan = mongoose.model('Loan');
+UserSchema.pre('remove', function preRemove(next) {
+  const self = this;
+  const Loan = mongoose.model('Loan');
 
-  Loan.find({ loaner:self._id }, function(err, loans) {
-	if (loans.length > 0) return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
-	next();
+  Loan.find({loaner: self._id}, (error, loans) => {
+    if (loans.length > 0) {
+      return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
+    }
+
+    return next();
   });
+
+  return undefined;
 });
 
 /**
  * Methods
  */
-UserSchema.methods.addToGroup = function (groupname, done) {
-  var self = this;
-  Group.findOne({ name: groupname }, function (error, group) {
+UserSchema.methods.addToGroup = function addToGroup(groupName, next) {
+  const self = this;
+  Group.findOne({name: groupName}, (error, group) => {
     if (error) {
-      return done(error);
-    } else if (!group) {
-      return done({ message: 'group not found' });
-    } else if (_.find(group.users, function (user) { return user === self._id; })) {
-      return done({ message: 'user belongs to the group already' });
+      return next(error);
+    }
+    if (!group) {
+      return next({message: 'group not found'});
+    }
+    if (_.find(group.users, user => user === self._id)) {
+      return next({message: 'user belongs to the group already'});
     }
 
     self.groups.push(group._id);
     group.users.push(self._id);
     group.save();
-    self.save(function (error, user) {
-      if (error) {
-        return done(error);
+    self.save((saveError, user) => {
+      if (saveError) {
+        return next(saveError);
       }
-      done(user);
+
+      return next(user);
     });
+
+    return undefined;
   });
 };
 
-UserSchema.methods.removeFromGroup = function(group, done) {
-  var self = this;
-  Group.findOne({name: group}, function(error, group){
-      if( error ){
-        return done(error);
+UserSchema.methods.removeFromGroup = function removeFromGroup(groupName, next) {
+  const self = this;
+  Group.findOne({name: groupName}, (error, group) => {
+    if (error) {
+      return next(error);
+    }
+    if (!group) {
+      return next({message: 'group not found'});
+    }
+
+    self.groups = _.without(self.groups, group._id);
+
+    const editedGroup = group;
+    editedGroup.users = _.without(group.users, self._id);
+    editedGroup.save();
+    self.save((saveError, user) => {
+      if (saveError) {
+        logger.error(error);
+        return next(saveError);
       }
-      if(!group){
-        return done({message: 'group not found'});
-      }
-      self.groups = _.without(self.groups, group._id);
-      group.users = _.without(group.users, self._id);
-      group.save();
-      self.save(function(error, user){
-        if(error) {
-          console.log('error');
-          return done(error);
-        }
-        done(user);
-      });
+
+      return next(user);
+    });
+
+    return undefined;
   });
-}
+};
 
 /**
  * Authenticate - check if the passwords are the same
@@ -194,39 +209,38 @@ UserSchema.methods.removeFromGroup = function(group, done) {
  * @return {Boolean}
  * @api public
  */
-UserSchema.methods.comparePassword = function(password, done) {
-  bcrypt.compare(password, this.password, function(err, isMatch) {
-    done(err, isMatch);
+UserSchema.methods.comparePassword = function comparePassword(password, next) {
+  bcrypt.compare(password, this.password, (error, isMatch) => {
+    next(error, isMatch);
   });
-}
+};
 
 /**
  * Validation is not required if using OAuth
  */
-UserSchema.methods.createApiKey = function(cb){
-  var self = this;
-  var ApiKey = mongoose.model('ApiKey');
-  apikey = new ApiKey();
-  apikey.save( function(doc){
-    self.apikeys.push( doc._id );
-    self.save(cb)
-    cb(null, doc.key)
-  })
-},
-UserSchema.methods.listApiKeys = function(){
+UserSchema.methods.createApiKey = function createApiKey(cb) {
+  const self = this;
+  const ApiKey = mongoose.model('ApiKey');
+  const apikey = new ApiKey();
+  apikey.save((doc) => {
+    self.apikeys.push(doc._id);
+    self.save(cb);
+    cb(null, doc.key); // Callback gets called twice, usually not intended
+  });
+};
+
+UserSchema.methods.listApiKeys = function listApiKeys() {
   return this.apiKeys;
-},
-UserSchema.methods.deleteApiKey = function(key, cb){
-  if( this.apiKeys.indexOf(key) >= 0){
-    this.update( { $pull: { apiKeys: key } } );
-    this.save(cb);
+};
+
+UserSchema.methods.deleteApiKey = function deleteApiKey(key, next) {
+  if (this.apiKeys.indexOf(key) >= 0) {
+    this.update({$pull: {apiKeys: key}});
+    this.save(next);
   }
-}
+};
 
-UserSchema.methods.skipValidation = function(){
-  return false;
-}
-
+UserSchema.methods.skipValidation = () => false;
 
 /**
  * Statics
@@ -236,41 +250,44 @@ UserSchema.static({
    * Load
    *
    * @param {Object} options
-   * @param {Function} cb
+   * @param {Function} next
    * @api private
    */
 
-  load: function (options, cb) {
-    options.select = options.select || 'name username';
-    this.findOne(options.criteria)
-      .select(options.select)
-      .exec(cb);
+  load(options, next) {
+    const editedOptions = options;
+    editedOptions.select = options.select || 'name username';
+    this.findOne(editedOptions.criteria)
+      .select(editedOptions.select)
+      .exec(next);
   },
 
-  admins: function (done) {
-    var query = { 'account_level': 1 };
-    this.find(query, done);
+  admins(next) {
+    const query = {account_level: 1};
+    this.find(query, next);
   },
 
-  findByEmail: function(email, cb) {
-    this.find({ email : email }, cb);
+  findByEmail(email, next) {
+    this.find({email: email}, next);
   },
 
-  getApiKeys: function(user, cb){
-    this.findOne({_id: user}).populate('apikeys').exec(
-      function(error, doc){
-        if(error){
-          return cb(error);
-        }
-        console.log(user);
-        console.log(doc);
-        cb(error, _.map(doc.apikeys, function(key){return key.key;}));
+  getApiKeys(user, next) {
+    this.findOne({_id: user}).populate('apikeys').exec((error, doc) => {
+      if (error) {
+        return next(error);
+      }
+
+      logger.info(user);
+      logger.info(doc);
+      next(error, _.map(doc.apikeys, key => key.key));
+
+      return undefined;
     });
   },
 
-  generateApiKey: function(user, cb){
-    this.findOne({_id: user}, function(error, doc){
-      cb(error, doc?doc.generateApiKey():null);
+  generateApiKey(user, next) {
+    this.findOne({_id: user}, (error, doc) => {
+      next(error, doc ? doc.generateApiKey() : null);
     });
   }
 });
@@ -278,5 +295,5 @@ UserSchema.static({
 /**
  * Register
  */
-let User = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
 module.exports = {Model: User, Collection: 'User'};

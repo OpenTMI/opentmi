@@ -1,14 +1,19 @@
-/* global describe beforeEach it */
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
+
+// Native components
+const path = require('path');
+
+// Third party components
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const logger = require('winston');
-const path = require('path');
 
+// Setup
 logger.level = 'error';
-
-const expect = chai.expect;
 chai.use(chaiAsPromised);
 
+// Test variables
+const expect = chai.expect;
 const cachePath = path.resolve('./app/addons/addon.js');
 
 let Addon;
@@ -53,7 +58,7 @@ describe('addon.js', function () {
 
   describe('Status', function () {
     it('Status - valid state', function (done) {
-      addon._status = { state: STATES.load, phase: PHASES.failed };
+      addon._status = {state: STATES.load, phase: PHASES.failed};
       expect(addon.Status).to.equal('load-failed');
       done();
     });
@@ -61,7 +66,7 @@ describe('addon.js', function () {
 
   describe('isBusy', function () {
     it('isBusy - true and false case', function (done) {
-      addon._status = { state: STATES.introduce, phase: PHASES.done };
+      addon._status = {state: STATES.introduce, phase: PHASES.done};
       expect(addon.isBusy).to.equal(false, 'not busy addon should return false.');
 
       addon._status.phase = PHASES.inProgress;
@@ -73,10 +78,10 @@ describe('addon.js', function () {
 
   describe('isLoaded', function () {
     it('isLoaded - valid state', function (done) {
-      addon._status = { state: STATES.load, phase: PHASES.done };
+      addon._status = {state: STATES.load, phase: PHASES.done};
       expect(addon.isLoaded).to.equal(true, 'loaded addon should return true');
 
-      addon._status = { state: STATES.load, phase: PHASES.failed };
+      addon._status = {state: STATES.load, phase: PHASES.failed};
       expect(addon.isLoaded).to.equal(false, 'unloaded addon should return false');
 
       done();
@@ -85,10 +90,10 @@ describe('addon.js', function () {
 
   describe('isRegistered', function () {
     it('isRegistered - valid state', function (done) {
-      addon._status = { state: STATES.register, phase: PHASES.done };
+      addon._status = {state: STATES.register, phase: PHASES.done};
       expect(addon.isRegistered).to.equal(true, 'registered addon should return true');
 
-      addon._status = { state: STATES.register, phase: PHASES.failed };
+      addon._status = {state: STATES.register, phase: PHASES.failed};
       expect(addon.isRegistered).to.equal(false, 'unregistered addon should return false');
 
       done();
@@ -97,10 +102,10 @@ describe('addon.js', function () {
 
   describe('safeToRemove', function () {
     it('isRegistered - valid state', function (done) {
-      addon._status = { state: STATES.load, phase: PHASES.done };
+      addon._status = {state: STATES.load, phase: PHASES.done};
       expect(addon.safeToRemove).to.equal(true, 'safe to remove addon should return true');
 
-      addon._status = { state: STATES.register, phase: PHASES.done };
+      addon._status = {state: STATES.register, phase: PHASES.done};
       expect(addon.safeToRemove).to.equal(false, 'unsafe to remove addon should return false');
 
       done();
@@ -113,15 +118,15 @@ describe('addon.js', function () {
 
       addonPrototype.constructor._loadAddonModule = () => Promise.resolve('module');
       return addon.loadModule()
-      .then(() => {
-        delete global.createErrorMessage;
+        .then(() => {
+          delete global.createErrorMessage;
 
-        expect(addon).to.have.property('Module', 'module');
-        expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', STATES.load);
-        expect(addon._status).to.have.property('phase', PHASES.inProgress);
-        return Promise.resolve();
-      });
+          expect(addon).to.have.property('Module', 'module');
+          expect(addon).to.have.property('_status');
+          expect(addon._status).to.have.property('state', STATES.load);
+          expect(addon._status).to.have.property('phase', PHASES.inProgress);
+          return Promise.resolve();
+        });
     });
   });
 
@@ -129,26 +134,28 @@ describe('addon.js', function () {
     it('createInstance - correct state, no errors', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
-      addon.Module = function (pServer, pSocketIO) {
-        this.server = pServer;
-        this.socketIO = pSocketIO;
+      addon.Module = function (app, server, socketIO) {
+        this.app = app;
+        this.server = server;
+        this.socketIO = socketIO;
       };
 
       // Should be in load state at this point
       addon._status.state = STATES.load;
 
-      return addon.createInstance('server', 'socket')
-      .then(() => {
-        delete global.createErrorMessage;
+      return addon.createInstance('app', 'server', 'socket')
+        .then(() => {
+          delete global.createErrorMessage;
 
-        expect(addon).to.have.property('instance');
-        expect(addon.instance).to.have.property('server', 'server');
-        expect(addon.instance).to.have.property('socketIO', 'socket');
+          expect(addon).to.have.property('instance');
+          expect(addon.instance).to.have.property('app', 'app');
+          expect(addon.instance).to.have.property('server', 'server');
+          expect(addon.instance).to.have.property('socketIO', 'socket');
 
-        expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', STATES.load);
-        expect(addon._status).to.have.property('phase', PHASES.done);
-      });
+          expect(addon).to.have.property('_status');
+          expect(addon._status).to.have.property('state', STATES.load);
+          expect(addon._status).to.have.property('phase', PHASES.done);
+        });
     });
   });
 
@@ -156,9 +163,9 @@ describe('addon.js', function () {
     it('register - valid register sequence', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
-      addon._status = { state: STATES.load, phase: PHASES.done };
-      addon.Module = { disabled: false };
-      addon.instance = { register: () => Promise.resolve() };
+      addon._status = {state: STATES.load, phase: PHASES.done};
+      addon.Module = {disabled: false};
+      addon.instance = {register: () => Promise.resolve()};
 
       addon._registerRouter = (pDynamicRouter) => {
         addon.t_dynamicRouter = pDynamicRouter;
@@ -168,18 +175,18 @@ describe('addon.js', function () {
       };
 
       return addon.register('app', 'dynamic_router')
-      .then(() => {
-        delete global.createErrorMessage;
+        .then(() => {
+          delete global.createErrorMessage;
 
-        // Addon should have called both of the overwritten functions
-        expect(addon).to.have.property('t_dynamicRouter', 'dynamic_router');
-        expect(addon).to.have.property('t_pApp', 'app');
+          // Addon should have called both of the overwritten functions
+          expect(addon).to.have.property('t_dynamicRouter', 'dynamic_router');
+          expect(addon).to.have.property('t_pApp', 'app');
 
-        expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', STATES.register);
-        expect(addon._status).to.have.property('phase', PHASES.done);
-        return Promise.resolve();
-      });
+          expect(addon).to.have.property('_status');
+          expect(addon._status).to.have.property('state', STATES.register);
+          expect(addon._status).to.have.property('phase', PHASES.done);
+          return Promise.resolve();
+        });
     });
   });
 
@@ -187,9 +194,9 @@ describe('addon.js', function () {
     it('_registerRouter - instance has router', function (done) {
       global.createErrorMessage = error => Promise.reject(error);
 
-      addon.instance = { router: 'router' };
+      addon.instance = {router: 'router'};
 
-      const dynamicRouter = { addonRouters: ['mock router'] };
+      const dynamicRouter = {addonRouters: ['mock router']};
       addon._registerRouter(dynamicRouter);
 
       expect(dynamicRouter.addonRouters[1]).to.have.property('router', 'router');
@@ -202,12 +209,12 @@ describe('addon.js', function () {
     it('_registerStaticPath - has static path', function (done) {
       global.createErrorMessage = error => Promise.reject(error);
 
-      addon.instance = { staticPath: { prefix: 'path_prefix', folder: 'static_path' } };
+      addon.instance = {staticPath: {prefix: 'path_prefix', folder: 'static_path'}};
 
-      const app = { use: (pPrefix, pFolder) => {
+      const app = {use: (pPrefix, pFolder) => {
         expect(pPrefix).to.equal('path_prefix');
         expect(pFolder).to.be.a('Function');
-      } };
+      }};
 
       addon._registerStaticPath(app);
       delete global.createErrorMessage;
@@ -219,23 +226,23 @@ describe('addon.js', function () {
     it('unregister - ', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
-      addon._status = { state: STATES.register, phase: STATES.done };
-      addon.instance = { unregister: () => Promise.resolve() };
+      addon._status = {state: STATES.register, phase: STATES.done};
+      addon.instance = {unregister: () => Promise.resolve()};
 
       let removeRouterCalled = false;
-      const dynamicRouter = { removeRouter: () => { removeRouterCalled = true; } };
+      const dynamicRouter = {removeRouter: () => { removeRouterCalled = true; }};
 
       return addon.unregister(dynamicRouter)
-      .then(() => {
-        delete global.createErrorMessage;
+        .then(() => {
+          delete global.createErrorMessage;
 
-        expect(removeRouterCalled).to.equal(true, 'removeRouter should be called during successful unregister');
+          expect(removeRouterCalled).to.equal(true, 'removeRouter should be called during successful unregister');
 
-        expect(addon).to.have.property('_status');
-        expect(addon._status).to.have.property('state', STATES.load);
-        expect(addon._status).to.have.property('phase', PHASES.done);
-        return Promise.resolve();
-      });
+          expect(addon).to.have.property('_status');
+          expect(addon._status).to.have.property('state', STATES.load);
+          expect(addon._status).to.have.property('phase', PHASES.done);
+          return Promise.resolve();
+        });
     });
   });
 
@@ -244,7 +251,7 @@ describe('addon.js', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
       addonPrototype.constructor._requirePackageFile = () => Promise.resolve(
-        { description: 'desc', version: 'version', repository: 'repo' });
+        {description: 'desc', version: 'version', repository: 'repo'});
 
       let installCalled = false;
       addonPrototype.constructor._installDependencies = () => {
@@ -265,17 +272,17 @@ describe('addon.js', function () {
       };
 
       return addonPrototype.constructor._loadAddonModule(addon)
-      .then(() => {
-        delete global.createErrorMessage;
+        .then(() => {
+          delete global.createErrorMessage;
 
-        expect(installCalled).to.equal(true);
-        expect(checkCalled).to.equal(true);
-        expect(requireCalled).to.equal(true);
+          expect(installCalled).to.equal(true);
+          expect(checkCalled).to.equal(true);
+          expect(requireCalled).to.equal(true);
 
-        expect(addon).to.have.property('description', 'desc');
-        expect(addon).to.have.property('version', 'version');
-        expect(addon).to.have.property('repository', 'repo');
-      });
+          expect(addon).to.have.property('description', 'desc');
+          expect(addon).to.have.property('version', 'version');
+          expect(addon).to.have.property('repository', 'repo');
+        });
     });
   });
 
@@ -289,7 +296,7 @@ describe('addon.js', function () {
   describe('_checkDependencies', function () {
     it('_checkDependencies - resolvable dependencies', function () {
       // List of dependencies that should resolve to something
-      const dependencies = { fs: undefined, path: undefined };
+      const dependencies = {fs: undefined, path: undefined};
       return addonPrototype.constructor._checkDependencies(addon, dependencies);
     });
   });
@@ -300,9 +307,9 @@ describe('addon.js', function () {
     it('_checkDependency - valid dependency', function () {
       const dependency = 'fs';
       return addonPrototype.constructor._checkDependency(addon, dependency)
-      .then(() => {
-        delete global.createErrorMessage;
-      });
+        .then(() => {
+          delete global.createErrorMessage;
+        });
     });
   });
 
@@ -311,10 +318,10 @@ describe('addon.js', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
       return addonPrototype.constructor._requirePackageFile(addon)
-      .then((pPackage) => {
-        delete global.createErrorMessage;
-        expect(pPackage).to.have.property('data', 'dummy data');
-      });
+        .then((pPackage) => {
+          delete global.createErrorMessage;
+          expect(pPackage).to.have.property('data', 'dummy data');
+        });
     });
   });
 
@@ -323,10 +330,10 @@ describe('addon.js', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
       return addonPrototype.constructor._requireModule(addon)
-      .then((pModule) => {
-        delete global.createErrorMessage;
-        expect(pModule).to.equal('dummy module');
-      });
+        .then((pModule) => {
+          delete global.createErrorMessage;
+          expect(pModule).to.equal('dummy module');
+        });
     });
   });
 });

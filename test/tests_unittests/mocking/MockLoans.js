@@ -13,16 +13,16 @@ const mockLoans = [
     items: [
       {
         item: mockItems[0]._id,
-        resource: undefined,
+        resource: undefined
       }, {
         item: mockItems[0]._id,
-        resource: undefined,
+        resource: undefined
       }, {
         item: mockItems[0]._id,
-        resource: undefined,
-      },
-    ],
-  },
+        resource: undefined
+      }
+    ]
+  }
 ];
 
 

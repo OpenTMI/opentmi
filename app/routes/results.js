@@ -1,7 +1,7 @@
 const express = require('express');
 const ResultController = require('./../controllers/results');
 
-var Route = function(app) {
+function Route(app) {
   const router = express.Router();
   const controller = new ResultController();
 

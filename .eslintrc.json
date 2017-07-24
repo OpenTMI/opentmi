@@ -1,0 +1,37 @@
+
+{
+    "extends": "airbnb-base",
+    "env": {
+        "es6": true,
+        "node": true,
+        "mocha": true
+    },
+    "plugins": [
+        "import",
+        "node",
+        "promise"
+    ],
+    "rules": {
+        "comma-dangle": ["error", "never"],
+        "max-len": ["error", {"code": 120, "tabWidth": 4, "ignoreUrls": true}],
+        "indent": [ "warn", 2,  { "SwitchCase": 1} ],
+        "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+        "no-underscore-dangle": ["off"], // @†odo investigate should we activate this
+        "no-console": "error",
+        "no-constant-condition": "error",
+        "no-control-regex": "off",
+        "dot-notation": "off",
+        "valid-jsdoc": "off",
+        "object-curly-spacing": ["error", "never"],
+        "array-bracket-spacing": ["error", "never"],
+        "computed-property-spacing": ["error", "never"],
+        //"func-names": ["error", "as-needed"],  /** @todo could be activated later */
+        "prefer-arrow-callback": ["error", { "allowNamedFunctions": true }],
+        // "prefer-arrow-callback": ["off"], // when using --fix
+        "space-before-function-paren": ["error", {"anonymous": "always", "named": "never", "asyncArrow": "always"}],
+        "one-var": ["error", { "initialized": "never" }],
+        "one-var-declaration-per-line": ["error", "initializations"],
+        "func-names": ["error", "as-needed"],
+        "object-shorthand": "off"
+    }
+}

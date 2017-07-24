@@ -1,8 +1,3 @@
-'use strict';
-
-// native modules
-const fs = require('fs');
-
 // 3rd party modules
 const Express = require('express');
 const logger = require('winston');
@@ -91,7 +86,7 @@ AddonManager.loadAddons().then(() => {
     function onListening() {
       const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
       logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
-      eventBus.emit('start_listening', { url: listenurl });
+      eventBus.emit('start_listening', {url: listenurl});
     }
 
     server.listen(port, listen);
@@ -99,7 +94,7 @@ AddonManager.loadAddons().then(() => {
     server.on('listening', onListening);
 
     // Close the Mongoose connection, when receiving SIGINT
-    process.on('SIGINT', function () {
+    process.on('SIGINT', () => {
       DB.disconnect().then(() => {
         process.exit(0);
       }).catch((err) => {
@@ -111,4 +106,4 @@ AddonManager.loadAddons().then(() => {
 });
 
 // This would be useful for testing
-module.exports = { server, eventBus };
+module.exports = {server, eventBus};

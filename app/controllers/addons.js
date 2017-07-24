@@ -32,7 +32,7 @@ class AddonController {
 
     const addon = AddonManager.findAddon(req.body);
     if (addon) {
-      res.status(400).json({ name: req.body, error: 'addon already exists with this name.' });
+      res.status(400).json({name: req.body, error: 'addon already exists with this name.'});
     } else {
       // this.addonManager.addons.push(new Addon(req.body));
       res.status(501).send('Request was received but this feature is not yet implemented.');
@@ -47,7 +47,7 @@ class AddonController {
    */
   static routeRemoveAddon(req, res) {
     const existingIndex = AddonManager.findAddonIndex(req.addon);
-    const removeResult = { name: req.addon.name };
+    const removeResult = {name: req.addon.name};
 
     // Check that index was found exists
     if (existingIndex === -1) {
@@ -57,16 +57,16 @@ class AddonController {
 
     // Return a promise to eventually remove and respond to requester
     return AddonManager._removeAddon(existingIndex)
-    .then(() => {
-      removeResult.result = 'success';
-      return removeResult;
-    })
-    .catch((error) => {
-      removeResult.result = 'fail';
-      removeResult.error = error.message;
-      return removeResult;
-    })
-    .then(result => res.status(200).json(result));
+      .then(() => {
+        removeResult.result = 'success';
+        return removeResult;
+      })
+      .catch((error) => {
+        removeResult.result = 'fail';
+        removeResult.error = error.message;
+        return removeResult;
+      })
+      .then(result => res.status(200).json(result));
   }
 
   /**
@@ -76,22 +76,22 @@ class AddonController {
    * @param {Object} res - response object from express
    * @returns {Promise} promise to eventually send a list of operation results to requester
    */
-  static routePerformAction(pActionName, req, res) {
+  static routePerformAction(actionName, req, res) {
     if (!req.body || !(req.body instanceof Array)) {
-      return res.status(400).json({ error: 'Request body needs to be a json Array' });
+      return res.status(400).json({error: 'Request body needs to be a json Array'});
     }
 
-    const actionPromises = req.body.map((pAddonName) => {
-      const currentAddon = AddonManager.findAddon(pAddonName);
-      const actionResult = { result: 'fail', name: pAddonName };
+    const actionPromises = req.body.map((addonName) => {
+      const currentAddon = AddonManager.findAddon(addonName);
+      const actionResult = {result: 'fail', name: addonName};
       if (currentAddon) {
-        return AddonManager[pActionName](currentAddon)
-        .then(() => {
-          actionResult.needsRestart = (currentAddon.hasStaticContent) || false;
-          actionResult.result = 'success';
-        })
-        .catch((pError) => { actionResult.error = pError.message; })
-        .then(() => actionResult);
+        return AddonManager[actionName](currentAddon)
+          .then(() => {
+            actionResult.needsRestart = (currentAddon.hasStaticContent) || false;
+            actionResult.result = 'success';
+          })
+          .catch((error) => { actionResult.error = error.message; })
+          .then(() => actionResult);
       }
 
       actionResult.error = 'No addon with such name.';

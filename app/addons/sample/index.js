@@ -2,10 +2,10 @@ const express = require('express');
 const logger = require('winston');
 
 class AddonCore {
-  constructor(server, io) {
+  constructor(app, server, io) {
     // Defined variables
     this.router = express.Router();
-    this.staticPath = { prefix: '/inventory', folder: '/public/' };
+    this.staticPath = { prefix: '/test', folder: '/public/' };
 
     // Own variables
     this.server = server;
@@ -34,5 +34,6 @@ class AddonCore {
     logger.warn('unregistering instance of sample class');
   }
 }
+
 
 module.exports = AddonCore;
