@@ -12,46 +12,46 @@ const Item = mongoose.model('Item');
  * Private methods
  */
 // Should be executed before actually attempting to decrease availability
-function ensureItemAvailability(pItemCountObj, pNext) {
-  Item.findById(pItemCountObj.id, (err, item) => {
-    if (err) {
-      return pNext(new Error(`Error while finding a provided item, item: ${pItemCountObj.id}`));
+function ensureItemAvailability(itemCountObj, next) {
+  Item.findById(itemCountObj.id, (error, item) => {
+    if (error) {
+      return next(new Error(`Error while finding a provided item, item: ${itemCountObj.id}`));
     }
 
     if (item === null) {
-      return pNext(new Error(`Could not find item, item: ${pItemCountObj.id}`));
+      return next(new Error(`Could not find item, item: ${itemCountObj.id}`));
     }
 
-    if (item.available + pItemCountObj.count >= 0) {
-      return pNext();
+    if (item.available + itemCountObj.count >= 0) {
+      return next();
     }
 
-    return pNext(new Error(`Not enough items to loan, expected ${pItemCountObj.count}, found ${item.available}`));
+    return next(new Error(`Not enough items to loan, expected ${itemCountObj.count}, found ${item.available}`));
   });
 }
 
 // modify availability of an item
-function modifyItemAvailability(pItemCountObj, pNext) {
-  logger.info(`modifying item: ${pItemCountObj.id} by ${pItemCountObj.count}`);
-  Item.findById(pItemCountObj.id, (pError, pItem) => {
-    if (pError || pItem === null) {
-      return pNext(new Error('Error while finding a provided item, '
-      + `item: ${pItemCountObj.id} is very likely now corrupted`)); // Should not happen
+function modifyItemAvailability(itemCountObj, next) {
+  logger.info(`modifying item: ${itemCountObj.id} by ${itemCountObj.count}`);
+  Item.findById(itemCountObj.id, (error, item) => {
+    if (error || item === null) {
+      return next(new Error('Error while finding a provided item, '
+      + `item: ${itemCountObj.id} is very likely now corrupted`)); // Should not happen
     }
 
-    pItem.available += pItemCountObj.count; // eslint-disable-line no-param-reassign
-    return pItem.save((pSaveError) => {
-      if (pSaveError) pNext(new Error(`Could not save availability, item: ${pItem._id} is very likely now corrupted`));
-      else pNext();
+    item.available += itemCountObj.count; // eslint-disable-line no-param-reassign
+    return item.save((saveError) => {
+      if (saveError) next(new Error(`Could not save availability, item: ${item._id} is very likely now corrupted`));
+      else next();
     });
   });
 }
 
-function objectToArrayOfObjects(pObj) {
+function objectToArrayOfObjects(obj) {
   const countArray = [];
 
-  Object.keys(pObj).forEach((key) => {
-    countArray.push({id: key, count: pObj[key]});
+  Object.keys(obj).forEach((key) => {
+    countArray.push({id: key, count: obj[key]});
   });
 
   return countArray;
@@ -105,22 +105,22 @@ LoanSchema.pre('save', function preSave(next) {
 });
 
 // Takes care of decreasing availability of items before loaning
-LoanSchema.pre('save', function preSave(pNext) {
+LoanSchema.pre('save', function preSave(next) {
   logger.info('Loan second pre-save hook started');
   const self = this;
-  if (!this.isNew) return pNext();
+  if (!this.isNew) return next();
 
   const itemCounts = self.extractItemIds();
   if (itemCounts.length === 0) {
-    return pNext(new Error('cannot process post without items field'));
+    return next(new Error('cannot process post without items field'));
   }
 
-  self.ensureAvailability(itemCounts, (pError) => {
-    if (pError) return pNext(pError);
+  self.ensureAvailability(itemCounts, (error) => {
+    if (error) return next(error);
 
     // Errors after this point could corrupt item.available value
     self.pushIdsToItemsArray();
-    self.modifyAvailability(itemCounts, pNext);
+    self.modifyAvailability(itemCounts, next);
 
     return undefined;
   });
@@ -131,12 +131,12 @@ LoanSchema.pre('save', function preSave(pNext) {
 /**
  * Pre-remove hook
  */
-LoanSchema.pre('remove', function preRemove(pNext) {
+LoanSchema.pre('remove', function preRemove(next) {
   logger.info('Loan pre-remove hook started');
   const self = this;
 
   const unreturned = self.countUnreturnedItems();
-  self.modifyAvailability(unreturned, pNext);
+  self.modifyAvailability(unreturned, next);
 });
 
 /**
@@ -153,16 +153,16 @@ LoanSchema.methods.extractItemIds = function extractIds() {
   // Convert counts to array of objects
   return objectToArrayOfObjects(counts);
 };
-LoanSchema.methods.ensureAvailability = function ensureAvailability(pItemCounts, pNext) {
+LoanSchema.methods.ensureAvailability = function ensureAvailability(itemCounts, next) {
   logger.info('Ensuring item availablities');
 
   // Ensure that there is enough items to loan
-  async.eachSeries(pItemCounts, ensureItemAvailability, (pError) => {
-    if (pError) {
-      return pNext(pError);
+  async.eachSeries(itemCounts, ensureItemAvailability, (error) => {
+    if (error) {
+      return next(error);
     }
 
-    return pNext();
+    return next();
   });
 };
 
@@ -178,59 +178,59 @@ LoanSchema.methods.pushIdsToItemsArray = function pushIds() {
   }
 };
 
-LoanSchema.methods.modifyAvailability = function modifyAvailability(pItemCounts, pNext) {
+LoanSchema.methods.modifyAvailability = function modifyAvailability(itemCounts, next) {
   logger.info('Preparing to modify availability...');
-  async.eachSeries(pItemCounts, modifyItemAvailability, pNext);
+  async.eachSeries(itemCounts, modifyItemAvailability, next);
 };
 
-LoanSchema.methods.countReturns = function countReturns(pDeltaItems) {
+LoanSchema.methods.countReturns = function countReturns(deltaItems) {
   // console.log(JSON.stringify(delta_items) + ' ' + delta_items.length);
   const self = this;
   const counts = {};
-  for (let i = 0; i < pDeltaItems.length; i += 1) {
-    if (!pDeltaItems[i]._id) {
+  for (let i = 0; i < deltaItems.length; i += 1) {
+    if (!deltaItems[i]._id) {
       return new Error('Encountered an item without _id');
     }
-    const item = self.findWithIndex(pDeltaItems[i]._id);
+    const item = self.findWithIndex(deltaItems[i]._id);
 
     // Only continue if referenced item exists
     if (item) {
-      if (typeof item.data.return_date === 'undefined' && typeof pDeltaItems[i].return_date !== 'undefined') {
+      if (typeof item.data.return_date === 'undefined' && typeof deltaItems[i].return_date !== 'undefined') {
         // We now know that the item did not have a return date and a new one is proposed
-        if (!isValidDate(new Date(pDeltaItems[i].return_date))) {
+        if (!isValidDate(new Date(deltaItems[i].return_date))) {
           return Error('Received an invalid date');
         }
 
         // Valid item with valid date
         if (!(item.data.item in counts)) {
           // New item, push important info to array
-          counts[item.data.item] = {index: item.index, date: pDeltaItems[i].return_date, count: 1};
+          counts[item.data.item] = {index: item.index, date: deltaItems[i].return_date, count: 1};
         } else {
           // Item is already known
           counts[item.data.item].count += 1;
         }
       }
     } else {
-      return new Error(`Id:${pDeltaItems[i]._id} was not found in items`);
+      return new Error(`Id:${deltaItems[i]._id} was not found in items`);
     }
   }
 
   // Convert counts to array of objects
   const arrayCounts = [];
-  Object.keys(counts).forEach((pKey) => {
+  Object.keys(counts).forEach((key) => {
     arrayCounts.push({
-      id: pKey,
-      index: counts[pKey].index,
-      date: counts[pKey].date,
-      count: counts[pKey].count});
+      id: key,
+      index: counts[key].index,
+      date: counts[key].date,
+      count: counts[key].count});
   });
 
   return arrayCounts;
 };
 
-LoanSchema.methods.findWithIndex = function fintWithIndex(pItemId) {
+LoanSchema.methods.findWithIndex = function fintWithIndex(itemId) {
   for (let i = 0; i < this.items.length; i += 1) {
-    if (this.items[i]._id.toString() === pItemId.toString()) {
+    if (this.items[i]._id.toString() === itemId.toString()) {
       return {index: i, data: this.items[i]};
     }
   }

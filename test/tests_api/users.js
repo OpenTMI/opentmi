@@ -49,26 +49,26 @@ describe('Users', function () {
     superagent.post(`${api}/users`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expect(pRes).to.be.a('Object');
-        if (pRes.status === 300) {
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        if (res.status === 300) {
           logger.warn('Seems that your DB is not clean!');
           process.exit(1);
         }
-        expect(pRes).to.have.property('status', 200);
+        expect(res).to.have.property('status', 200);
 
-        expect(pRes.body).to.have.property('_id');
-        newUserId = pRes.body._id;
+        expect(res.body).to.have.property('_id');
+        newUserId = res.body._id;
 
-        expect(pRes.body.name).to.eql(body.name);
-        expect(pRes.body.email).to.eql(body.email);
-        expect(pRes.body.displayName).to.eql(body.displayName);
-        expect(pRes.body).to.have.ownProperty('apikeys');
-        expect(pRes.body).to.have.ownProperty('groups');
-        expect(pRes.body).to.have.ownProperty('loggedIn');
-        expect(pRes.body).to.have.ownProperty('lastVisited');
-        expect(pRes.body).to.have.ownProperty('registered');
+        expect(res.body.name).to.eql(body.name);
+        expect(res.body.email).to.eql(body.email);
+        expect(res.body.displayName).to.eql(body.displayName);
+        expect(res.body).to.have.ownProperty('apikeys');
+        expect(res.body).to.have.ownProperty('groups');
+        expect(res.body).to.have.ownProperty('loggedIn');
+        expect(res.body).to.have.ownProperty('lastVisited');
+        expect(res.body).to.have.ownProperty('registered');
         done();
       });
   });
@@ -77,25 +77,25 @@ describe('Users', function () {
     superagent.get(`${api}/users/${newUserId}`)
       .set('authorization', authString)
       .type('json')
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expect(pRes).to.be.a('Object');
-        if (pRes.status === 300) {
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        if (res.status === 300) {
           logger.warn('Seems that your DB is not clean!');
           process.exit(1);
         }
-        expect(pRes.status).to.equal(200);
+        expect(res.status).to.equal(200);
 
         // TODO: take properties straight from model
-        expect(pRes.body).to.have.property('_id');
-        expect(pRes.body.name).to.eql('Test User');
-        expect(pRes.body.email).to.eql('testuser@fakemail.se');
-        expect(pRes.body.displayName).to.eql('Tester');
-        expect(pRes.body).to.have.property('apikeys');
-        expect(pRes.body).to.have.property('groups');
-        expect(pRes.body).to.have.property('loggedIn');
-        expect(pRes.body).to.have.property('lastVisited');
-        expect(pRes.body).to.have.property('registered');
+        expect(res.body).to.have.property('_id');
+        expect(res.body.name).to.eql('Test User');
+        expect(res.body.email).to.eql('testuser@fakemail.se');
+        expect(res.body.displayName).to.eql('Tester');
+        expect(res.body).to.have.property('apikeys');
+        expect(res.body).to.have.property('groups');
+        expect(res.body).to.have.property('loggedIn');
+        expect(res.body).to.have.property('lastVisited');
+        expect(res.body).to.have.property('registered');
         done();
       });
   });
@@ -106,35 +106,35 @@ describe('Users', function () {
     superagent.put(`${api}/users/${newUserId}`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pRes).to.be.a('Object');
-        if (pRes.status === 300) {
+      .end(function (error, res) {
+        expect(res).to.be.a('Object');
+        if (res.status === 300) {
           logger.warn('Seems that your DB is not clean!');
           process.exit(1);
         }
-        expect(pRes.status).to.equal(200);
-        expect(pError).to.equal(null);
+        expect(res.status).to.equal(200);
+        expect(error).to.equal(null);
 
         superagent.get(`${api}/users/${newUserId}`)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expect(pCheckRes).to.be.a('Object');
-            if (pCheckRes.status === 300) {
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expect(checkRes).to.be.a('Object');
+            if (checkRes.status === 300) {
               logger.warn('Seems that your DB is not clean!');
               process.exit(1);
             }
 
-            expect(pCheckRes.body).to.have.property('_id');
-            expect(pCheckRes.body.name).to.eql('Test User');
-            expect(pCheckRes.body.email).to.eql('newtestermail@fakemail.se');
-            expect(pCheckRes.body.displayName).to.eql('Tester');
-            expect(pCheckRes.body).to.have.property('apikeys');
-            expect(pCheckRes.body).to.have.property('groups');
-            expect(pCheckRes.body).to.have.property('loggedIn');
-            expect(pCheckRes.body).to.have.property('lastVisited');
-            expect(pCheckRes.body).to.have.property('registered');
+            expect(checkRes.body).to.have.property('_id');
+            expect(checkRes.body.name).to.eql('Test User');
+            expect(checkRes.body.email).to.eql('newtestermail@fakemail.se');
+            expect(checkRes.body.displayName).to.eql('Tester');
+            expect(checkRes.body).to.have.property('apikeys');
+            expect(checkRes.body).to.have.property('groups');
+            expect(checkRes.body).to.have.property('loggedIn');
+            expect(checkRes.body).to.have.property('lastVisited');
+            expect(checkRes.body).to.have.property('registered');
             done();
           });
       });
@@ -143,10 +143,10 @@ describe('Users', function () {
   it('should not delete a user that is referenced in a loan', function (done) {
     superagent.del(`${api}/users/${userWithLoanId}`)
       .set('authorization', authString)
-      .end(function (pError, pRes) {
-        expect(pRes).to.be.a('Object');
-        expect(pError).to.not.equal(null);
-        expect(pRes.status).to.equal(400);
+      .end(function (error, res) {
+        expect(res).to.be.a('Object');
+        expect(error).to.not.equal(null);
+        expect(res.status).to.equal(400);
         done();
       });
   });
@@ -154,22 +154,22 @@ describe('Users', function () {
   it('should delete a SINGLE user on /users/<id> DELETE', function (done) {
     superagent.del(`${api}/users/${newUserId}`)
       .set('authorization', authString)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expect(pRes).to.be.a('Object');
-        if (pRes.status === 300) {
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        if (res.status === 300) {
           logger.warn('Seems that your DB is not clean!');
           process.exit(1);
         }
-        expect(pRes.status).to.equal(200);
+        expect(res.status).to.equal(200);
 
         // Make sure the document is deleted
         superagent.get(`${api}/users/${newUserId}`)
           .set('authorization', authString)
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckRes).to.be.a('Object');
-            expect(pCheckError).to.not.equal(null);
-            expect(pCheckRes.status).to.equal(404);
+          .end(function (checkError, checkRes) {
+            expect(checkRes).to.be.a('Object');
+            expect(checkError).to.not.equal(null);
+            expect(checkRes.status).to.equal(404);
             done();
           });
       });

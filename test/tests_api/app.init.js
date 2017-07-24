@@ -37,12 +37,12 @@ describe('Basic Get API', function () {
 
   it('get api version', function (done) {
     superagent.get(api)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expect(pRes).to.be.a('Object');
-        expect(pRes).to.have.property('status', 200);
-        expect(pRes.body).to.deep.equal({apiVersion: 'v0'});
-        expect(pRes.body).to.not.be.empty;
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        expect(res).to.have.property('status', 200);
+        expect(res.body).to.deep.equal({apiVersion: 'v0'});
+        expect(res.body).to.not.be.empty;
         done();
       });
   });
@@ -50,12 +50,12 @@ describe('Basic Get API', function () {
   it('get testcases', function (done) {
     superagent.get(`${api}/testcases`)
       .type('json')
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expect(pRes).to.be.a('Object');
-        expect(pRes).to.have.property('status', 200);
-        expect(pRes.body).to.be.instanceof(Array);
-        expect(pRes.body).to.not.be.empty;
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        expect(res).to.have.property('status', 200);
+        expect(res.body).to.be.instanceof(Array);
+        expect(res.body).to.not.be.empty;
         done();
       });
   });

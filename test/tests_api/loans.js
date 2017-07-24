@@ -39,39 +39,39 @@ function cloneObject(obj) {
 }
 
 // Wrap around for testing equality of two values, includes support for dates
-function expectObjectsToEqual(pBodyA, pBodyB) {
-  Object.keys(pBodyB).forEach((key) => {
-    expect(pBodyA).to.have.property(key);
+function expectObjectsToEqual(bodyA, bodyB) {
+  Object.keys(bodyB).forEach((key) => {
+    expect(bodyA).to.have.property(key);
 
-    if (pBodyB[key] instanceof Date) {
-      const parsedFirstTime = (new Date(pBodyA[key])).getTime();
-      const parsedSecondTime = (new Date(pBodyB[key])).getTime();
+    if (bodyB[key] instanceof Date) {
+      const parsedFirstTime = (new Date(bodyA[key])).getTime();
+      const parsedSecondTime = (new Date(bodyB[key])).getTime();
       expect(parsedFirstTime).to.equal(parsedSecondTime);
-    } else if (pBodyB[key] !== undefined) {
-      expect(pBodyA[key]).to.equal(pBodyB[key]);
+    } else if (bodyB[key] !== undefined) {
+      expect(bodyA[key]).to.equal(bodyB[key]);
     }
   });
 }
 
 // Short cut for expect a certain status with a certain body
-function expectResult(pRes, pTargetStatus, pTargetBody) {
-  if (!(pTargetBody instanceof Object) && pTargetBody !== undefined) {
+function expectResult(res, targetStatus, targetBody) {
+  if (!(targetBody instanceof Object) && targetBody !== undefined) {
     logger.error('[Test] checks for non-object target bodies is not yet implemented');
     process.exit(1);
   }
 
-  expect(pRes).to.be.a('Object');
+  expect(res).to.be.a('Object');
 
-  if (pRes.status === 300) {
+  if (res.status === 300) {
     logger.error('[Test] 300 multiple choices points to an unclean DB');
     process.exit(1);
   }
 
-  expect(pRes.status).to.equal(pTargetStatus);
+  expect(res.status).to.equal(targetStatus);
 
-  if (pTargetBody !== undefined) {
-    expect(pRes.body).to.be.instanceof(Object);
-    expectObjectsToEqual(JSON.parse(JSON.stringify(pRes.body)), pTargetBody);
+  if (targetBody !== undefined) {
+    expect(res.body).to.be.instanceof(Object);
+    expectObjectsToEqual(JSON.parse(JSON.stringify(res.body)), targetBody);
   }
 }
 
@@ -104,14 +104,14 @@ describe('Loans', function () {
     superagent.get(`${api}/loans/${validLoanId}`)
       .set('authorization', authString)
       .type('json')
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, expectedBody);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, expectedBody);
 
         // items is a complex structure and needs to be validated separately
-        expect(pRes.body.items).to.be.an('array');
-        expect(pRes.body.items[0]).to.have.property('_id');
-        expect(pRes.body.items[0]).to.have.property('item');
+        expect(res.body.items).to.be.an('array');
+        expect(res.body.items[0]).to.have.property('_id');
+        expect(res.body.items[0]).to.have.property('item');
 
         done();
       });
@@ -124,8 +124,8 @@ describe('Loans', function () {
     superagent.post(`${api}/loans`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expectResult(pRes, 400, errorBody);
+      .end(function (error, res) {
+        expectResult(res, 400, errorBody);
         done();
       });
   });
@@ -176,17 +176,17 @@ describe('Loans', function () {
     superagent.post(`${api}/loans`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expectResult(res, 200, undefined);
 
         // Make sure the item indeed was not returned
-        superagent.get(`${api}/loans/${pRes.body._id}`)
+        superagent.get(`${api}/loans/${res.body._id}`)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expect(pCheckRes.status).to.equal(200);
-            expect(pCheckRes.body.items[0]).to.not.have.property('return_date');
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expect(checkRes.status).to.equal(200);
+            expect(checkRes.body.items[0]).to.not.have.property('return_date');
             done();
           });
       });
@@ -200,25 +200,25 @@ describe('Loans', function () {
     superagent.post(`${api}/loans`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, expectedBody);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, expectedBody);
 
         // Save _id for later use
-        testLoanId = pRes.body._id;
+        testLoanId = res.body._id;
 
         // Make sure the loan is created
         superagent.get(`${api}/loans/${testLoanId}`)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expectResult(pCheckRes, 200, expectedBody);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expectResult(checkRes, 200, expectedBody);
 
             // Validate created items
-            validLoanBody.items[0]._id = pCheckRes.body.items[0]._id;
-            validLoanBody.items[1]._id = pCheckRes.body.items[1]._id;
-            validLoanBody.items[2]._id = pCheckRes.body.items[2]._id;
+            validLoanBody.items[0]._id = checkRes.body.items[0]._id;
+            validLoanBody.items[1]._id = checkRes.body.items[1]._id;
+            validLoanBody.items[2]._id = checkRes.body.items[2]._id;
 
             done();
           });
@@ -230,11 +230,11 @@ describe('Loans', function () {
     superagent.get(`${api}/items/${testItemId}`)
       .set('authorization', authString)
       .type('json')
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
 
         // Should decrease 6 from what is in the seeds(after 2 successful loans of 3)
-        expectResult(pRes, 200, expectedBody);
+        expectResult(res, 200, expectedBody);
         done();
       });
   });
@@ -247,9 +247,9 @@ describe('Loans', function () {
     superagent.put(`${api}/loans/${testLoanId}`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.not.equal(null);
-        expectResult(pRes, 400, undefined);
+      .end(function (error, res) {
+        expect(error).to.not.equal(null);
+        expectResult(res, 400, undefined);
         done();
       });
   });
@@ -279,9 +279,9 @@ describe('Loans', function () {
     superagent.put(`${api}/loans/${testLoanId}`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, expectedBody);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, expectedBody);
         done();
       });
   });
@@ -298,16 +298,16 @@ describe('Loans', function () {
     superagent.put(loanRoute)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, undefined);
 
         superagent.get(loanRoute)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expectResult(pCheckRes, 200, expectedBody);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expectResult(checkRes, 200, expectedBody);
             done();
           });
       });
@@ -319,9 +319,9 @@ describe('Loans', function () {
     superagent.get(`${api}/items/${testItemId}`)
       .set('authorization', authString)
       .type('json')
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, expectedBody); // Should increase 1 from last loan
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, expectedBody); // Should increase 1 from last loan
         done();
       });
   });
@@ -331,17 +331,17 @@ describe('Loans', function () {
     const loanRoute = `${api}/loans/${testLoanId}`;
     superagent.del(loanRoute)
       .set('authorization', authString)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, undefined);
 
         // Make sure loan is deleted
         superagent.get(loanRoute)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.not.equal(null);
-            expectResult(pCheckRes, 404, undefined);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.not.equal(null);
+            expectResult(checkRes, 404, undefined);
             done();
           });
       });

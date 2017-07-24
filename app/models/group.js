@@ -40,27 +40,27 @@ GroupSchema.plugin(QueryPlugin); // install QueryPlugin
 /**
  * Methods
  */
-GroupSchema.methods.addUser = function addUser(pEmail, cb) {
+GroupSchema.methods.addUser = function addUser(email, next) {
   const self = this;
   const User = mongoose.model('User');
-  User.findOne({pEmail}, (pError, pUser) => {
-    if (pError) {
-      return cb(pError);
+  User.findOne({email}, (error, user) => {
+    if (error) {
+      return next(error);
     }
-    if (!pUser) {
-      return cb({message: 'user not found'});
+    if (!user) {
+      return next({message: 'user not found'});
     }
-    if (pUser.groups.indexOf(self._id) >= 0) {
+    if (user.groups.indexOf(self._id) >= 0) {
       logger.info({message: 'group already exists'});
     } else {
-      pUser.groups.push(self._id);
-      pUser.save();
+      user.groups.push(self._id);
+      user.save();
     }
-    if (self.users.indexOf(pUser._id) >= 0) {
-      cb({message: 'user has already in group'});
+    if (self.users.indexOf(user._id) >= 0) {
+      next({message: 'user has already in group'});
     } else {
-      self.users.push(pUser._id);
-      self.save(cb);
+      self.users.push(user._id);
+      self.save(next);
     }
 
     return undefined;
@@ -76,12 +76,12 @@ GroupSchema.methods.addUser = function addUser(pEmail, cb) {
  */
 
 GroupSchema.static({
-  getUsers(pGroup, cb) {
-    this.findOne({name: pGroup}).select('users').populate('users').exec(
+  getUsers(group, next) {
+    this.findOne({name: group}).select('users').populate('users').exec(
       (error, docs) => {
-        if (error) return cb(error);
-        if (docs) return cb(error, docs.users);
-        return cb(error, docs);
+        if (error) return next(error);
+        if (docs) return next(error, docs.users);
+        return next(error, docs);
       }
     );
   }

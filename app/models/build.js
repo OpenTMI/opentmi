@@ -159,75 +159,75 @@ BuildSchema.plugin(QueryPlugin); // install QueryPlugin
 
 
 BuildSchema.pre('validate', function validate(next) {
-  let err;
+  let error;
   if (_.isArray(this.files)) {
-    this.files.forEach((pFile) => {
-      pFile.prepareDataForStorage();
+    this.files.forEach((file) => {
+      file.prepareDataForStorage();
       if (fileProvider === 'mongodb') {
         // use mongodb document
-        logger.warn('storing file %s to mongodb', pFile.name);
+        logger.warn('storing file %s to mongodb', file.name);
       } else if (fileProvider) {
         // store data to filesystem
-        logger.debug('storing file %s into filesystem', pFile.name);
-        pFile.storeInfileDB();
+        logger.debug('storing file %s into filesystem', file.name);
+        file.storeInfileDB();
 
         // stored data seperately, unassign data from schema
-        pFile.data = undefined; // eslint-disable-line no-param-reassign
+        file.data = undefined; // eslint-disable-line no-param-reassign
       } else {
         // do not store at all..
         logger.warn('filedb is not configured, ignoring data');
-        pFile.data = undefined; // eslint-disable-line no-param-reassign
+        file.data = undefined; // eslint-disable-line no-param-reassign
       }
     });
   }
 
-  if (err) {
-    return next(err);
+  if (error) {
+    return next(error);
   }
   if (_.get(this, 'target.type') === 'simulate') {
     if (!_.get(this, 'target.simulator')) {
-      err = new Error('simulator missing');
+      error = new Error('simulator missing');
     }
   } else if (_.get(this, 'target.type') === 'hardware') {
     if (!_.get(this, 'target.hw')) {
-      err = new Error('target.hw missing');
+      error = new Error('target.hw missing');
     } else if (!_.get(this, 'target.hw.model')) {
-      err = new Error('target.hw.model missing');
+      error = new Error('target.hw.model missing');
     }
   }
 
-  return next(err);
+  return next(error);
 });
 
 /**
  * Methods
  */
-BuildSchema.methods.download = function download(pIndex, pRes) {
-  const index = pIndex || 0;
+BuildSchema.methods.download = function download(index, res) {
+  const editedIndex = index || 0;
   const cb = function (err, file) {
-    const res = pRes;
+    const editedRes = res;
     if (file.data) {
       const mimetype = mime.lookup(file.name);
-      res.writeHead(200, {
+      editedRes.writeHead(200, {
         'Content-Type': mimetype,
         'Content-disposition': `attachment;filename=${file.name}`,
         'Content-Length': file.data.length
       });
-      res.send(file.data);
+      editedRes.send(file.data);
     } else {
-      res.status(404).send('not found');
+      editedRes.status(404).send('not found');
     }
     return undefined;
   };
 
-  if (_.get(this.files, index)) {
-    const file = _.get(this.files, index);
+  if (_.get(this.files, editedIndex)) {
+    const file = _.get(this.files, editedIndex);
     if (file.data) {
       return cb(null, file);
     }
     filedb.readFile(file, cb);
   } else {
-    return pRes.status(500).json({error: 'file not found'});
+    return res.status(500).json({error: 'file not found'});
   }
 
   return undefined;

@@ -182,11 +182,11 @@ TestCaseSchema.set('toJSON', {
   virtuals: true,
   getters: true,
   minimize: true,
-  transform(pDoc, pRet) {
-    const jsonResource = pRet;
+  transform(doc, ret) {
+    const jsonResource = ret;
 
     if (!jsonResource.id) {
-      jsonResource.id = pRet._id;
+      jsonResource.id = ret._id;
     }
 
     delete jsonResource._id;
@@ -209,8 +209,8 @@ TestCaseSchema.index({tcid: 1, 'ver.cur': -1}, {unique: true});
  */
 
 TestCaseSchema.method({
-  updateDuration(pDuration) {
-    this.execution.estimation.duration += pDuration;
+  updateDuration(duration) {
+    this.execution.estimation.duration += duration;
     this.execution.estimation.duration /= 2;
     this.save();
     logger.info('saved new duration');
@@ -218,11 +218,11 @@ TestCaseSchema.method({
   isLatest() {
     return (!this.ver.next);
   },
-  getPrev(cb) {
+  getPrev(next) {
     if (this.ver.prev) {
-      this.populate(this.ver.prev).exec(cb);
+      this.populate(this.ver.prev).exec(next);
     } else {
-      cb('no previous version');
+      next('no previous version');
     }
   }
 });
@@ -232,24 +232,24 @@ TestCaseSchema.method({
  */
 
 TestCaseSchema.static({
-  findByTcid(pTestcaseId, cb) {
-    return this.findOne({tcid: new RegExp(pTestcaseId, 'i')}, cb);
+  findByTcid(testcaseId, next) {
+    return this.findOne({tcid: new RegExp(testcaseId, 'i')}, next);
   },
-  updateTcDuration(pTestcaseId, duration) {
-    this.findByTcid(pTestcaseId, (pError, pTestcase) => {
-      if (pError) {
-        logger.warn(pError);
-      } else if (pTestcase) {
-        logger.info(`found tc: ${pTestcaseId}`);
-        pTestcase.updateDuration(duration);
+  updateTcDuration(testcaseId, duration) {
+    this.findByTcid(testcaseId, (error, testcase) => {
+      if (error) {
+        logger.warn(error);
+      } else if (testcase) {
+        logger.info(`found tc: ${testcaseId}`);
+        testcase.updateDuration(duration);
       } else {
-        logger.warn(`did not find tc: ${pTestcaseId}`);
+        logger.warn(`did not find tc: ${testcaseId}`);
       }
     });
   },
-  getDurationAverage(pTestcaseId, cb) {
+  getDurationAverage(testcaseId, next) {
     const Result = mongoose.model('Result');
-    Result.getDuration(pTestcaseId, cb);
+    Result.getDuration(testcaseId, next);
   }
 });
 

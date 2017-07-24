@@ -93,16 +93,16 @@ UserSchema.path('username').validate(function (username) {
 /**
  * Pre-save hook
  */
-UserSchema.pre('save', function preSave(pNext) {
+UserSchema.pre('save', function preSave(next) {
   const self = this;
   if (!self.isModified('password')) {
-    return pNext();
+    return next();
   }
 
-  bcrypt.genSalt(10, (pSaltError, pSalt) => {
-    bcrypt.hash(self.password, pSalt, (phashError, pHash) => {
-      self.password = pHash;
-      pNext();
+  bcrypt.genSalt(10, (saltError, salt) => {
+    bcrypt.hash(self.password, salt, (hashError, hash) => {
+      self.password = hash;
+      next();
     });
   });
 
@@ -132,8 +132,8 @@ UserSchema.pre('remove', function preRemove(next) {
   const self = this;
   const Loan = mongoose.model('Loan');
 
-  Loan.find({loaner: self._id}, (pError, pLoans) => {
-    if (pLoans.length > 0) {
+  Loan.find({loaner: self._id}, (error, loans) => {
+    if (loans.length > 0) {
       return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
     }
 
@@ -146,56 +146,56 @@ UserSchema.pre('remove', function preRemove(next) {
 /**
  * Methods
  */
-UserSchema.methods.addToGroup = function addToGroup(pGroupName, pNext) {
+UserSchema.methods.addToGroup = function addToGroup(groupName, next) {
   const self = this;
-  Group.findOne({name: pGroupName}, (pError, pGroup) => {
-    if (pError) {
-      return pNext(pError);
+  Group.findOne({name: groupName}, (error, group) => {
+    if (error) {
+      return next(error);
     }
-    if (!pGroup) {
-      return pNext({message: 'group not found'});
+    if (!group) {
+      return next({message: 'group not found'});
     }
-    if (_.find(pGroup.users, user => user === self._id)) {
-      return pNext({message: 'user belongs to the group already'});
+    if (_.find(group.users, user => user === self._id)) {
+      return next({message: 'user belongs to the group already'});
     }
 
-    self.groups.push(pGroup._id);
-    pGroup.users.push(self._id);
-    pGroup.save();
-    self.save((pSaveError, pUser) => {
-      if (pSaveError) {
-        return pNext(pSaveError);
+    self.groups.push(group._id);
+    group.users.push(self._id);
+    group.save();
+    self.save((saveError, user) => {
+      if (saveError) {
+        return next(saveError);
       }
 
-      return pNext(pUser);
+      return next(user);
     });
 
     return undefined;
   });
 };
 
-UserSchema.methods.removeFromGroup = function removeFromGroup(pGroupName, pNext) {
+UserSchema.methods.removeFromGroup = function removeFromGroup(groupName, next) {
   const self = this;
-  Group.findOne({name: pGroupName}, (pError, pGroup) => {
-    const group = pGroup;
-
-    if (pError) {
-      return pNext(pError);
+  Group.findOne({name: groupName}, (error, group) => {
+    if (error) {
+      return next(error);
     }
-    if (!pGroup) {
-      return pNext({message: 'group not found'});
+    if (!group) {
+      return next({message: 'group not found'});
     }
 
-    self.groups = _.without(self.groups, pGroup._id);
-    group.users = _.without(pGroup.users, self._id);
-    group.save();
-    self.save((pSaveError, pUser) => {
-      if (pSaveError) {
-        logger.error(pError);
-        return pNext(pSaveError);
+    self.groups = _.without(self.groups, group._id);
+
+    const editedGroup = group;
+    editedGroup.users = _.without(group.users, self._id);
+    editedGroup.save();
+    self.save((saveError, user) => {
+      if (saveError) {
+        logger.error(error);
+        return next(saveError);
       }
 
-      return pNext(pUser);
+      return next(user);
     });
 
     return undefined;
@@ -209,9 +209,9 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(pGroupName, pNext)
  * @return {Boolean}
  * @api public
  */
-UserSchema.methods.comparePassword = function comparePassword(pPassword, pNext) {
-  bcrypt.compare(pPassword, this.password, (err, isMatch) => {
-    pNext(err, isMatch);
+UserSchema.methods.comparePassword = function comparePassword(password, next) {
+  bcrypt.compare(password, this.password, (error, isMatch) => {
+    next(error, isMatch);
   });
 };
 
@@ -233,10 +233,10 @@ UserSchema.methods.listApiKeys = function listApiKeys() {
   return this.apiKeys;
 };
 
-UserSchema.methods.deleteApiKey = function deleteApiKey(pKey, cb) {
-  if (this.apiKeys.indexOf(pKey) >= 0) {
-    this.update({$pull: {apiKeys: pKey}});
-    this.save(cb);
+UserSchema.methods.deleteApiKey = function deleteApiKey(key, next) {
+  if (this.apiKeys.indexOf(key) >= 0) {
+    this.update({$pull: {apiKeys: key}});
+    this.save(next);
   }
 };
 
@@ -249,45 +249,45 @@ UserSchema.static({
   /**
    * Load
    *
-   * @param {Object} pOptions
-   * @param {Function} cb
+   * @param {Object} options
+   * @param {Function} next
    * @api private
    */
 
-  load(pOptions, cb) {
-    const options = pOptions;
-    options.select = pOptions.select || 'name username';
-    this.findOne(pOptions.criteria)
-      .select(pOptions.select)
-      .exec(cb);
+  load(options, next) {
+    const editedOptions = options;
+    editedOptions.select = options.select || 'name username';
+    this.findOne(editedOptions.criteria)
+      .select(editedOptions.select)
+      .exec(next);
   },
 
-  admins(pNext) {
+  admins(next) {
     const query = {account_level: 1};
-    this.find(query, pNext);
+    this.find(query, next);
   },
 
-  findByEmail(pEmail, cb) {
-    this.find({email: pEmail}, cb);
+  findByEmail(email, next) {
+    this.find({email: email}, next);
   },
 
-  getApiKeys(pUser, cb) {
-    this.findOne({_id: pUser}).populate('apikeys').exec((pError, pDoc) => {
-      if (pError) {
-        return cb(pError);
+  getApiKeys(user, next) {
+    this.findOne({_id: user}).populate('apikeys').exec((error, doc) => {
+      if (error) {
+        return next(error);
       }
 
-      logger.info(pUser);
-      logger.info(pDoc);
-      cb(pError, _.map(pDoc.apikeys, pKey => pKey.key));
+      logger.info(user);
+      logger.info(doc);
+      next(error, _.map(doc.apikeys, key => key.key));
 
       return undefined;
     });
   },
 
-  generateApiKey(user, cb) {
+  generateApiKey(user, next) {
     this.findOne({_id: user}, (error, doc) => {
-      cb(error, doc ? doc.generateApiKey() : null);
+      next(error, doc ? doc.generateApiKey() : null);
     });
   }
 });

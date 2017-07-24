@@ -35,39 +35,39 @@ const validPostBody = {
 };
 
 // Wrap around for testing equality of two values, includes support for dates
-function expectObjectsToEqual(pBodyA, pBodyB) {
-  Object.keys(pBodyB).forEach((key) => {
-    expect(pBodyA).to.have.property(key);
+function expectObjectsToEqual(bodyA, bodyB) {
+  Object.keys(bodyB).forEach((key) => {
+    expect(bodyA).to.have.property(key);
 
-    if (pBodyB[key] instanceof Date) {
-      const parsedFirstTime = (new Date(pBodyA[key])).getTime();
-      const parsedSecondTime = (new Date(pBodyB[key])).getTime();
+    if (bodyB[key] instanceof Date) {
+      const parsedFirstTime = (new Date(bodyA[key])).getTime();
+      const parsedSecondTime = (new Date(bodyB[key])).getTime();
       expect(parsedFirstTime).to.equal(parsedSecondTime);
-    } else if (pBodyB[key] !== undefined) {
-      expect(pBodyA[key]).to.equal(pBodyB[key]);
+    } else if (bodyB[key] !== undefined) {
+      expect(bodyA[key]).to.equal(bodyB[key]);
     }
   });
 }
 
 // Shortcut function for expecting a certain status with a certain body
-function expectResult(pRes, pTargetStatus, pTargetBody) {
-  if (!(pTargetBody instanceof Object) && pTargetBody !== undefined) {
+function expectResult(res, targetStatus, targetBody) {
+  if (!(targetBody instanceof Object) && targetBody !== undefined) {
     logger.error('[Test] Checks for non-object target bodies is not yet implemented');
     process.exit(1);
   }
 
-  expect(pRes).to.be.a('Object');
+  expect(res).to.be.a('Object');
 
-  if (pRes.status === 300) {
+  if (res.status === 300) {
     logger.error('[Test] 300 multiple choices points to an unclean DB');
     process.exit(1);
   }
 
-  expect(pRes.status).to.equal(pTargetStatus);
+  expect(res.status).to.equal(targetStatus);
 
-  if (pTargetBody !== undefined) {
-    expect(pRes.body).to.be.instanceof(Object);
-    expectObjectsToEqual(JSON.parse(JSON.stringify(pRes.body)), pTargetBody);
+  if (targetBody !== undefined) {
+    expect(res.body).to.be.instanceof(Object);
+    expectObjectsToEqual(JSON.parse(JSON.stringify(res.body)), targetBody);
   }
 }
 
@@ -196,8 +196,8 @@ describe('Items', function () {
     superagent.post(`${api}/items`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, res) {
-        expect(pError).to.equal(null);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
         expectResult(res, 200, validPostBody);
 
         // Save id of this item for further testing purposes
@@ -275,17 +275,17 @@ describe('Items', function () {
     superagent.put(`${api}/items/${newItemId}`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, undefined);
 
         // Check up call to make sure changes occured
         superagent.get(`${api}/items/${newItemId}`)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expectResult(pCheckRes, 200, expectedBody);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expectResult(checkRes, 200, expectedBody);
             done();
           });
       });
@@ -300,17 +300,17 @@ describe('Items', function () {
     superagent.put(`${api}/items/${newItemId}`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, undefined);
 
         // Make sure item is really updated
         superagent.get(`${api}/items/${newItemId}`)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expectResult(pCheckRes, 200, expectedBody);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expectResult(checkRes, 200, expectedBody);
             done();
           });
       });
@@ -328,17 +328,17 @@ describe('Items', function () {
     superagent.put(`${api}/items/${newItemId}`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, undefined);
 
         // Make sure item is really updated
         superagent.get(`${api}/items/${newItemId}`)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expectResult(pCheckRes, 200, expectedBody);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expectResult(checkRes, 200, expectedBody);
             done();
           });
       });
@@ -359,17 +359,17 @@ describe('Items', function () {
     superagent.put(`${api}/items/${newItemId}`)
       .set('authorization', authString)
       .send(body)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, undefined);
 
         // Check up call to make sure changes occured
         superagent.get(`${api}/items/${newItemId}`)
           .set('authorization', authString)
           .type('json')
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.equal(null);
-            expectResult(pCheckRes, 200, body);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expectResult(checkRes, 200, body);
             done();
           });
       });
@@ -378,16 +378,16 @@ describe('Items', function () {
   it('should delete a SINGLE item on /items/<id> DELETE', function (done) {
     superagent.del(`${api}/items/${newItemId}`)
       .set('authorization', authString)
-      .end(function (pError, pRes) {
-        expect(pError).to.equal(null);
-        expectResult(pRes, 200, undefined);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expectResult(res, 200, undefined);
 
         // Make sure item is deleted
         superagent.get(`${api}/items/${newItemId}`)
           .set('authorization', authString)
-          .end(function (pCheckError, pCheckRes) {
-            expect(pCheckError).to.not.equal(null);
-            expectResult(pCheckRes, 404, undefined);
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.not.equal(null);
+            expectResult(checkRes, 404, undefined);
             done();
           });
       });
@@ -396,9 +396,9 @@ describe('Items', function () {
   it('should not delete item that is loaned somewhere', function (done) {
     superagent.del(`${api}/items/${itemIdLoaned}`)
       .set('authorization', authString)
-      .end(function (pError, pRes) {
-        expect(pError).to.not.equal(null);
-        expectResult(pRes, 400, undefined);
+      .end(function (error, res) {
+        expect(error).to.not.equal(null);
+        expectResult(res, 400, undefined);
         done();
       });
   });

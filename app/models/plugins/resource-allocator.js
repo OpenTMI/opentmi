@@ -7,17 +7,17 @@ const logger = require('winston');
 /**
  * @method ResourceAllocator
  * @param {mongoose.Schema} schema
- * @param {Object}          pOptions
- * @param {Function}        [pOptions.fn=Math.random]
- * @param {String}          [pOptions.path='random']
+ * @param {Object}          options
+ * @param {Function}        [options.fn=Math.random]
+ * @param {String}          [options.path='random']
  */
-function ResourceAllocator(pSchema, pOptions) { // eslint-disable-line no-unused-vars
-  const schema = pSchema;
+function ResourceAllocator(schema, options) { // eslint-disable-line no-unused-vars
+  const editedSchema = schema;
   const v = new Validator();
 
-  schema.add({'status.allocId': {type: String}});
+  editedSchema.add({'status.allocId': {type: String}});
 
-  const allocRequest = {
+  const validAllocRequest = {
     id: '/AllocRequest',
     type: 'array',
     items: {
@@ -41,49 +41,49 @@ function ResourceAllocator(pSchema, pOptions) { // eslint-disable-line no-unused
   };
   v.addSchema(AllocRequestSchema, '/AllocRequest');
 
-  schema.methods.release = function release(cb) {
+  editedSchema.methods.release = function release(next) {
     if (this.status.availability !== 'free') {
       this.status.availability = 'free';
       if (this.status.allocId) {
         this.status.allocId = undefined;
       }
 
-      this.save(cb);
+      this.save(next);
       logger.silly('release resource');
     } else {
       logger.silly('resource was already released');
-      cb(null, this);
+      next(null, this);
     }
   };
 
-  schema.methods.allocate = function allocate(cb) {
+  editedSchema.methods.allocate = function allocate(next) {
     if (this.status.availability !== 'reserved') {
       this.status.availability = 'reserved';
       this.status.allocId = uuid.v1();
 
-      this.save(cb);
+      this.save(next);
       logger.silly('resource allocated :)');
     } else {
-      cb({error: 'resource already allocated for somebody else'});
+      next({error: 'resource already allocated for somebody else'});
     }
   };
 
-  schema.statics.releaseResources = function releaseResources(pAllocId, cb) {
-    Resource.find({'status.allocId': pAllocId}, (pError, pDocs) => { // eslint-disable-line no-undef
-      if (pError) {
-        return cb(pError);
+  editedSchema.statics.releaseResources = function releaseResources(allocId, next) {
+    Resource.find({'status.allocId': allocId}, (error, docs) => { // eslint-disable-line no-undef
+      if (error) {
+        return next(error);
       }
 
-      const release = (doc, relCb) => { doc.release(relCb); };
-      return async.map(pDocs, release, cb);
+      const release = (doc, releaseNext) => { doc.release(releaseNext); };
+      return async.map(docs, release, next);
     });
   };
 
-  schema.statics.allocateResources = function allocateReources(pAllocRequest, cb) {
+  editedSchema.statics.allocateResources = function allocateResources(allocRequest, next) {
     const self = this;
 
-    function allocateResource(request, pAllocCb) {
-      function createQueryObject(queryCb) {
+    function allocateResource(request, allocNext) {
+      function createQueryObject(queryNext) {
         const query = {
           'status.value': 'active',
           'status.availability': 'free'
@@ -94,24 +94,24 @@ function ResourceAllocator(pSchema, pOptions) { // eslint-disable-line no-unused
         } else {
           _.extend(query, request);
         }
-        queryCb(query);
+        queryNext(query);
       }
 
-      function reserve(pResource) {
-        pResource.allocate(pAllocCb);
+      function reserve(resource) {
+        resource.allocate(allocNext);
       }
 
       createQueryObject((q) => {
         logger.silly(`search: ${JSON.stringify(q)}`);
-        self.find(q, (pError, results) => {
-          if (pError) {
-            logger.warn(`error: ${pError}`);
-            pAllocCb(pError);
+        self.find(q, (error, results) => {
+          if (error) {
+            logger.warn(`error: ${error}`);
+            allocNext(error);
           } else if (results && results.length > 0) {
             reserve(results[0]);
           } else {
             logger.silly('not found');
-            pAllocCb({
+            allocNext({
               request,
               error: 'cannot locate required resources'
             });
@@ -120,12 +120,12 @@ function ResourceAllocator(pSchema, pOptions) { // eslint-disable-line no-unused
       });
     }
 
-    logger.debug(`allocateReources: ${JSON.stringify(pAllocRequest)}`);
-    const result = v.validate(pAllocRequest, allocRequest);
+    logger.debug(`allocateResources: ${JSON.stringify(allocRequest)}`);
+    const result = v.validate(allocRequest, validAllocRequest);
     if (result.errors.length === 0) {
-      async.map(pAllocRequest, allocateResource, cb);
+      async.map(allocRequest, allocateResource, next);
     } else {
-      cb(result);
+      next(result);
     }
   };
   logger.silly('ResourceAllocator registered to model');

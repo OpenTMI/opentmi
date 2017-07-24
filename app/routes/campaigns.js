@@ -1,7 +1,7 @@
 const express = require('express');
 const CampaignsRouter = require('./../controllers/campaigns');
 
-function Route(pApp) {
+function Route(app) {
   const router = express.Router();
   const controller = new CampaignsRouter();
 
@@ -18,7 +18,7 @@ function Route(pApp) {
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  pApp.use(router);
+  app.use(router);
 }
 
 module.exports = Route;

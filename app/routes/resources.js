@@ -1,7 +1,7 @@
 const express = require('express');
 const ResourceController = require('./../controllers/resources');
 
-function Route(pApp) {
+function Route(app) {
   const router = express.Router();
   const controller = new ResourceController();
 
@@ -41,7 +41,7 @@ function Route(pApp) {
   router.route('/api/v0/resources/:Resource/route')
     .get(ResourceController.solveRoute);
 
-  pApp.use(router);
+  app.use(router);
 }
 
 module.exports = Route;

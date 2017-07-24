@@ -10,7 +10,7 @@ const GroupController = require('../controllers/groups');
 // Route variables
 const Group = mongoose.model('Group');
 
-function Route(pApp) {
+function Route(app) {
   // easy way, but not support format -functionality..
   const router = express.Router();
   const controller = new GroupController();
@@ -28,17 +28,17 @@ function Route(pApp) {
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  pApp.use(router);
+  app.use(router);
 
-  Group.count({}, (pError, pCount) => {
-    if (pCount === 0) {
+  Group.count({}, (error, count) => {
+    if (count === 0) {
       (new Group({name: 'admins', users: []})).save();
       (new Group({name: 'users', users: []})).save();
     }
   });
 
-  Group.getUsers('admins', (pError, pUsers) => {
-    const admins = _.map(pUsers, user => user.name || user.displayName || user.email);
+  Group.getUsers('admins', (error, users) => {
+    const admins = _.map(users, user => user.name || user.displayName || user.email);
     logger.info(`Admin Users: ${admins.join(',')}`);
   });
 }

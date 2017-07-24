@@ -4,7 +4,7 @@ const fs = require('fs');
 // Third party modules
 const logger = require('winston');
 
-function registerRoutes(pApp) {
+function registerRoutes(app) {
   logger.info('Add Routers...');
   fs.readdirSync(__dirname).forEach((file) => {
     if (file.match(/\.js$/) && !file.match(/^(index|error)\.js$/)) {
@@ -15,12 +15,12 @@ function registerRoutes(pApp) {
 
         const router = require(`./${file}`); // eslint-disable-line global-require, import/no-dynamic-require
         if (typeof router === 'function') {
-          router(pApp);
+          router(app);
         } else {
           logger.warn('Router was not a function!');
         }
-      } catch (pError) {
-        logger.warn(pError);
+      } catch (error) {
+        logger.warn(error);
       }
     }
   });

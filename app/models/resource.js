@@ -182,11 +182,11 @@ ResourceSchema.set('toJSON', {
   virtuals: true,
   getters: true,
   minimize: true,
-  transform: (pDoc, pRet) => {
-    const jsonResource = pRet;
+  transform: (doc, ret) => {
+    const jsonResource = ret;
 
     if (!jsonResource.id) {
-      jsonResource.id = pRet._id;
+      jsonResource.id = ret._id;
     }
 
     delete jsonResource._id;
@@ -197,7 +197,7 @@ ResourceSchema.set('toJSON', {
       delete ip.remote_connection.authentication;
     }
 
-    return pRet;
+    return ret;
   }
 });
 

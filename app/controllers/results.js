@@ -90,8 +90,8 @@ class ResultsController extends DefaultController {
     logger.info('Got new Junit file');
     return new Promise((resolve, reject) => {
       if (req.busboy) {
-        req.busboy.on('file', (pFieldname, pFile) => {
-          this.streamToString(pFile).then((data) => {
+        req.busboy.on('file', (fieldname, file) => {
+          this.streamToString(file).then((data) => {
             this.handleJunitXml(data).then((value) => {
               resolve(value);
             });

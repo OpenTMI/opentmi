@@ -27,8 +27,8 @@ class AuthenticationController {
     res.status(404).json({error: 'login required'});
   }
 
-  static apiKeyRequiredResponse(pReq, pRes) {
-    pRes.status(404).json({error: 'apikey required'});
+  static apiKeyRequiredResponse(req, res) {
+    res.status(404).json({error: 'apikey required'});
   }
 
   /*
@@ -399,13 +399,13 @@ class AuthenticationController {
           user.addToGroup('admins', (result) => {
             logger.verbose(addPrefix('adding to group finished.'));
 
-            // If pResult has a message, error has occured
+            // If result has a message, error has occured
             if (result.message) {
               logger.error(addPrefix(`user: ${result._id} could not be added to the admins group.`));
               return next({status: 500, msg: result.message});
             }
 
-            // Save pResult/user and create token with groupname
+            // Save result/user and create token with groupname
             logger.verbose(addPrefix('user added to group successfully.'));
             return next(null, result, groupname);
           });

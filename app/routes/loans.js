@@ -10,7 +10,7 @@ const LoanController = require('./../controllers/loans');
 // Route variables
 const TOKEN_SECRET = nconf.get('webtoken');
 
-function Route(pApp) {
+function Route(app) {
   const router = express.Router();
   const controller = new LoanController();
 
@@ -28,7 +28,7 @@ function Route(pApp) {
     .put(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.update.bind(controller))
     .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.remove.bind(controller));
 
-  pApp.use(router);
+  app.use(router);
 }
 
 module.exports = Route;

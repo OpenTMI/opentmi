@@ -9,7 +9,7 @@ const ItemController = require('./../controllers/items');
 
 const TOKEN_SECRET = nconf.get('webtoken');
 
-function Route(pApp) {
+function Route(app) {
   const router = express.Router();
   const controller = new ItemController();
 
@@ -27,7 +27,7 @@ function Route(pApp) {
   router.route('/api/v0/items/:Item/image')
     .get(ItemController.getImage);
 
-  pApp.use(router);
+  app.use(router);
 }
 
 module.exports = Route;

@@ -1,7 +1,7 @@
 const express = require('express');
 const TargetController = require('./../controllers/targets');
 
-function Route(pApp) {
+function Route(app) {
   const router = express.Router();
   const controller = new TargetController();
 
@@ -22,7 +22,7 @@ function Route(pApp) {
     .all(controller.all.bind(controller))
     .get(TargetController.getGt);
 
-  pApp.use(router);
+  app.use(router);
 }
 
 module.exports = Route;

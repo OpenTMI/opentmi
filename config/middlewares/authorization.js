@@ -44,17 +44,17 @@ function ensureAuthenticated(err, req, res, next) {
   return next();
 }
 
-function ensureAdmin(pError, pReq, pRes, pNext) {
+function ensureAdmin(error, req, res, next) {
   async.waterfall([
-    ensureAuthenticated.bind(this, pError, pReq, pRes),
-    getUserGroups.bind(this, pReq, pRes)
+    ensureAuthenticated.bind(this, error, req, res),
+    getUserGroups.bind(this, req, res)
   ], () => {
-    const isAdmin = pReq.groups.find(group => group.name === 'admins');
+    const isAdmin = req.groups.find(group => group.name === 'admins');
 
     if (isAdmin) {
-      pNext();
+      next();
     } else {
-      pRes.status.send({message: 'Admin access required!'});
+      res.status.send({message: 'Admin access required!'});
     }
   });
 }

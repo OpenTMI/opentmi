@@ -34,55 +34,55 @@ ItemSchema.plugin(QueryPlugin); // install QueryPlugin
 /**
  * Pre-save hook
  */
-ItemSchema.pre('save', function preSave(pNext) {
+ItemSchema.pre('save', function preSave(next) {
   logger.info('Item pre-save hook started');
   if (this.available > this.in_stock) {
-    return pNext(new Error('availability cannot be higher than in_stock'));
+    return next(new Error('availability cannot be higher than in_stock'));
   }
 
-  return pNext();
+  return next();
 });
 
 /**
  * Pre-remove hook
  */
-ItemSchema.pre('remove', function preRemove(pNext) {
+ItemSchema.pre('remove', function preRemove(next) {
   logger.info('Item pre-remove hook started');
 
   const self = this;
   const Loan = mongoose.model('Loan');
 
-  Loan.find({}, (pError, pLoans) => {
-    if (pError) return pNext(new Error('Something mysterious went wrong while fetching loans'));
+  Loan.find({}, (error, loans) => {
+    if (error) return next(new Error('Something mysterious went wrong while fetching loans'));
 
-    for (let i = 0; i < pLoans.length; i += 1) {
-      for (let j = 0; j < pLoans[i].items.length; j += 1) {
-        if (pLoans[i].items[j].item.toString() === self._id.toString()) {
-          return pNext(new Error('Cannot delete this item, loans that refer to this item exist'));
+    for (let i = 0; i < loans.length; i += 1) {
+      for (let j = 0; j < loans[i].items.length; j += 1) {
+        if (loans[i].items[j].item.toString() === self._id.toString()) {
+          return next(new Error('Cannot delete this item, loans that refer to this item exist'));
         }
       }
     }
-    return pNext();
+    return next();
   });
 });
 
 /**
  * Methods
  */
-ItemSchema.methods.fetchImageData = function fetchImageData(pNext) {
+ItemSchema.methods.fetchImageData = function fetchImageData(next) {
   const self = this;
   const request = require('request').defaults({encoding: null}); // eslint-disable-line global-require
-  request.get(self.image_src, (pError, pRes, pBody) => {
-    if (pError) return pNext(new Error('could not process image get request'));
+  request.get(self.image_src, (error, res, body) => {
+    if (error) return next(new Error('could not process image get request'));
 
-    if (pRes.statusCode === 200) {
+    if (res.statusCode === 200) {
       const imageData = {
-        type: pRes.headers['content-type'],
-        data: pBody
+        type: res.headers['content-type'],
+        data: body
       };
-      pNext(imageData);
+      next(imageData);
     } else {
-      return pNext(new Error(`image get request returned with an unexpected code: ${pRes.statusCode}`));
+      return next(new Error(`image get request returned with an unexpected code: ${res.statusCode}`));
     }
 
     return undefined;

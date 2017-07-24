@@ -19,7 +19,7 @@ function put(req, res) {
   res.json(501, {error: 'not implemented'});
 }
 
-function Route(pApp) {
+function Route(app) {
   const router = express.Router();
 
   router.route('/api/v0/settings.:format?')
@@ -27,7 +27,7 @@ function Route(pApp) {
     .get(get)
     .put(put);
 
-  pApp.use(router);
+  app.use(router);
 }
 
 module.exports = Route;

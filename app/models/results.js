@@ -108,8 +108,8 @@ ResultSchema.plugin(QueryPlugin); // install QueryPlugin
 /**
  * Methods
  */
-ResultSchema.pre('validate', function preValidate(pNext) {
-  let pError;
+ResultSchema.pre('validate', function preValidate(next) {
+  let error;
   const buildSha1 = _.get(this, 'exec.sut.buildSha1');
 
   const logs = _.get(this, 'exec.logs');
@@ -117,7 +117,7 @@ ResultSchema.pre('validate', function preValidate(pNext) {
     for (let i = 0; i < logs.length; i += 1) {
       const file = logs[i];
       if (!file.name) {
-        pError = new Error(`file[${i}].name missing`);
+        error = new Error(`file[${i}].name missing`);
         break;
       }
       if (file.base64) {
@@ -144,21 +144,21 @@ ResultSchema.pre('validate', function preValidate(pNext) {
       }
     }
   }
-  if (pError) {
-    return pNext(pError);
+  if (error) {
+    return next(error);
   }
 
   if (buildSha1) {
     logger.debug('result build sha1: ', buildSha1);
-    Build.findOne({'files.sha1': buildSha1}, (pFindError, pBuild) => {
-      if (pBuild) {
-        this.exec.sut.ref = pBuild._id;
+    Build.findOne({'files.sha1': buildSha1}, (findError, build) => {
+      if (build) {
+        this.exec.sut.ref = build._id;
       }
-      pNext();
+      next();
     });
   }
 
-  return pNext(pError);
+  return next(error);
 });
 ResultSchema.virtual('exec.sut.sha1');
 /* .get()
@@ -168,9 +168,9 @@ ResultSchema.virtual('exec.sut.sha1');
 ResultSchema.methods.setBuild = function setBuild() {
 
 };
-ResultSchema.methods.getBuild = function getBuild(cb) {
+ResultSchema.methods.getBuild = function getBuild(next) {
   logger.debug('lookup build..');
-  Build.findOne({_id: _.get(this, 'exec.sut.ref')}, cb);
+  Build.findOne({_id: _.get(this, 'exec.sut.ref')}, next);
 };
 
 /**

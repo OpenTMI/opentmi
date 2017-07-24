@@ -2,16 +2,16 @@ const logger = require('winston');
 
 /**
  * @method isEmpty
- * @param {mongoose.Schema} pSchema
- * @param {Object}          pOptions
- * @param {Function}        [pOptions.fn=Math.random]
- * @param {String}          [pOptions.path='random']
+ * @param {mongoose.Schema} schema
+ * @param {Object}          options
+ * @param {Function}        [options.fn=Math.random]
+ * @param {String}          [options.path='random']
  */
-function IsEmpty(pSchema, pOptions) { // eslint-disable-line no-unused-vars
-  const schema = pSchema;
-  schema.statics.isEmpty = function isEmpty(cb) {
+function IsEmpty(schema, options) { // eslint-disable-line no-unused-vars
+  const editedSchema = schema;
+  editedSchema.statics.isEmpty = function isEmpty(next) {
     this.count({}, (error, count) => {
-      cb(error, count === 0);
+      next(error, count === 0);
     });
   };
 

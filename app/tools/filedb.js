@@ -24,41 +24,41 @@ const fileEnding = 'gz';
 class FileDB {
   /**
    * Reads and uncompresses stored data that is related to provided file
-   * @param {FileSchema} pFile - valid instance of FileSchema, used to resolve the filename
+   * @param {FileSchema} file - valid instance of FileSchema, used to resolve the filename
    * @returns {Promise} promise to read a file with a File as resolve parameter
    */
-  static readFile(pFile) {
-    if (!(pFile instanceof File)) {
+  static readFile(file) {
+    if (!(file instanceof File)) {
       return Promise.reject(new TypeError('Provided file is not an instance of FileSchema.'));
     }
 
-    if (!pFile.checksum()) {
+    if (!file.checksum()) {
       return Promise.reject(new Error('Could not resolve a checksum for the file.'));
     }
 
-    logger.info(`Reading file ${pFile.name} (filename: ${pFile.checksum()}.${fileEnding}).`);
-    return FileDB._readFile(pFile.checksum()).then(FileDB._uncompress);
+    logger.info(`Reading file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
+    return FileDB._readFile(file.checksum()).then(FileDB._uncompress);
   }
 
   /**
    * Compresses and stores a file with the file instances filename.
-   * @param {FileSchema} pFile - instance of an uncompressed File
+   * @param {FileSchema} file - instance of an uncompressed File
    * @returns {Promise} promise to write a compressed file with a File as resolve parameter
    */
-  static storeFile(pFile) {
-    if (!(pFile instanceof File)) {
+  static storeFile(file) {
+    if (!(file instanceof File)) {
       return Promise.reject(new TypeError('Provided file is not an instance of FileSchema.'));
     }
 
-    if (!pFile.checksum()) {
+    if (!file.checksum()) {
       return Promise.reject(new Error('Could not resolve a checksum for the file.'));
     }
 
-    logger.info(`Storing file ${pFile.name} (filename: ${pFile.checksum()}.${fileEnding}).`);
-    return FileDB._checkFilenameAvailability(pFile.checksum()).then((available) => {
+    logger.info(`Storing file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
+    return FileDB._checkFilenameAvailability(file.checksum()).then((available) => {
       if (available) {
-        return FileDB._compress(pFile.data).then((compressedData) => {
-          const filename = pFile.checksum();
+        return FileDB._compress(file.data).then((compressedData) => {
+          const filename = file.checksum();
           return FileDB._writeFile(filename, compressedData);
         });
       }
@@ -70,16 +70,16 @@ class FileDB {
 
   /**
    * Ensures that there is no file stored with the provided filename
-   * @param {string|Buffer|integer} pFilename - filename or file descriptor, is usually the sha1 checksum of the data
+   * @param {string|Buffer|integer} filename - filename or file descriptor, is usually the sha1 checksum of the data
    * @returns {Promise} promise that there is no file with the given name with
    *                    boolean variable as the resolve parameter
    */
-  static _checkFilenameAvailability(pFilename) {
-    const filePath = FileDB._resolveFilePath(pFilename);
+  static _checkFilenameAvailability(filename) {
+    const filePath = FileDB._resolveFilePath(filename);
 
     logger.debug(`Checking if file exists in path: ${filePath}.`);
     return fs.exists(filePath).then((exists) => {
-      if (exists) logger.debug(`File ${pFilename} already exists in path: ${filePath}.`);
+      if (exists) logger.debug(`File ${filename} already exists in path: ${filePath}.`);
       else        logger.debug(`Path: ${filePath} is confirmed to be empty.`); // eslint-disable-line
 
       return !exists;
@@ -88,18 +88,18 @@ class FileDB {
 
   /**
    * Reads a stored file with a specific filename
-   * @param {string|Buffer|integer} pFilename - filename or file descriptor, is usually the sha1 checksum of the data
+   * @param {string|Buffer|integer} filename - filename or file descriptor, is usually the sha1 checksum of the data
    * @returns {Promise} promise to read a file with a dataBuffer as the resolve parameter
    *
    * @todo Large files will most likely cause problems, stream support would solve this
    * @todo Read file size before reading the whole file, needs streams
    */
-  static _readFile(pFilename) {
-    const filePath = FileDB._resolveFilePath(pFilename);
+  static _readFile(filename) {
+    const filePath = FileDB._resolveFilePath(filename);
 
     logger.debug(`Reading file from file system with path: ${filePath}.`);
     return fs.readFile(filePath).then((dataBuffer) => {
-      logger.debug(`Read file (filename: ${pFilename} size: ${dataBuffer.size}).`);
+      logger.debug(`Read file (filename: ${filename} size: ${dataBuffer.size}).`);
       return dataBuffer;
     }).catch((error) => {
       const errorMessage = `Could not read file with path: ${filePath}, error: ${error.message}.`;
@@ -110,25 +110,25 @@ class FileDB {
 
   /**
    * Writes an instance of File to filedb
-   * @param {File} pFilename - name of the file to write, without the file ending
-   * @param {string|Buffer} pData - data to write
+   * @param {File} filename - name of the file to write, without the file ending
+   * @param {string|Buffer} data - data to write
    * @returns {Promise} promise to write the file to filedb
    *
    * @todo Large files will most likely cause problems, stream support would solve this
    */
-  static _writeFile(pFilename, pData) {
-    const filePath = FileDB._resolveFilePath(pFilename);
+  static _writeFile(filename, data) {
+    const filePath = FileDB._resolveFilePath(filename);
 
     // Ensure there is data to write
-    if (!pData) {
-      const errorMessage = `Cannot write file, no data defined, received: ${pData}.`;
+    if (!data) {
+      const errorMessage = `Cannot write file, no data defined, received: ${data}.`;
       logger.warn(errorMessage);
       return Promise.reject(new Error(errorMessage));
     }
 
     logger.debug(`Writing file to file system with path: ${filePath}.`);
-    return fs.writeFile(filePath, pData).then(() => {
-      logger.debug(`Wrote file (filename: ${pFilename} size: ${pData.length || '0'}).`);
+    return fs.writeFile(filePath, data).then(() => {
+      logger.debug(`Wrote file (filename: ${filename} size: ${data.length || '0'}).`);
     }).catch((error) => {
       const errorMessage = `Could not write data to path: ${filePath}, error: ${error.message}.`;
       logger.warn(errorMessage);
@@ -138,20 +138,20 @@ class FileDB {
 
   /**
    * Compress data with zlib.gzip
-   * @param {string|Buffer} pUncompressedData - data that should be compressed
+   * @param {string|Buffer} uncompressedData - data that should be compressed
    * @returns {Promise} promise to compress the data in this file with compressed data as resolve parameter
    */
-  static _compress(pUncompressedData) {
+  static _compress(uncompressedData) {
     // Ensure there is data to write
-    if (!pUncompressedData) {
-      const errorMessage = `Failed to compress, no data provided, received: ${pUncompressedData}.`;
+    if (!uncompressedData) {
+      const errorMessage = `Failed to compress, no data provided, received: ${uncompressedData}.`;
       logger.warn(errorMessage);
       return Promise.reject(new Error(errorMessage));
     }
 
     return new Promise((resolve, reject) => {
-      logger.debug(`Compressing data of size: ${pUncompressedData.length}.`);
-      zlib.gzip(pUncompressedData, (error, compressedData) => {
+      logger.debug(`Compressing data of size: ${uncompressedData.length}.`);
+      zlib.gzip(uncompressedData, (error, compressedData) => {
         if (error) {
           const errorMessage = `Could not compress file, error with message: ${error.message}.`;
           logger.warn(errorMessage);
@@ -159,7 +159,7 @@ class FileDB {
         }
 
         logger.verbose('Compress result:');
-        logger.verbose(`  uncompressed size: ${pUncompressedData.length}`);
+        logger.verbose(`  uncompressed size: ${uncompressedData.length}`);
         logger.verbose(`  compressed size  : ${compressedData.length}`);
         return resolve(compressedData);
       });
@@ -170,20 +170,20 @@ class FileDB {
 
   /**
    * Uncompresses the file with zlib.gunzip
-   * @param {string|Buffer} pCompressedData - data that has been compressed
+   * @param {string|Buffer} compressedData - data that has been compressed
    * @returns {Promise} promise to uncrompress the data in this file with uncompressed data as resolve parameter
    */
-  static _uncompress(pCompressedData) {
+  static _uncompress(compressedData) {
     // Ensure there is data to write
-    if (!pCompressedData) {
-      const errorMessage = `Failed to uncompress, no data provided, received: ${pCompressedData}.`;
+    if (!compressedData) {
+      const errorMessage = `Failed to uncompress, no data provided, received: ${compressedData}.`;
       logger.warn(errorMessage);
       return Promise.reject(new Error(errorMessage));
     }
 
     return new Promise((resolve, reject) => {
-      logger.debug(`Uncompressing data of size: ${pCompressedData.length}.`);
-      zlib.gunzip(pCompressedData, (error, uncompressedData) => {
+      logger.debug(`Uncompressing data of size: ${compressedData.length}.`);
+      zlib.gunzip(compressedData, (error, uncompressedData) => {
         if (error) {
           const errorMessage = `Could not uncompress, error with message: ${error.message}.`;
           logger.warn(errorMessage);
@@ -191,7 +191,7 @@ class FileDB {
         }
 
         logger.verbose('Uncompress result:');
-        logger.verbose(`  compressed size  : ${pCompressedData.length}`);
+        logger.verbose(`  compressed size  : ${compressedData.length}`);
         logger.verbose(`  uncompressed size: ${uncompressedData.length}`);
         return resolve(uncompressedData.toString(usedEncoding));
       });
@@ -202,18 +202,18 @@ class FileDB {
 
   /**
    * Uses defined filedb, name and fileEnding to create a valid path for a file
-   * @param {String} pName - name of the file, usually the sha1 checksum of the file
+   * @param {String} filename - name of the file, usually the sha1 checksum of the file
    * @returns {String} valid storage path for file with the provided name
    */
-  static _resolveFilePath(pFilename) {
-    if (!pFilename) {
-      const errorMessage = `cannot resolve filename, no name provided, received: ${pFilename}`;
+  static _resolveFilePath(filename) {
+    if (!filename) {
+      const errorMessage = `cannot resolve filename, no name provided, received: ${filename}`;
       logger.warn(errorMessage);
       throw new Error(errorMessage);
     }
 
-    logger.verbose(`resolving filePath from filedb: ${filedb} and filename: ${pFilename} with ending: ${fileEnding}`);
-    return path.join(filedb, `${pFilename}.${fileEnding}`);
+    logger.verbose(`resolving filePath from filedb: ${filedb} and filename: ${filename} with ending: ${fileEnding}`);
+    return path.join(filedb, `${filename}.${fileEnding}`);
   }
 }
 
