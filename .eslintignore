@@ -1,0 +1,8 @@
+**/node_modules
+app/addons/*
+!app/addons/*.js
+data/
+db/
+db.log/
+log/
+doc/

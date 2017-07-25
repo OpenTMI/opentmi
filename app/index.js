@@ -1,8 +1,3 @@
-'use strict';
-
-// native modules
-const fs = require('fs');
-
 // 3rd party modules
 const Express = require('express');
 const logger = require('winston');
@@ -24,12 +19,12 @@ if (nconf.get('help') || nconf.get('h')) {
 }
 
 // Defines
-const https = nconf.get('https'),
-    listen = nconf.get('listen'),
-    port = nconf.get('port'),
-    verbose = nconf.get('verbose'),
-    silent = nconf.get('silent'),
-    configuration = nconf.get('cfg');
+const https = nconf.get('https');
+const listen = nconf.get('listen');
+const port = nconf.get('port');
+const verbose = nconf.get('verbose');
+const silent = nconf.get('silent');
+const configuration = nconf.get('cfg');
 
 // Define logger behaviour
 logger.cli(); // activates colors
@@ -38,7 +33,7 @@ logger.cli(); // activates colors
 logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
 
 // Add winston file logger, which rotates daily
-var fileLevel = 'silly';
+const fileLevel = 'silly';
 logger.add(require('winston-daily-rotate-file'), {
   filename: 'log/app.log',
   json: false,
@@ -46,6 +41,7 @@ logger.add(require('winston-daily-rotate-file'), {
   level: fileLevel,
   datePatter: '.yyyy-MM-dd_HH-mm'
 });
+
 logger.debug(`Using cfg: ${configuration}`);
 
 // Create express instance
@@ -70,39 +66,43 @@ express(app);
 routes.registerRoutes(app);
 
 // Bootstrap addons, like default webGUI
-global.AddonManager = new AddonManager(app, server, io);
-global.AddonManager.RegisterAddons();
+AddonManager.init(app, server, io);
 
-// Add final route for error
-routes.registerErrorRoute(app);
+AddonManager.loadAddons().then(() => {
+  AddonManager.registerAddons().then(() => {
+    // Error route should be initialized after addonmanager has served all static routes
+    routes.registerErrorRoute(app);
 
-function onError(error) {
-  if( error.code === 'EACCES' && port < 1024 ) {
-    logger.error("You haven't access to open port below 1024");
-    logger.error("Please use admin rights if you wan't to use port %d!", port);
-  } else {
-    logger.error(error);
-  }
-  process.exit(-1);
-}
-function onListening() {
-  let listenurl = `${(https?'https':'http:')}://${listen}:${port}`;
-  logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
-  eventBus.emit('start_listening', {url: listenurl});
-}
+    function onError(error) {
+      if (error.code === 'EACCES' && port < 1024) {
+        logger.error("You haven't access to open port below 1024");
+        logger.error("Please use admin rights if you wan't to use port %d!", port);
+      } else {
+        logger.error(error);
+      }
+      process.exit(-1);
+    }
 
-server.listen(port, listen);
-server.on('error', onError);
-server.on('listening', onListening);
+    function onListening() {
+      const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
+      logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
+      eventBus.emit('start_listening', {url: listenurl});
+    }
 
-// Close the Mongoose connection, when receiving SIGINT
-process.on('SIGINT', function() {
-    DB.disconnect().then( () => {
+    server.listen(port, listen);
+    server.on('error', onError);
+    server.on('listening', onListening);
+
+    // Close the Mongoose connection, when receiving SIGINT
+    process.on('SIGINT', () => {
+      DB.disconnect().then(() => {
         process.exit(0);
-    }).catch( (err) => {
-        console.error(`Disconnection fails: ${err}`);
+      }).catch((err) => {
+        logger.error(`Disconnection fails: ${err}`);
         process.exit(-1);
+      });
     });
+  });
 });
 
 // This would be useful for testing

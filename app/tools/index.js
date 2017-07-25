@@ -1,4 +1,4 @@
-module.exports = {
-    filedb: require('./filedb'),
-    checksum: require('./checksum')
-};
+const filedb = require('./filedb');
+const checksum = require('./checksum');
+
+module.exports = {filedb, checksum};

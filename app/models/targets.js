@@ -1,28 +1,25 @@
-
 /*!
  * Module dependencies
  */
 
-var mongoose = require('mongoose');
-//var userPlugin = require('mongoose-user');
-var Schema = mongoose.Schema;
-var Types = Schema.Types;
-var ObjectId = Types.ObjectId;
-var _ = require('lodash');
+const mongoose = require('mongoose');
+// var userPlugin = require('mongoose-user');
+const Schema = mongoose.Schema;
+const _ = require('lodash');
 
-var QueryPlugin = require('mongoose-query');
+const QueryPlugin = require('mongoose-query');
 /**
  * User schema
  */
 
-var TargetSchema = new Schema({
+const TargetSchema = new Schema({
   name: {type: String, unique: true},
   yotta: [{
     target: {type: String, required: true},
     toolchain: {type: String, required: true}
   }],
   binary: {
-    type: {type: String, required: true},
+    type: {type: String, required: true}
   },
   flash: {
     method: {type: String, required: true},
@@ -32,31 +29,31 @@ var TargetSchema = new Schema({
     method: {type: String, required: true}
   },
   meta_info: {
-    manufacturer: { type: String},
-    model: { type: String, default: 'unknown'},
-    type: { type: String,  enum: ['', 'other', 'R&D', 'CT', 'OperatorAcceptance']},
-    description: { type: String},
+    manufacturer: {type: String},
+    model: {type: String, default: 'unknown'},
+    type: {type: String, enum: ['', 'other', 'R&D', 'CT', 'OperatorAcceptance']},
+    description: {type: String},
     components: [{
-        type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
-        sn: {type: String},
-        mac: {type: String},
+      type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
+      sn: {type: String},
+      mac: {type: String}
     }],
     hw: {
       picture: {type: String}, // link
-      sn: { type: String, index: true},  // ue PSN
-      imei:{type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
-      hwid:{type: String},
+      sn: {type: String, index: true}, // ue PSN
+      imei: {type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
+      hwid: {type: String},
       memory: {
         size: {type: Number},
-        score: {type: Number},
+        score: {type: Number}
       },
       cpu: {
         vendor: {type: String},
-        model:  {type: String},
+        model: {type: String},
         count: {type: Number},
-        freq:   {type: Number},
-        score: {type: Number},
-      },/*
+        freq: {type: Number},
+        score: {type: Number}
+      }/*
       disk: {
         score: {type: Number},
       },
@@ -66,7 +63,7 @@ var TargetSchema = new Schema({
       components:[{
 
       }]*/
-    },
+    }
     /*
     os: {
         type: {type: String, enum: ['win', 'linux', 'android', 'mbed', unknown']},          // optional
@@ -126,12 +123,11 @@ var TargetSchema = new Schema({
         },
     },*/
   }
-}, {toObject: { virtuals: true }
-});
-
+},
+{toObject: {virtuals: true}});
 
 /** install QueryPlugin */
-TargetSchema.plugin( QueryPlugin );
+TargetSchema.plugin(QueryPlugin);
 
 /**
  * Add your
@@ -140,8 +136,8 @@ TargetSchema.plugin( QueryPlugin );
  * - virtuals
  */
 TargetSchema.method({
-  toGt: function () {
-    var gt_format = {
+  toGt() {
+    const gtFormat = {
       yotta_targets: [],
       properties: {
         binary_type: this.binary.type,
@@ -149,14 +145,14 @@ TargetSchema.method({
         reset_method: this.reset.method,
         program_cycle_s: this.flash.cycle_s
       }
-    }
-    _.each(this.yotta, function(yt){
-      gt_format.yotta_targets.push({
+    };
+    _.each(this.yotta, (yt) => {
+      gtFormat.yotta_targets.push({
         yotta_target: yt.target,
         mbed_toolchain: yt.toolchain
-      })
-    })
-    return gt_format;
+      });
+    });
+    return gtFormat;
   }
 });
 
@@ -169,11 +165,10 @@ TargetSchema.method({
  * Statics
  */
 
-TargetSchema.static({
-});
+// TargetSchema.static({ });
 
 /**
  * Register
  */
-let Target = mongoose.model('Target', TargetSchema);
+const Target = mongoose.model('Target', TargetSchema);
 module.exports = {Model: Target, Collection: 'Target'};

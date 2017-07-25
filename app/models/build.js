@@ -1,149 +1,147 @@
 /*!
  * Module dependencies
  */
-// native modules
-var fs = require('fs');
-var path = require('path');
+// Native modules
+const path = require('path');
 
-// 3rd party modules
-var logger = require('winston');
-var _ = require('lodash');
-var uuid = require('node-uuid');
-var mongoose = require('mongoose');
-var QueryPlugin = require('mongoose-query');
-var mime = require('mime');
+// Third party modules
+const logger = require('winston');
+const _ = require('lodash');
+const uuid = require('node-uuid');
+const mongoose = require('mongoose');
+const QueryPlugin = require('mongoose-query');
+const mime = require('mime');
 
-var tools = require('../tools');
-var checksum = tools.checksum;
-var filedb = tools.filedb;
-var file_provider = filedb.provider;
-var FileSchema = require('./extends/file');
+// Local modules
+const FileSchema = require('./extends/file');
+const tools = require('../tools');
 
-var Schema = mongoose.Schema;
-
+const filedb = tools.filedb;
+const fileProvider = filedb.provider;
+const Schema = mongoose.Schema;
 
 /**
  * Location schema
  */
-var Location = new Schema({
-    url: {type: String}, // fs://... or http://... or ftp://... or sft://...
-    auth: {
-        usr: {type: String},
-        pwd: {type: String}
-    }
+const Location = new Schema({
+  url: {type: String}, // fs://... or http://... or ftp://... or sft://...
+  auth: {
+    usr: {type: String},
+    pwd: {type: String}
+  }
 });
 
 /**
  * Issue schema
  */
-var Issue = new Schema({
-    time: {type: Date, default: Date.now},
-    type: {type: String, enum: ['github', 'jira']},
-    url: {type: String}
+const Issue = new Schema({
+  time: {type: Date, default: Date.now},
+  type: {type: String, enum: ['github', 'jira']},
+  url: {type: String}
 });
 
 /**
  * Build schema
  */
-var BuildSchema = new Schema({
-    name: {type: String, required: true},
-    type: {type: String, enum: ['app', 'lib', 'test'], default: 'app'},
-    cre: {
-        user: {type: String},
-        time: {type: Date, default: Date.now},
-        host: {type: String}
-    },
-    mod: {
-        user: {type: String},
-        time: {type: Date, default: Date.now}
-    },
-    uuid: {type: String, default: uuid.v4, index: true},
-    vcs: [
-        new Schema({
-            name: {type: String}, //e.g. "github"
-            system: {type: String, enum: ['git', 'SVN', 'CSV'], default: 'git'},
-            type: {type: String, enum: ['PR']},
-            commitId: {type: String},
-            branch: {type: String},
-            base_branch: {type: String},
-            base_commit: {type: String},
-            pr_number: {type: String},
-            url: {type: String},
-            clean_wa: {type: Boolean}
-        })
-    ],
-    ci: {
-        system: {type: String, enum: ['Jenkins', 'travisCI', 'circleCI']},
-        location: Location,
-        job: {
-            name: {type: String},
-            number: {type: String}
-        }
-    },
-    compiledBy: {type: String, enum: ['CI', 'manual']},
-    changeId: {type: String}, // e.g. when gerrit build
-    configuration: {
-        name: {type: String},
-        compiler: {
-            name: {type: String},
-            version: {type: String},
-            macros: [{
-                key: {type: String},
-                value: {type: String}
-            }],
-            flags: [{
-                key: {type: String},
-                value: {type: String}
-            }]
-        },
-        linker: {
-            name: {type: String},
-            version: {type: String},
-            flags: [{
-                key: {type: String},
-                value: {type: String}
-            }]
-        },
-        toolchain: {
-            name: {type: String},
-            version: {type: String}
-        }
-    },
-    memory: {
-        summary: {
-            heap: {type: Number},
-            static_ram: {type: Number},
-            total_flash: {type: Number},
-            stack: {type: Number},
-            total_ram: {type: Number}
-        }
-    },
-    files: [ FileSchema ],
-    issues: [Issue],
-    // build target device
-    target: {
-        type: {type: String, enum: ['simulate', 'hardware'], default: 'hardware', required: true},
-        os: {type: String, enum: ['win32', 'win64', 'unix32', 'unix64', 'mbedOS', 'unknown']},
-        simulator: {
-            bt: {type: String},
-            network: {type: String}
-        },
-        hw: {
-            vendor: {type: String},
-            model: {type: String},
-            rev: {type: String},
-            meta: {type: String}
-        }
+const BuildSchema = new Schema({
+  name: {type: String, required: true},
+  type: {type: String, enum: ['app', 'lib', 'test'], default: 'app'},
+  cre: {
+    user: {type: String},
+    time: {type: Date, default: Date.now},
+    host: {type: String}
+  },
+  mod: {
+    user: {type: String},
+    time: {type: Date, default: Date.now}
+  },
+  uuid: {type: String, default: uuid.v4, index: true},
+  vcs: [
+    new Schema({
+      name: {type: String}, // e.g. "github"
+      system: {type: String, enum: ['git', 'SVN', 'CSV'], default: 'git'},
+      type: {type: String, enum: ['PR']},
+      commitId: {type: String},
+      branch: {type: String},
+      base_branch: {type: String},
+      base_commit: {type: String},
+      pr_number: {type: String},
+      url: {type: String},
+      clean_wa: {type: Boolean}
+    })
+  ],
+  ci: {
+    system: {type: String, enum: ['Jenkins', 'travisCI', 'circleCI']},
+    location: Location,
+    job: {
+      name: {type: String},
+      number: {type: String}
     }
+  },
+  compiledBy: {type: String, enum: ['CI', 'manual']},
+  changeId: {type: String}, // e.g. when gerrit build
+  configuration: {
+    name: {type: String},
+    compiler: {
+      name: {type: String},
+      version: {type: String},
+      macros: [{
+        key: {type: String},
+        value: {type: String}
+      }],
+      flags: [{
+        key: {type: String},
+        value: {type: String}
+      }]
+    },
+    linker: {
+      name: {type: String},
+      version: {type: String},
+      flags: [{
+        key: {type: String},
+        value: {type: String}
+      }]
+    },
+    toolchain: {
+      name: {type: String},
+      version: {type: String}
+    }
+  },
+  memory: {
+    summary: {
+      heap: {type: Number},
+      static_ram: {type: Number},
+      total_flash: {type: Number},
+      stack: {type: Number},
+      total_ram: {type: Number}
+    }
+  },
+  files: [FileSchema],
+  issues: [Issue],
+  // build target device
+  target: {
+    type: {type: String, enum: ['simulate', 'hardware'], default: 'hardware', required: true},
+    os: {type: String, enum: ['win32', 'win64', 'unix32', 'unix64', 'mbedOS', 'unknown']},
+    simulator: {
+      bt: {type: String},
+      network: {type: String}
+    },
+    hw: {
+      vendor: {type: String},
+      model: {type: String},
+      rev: {type: String},
+      meta: {type: String}
+    }
+  }
 });
 BuildSchema.set('toObject', {virtuals: true});
-//BuildSchema.set('toJSON', { virtuals: true });
+// BuildSchema.set('toJSON', { virtuals: true });
 
 
 /**
  * Build plugin
  */
-BuildSchema.plugin(QueryPlugin); //install QueryPlugin
+BuildSchema.plugin(QueryPlugin); // install QueryPlugin
 
 /**
  * Add your
@@ -160,96 +158,97 @@ BuildSchema.plugin(QueryPlugin); //install QueryPlugin
  */
 
 
-BuildSchema.pre('validate', function (next) {
-    var err;
-    if (_.isArray(this.files)) {
-        for (i = 0; i < this.files.length; i++) {
-            var file = this.files[i];
-     
-            file.prepareDataForStorage();
-            if (file_provider === 'mongodb') {
-                //use mongodb document
-                logger.warn('storing file %s to mongodb', file.name);
-            } else if (file_provider) {
-                // store data to filesystem
-                logger.debug('storing file %s into filesystem', file.name);
-                file.storeInfileDB();
+BuildSchema.pre('validate', function validate(next) {
+  let error;
+  if (_.isArray(this.files)) {
+    this.files.forEach((file) => {
+      file.prepareDataForStorage();
+      if (fileProvider === 'mongodb') {
+        // use mongodb document
+        logger.warn('storing file %s to mongodb', file.name);
+      } else if (fileProvider) {
+        // store data to filesystem
+        logger.debug('storing file %s into filesystem', file.name);
+        file.storeInfileDB();
 
-                // stored data seperately, unassign data from schema
-                file.data = undefined;
-            } else {
-                //do not store at all..
-                logger.warn('filedb is not configured, ignoring data');
-                file.data = undefined;
-            }
-        }
+        // stored data seperately, unassign data from schema
+        file.data = undefined; // eslint-disable-line no-param-reassign
+      } else {
+        // do not store at all..
+        logger.warn('filedb is not configured, ignoring data');
+        file.data = undefined; // eslint-disable-line no-param-reassign
+      }
+    });
+  }
+
+  if (error) {
+    return next(error);
+  }
+  if (_.get(this, 'target.type') === 'simulate') {
+    if (!_.get(this, 'target.simulator')) {
+      error = new Error('simulator missing');
     }
-    if (err) {
-        return next(err);
+  } else if (_.get(this, 'target.type') === 'hardware') {
+    if (!_.get(this, 'target.hw')) {
+      error = new Error('target.hw missing');
+    } else if (!_.get(this, 'target.hw.model')) {
+      error = new Error('target.hw.model missing');
     }
-    if (_.get(this, 'target.type') === 'simulate') {
-        if (!_.get(this, 'target.simulator'))
-            err = new Error('simulator missing');
-    } else if (_.get(this, 'target.type') === 'hardware') {
-        if (!_.get(this, 'target.hw'))
-            err = new Error('target.hw missing');
-        else if (!_.get(this, 'target.hw.model'))
-            err = new Error('target.hw.model missing');
-    }
-    next(err);
+  }
+
+  return next(error);
 });
 
 /**
  * Methods
  */
-BuildSchema.methods.download = function (index, expressResponse) {
-    index = index || 0;
-    var cb = function (err, file) {
-        var res = expressResponse;
-        if (err) {
-            return res.status(500).json(err);
-        }
-        if (file.data) {
-            var mimetype = mime.lookup(file.name);
-            res.writeHead(200, {
-                'Content-Type': mimetype,
-                'Content-disposition': 'attachment;filename=' + file.name,
-                'Content-Length': file.data.length
-            });
-            res.send(file.data);
-        } else {
-            res.status(404).json(build);
-        }
-    };
-    if (_.get(this.files, index)) {
-        var file = _.get(this.files, index);
-        if (file.data) {
-            return cb(null, file);
-        }
-        filedb.readFile(file, cb);
+BuildSchema.methods.download = function download(index, res) {
+  const editedIndex = index || 0;
+  const cb = function (err, file) {
+    const editedRes = res;
+    if (file.data) {
+      const mimetype = mime.lookup(file.name);
+      editedRes.writeHead(200, {
+        'Content-Type': mimetype,
+        'Content-disposition': `attachment;filename=${file.name}`,
+        'Content-Length': file.data.length
+      });
+      editedRes.send(file.data);
     } else {
-        cb({error: 'file not found'});
+      editedRes.status(404).send('not found');
     }
+    return undefined;
+  };
+
+  if (_.get(this.files, editedIndex)) {
+    const file = _.get(this.files, editedIndex);
+    if (file.data) {
+      return cb(null, file);
+    }
+    filedb.readFile(file, cb);
+  } else {
+    return res.status(500).json({error: 'file not found'});
+  }
+
+  return undefined;
 };
 
-BuildSchema.virtual('file').get(
-    function () {
-        if (this.files.length === 1) {
-            var href;
-            if (file_provider && file_provider !== 'mongodb' && this.files[0].sha1) {
-                href = path.join(file_provider, this.files[0].sha1);
-            }
-        }
-        return href;
-    });
+BuildSchema.virtual('file').get(function getFile() {
+  if (this.files.length === 1) {
+    if (fileProvider && fileProvider !== 'mongodb' && this.files[0].sha1) {
+      return path.join(fileProvider, this.files[0].sha1);
+    }
+  }
+  return undefined;
+});
 
 /**
  * Statics
  */
-//BuildSchema.static({});
+// BuildSchema.static({});
 
 /**
  * Register
  */
-let Build = mongoose.model('Build', BuildSchema);
+const Build = mongoose.model('Build', BuildSchema);
 module.exports = {Model: Build, Collection: 'Build'};

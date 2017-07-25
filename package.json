@@ -27,7 +27,7 @@
     "start": "NODE_ENV=development node index.js",
     "debug": "NODE_ENV=development node --inspect index.js",
     "test": "grunt",
-    "test-inventory": "grunt inventory"
+    "lint": "node node_modules/eslint/bin/eslint ."
   },
   "dependencies": {
     "async": "^2.5.0",
@@ -46,7 +46,6 @@
     "csurf": "^1.9.0",
     "express": "^4.15.3",
     "express-jwt": "^5.1.0",
-    "express-restify-mongoose": "^0.7.5",
     "express-session": "^1.15.3",
     "express-winston": "^2.4.0",
     "fs-extra": "^4.0.0",
@@ -77,11 +76,14 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.1.0",
+    "eslint-plugin-node": "^5.1.0",
+    "eslint-plugin-promise": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-exec": "^2.0.0",
     "grunt-express-server": "^0.5.3",
     "grunt-simple-mocha": "^0.4.1",
     "grunt-wait-server": "*",
+    "mock-fs": "4.4.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mockgoose": "^7.3.3",
