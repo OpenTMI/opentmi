@@ -69,7 +69,7 @@ GroupSchema.methods.addUser = function addUser(email, next) {
 
 /* getUserGroups: function (user, cb) {
   return this.findOne({}, cb);
-},*/
+}, */
 
 /**
  * Statics
