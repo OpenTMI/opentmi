@@ -7,6 +7,7 @@ const async = require('async');
 
 // Local modules
 const nconf = require('../../config');
+require('../../app/models/group');
 
 // Middleware variables
 const TOKEN_SECRET = nconf.get('webtoken');
