@@ -123,7 +123,7 @@ UserSchema.pre('save', function(next){
       next();
     }
   }
-})*/
+}) */
 
 /**
  * Pre-remove hook
