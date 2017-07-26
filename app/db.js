@@ -2,9 +2,12 @@ const logger = require('winston');
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
 mongoose.Promise = Promise;
+const cachegoose = require('cachegoose');
 
 const nconf = require('../config');
 const dbUrl = nconf.get('db');
+
+cachegoose(mongoose, {});
 
 const connect = function() {
     var options = {

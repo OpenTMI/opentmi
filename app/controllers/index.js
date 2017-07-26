@@ -44,6 +44,7 @@ class DefaultController extends EventEmitter {
 
   all(req, res, next) {
     // dummy middleman function..
+    req.cache = req.query.cache||60;
     next();
   }
 
@@ -59,15 +60,17 @@ class DefaultController extends EventEmitter {
   }
 
   find(req, res) {
-    this._model.query(req.query, (error, list) => {
-      if (error) {
-        logger.warn(error);
-        res.status(300).json({ error: error.message });
-      } else {
-        this.emit('find', list);
-        res.json(list);
-      }
-    });
+    this._model.query(req.query)
+      .cache(req.cache)
+      .exec((error, list) => {
+        if (error) {
+          logger.warn(error);
+          res.status(300).json({ error: error.message });
+        } else {
+          this.emit('find', list);
+          res.json(list);
+        }
+      });
   }
 
   create(req, res) {

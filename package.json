@@ -34,6 +34,7 @@
     "bcryptjs": "^2.4.3",
     "bluebird": "3.5.0",
     "body-parser": "*",
+    "cachegoose": "^3.0.2",
     "colors": "^1.1.2",
     "compression": "*",
     "connect-busboy": "0.0.2",
