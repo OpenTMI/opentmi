@@ -80,8 +80,8 @@ class SchemasController {
     for (const key in schemaPart) { // eslint-disable-line no-restricted-syntax
       if (Object.prototype.hasOwnProperty.call(schemaPart, key)) {
         const currentObj = schemaPart[key];
-        if (key === '0' && currentObj.obj) {
-          return {0: SchemasController._trimSchemaObj(currentObj.obj)};
+        if (key === 'obj') {
+          return SchemasController._trimSchemaObj(currentObj);
         }
 
         if (typeof currentObj === 'object') {
