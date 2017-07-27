@@ -13,7 +13,7 @@ logger.level = 'error';
 // Test variables
 const expect = chai.expect;
 
-describe.only('routes/schemas.js', function () {
+describe('routes/schemas.js', function () {
   describe('Route', function () {
     it('should define a parameter handler for Collection parameter', function (done) {
       const app = {

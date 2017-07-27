@@ -4,6 +4,7 @@
 
 // Third party components
 const mongoose = require('mongoose');
+require('mongoose-schema-jsonschema')(mongoose);
 
 /**
  * Controller for *schemas* route. Keeps track of all loaded models and serves their names
@@ -20,8 +21,11 @@ class SchemasController {
     this.schemaNames = Object.keys(this.models);
     this.schemas = {};
     this.schemaNames.forEach((collection) => {
-      const schema = this.models[collection].schema.obj;
-      this.schemas[collection] = SchemasController._trimSchemaObj(schema);
+      const schema = this.models[collection].schema;
+      this.schemas[collection] = {
+        schema: schema.jsonSchema(),
+        properties: Object.keys(this.models[collection].schema.obj)
+      };
     });
   }
 
@@ -62,39 +66,11 @@ class SchemasController {
   static find(req, res) {
     const responsePackage = {
       collection: req.params.Collection,
-      schema: req.Schema,
-      properties: Object.keys(req.Schema)
+      schema: req.Schema.schema,
+      properties: req.Schema.properties
     };
 
     res.status(200).json(responsePackage);
-  }
-
-  /**
-   * Recursively goes through the schema and omits extra keys from nested schemas
-   * @param {Object} schemaObj - object notation of the schema to clean up
-   */
-  static _trimSchemaObj(schemaObj) {
-    const schemaPart = schemaObj;
-
-    // I wish to use for loops, they work just fine
-    for (const key in schemaPart) { // eslint-disable-line no-restricted-syntax
-      if (Object.prototype.hasOwnProperty.call(schemaPart, key)) {
-        const currentObj = schemaPart[key];
-        if (key === 'obj') {
-          return SchemasController._trimSchemaObj(currentObj);
-        }
-
-        if (typeof currentObj === 'object') {
-          schemaPart[key] = SchemasController._trimSchemaObj(currentObj);
-        }
-
-        if (typeof currentObj === 'function') {
-          schemaPart[key] = currentObj.name;
-        }
-      }
-    }
-
-    return schemaObj;
   }
 }
 
