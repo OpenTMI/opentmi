@@ -94,6 +94,10 @@ class DefaultController extends EventEmitter {
       if (error) {
         logger.warn(error);
         res.status(400).json({error: error.message});
+      } else if (!doc) {
+        const errorMsg = `Could not find ${this.modelName} with _id ${editedReq.params[this.modelName]}`;
+        logger.warn(errorMsg);
+        res.status(404).json({error: errorMsg});
       } else {
         this.emit('update', doc.toObject());
         res.json(doc);
