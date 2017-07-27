@@ -118,5 +118,5 @@ module.exports = (app) => {
   /*
   app.on('mount', function (parent) {
     console.log(parent); // refers to the parent app
-  });*/
+  }); */
 };

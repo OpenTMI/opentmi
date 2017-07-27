@@ -164,7 +164,7 @@ ResultSchema.virtual('exec.sut.sha1');
 /* .get()
 .set(function(v) {
 
-});*/
+}); */
 ResultSchema.methods.setBuild = function setBuild() {
 
 };

@@ -62,7 +62,7 @@ const TargetSchema = new Schema({
       },
       components:[{
 
-      }]*/
+      }] */
     }
     /*
     os: {
@@ -121,7 +121,7 @@ const TargetSchema = new Schema({
         calibration: {
             intervall: { type: Number },
         },
-    },*/
+    }, */
   }
 },
 {toObject: {virtuals: true}});
