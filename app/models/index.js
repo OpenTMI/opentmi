@@ -59,6 +59,7 @@ function registerModels() {
       }
     }
   });
+  return Promise.resolve();
 }
 
 module.exports.registerModels = registerModels;

@@ -2,6 +2,7 @@
 const fs = require('fs');
 
 // Third party modules
+const Promise = require('bluebird');
 const logger = require('winston');
 
 function registerRoutes(app) {
@@ -24,6 +25,7 @@ function registerRoutes(app) {
       }
     }
   });
+  return Promise.resolve();
 }
 
 function registerErrorRoute(app) {

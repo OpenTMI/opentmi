@@ -54,25 +54,20 @@ const server = Server(app);
 const io = SocketIO(server);
 
 // Initialize database connection
-DB.connect();
-
-// Connect models
-models.registerModels();
-
-// Bootstrap application settings
-express(app);
-
-// Bootstrap routes
-routes.registerRoutes(app);
-
-// Bootstrap addons, like default webGUI
-AddonManager.init(app, server, io);
-
-AddonManager.loadAddons().then(() => {
-  AddonManager.registerAddons().then(() => {
+DB.connect().catch((error) => {
+  logger.error('mongoDB connection failed: ', error.message);
+  process.exit(-1);
+}).then(() => models.registerModels())
+  .then(() => express(app))
+  .then(() => routes.registerRoutes(app))
+  .then(() => AddonManager.init(app, server, io))
+  .then(() => AddonManager.loadAddons())
+  .then(() => AddonManager.registerAddons())
+  .then(() =>
     // Error route should be initialized after addonmanager has served all static routes
-    routes.registerErrorRoute(app);
-
+    routes.registerErrorRoute(app)
+  )
+  .then(() => {
     function onError(error) {
       if (error.code === 'EACCES' && port < 1024) {
         logger.error("You haven't access to open port below 1024");
@@ -103,7 +98,6 @@ AddonManager.loadAddons().then(() => {
       });
     });
   });
-});
 
 // This would be useful for testing
 module.exports = {server, eventBus};
