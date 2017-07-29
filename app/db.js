@@ -26,7 +26,6 @@ const connect = function () {
   return mongoose
     .connect(dbUrl, options)
     .then(() => {
-      console.log('CONNECT SUCCESS ! :)');
       mongoose.connection.on('error', () => {
         logger.error(`Could not connect to MongoDB: ${dbUrl}`);
       });
