@@ -1,6 +1,5 @@
 // 3rd party modules
 const Express = require('express');
-const logger = require('winston');
 const SocketIO = require('socket.io');
 
 // application modules
@@ -12,6 +11,7 @@ const models = require('./models');
 const routes = require('./routes');
 const AddonManager = require('./addons');
 const DB = require('./db');
+const logger = require('./tools/logger');
 
 if (nconf.get('help') || nconf.get('h')) {
   nconf.stores.argv.showHelp();
@@ -26,21 +26,8 @@ const verbose = nconf.get('verbose');
 const silent = nconf.get('silent');
 const configuration = nconf.get('cfg');
 
-// Define logger behaviour
-logger.cli(); // activates colors
-
 // define console logging level
 logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
-
-// Add winston file logger, which rotates daily
-const fileLevel = 'silly';
-logger.add(require('winston-daily-rotate-file'), {
-  filename: 'log/app.log',
-  json: false,
-  handleExceptions: false,
-  level: fileLevel,
-  datePatter: '.yyyy-MM-dd_HH-mm'
-});
 
 logger.debug(`Using cfg: ${configuration}`);
 
@@ -83,10 +70,9 @@ DB.connect().catch((error) => {
       logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
       eventBus.emit('start_listening', {url: listenurl});
     }
-
-    server.listen(port, listen);
     server.on('error', onError);
     server.on('listening', onListening);
+    server.listen(port, listen);
 
     // Close the Mongoose connection, when receiving SIGINT
     process.on('SIGINT', () => {
