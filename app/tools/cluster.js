@@ -4,21 +4,26 @@ const logger = require('./logger');
 const eventBus = require('./eventBus');
 
 module.exports = function eventHandler(data) {
-  const event = _.get(data, 'event');
-  const eData = _.get(data, 'data');
-  eventBus.emit(event, eData);
+  const event = {
+    event: _.get(data, 'event'),
+    data: _.get(data, 'data')
+  };
   if (cluster.isMaster) {
-    logger.silly('Master: event from worker', this.id);
+    logger.silly(`Master: event from worker#${this.id}`);
     _.each(cluster.workers, (worker, id) => {
-      if (id != this.id) {
-        worker.send({type: 'event', event, data});
+      if (`${id}` !== `${this.id}`) {
+        logger.silly(`Master: Sending event to worker#${id}`);
+        worker.send(_.defaults({type: 'event'}, event));
       } else {
         // do not send event back to worker
-        logger.silly('Master: Do not send to back worker..');
+        logger.silly(`Master: Skip worker#${this.id}`);
       }
     });
-    setTimeout(process.exit, 10);
+    eventBus.emit(event.event, event.data);
   } else {
-    logger.silly('Worker: event from master', process.id);
+    logger.silly('event from master', process.id);
+    // this just send event to internal eventBus -
+    // not to master anymore because event was coming from master.
+    eventBus.internal(event.event, event.data);
   }
 };

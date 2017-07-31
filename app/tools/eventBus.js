@@ -4,17 +4,25 @@ const cluster = require('cluster');
 
 class Emitter extends EventEmitter {
   emit(...args) {
-    const [event, ...data] = args;
-    super.emit('*', event, data);
-
-    if (!cluster.isMaster) {
-      // proxy all worker events to master
-      process.send({type: 'event', event, data});
+    // by default all events is broadcasted to "*"
+    this.broadcast(...args);
+    this.internal(...args);
+    if (!cluster.isMaster && cluster.worker.isConnected()) {
+      // by default proxy all worker events to connected master
+      const [event, data] = args;
+      const payload = {type: 'event', event, data};
+      process.send(payload);
     }
-    super.emit(...args);
+  }
+  broadcast(...args) {
+    const [event, data] = args;
+    super.emit('*', event, data);
+  }
+  internal(...args) {
+    this.broadcast(...args);
+    super.emit(args);
   }
 }
 const eventBus = new Emitter();
 
 module.exports = eventBus;
-global.pubsub = eventBus; // backward compatible reason

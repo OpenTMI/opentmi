@@ -8,26 +8,25 @@ const eventHandler = require('./tools/cluster');
 
 
 module.exports = function Master() {
-  logger.level = 'silly';
+  logger.level = 'debug';
 
   logger.info(`Master ${process.pid} is running`);
 
-  const logHandler = (data) => {
+
+  const logHandler = function (data) {
     const level = _.get(data, 'level', 'debug');
-    const args = _.get(data, 'args');
+    const args = _.get(data, 'args', []);
+    args.unshift(`Worker#${this.id}`);
     logger[level](...args);
   };
 
-  const msgHandler = function (data) {
-    const type = _.get(data, 'type');
-    if (type === 'log') logHandler(data);
-    else if (type === 'event') {
-      eventHandler.bind(this)(data);
-    }
+  const msgHandlers = {
+    log: logHandler,
+    event: eventHandler
   };
 
   eventBus.on('*', (event, data) => {
-    logger.silly(`Master: eventBus("*" ${event}, ${data})`);
+    logger.debug(`Master: eventBus(${event}, ${JSON.stringify(data)})`);
   });
 
   const fork = () => {
@@ -36,7 +35,14 @@ module.exports = function Master() {
     // test exit..
     worker.exitedAfterDisconnect = Math.round((Math.random() * 100)) % 2 === 0;
 
-    worker.on('message', msgHandler.bind(worker));
+    worker.on('message', (data) => {
+      const type = _.get(data, 'type');
+      if (_.has(msgHandlers, type)) {
+        msgHandlers[type].call(worker, data);
+      } else {
+        logger.warn(`Unknown message type "${type}" from worker`);
+      }
+    });
     worker.on('exit', (code, signal) => {
       if (signal) {
         logger.warn(`worker was killed by signal: ${signal}`);

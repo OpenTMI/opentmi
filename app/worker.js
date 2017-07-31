@@ -1,31 +1,37 @@
 const _ = require('lodash');
+const cluster = require('cluster');
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 const eventHandler = require('./tools/cluster');
 
 module.exports = function Worker() {
   // worker
-  const msgHandler = (data) => {
-    const type = _.get(data, 'type');
-    if (type === 'shutdown') {
-      // initiate graceful close of any connections to server
-      logger.silly('worker: initialize graceful worker exit..');
-      process.exit();
-    } else if (type === 'event') {
-      logger.silly('worker: Event from master');
-      eventHandler(data);
-    }
+
+  const msgHandlers = {
+    shutdown: process.exit,
+    event: eventHandler
   };
-  process.on('message', msgHandler);
+  process.on('message', (data) => {
+    const type = _.get(data, 'type');
+    if (_.has(msgHandlers, type)) {
+      msgHandlers[type].call(cluster.worker, data);
+    } else {
+      logger.warn(`Unknown message type "${type}" to worker`);
+    }
+  });
 
   logger.info(`Worker ${process.pid} started`);
 
   eventBus.on('*', (event, data) => {
-    logger.silly(`Worker: eventBus("*" ${event}, ${data})`);
+    logger.debug(`eventBus(${event}, ${JSON.stringify(data)})`);
   });
 
   // test event bus
-  setTimeout(() => { eventBus.emit('hello', `Worker: ${process.pid}`); }, 100);
+  if (cluster.worker.id === 1) {
+    setInterval(() => {
+      eventBus.emit('helloEvent', {msg: `Worker: ${process.pid}`});
+    }, 5000);
+  }
 
   /*
   // test logger
