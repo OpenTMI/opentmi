@@ -8,11 +8,11 @@ const auth = require('./../../config/middlewares/authorization');
 const jwt = require('jwt-simple');
 const async = require('async');
 const _ = require('lodash');
-const logger = require('winston');
 
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 
+const logger = require('../tools/logger');
 // const googleSecret = nconf.get('google_secret');
 const tokenSecret = nconf.get('webtoken');
 const githubAdminTeam = nconf.get('github').adminTeam;

@@ -6,7 +6,7 @@ const childProcess = require('child_process');
 
 // 3rd party modules
 const express = require('express');
-const logger = require('winston');
+const logger = require('../tools/logger');
 const Promise = require('bluebird');
 
 const exec = Promise.promisify(childProcess.exec, {multiArgs: true});

@@ -25,5 +25,6 @@ module.exports = function eventHandler(data) {
     // this just send event to internal eventBus -
     // not to master anymore because event was coming from master.
     eventBus.internal(event.event, event.data);
+    eventBus.broadcast(event.event, event.data);
   }
 };

@@ -3,9 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 // 3rd party modules
-const logger = require('winston');
+const logger = require('../tools/logger');
 const Addon = require('./addon').Addon;
 
+const eventBus = require('../tools/eventBus');
 const DynamicRouter = require('./dynamic-router');
 
 const METADATA_KEY_LENGTH = 10;

@@ -1,5 +1,5 @@
 const express = require('express');
-const logger = require('winston');
+const logger = require('../../tools/logger');
 
 class AddonCore {
   constructor(app, server, io) {

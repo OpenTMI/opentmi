@@ -3,7 +3,7 @@ const fs = require('fs');
 
 // Third party modules
 const Promise = require('bluebird');
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 function registerRoutes(app) {
   logger.info('Add Routers...');

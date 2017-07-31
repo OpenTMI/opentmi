@@ -2,7 +2,7 @@
 const jwt = require('jwt-simple');
 const moment = require('moment');
 const mongoose = require('mongoose');
-const logger = require('winston');
+const logger = require('../../app/tools/logger');
 const async = require('async');
 
 // Local modules

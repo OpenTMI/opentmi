@@ -4,7 +4,7 @@ const fs = require('fs');
 // 3rd party modules
 const _ = require('lodash');
 const Promise = require('bluebird');
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 const models = {};
 

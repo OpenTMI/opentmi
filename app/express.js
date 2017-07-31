@@ -19,7 +19,7 @@ const cors = require('cors');
 const Promise = require('bluebird');
 const MongoStore = require('connect-mongo')(session);
 
-const logger = require('winston');
+const logger = require('./tools/logger');
 const expressWinston = require('express-winston');
 
 /* Project libraries */

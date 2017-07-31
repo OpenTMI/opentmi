@@ -1,7 +1,6 @@
-const logger = require('winston');
 const EventEmitter = require('events').EventEmitter;
 const mongoose = require('mongoose');
-
+const logger = require('../tools/logger');
 /*
   General ontrollers for "Restfull" services
 */

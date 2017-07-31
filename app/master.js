@@ -1,14 +1,15 @@
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
-
+const nconf = require('nconf');
 const _ = require('lodash');
+
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 const eventHandler = require('./tools/cluster');
 
 
 module.exports = function Master() {
-  logger.level = 'debug';
+  logger.level = 'silly';
 
   logger.info(`Master ${process.pid} is running`);
 
@@ -20,10 +21,21 @@ module.exports = function Master() {
     logger[level](...args);
   };
 
+  const statusHandler = function (data) {
+    const workers = _.map(cluster.workers, (worker, id) => (
+      {isDead: worker.isDead(),
+        isConnected: worker.isConnected(),
+        pid: worker.process.pid,
+        id: id}));
+    eventBus.emit(data.id, {workers});
+  };
+
   const msgHandlers = {
     log: logHandler,
     event: eventHandler
   };
+
+  eventBus.on('masterStatus', statusHandler);
 
   eventBus.on('*', (event, data) => {
     logger.debug(`Master: eventBus(${event}, ${JSON.stringify(data)})`);
@@ -67,4 +79,22 @@ module.exports = function Master() {
       logger.info('Worker was not purpose to restart');
     }
   });
+
+  // handle craceful exit
+  process.on('SIGINT', () => {
+    const promiseKill = worker => new Promise((resolve) => {
+      worker.once('exit', resolve);
+      worker.kill();
+    });
+    const pending = _.map(cluster.workers, worker => promiseKill(worker));
+    Promise.all(pending).then(() => {
+      logger.info('All workers closed. Exit app.');
+      process.exit();
+    });
+  });
+  /*
+  // test eventBus from master to workers
+  setInterval(() => {
+    eventBus.emit('helloEvent', {msg: `Master: ${process.pid}`});
+  }, 5000); */
 };

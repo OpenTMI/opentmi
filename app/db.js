@@ -1,4 +1,4 @@
-const logger = require('winston');
+const logger = require('./tools/logger');
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
 
@@ -26,7 +26,6 @@ const connect = function () {
   return mongoose
     .connect(dbUrl, options)
     .then(() => {
-      console.log('CONNECT SUCCESS ! :)');
       mongoose.connection.on('error', () => {
         logger.error(`Could not connect to MongoDB: ${dbUrl}`);
       });

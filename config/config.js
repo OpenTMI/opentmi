@@ -11,7 +11,7 @@ const extend = require('util')._extend;
 const fs = require('fs');
 
 // Third party modules
-const logger = require('winston');
+const logger = require('../app/tools/logger');
 const nconf = require('nconf');
 
 // Configurations
