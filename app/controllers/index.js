@@ -62,24 +62,29 @@ class DefaultController extends EventEmitter {
         logger.warn(error);
         res.status(300).json({error: error.message});
       } else {
-        this.emit('find', list);
-        res.json(list);
+        const trimmedList = list.map(doc => doc.toJSON());
+        this.emit('find', trimmedList);
+        res.json(trimmedList);
       }
     });
   }
 
-  create(req, res) {
+  create(req, res, next) {
     const editedReq = req;
     const item = new this._model(editedReq.body);
     item.save((error) => {
       if (error) {
         logger.warn(error);
-        if (res) res.status(400).json({error: error.message});
-      } else { // if (res) {
-        editedReq.query = req.body;
-        this.emit('create', item.toObject());
-        res.json(item);
+
+        const editedError = error;
+        editedError.statusCode = 400;
+        return next(editedError);
       }
+
+      editedReq.query = req.body;
+      const trimmedItem = item.toJSON();
+      this.emit('create', trimmedItem);
+      return res.status(200).json(trimmedItem); // Change to correct 201
     });
   }
 
@@ -99,8 +104,9 @@ class DefaultController extends EventEmitter {
         logger.warn(errorMsg);
         res.status(404).json({error: errorMsg});
       } else {
-        this.emit('update', doc.toObject());
-        res.json(doc);
+        const trimmedDoc = doc.toJSON();
+        this.emit('update', trimmedDoc);
+        res.json(trimmedDoc);
       }
     });
   }

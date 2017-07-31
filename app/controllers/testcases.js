@@ -38,46 +38,66 @@ class TestcasesController extends DefaultController {
     }
   }
 
-  upsert(req, res) {
+  upsert(req, res, next) {
     if (!req.body.tcid) {
-      return res.status(400).json({error: 'Expected request body to contain a tcid property'});
+      const error = new ReferenceError('Expected request body to contain a tcid property');
+      error.statusCode = 400;
+      return next(error);
     }
 
     return this._model.findOneAndUpdate({tcid: req.body.tcid}, req.body, updateOptions)
       .exec()
       .then((updatedTestcase) => {
         const statusCode = updatedTestcase.isNew ? 201 : 200;
-        res.status(statusCode).json(updatedTestcase.toObject());
+        res.status(statusCode).json(updatedTestcase.toJSON());
       }).catch((error) => {
-        res.status(400).json({error: error.message});
+        const editedError = error;
+        editedError.statusCode = 400;
+        next(editedError);
       });
   }
 
-  upsertAndAddResult(req, res) {
+  upsertAndResult(req, res, next) {
     const testcaseBody = req.body.testcase;
     const resultBody = req.body.result;
 
     if (!testcaseBody || !resultBody) {
-      return res.status(400).json({error:
-        'shortcut route for adding results to testcase needs both testcase and result properties'});
+      const error = new ReferenceError(
+        'Shortcut route for adding results to testcase needs both testcase and result properties');
+      error.statusCode = 400;
+      return next(error);
     }
 
     if (!testcaseBody.tcid) {
-      return res.status(400).json({error: 'Expected testcase body to contain a tcid property'});
+      const error = new ReferenceError('Expected testcase body to contain a tcid property');
+      error.statusCode = 400;
+      return next(error);
+    }
+
+    if (!resultBody.tcid) {
+      resultBody.tcid = testcaseBody.tcid;
+    } else if (resultBody.tcid !== testcaseBody.tcid) {
+      const error = new Error(
+        `Expected testcase tcid to match result tcid, received tc:${testcaseBody.tcid} result:${resultBody.tcid}`);
+      error.statusCode = 400;
+      return next(error);
     }
 
     return this._model.findOneAndUpdate({tcid: req.body.tcid}, testcaseBody, updateOptions)
       .exec()
-      .then(() => {
+      .then((testcase) => {
         if (!resultBody.tcid) {
           resultBody.tcid = testcaseBody.tcid;
         }
 
+        resultBody.tcRef = testcase._id;
         req.body = resultBody;
-        return resultController.create(req, res);
+        return resultController.create(req, res, next);
       })
       .catch((error) => {
-        res.status(400).json({error: error.message});
+        const editedError = error;
+        editedError.statusCode = 400;
+        next(editedError);
       });
   }
 }

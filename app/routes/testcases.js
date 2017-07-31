@@ -15,7 +15,7 @@ function Route(app) {
 
   router.route('/api/v0/testcases/result.:format?')
     .all(controller.all.bind(controller))
-    .post(controller.upsertAndAddResult.bind(controller));
+    .post(controller.upsertAndResult.bind(controller));
 
   router.route('/api/v0/testcases/:testcase.:format?')
     .all(controller.all.bind(controller))
