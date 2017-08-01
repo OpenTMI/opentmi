@@ -1,1 +1,1 @@
-require('./app/cluster');
+require('./app');

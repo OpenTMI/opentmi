@@ -32,6 +32,9 @@ class ClusterLogger {
 
     this._emitter.send({type: 'log', level, args: editedArgs});
   }
+  set level(level) {
+    this.warn('Not implemented');
+  }
   error(...args) {
     this._proxy('error', ...args);
   }
