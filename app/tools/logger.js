@@ -3,12 +3,34 @@ const Winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
 
 
+function _parseError(error) {
+  const jsonObj = {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+    __error__: true
+  };
+
+  Object.keys(error).forEach((key) => {
+    if (!jsonObj[key]) { jsonObj[key] = error[key]; }
+  });
+
+  return jsonObj;
+}
+
 class ClusterLogger {
   constructor() {
     this._emitter = process;
   }
   _proxy(level, ...args) {
-    this._emitter.send({type: 'log', level, args});
+    const editedArgs = args;
+    Object.keys(args).forEach((key) => {
+      if (args[key] instanceof Error) {
+        editedArgs[key] = _parseError(args[key]);
+      }
+    });
+
+    this._emitter.send({type: 'log', level, args: editedArgs});
   }
   error(...args) {
     this._proxy('error', ...args);
@@ -24,6 +46,9 @@ class ClusterLogger {
   }
   silly(...args) {
     this._proxy('silly', ...args);
+  }
+  verbose(...args) {
+    this._proxy('verbose', ...args);
   }
 }
 if (cluster.isMaster) {
