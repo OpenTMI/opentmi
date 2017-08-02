@@ -13,10 +13,10 @@ const ClusterController = require('./../controllers/clusters');
 const TOKEN_SECRET = nconf.get('webtoken');
 
 function Route(app) {
-  const router = express.Router();
-  const controller = new ClusterController();
-
   if (!cluster.isMaster && cluster.worker.isConnected()) {
+    const router = express.Router();
+    const controller = new ClusterController();
+
     router.param('Cluster', controller.idParam.bind(this));
 
     router.route('/api/v0/clusters.:format?')

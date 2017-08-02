@@ -15,7 +15,11 @@ class Emitter extends EventEmitter {
       // by default proxy all worker events to connected master
       process.send(payload);
     } else if (cluster.isMaster) {
-      _.map(cluster.workers, worker => worker.send(payload));
+      _.map(cluster.workers, (worker) => {
+        if (worker.isConnected()) {
+          worker.send(payload);
+        }
+      });
     }
   }
   broadcast(...args) {

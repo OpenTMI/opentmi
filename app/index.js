@@ -69,8 +69,10 @@ DB.connect().catch((error) => {
       const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
       logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
       eventBus.emit('start_listening', {url: listenurl});
-      // Indicate master that worker is ready and listening clients..
-      process.send({type: 'listening'}); // @todo better intercommunication..
+      if (process.connected) {
+        // Indicate master that worker is ready and listening clients..
+        process.send({type: 'listening'}); // @todo better intercommunication..
+      }
     }
     server.on('error', onError);
     server.on('listening', onListening);
