@@ -29,7 +29,7 @@ const configuration = nconf.get('cfg');
 // define console logging level
 logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
 
-logger.debug(`Using cfg: ${configuration}`);
+logger.debug(`Starting with configuration: ${configuration}`);
 
 // Create express instance
 const app = Express();
@@ -69,6 +69,8 @@ DB.connect().catch((error) => {
       const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
       logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
       eventBus.emit('start_listening', {url: listenurl});
+      // Indicate master that worker is ready and listening clients..
+      process.send({type: 'listening'}); // @todo better intercommunication..
     }
     server.on('error', onError);
     server.on('listening', onListening);

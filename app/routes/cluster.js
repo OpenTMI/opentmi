@@ -17,7 +17,7 @@ function Route(app) {
   const controller = new ClusterController();
 
   if (!cluster.isMaster && cluster.worker.isConnected()) {
-    router.param('Cluster', controller.idParam.bind(controller));
+    router.param('Cluster', controller.idParam.bind(this));
 
     router.route('/api/v0/clusters.:format?')
       .get(/* jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, */controller.find.bind(controller))

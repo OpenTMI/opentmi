@@ -13,12 +13,16 @@ const cluster = require('cluster');
 const eventBus = require('../tools/eventBus');
 
 class ClusterController {
+  constructor() {
+    this._worker_id = cluster.worker.id;
+  }
   get id() {
-    return cluster.worker.id;
+    return this._worker_id;
   }
 
   get idParam() {
     return (req, res, next) => {
+      req.Worker = {};
       next();
     };
   }
@@ -31,7 +35,7 @@ class ClusterController {
   get(req, res) {
     const payload = {id: uuid.v1()};
     eventBus.once(payload.id, (data) => {
-      const worker = _.find(data.workers, {id: cluster.worker.id});
+      const worker = _.find(data.workers, {id: this.id});
       if (worker) {
         res.json(worker);
       } else {
@@ -58,7 +62,8 @@ class ClusterController {
   }
 
   remove(req, res) {
-    res.status(503);
+    res.status(200);
+    process.exit();
   }
 }
 
