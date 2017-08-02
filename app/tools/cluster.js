@@ -13,7 +13,10 @@ module.exports = function eventHandler(data) {
     _.each(cluster.workers, (worker, id) => {
       if (`${id}` !== `${this.id}`) {
         logger.silly(`Master: Sending event to worker#${id}`);
-        worker.send(_.defaults({type: 'event'}, event));
+        if (process.connected) {
+          // @todo better intercommunication..
+          worker.send(_.defaults({type: 'event'}, event));
+        }
       } else {
         // do not send event back to worker
         logger.silly(`Master: Skip worker#${this.id}`);

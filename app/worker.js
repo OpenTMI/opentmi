@@ -33,7 +33,6 @@ module.exports = function Worker() {
       eventBus.emit('helloEvent', {msg: `Worker: ${process.pid}`});
     }, 5000);
   }
-/*
   // test logger
   let i = 0;
   setInterval(() => { logger.info(`${process.pid}: i:${i += 1}`); }, 2000);

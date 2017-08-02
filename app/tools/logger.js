@@ -29,8 +29,10 @@ class ClusterLogger {
         editedArgs[key] = _parseError(args[key]);
       }
     });
-
-    this._emitter.send({type: 'log', level, args: editedArgs});
+    if (process.connected) {
+      // @todo better intercommunication..
+      this._emitter.send({type: 'log', level, args: editedArgs});
+    }
   }
   set level(level) {
     this.warn('Not implemented');

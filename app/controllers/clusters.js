@@ -12,6 +12,8 @@ const uuid = require('node-uuid');
 const cluster = require('cluster');
 const eventBus = require('../tools/eventBus');
 
+// @todo better intercommunication..
+
 class ClusterController {
   constructor() {
     this._worker_id = cluster.worker.id;
