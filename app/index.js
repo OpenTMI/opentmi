@@ -22,14 +22,7 @@ if (nconf.get('help') || nconf.get('h')) {
 const https = nconf.get('https');
 const listen = nconf.get('listen');
 const port = nconf.get('port');
-const verbose = nconf.get('verbose');
-const silent = nconf.get('silent');
 const configuration = nconf.get('cfg');
-
-// define console logging level
-logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
-
-logger.debug(`Starting with configuration: ${configuration}`);
 
 // Create express instance
 const app = Express();
@@ -42,7 +35,7 @@ const io = SocketIO(server);
 
 // Initialize database connection
 DB.connect().catch((error) => {
-  logger.error('mongoDB connection failed: ', error.message);
+  logger.error('mongoDB connection failed: ', error.stack);
   process.exit(-1);
 }).then(() => models.registerModels())
   .then(() => express(app))

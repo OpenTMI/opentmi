@@ -19,7 +19,7 @@ const connect = function () {
     useMongoClient: true,
     keepAlive: 120,
     autoReconnect: true,
-    logger: logger,
+    // logger: logger,
     loggerLevel: 'warning'
   };
   logger.info(`Create MongoDB connection: ${dbUrl}`);

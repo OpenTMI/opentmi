@@ -1,7 +1,11 @@
 const cluster = require('cluster');
 const Winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
+const nconf = require('../../config');
 
+const verbose = nconf.get('verbose');
+const silent = nconf.get('silent');
+const configuration = nconf.get('cfg');
 
 function _parseError(error) {
   const jsonObj = {
@@ -37,6 +41,9 @@ class ClusterLogger {
   set level(level) {
     this.warn('Not implemented');
   }
+  log(level, msg, meta) {
+    this._proxy(level, msg, meta);
+  }
   error(...args) {
     this._proxy('error', ...args);
   }
@@ -56,10 +63,15 @@ class ClusterLogger {
     this._proxy('verbose', ...args);
   }
 }
+
 if (cluster.isMaster) {
   const logger = Winston;
   // Define logger behaviour
   logger.cli(); // activates colors
+
+  // define console logging level
+  logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
+  logger.debug(`Using cfg: ${configuration}`);
 
   // Add winston file logger, which rotates daily
   const fileLevel = 'silly';

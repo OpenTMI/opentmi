@@ -74,7 +74,7 @@ module.exports = function Master() {
         logger.info('worker success!');
       }
       worker.removeAllListeners();
-      reject();
+      reject('Should not exit before listening event');
     };
     const onMessage = (data) => {
       const type = _.get(data, 'type');
