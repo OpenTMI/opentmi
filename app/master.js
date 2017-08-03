@@ -10,7 +10,7 @@ const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 
 const autoReload = true; // @todo get from config file
-const chainForks = false;
+const chainForks = true;
 
 function logHandler(data) {
   const level = _.get(data, 'level', 'debug');
@@ -26,7 +26,6 @@ function logHandler(data) {
 
 module.exports = function Master() {
   logger.info(`Master ${process.pid} is running`);
-  logger.level = 'info';
 
   const getStats = () => {
     const master = {};
@@ -98,8 +97,7 @@ module.exports = function Master() {
     worker.once('exit', onExit);
   });
 
-  // Fork workers series...
-
+  // Fork workers...
   if (chainForks === false) {
     Promise.all(_.times(numCPUs, fork))
       .then(() => { logger.info('All workers ready to serve.'); });
@@ -107,7 +105,6 @@ module.exports = function Master() {
     let acc = Promise.resolve();
     _.times(numCPUs, () => {
       acc = acc.then(fork);
-      return acc;
     });
   }
 
@@ -117,7 +114,7 @@ module.exports = function Master() {
       logger.info('Restarting worker.');
       fork();
     } else {
-      logger.info('Worker was not supposed to restart.');
+      logger.info('Worker should not attempt restart.');
     }
   });
 
@@ -143,9 +140,8 @@ module.exports = function Master() {
     }
 
     // Chain promises to fork workers one at a time
-    return cluster.workers.reduce((acc, worker) => {
-      return acc.then(reloadWorker(worker));
-    }, Promise.resolve());
+    return _.values(cluster.workers)
+      .reduce((acc, worker) => acc.then(() => reloadWorker(worker)), Promise.resolve());
   };
 
   // handle craceful exit
@@ -174,12 +170,12 @@ module.exports = function Master() {
       'tools/cluster'];
 
     chokidar
-      .watch('./app', {
+      .watch('app', {
         ignored: /(^|[/\\])\../,
         ignoreInitial: true
       })
       .on('all', (event, path) => {
-        if (['change', 'add', 'remove'].indexOf(event) !== -1) {
+        if (['change', 'add', 'remove', 'unlinkDir', 'addDir'].indexOf(event) !== -1) {
           if (masterFiles.indexOf(path) !== -1) {
             logger.info(`Master file (${path}) changes - need restart whole server!`);
           } else {

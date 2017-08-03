@@ -22,7 +22,7 @@ class ClusterController {
     return this._worker_id;
   }
 
-  get idParam() {
+  get idParam() { // eslint-disable-line class-methods-use-this
     return (req, res, next) => {
       req.Worker = {};
       next();
@@ -47,7 +47,7 @@ class ClusterController {
     eventBus.emit('masterStatus', payload);
   }
 
-  find(req, res) {
+  find(req, res) { // eslint-disable-line class-methods-use-this
     const payload = {id: uuid.v1()};
     eventBus.once(payload.id, (data) => {
       res.json(data);
@@ -55,15 +55,15 @@ class ClusterController {
     eventBus.emit('masterStatus', payload);
   }
 
-  create(req, res) {
+  create(req, res) { // eslint-disable-line class-methods-use-this
     res.status(503);
   }
 
-  update(req, res) {
+  update(req, res) { // eslint-disable-line class-methods-use-this
     res.status(503);
   }
 
-  remove(req, res) {
+  remove(req, res) { // eslint-disable-line class-methods-use-this
     res.status(200);
     process.exit();
   }

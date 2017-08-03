@@ -13,11 +13,8 @@ function gruntSetup(grunt) {
     express: {
       test: {
         options: {
-          output: 'dummy testcases generated',
-          delay: 10000,
+          delay: 15000,
           script: 'index.js',
-          timeout: 3000,
-          harmony: true,
           args: ['-s'] // to more traces set -vvv instead of -s (silent)
         }
       }
@@ -25,6 +22,7 @@ function gruntSetup(grunt) {
     waitServer: {
       server: {
         options: {
+          timeout: 30000,
           url: 'http://localhost:3000/api/v0'
         }
       }

@@ -44,7 +44,7 @@ const args = {
 
 nconf.argv(args, 'Usage: npm start -- (options)')
   .env()
-  .defaults(require('./../config/config.js'));
+  .defaults(require('./config.js'));
 
 
 module.exports = nconf;
