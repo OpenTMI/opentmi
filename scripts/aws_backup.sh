@@ -7,15 +7,12 @@
 #        and AWS secret access key are needed.
 # 2. S3 bucket, that the previously mentioned AWS access key id can access.
 #
-# Usage:
-# ./aws_backup.sh -h localhost -b s3_bucket -d default_db
-#
 # Restore with command:
 # mongorestore --gzip --archive < <backup.gzip>
 
 set -e
 
-while [[ $# -gt 1 ]]
+while [[ $# -gt 0 ]]
 do
 key="$1"
 
@@ -35,15 +32,30 @@ case $key in
     BUCKET="$2"
     shift
     ;;
-    --default)
-    DEFAULT=YES
+    --help)
+    echo "Usage: ./aws_backup.sh -h <HOST> -d <DATABASE> -b <BUCKET>"
+    exit
     ;;
     *)
-            # unknown option
+    echo "ERROR: Unknown argument: $key"
+    exit 1
     ;;
 esac
 shift
 done
+
+if [ -z "$HOST" ]; then
+    echo "ERROR: -h/--host argument is missing"
+    exit 1
+fi
+if [ -z "$DBNAME" ]; then
+    echo "ERROR: -d/--database argument is missing"
+    exit 1
+fi
+if [ -z "$BUCKET" ]; then
+    echo "ERROR: -b/--bucket argument is missing"
+    exit 1
+fi
 
 begin=$(date +%s)
 
