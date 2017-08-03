@@ -20,7 +20,7 @@ module.exports = function Worker() {
 
   logger.info(`Process: ${process.pid} started`);
   eventBus.on('*', (eventName, meta, ...data) => {
-    logger.debug(`[eventBus] ${eventName}(${JSON.stringify(meta)}): ${JSON.stringify(data)})`);
+    logger.verbose(`[eventBus] ${eventName} ${JSON.stringify(meta)}: ${JSON.stringify(data)})`);
   });
 
   /*
@@ -37,5 +37,5 @@ module.exports = function Worker() {
   // test worker exit
   setTimeout(() => { process.exit(); }, Math.random() * 10000);
   */
-  this.app = require('.');
+  this.app = require('.'); // eslint-disable-line global-require
 };

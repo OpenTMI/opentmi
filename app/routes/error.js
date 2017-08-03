@@ -1,10 +1,10 @@
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 /**
  * Error handling
  */
 function Route(app) {
-  logger.info('-AddRoute: error');
+  logger.debug('Adding error route.');
   app.use((error, req, res, next) => {
     // treat as 404
     const msg = error.message;

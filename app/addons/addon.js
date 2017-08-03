@@ -120,7 +120,6 @@ class Addon {
   createInstance(app, server, socketIO) {
     logger.debug(`[${this.name}] Creating addon instance.`);
     return (new Promise((resolve) => {
-      logger.debug(`[${this.name}] Instantiating addon.`);
       this.instance = new this.Module(app, server, socketIO);
       this._status.phase = PHASES.done;
       resolve();
@@ -128,7 +127,7 @@ class Addon {
       .catch((error) => {
         this._status.phase = PHASES.failed;
 
-        const errorMsg = `[${this.name}] Failed to instantiate addon.`;
+        const errorMsg = `[${this.name}] Load failed.`;
         const meta = {message: error.message};
         const editedError = error;
         editedError.message = global.createErrorMessage(errorMsg, meta);
@@ -154,7 +153,7 @@ class Addon {
       return Promise.reject();
     }
 
-    logger.debug(`[${this.name}] Addon in correct state, registering addon.`);
+    logger.debug(`[${this.name}] Registering addon.`);
     this._status = {state: STATES.register, phase: PHASES.inProgress};
 
     return new Promise(resolve =>
@@ -167,7 +166,7 @@ class Addon {
       }).catch((error) => {
         this._status.phase = PHASES.failed;
 
-        const errorMsg = `[${this.name}] Register raised an error.`;
+        const errorMsg = `[${this.name}] Register failed.`;
         const meta = {message: error.message};
         const editedError = error;
         editedError.message = global.createErrorMessage(errorMsg, meta);
@@ -217,7 +216,7 @@ class Addon {
       return Promise.reject(new Error(global.createErrorMessage(error, meta)));
     }
 
-    logger.debug(`[${this.name}] Addon in correct state, unregistering addon.`);
+    logger.debug(`[${this.name}] Unregistering addon.`);
     this._status = {state: STATES.unregister, phase: PHASES.inProgress};
     return new Promise(resolve => resolve(this.instance.unregister()))
       .then(() => {
@@ -227,7 +226,7 @@ class Addon {
       }).catch((error) => {
         // We cannot assume that addon is still registered, we can't really say anything at this point
         this._status.phase = PHASES.failed;
-        const errorMsg = `[${this.name}] Failed to unregister addon.`;
+        const errorMsg = `[${this.name}] Unregister failed.`;
         const meta = {message: error.message};
         return Promise.reject(new Error(global.createErrorMessage(errorMsg, meta)));
       });
@@ -271,11 +270,11 @@ class Addon {
   static _installDependencies(addon) {
     const command = 'npm install';
 
-    logger.info(`[${addon.name}] npm installing, working directory: ${addon.addonPath}.`);
+    logger.debug(`[${addon.name}] npm installing, working directory: ${addon.addonPath}.`);
     return exec(command, {cwd: addon.addonPath}).then(([stdout, stderr]) => {
-      logger.info(`[${addon.name}] npm finished.`);
-      logger.debug(`STDOUT - "${command}"\n${stdout}`);
-      logger.debug(`STDERR - "${command}"\n${stderr}`);
+      logger.debug(`[${addon.name}] npm finished.`);
+      logger.verbose(`STDOUT - "${command}"\n${stdout}`);
+      logger.verbose(`STDERR - "${command}"\n${stderr}`);
     });
   }
 

@@ -10,7 +10,6 @@ const localBus = require('./local-event-bus');
 const Event = require('./event.js');
 
 function clusterEventHandler(data) {
-  logger.info(JSON.stringify(data));
   try {
     const eventObj = Event.fromObject(data);
 

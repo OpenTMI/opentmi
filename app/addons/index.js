@@ -6,7 +6,6 @@ const path = require('path');
 const logger = require('../tools/logger');
 const Addon = require('./addon').Addon;
 
-const eventBus = require('../tools/eventBus');
 const DynamicRouter = require('./dynamic-router');
 
 const METADATA_KEY_LENGTH = 10;
@@ -75,12 +74,12 @@ class AddonManager {
    * @return {Promise} promise to try loading all addons
    */
   static _recursiveLoad(addonArray, app, server, io) {
-    return addonArray.reduce((acc, addon) => acc.then(() => {
-      logger.info(`[${addon.name}] Load started.`);
-      return addon.loadModule()
-        .then(() => addon.createInstance(app, server, io))
-        .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error));
-    }), Promise.resolve());
+    logger.info('Loading addons...');
+    return addonArray.reduce((acc, addon) => acc
+      .then(() => addon.loadModule())
+      .then(() => addon.createInstance(app, server, io))
+      .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error)),
+    Promise.resolve());
   }
 
   /**
@@ -88,12 +87,12 @@ class AddonManager {
    * @return {Promise} promise to try loading all addons
    */
   static _asyncLoad(addonArray, app, server, io) {
-    return Promise.all(addonArray.map((addon) => {
-      logger.info(`[${addon.name}] Load started.`);
-      return addon.loadModule()
+    logger.info('Loading addons...');
+    return Promise.all(addonArray.map(
+      addon => addon.loadModule()
         .then(() => addon.createInstance(app, server, io))
-        .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error));
-    }));
+        .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error))
+    ));
   }
 
   /**
@@ -159,7 +158,7 @@ class AddonManager {
    * @return {Promise} promise to try and register the provided addon
    */
   registerAddon(addon) {
-    logger.info(`[${addon.name}] Registering module.`);
+    logger.info(`Registering addon: [${addon.name}].`);
     return addon.register(this.app, this.dynamicRouter);
   }
 
@@ -169,7 +168,7 @@ class AddonManager {
    * @return {Promise} promise to try and unregister the provided addon
    */
   unregisterAddon(addon) {
-    logger.info(`[${addon.name}] Unregistering module.`);
+    logger.info(`Unregistering addon: [${addon.name}].`);
     return addon.unregister(this.dynamicRouter);
   }
 
@@ -184,7 +183,7 @@ class AddonManager {
     if (index < this.addons.length) {
       if (addon.safeToRemove || force) {
         // Safe to remove this addon
-        logger.info(`[${addon.name}] Removing addon.`);
+        logger.info(`Removing addon: [${addon.name}].`);
         this.addons.splice(index, 1);
         return Promise.resolve();
       } else if (addon.isBusy || addon.isRegistered) {
