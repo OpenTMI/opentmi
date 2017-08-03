@@ -79,7 +79,7 @@
     "eslint-plugin-node": "^5.1.0",
     "eslint-plugin-promise": "^3.5.0",
     "grunt": "^1.0.1",
-    "grunt-exec": "^2.0.0",
+    "grunt-exec": "^3.0.0",
     "grunt-express-server": "^0.5.3",
     "grunt-simple-mocha": "^0.4.1",
     "grunt-wait-server": "*",
