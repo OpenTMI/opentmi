@@ -144,7 +144,7 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   static getGithubClientId(req, res) {
-    logger.log('Github auth: returning github clientID');
+    logger.info('Github auth: returning github clientID');
     const id = clientId;
     if (id === undefined) {
       logger.warn('Github auth: clientId was undefined, perhaps it is not defined in the config.');

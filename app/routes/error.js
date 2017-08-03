@@ -4,7 +4,7 @@ const logger = require('winston');
  * Error handling
  */
 function Route(app) {
-  logger.log('-AddRoute: error');
+  logger.info('-AddRoute: error');
   app.use((error, req, res, next) => {
     // treat as 404
     const msg = error.message;

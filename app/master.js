@@ -6,25 +6,28 @@ const _ = require('lodash');
 const chokidar = require('chokidar');
 const Promise = require('bluebird');
 
-
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
-const eventHandler = require('./tools/cluster');
 
 const autoReload = true; // @todo get from config file
 
 
-module.exports = function Master() {
-  logger.level = 'silly';
-
-  logger.info(`Master ${process.pid} is running`);
-
-  const logHandler = function (data) {
-    const level = _.get(data, 'level', 'debug');
-    const args = _.get(data, 'args', []);
-    args.unshift(`Worker#${this.id}`);
+function logHandler(data) {
+  const level = _.get(data, 'level', 'debug');
+  const args = _.get(data, 'args', []);
+  args.unshift(`Worker#${this.id}`);
+  try {
     logger[level](...args);
-  };
+  }
+  catch (error) {
+    logger.error(data);
+    logger.error(error);
+  }
+}
+
+module.exports = function Master() {
+  logger.level = 'debug';
+  logger.info(`Master ${process.pid} is running`);
 
   const getStats = () => {
     const master = {};
@@ -52,16 +55,15 @@ module.exports = function Master() {
 
   const msgHandlers = {
     log: logHandler,
-    event: eventHandler
+    event: eventBus.clusterEventHandler
   };
 
   eventBus.on('masterStatus', statusHandler);
-
-  eventBus.on('*', (event, data) => {
-    logger.debug(`Master: eventBus(${event}, ${JSON.stringify(data)})`);
+  eventBus.on('*', (eventName, meta, data) => {
+    logger.debug(`Master: [eventBus] ${eventName}(${JSON.stringify(meta)}): ${JSON.stringify(data)})`);
   });
 
-  // fork one worker and return Promise which resolves when its Indicate
+  // fork one worker and return Promise which resolves when its Indicated
   // that it is ready for listening sockets.
   const fork = () => new Promise((resolve, reject) => {
     const worker = cluster.fork();
@@ -74,19 +76,25 @@ module.exports = function Master() {
         logger.info('worker success!');
       }
       worker.removeAllListeners();
-      reject('Should not exit before listening event');
+      reject(new Error('Should not exit before listening event'));
     };
     const onMessage = (data) => {
-      const type = _.get(data, 'type');
-      if (type === 'listening') {
-        worker.removeListener('exit', onExit);
-        resolve();
-      } else if (_.has(msgHandlers, type)) {
-        msgHandlers[type].call(worker, data);
+      const dataType = _.get(data, 'type');
+      if (_.has(msgHandlers, dataType)) {
+        msgHandlers[dataType].call(worker, data);
       } else {
-        logger.warn(`Unknown message type "${type}" from worker`);
+        logger.warn(`Unknown message type "${dataType}" from worker`);
       }
     };
+
+    eventBus.on('start_listening', (meta) => {
+      if (meta.id === worker.id) {
+        logger.info(`Worker#${worker.id} is accepting requests.`);
+        worker.removeListener('exit', onExit);
+        resolve();
+      }
+    });
+
     worker.on('message', onMessage);
     worker.once('exit', onExit);
   });
@@ -95,24 +103,23 @@ module.exports = function Master() {
   Promise
     .all(_.times(numCPUs, fork))
     .then(() => {
-      logger.info('All workers is ready to serve.');
+      logger.info('All workers ready to serve.');
     });
 
   cluster.on('exit', (worker, code, signal) => {
-    logger.warn(`worker ${worker.process.pid} died${signal ? `by signal: ${signal}` : ''}`);
+    logger.warn(`Worker ${worker.process.pid} died ${signal ? `by signal: ${signal}` : ''}.`);
     if (worker.exitedAfterDisconnect === false) {
-      // restart worker
-      logger.info('restart worker');
+      logger.info('Restarting worker.');
       fork();
     } else {
-      logger.info('Worker was not purpose to restart');
+      logger.info('Worker was not supposed to restart.');
     }
   });
 
   // Reload single worker and return Promise.
   // Promise resolves when worker is listening socket.
   const reloadWorker = (worker) => {
-    logger.info(`Reload worker#${worker.id}`);
+    logger.info(`Reloading worker#${worker.id}.`);
     return new Promise((resolve, reject) => {
       worker.once('exit', () => {
         fork().then(resolve, reject);

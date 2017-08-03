@@ -2,14 +2,12 @@ const _ = require('lodash');
 const cluster = require('cluster');
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
-const eventHandler = require('./tools/cluster');
 
 module.exports = function Worker() {
   // worker
-
   const msgHandlers = {
     shutdown: process.exit,
-    event: eventHandler
+    event: eventBus.clusterEventHandler
   };
   process.on('message', (data) => {
     const type = _.get(data, 'type');
@@ -20,10 +18,9 @@ module.exports = function Worker() {
     }
   });
 
-  logger.info(`Worker ${process.pid} started`);
-
-  eventBus.on('*', (event, data) => {
-    logger.debug(`eventBus(${event}, ${JSON.stringify(data)})`);
+  logger.info(`Process: ${process.pid} started`);
+  eventBus.on('*', (eventName, meta, ...data) => {
+    logger.debug(`[eventBus] ${eventName}(${JSON.stringify(meta)}): ${JSON.stringify(data)})`);
   });
 
   /*
