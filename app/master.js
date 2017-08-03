@@ -10,7 +10,7 @@ const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 
 const autoReload = true; // @todo get from config file
-
+const chainForks = false;
 
 function logHandler(data) {
   const level = _.get(data, 'level', 'debug');
@@ -18,16 +18,15 @@ function logHandler(data) {
   args.unshift(`Worker#${this.id}`);
   try {
     logger[level](...args);
-  }
-  catch (error) {
+  } catch (error) {
     logger.error(data);
     logger.error(error);
   }
 }
 
 module.exports = function Master() {
-  logger.level = 'debug';
   logger.info(`Master ${process.pid} is running`);
+  logger.level = 'info';
 
   const getStats = () => {
     const master = {};
@@ -59,8 +58,8 @@ module.exports = function Master() {
   };
 
   eventBus.on('masterStatus', statusHandler);
-  eventBus.on('*', (eventName, meta, data) => {
-    logger.debug(`Master: [eventBus] ${eventName}(${JSON.stringify(meta)}): ${JSON.stringify(data)})`);
+  eventBus.on('*', (eventName, meta, ...data) => {
+    logger.debug(`Master: [eventBus] ${eventName} | ${JSON.stringify(meta)} | ${JSON.stringify(data)}`);
   });
 
   // fork one worker and return Promise which resolves when its Indicated
@@ -83,7 +82,7 @@ module.exports = function Master() {
       if (_.has(msgHandlers, dataType)) {
         msgHandlers[dataType].call(worker, data);
       } else {
-        logger.warn(`Unknown message type "${dataType}" from worker`);
+        logger.warn(`Master: Unknown message type "${dataType}" from worker`);
       }
     };
 
@@ -99,12 +98,18 @@ module.exports = function Master() {
     worker.once('exit', onExit);
   });
 
-  // Fork workers series..
-  Promise
-    .all(_.times(numCPUs, fork))
-    .then(() => {
-      logger.info('All workers ready to serve.');
+  // Fork workers series...
+
+  if (chainForks === false) {
+    Promise.all(_.times(numCPUs, fork))
+      .then(() => { logger.info('All workers ready to serve.'); });
+  } else {
+    let acc = Promise.resolve();
+    _.times(numCPUs, () => {
+      acc = acc.then(fork);
+      return acc;
     });
+  }
 
   cluster.on('exit', (worker, code, signal) => {
     logger.warn(`Worker ${worker.process.pid} died ${signal ? `by signal: ${signal}` : ''}.`);
@@ -128,11 +133,20 @@ module.exports = function Master() {
     });
   };
   // Reload all fork workers and return Promise
-  const reloadAllWorkers = () => Promise
-    .each(_.values(cluster.workers), reloadWorker)
-    .then(() => {
-      logger.info('All workers restarted.');
-    });
+  const reloadAllWorkers = () => {
+    if (chainForks === false) {
+      return Promise
+        .each(_.values(cluster.workers), reloadWorker)
+        .then(() => {
+          logger.info('All workers restarted.');
+        });
+    }
+
+    // Chain promises to fork workers one at a time
+    return cluster.workers.reduce((acc, worker) => {
+      return acc.then(reloadWorker(worker));
+    }, Promise.resolve());
+  };
 
   // handle craceful exit
   process.on('SIGINT', () => {
