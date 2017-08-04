@@ -45,7 +45,7 @@ class SchemasController {
       return next();
     }
 
-    return res.status(404).send(`No schema found with name: ${collectionName}`);
+    return res.status(404).json({error: `No schema found with name: ${collectionName}`});
   }
 
   /**
