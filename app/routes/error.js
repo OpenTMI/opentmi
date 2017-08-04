@@ -8,14 +8,14 @@ function Route(app) {
   app.use((error, req, res, next) => {
     const msg = error.message;
 
-    // If error message looks like 404, treat like 404
-    if (msg && (msg.indexOf('not found') >= 0 || msg.indexOf('Cast to ObjectId failed') >= 0)) {
-      return next();
-    }
-
     // Error was expected and most likely the clients fault
     if (error.statusCode) {
       return res.status(error.statusCode).json({error: msg});
+    }
+
+    // If error message looks like 404, treat like 404
+    if (msg && (msg.indexOf('not found') >= 0 || msg.indexOf('Cast to ObjectId failed') >= 0)) {
+      return next();
     }
 
     // Unexpected error that should be reported and fixed

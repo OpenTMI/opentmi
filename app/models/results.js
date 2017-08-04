@@ -92,19 +92,6 @@ const ResultSchema = new Schema({
 });
 
 ResultSchema.set('toObject', {virtuals: true});
-ResultSchema.set('toJSON', {
-  transform: (doc, ret) => {
-    const jsonResource = ret;
-
-    if (!jsonResource.id) {
-      jsonResource.id = ret._id.toString();
-    }
-
-    delete jsonResource._id;
-    delete jsonResource.__v;
-    return jsonResource;
-  }
-});
 
 /**
  * Query plugin

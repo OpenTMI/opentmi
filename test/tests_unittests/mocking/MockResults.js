@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const results = [
   {
     __v: 0,
-    _id: mongoose.Types.ObjectId().toString(),
+    _id: mongoose.Types.ObjectId(),
     tcid: 'mockTestcaseID',
     job: {
       id: 'jobId'
@@ -56,7 +56,7 @@ const results = [
   },
   {
     __v: 0,
-    _id: mongoose.Types.ObjectId().toString(),
+    _id: mongoose.Types.ObjectId(),
     tcid: 'anotherMockTestcaseID',
     job: {
       id: 'jobId'

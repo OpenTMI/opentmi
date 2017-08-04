@@ -204,10 +204,6 @@ describe('controllers/testcases.js', () => {
 
       const res = new MockResponse((value) => {
         // jsonify resultBody
-        resultBody.id = resultBody._id;
-        delete resultBody._id;
-        delete resultBody.__v;
-
         expect(value).to.deep.equal(resultBody);
 
         // Ensure testcase is updated
@@ -249,10 +245,6 @@ describe('controllers/testcases.js', () => {
       const res = new MockResponse((value) => {
         // jsonify resultBody
         resultBody.tcRef = value.tcRef;
-        resultBody.id = resultBody._id;
-        delete resultBody._id;
-        delete resultBody.__v;
-
         expect(value).to.deep.equal(resultBody);
 
         // Ensure testcase was created
