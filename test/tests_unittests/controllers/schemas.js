@@ -39,13 +39,12 @@ describe('controllers/schemas.js', function () {
 
     // Unknown collection name should result in 404
     it('paramCollection - unknown collection name', function (done) {
-      const res = new MockResponse(function empty() {}, (value) => {
+      const res = new MockResponse((value) => {
+        expect(value).to.have.property('error', 'No schema found with name: nonsense collection');
+        done();
+      }, (value) => {
         expect(value).to.equal(404);
       });
-      res.send = (value) => {
-        expect(value).to.equal('No schema found with name: nonsense collection');
-        done();
-      };
 
       controller.paramCollection(undefined, res, () => {
         done(new Error('Should not pass request forward when no such collection exists.'));
@@ -109,7 +108,7 @@ describe('controllers/schemas.js', function () {
       done();
     });
 
-    // Should throw error when no Schema defined
+    // Should throw error when no Schema defined, trying to access properties from undefined object
     it('find - no Schema', function (done) {
       const req = {
         params: {Collection: collection}
