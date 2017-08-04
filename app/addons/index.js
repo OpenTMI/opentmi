@@ -57,6 +57,7 @@ class AddonManager {
     this.app = app;
     this.server = server;
     this.io = io;
+    return Promise.resolve();
   }
 
   static _moduleLoadError(addon, message, error) {
