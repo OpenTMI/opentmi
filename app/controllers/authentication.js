@@ -235,8 +235,7 @@ class AuthenticationController {
     /*
       Retrieve the user's github profile email.
     */
-    const getProfile = (accessToken, headers, profile, next) => {
-
+    const getEmail = (accessToken, headers, profile, next) => {
 
       logger.debug(addPrefix('fetching user email information from github.'));
 
