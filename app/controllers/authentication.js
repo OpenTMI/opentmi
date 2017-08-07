@@ -236,7 +236,6 @@ class AuthenticationController {
       Retrieve the user's github profile email.
     */
     const getEmail = (accessToken, headers, profile, next) => {
-
       logger.debug(addPrefix('fetching user email information from github.'));
 
       if (profile.email) {
@@ -245,7 +244,7 @@ class AuthenticationController {
       }
 
       logger.verbose(addPrefix('requesting profile emaile information.'));
-      let userEmailUrl = `${userApiUrl}/emails`;
+      const userEmailUrl = `${userApiUrl}/emails`;
       request.get({url: userEmailUrl, qs: accessToken, headers: headers, json: true}, (error, response, emails) => {
         logger.verbose(addPrefix(`response from: ${userEmailUrl} received.`));
 
@@ -265,13 +264,13 @@ class AuthenticationController {
         }
 
         // Make sure profile contains an email
-        if (!_.isArray(emails) || emails.length===0) {
+        if (!_.isArray(emails) || emails.length === 0) {
           logger.warn(addPrefix('could not find email from fetched profile.'));
           return next({status: 409, msg: 'Could not find email address from profile.'});
         }
 
         logger.verbose(addPrefix('response contained a valid emails.'));
-        profile.email = emails[0];
+        _.set(profile, 'email', emails[0]);
         return next(null, accessToken, headers, profile);
       });
     };
