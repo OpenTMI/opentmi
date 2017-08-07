@@ -248,11 +248,11 @@ class AuthenticationController {
       logger.verbose(addPrefix('requesting profile emaile information.'));
       let userEmailUrl = `${userApiUrl}/emails`;
       request.get({url: userEmailUrl, qs: accessToken, headers: headers, json: true}, (error, response, emails) => {
-        logger.verbose(addPrefix(`response from: ${userApiUrl} received.`));
+        logger.verbose(addPrefix(`response from: ${userEmailUrl} received.`));
 
         // Process error if one happened
         if (error) {
-          logger.warn(addPrefix(`getEmail error, failed to fetch user profile information from url: ${userApiUrl}.`));
+          logger.warn(addPrefix(`getEmail error, failed to fetch user profile emails from url: ${userEmailUrl}.`));
           return next({status: 500, msg: error.toString()});
         }
 
