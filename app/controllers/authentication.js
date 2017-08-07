@@ -233,6 +233,51 @@ class AuthenticationController {
     };
 
     /*
+      Retrieve the user's github profile email.
+    */
+    const getProfile = (accessToken, headers, profile, next) => {
+
+
+      logger.debug(addPrefix('fetching user email information from github.'));
+
+      if (profile.email) {
+        next();
+        return;
+      }
+
+      logger.verbose(addPrefix('requesting profile emaile information.'));
+      let userEmailUrl = `${userApiUrl}/emails`;
+      request.get({url: userEmailUrl, qs: accessToken, headers: headers, json: true}, (error, response, emails) => {
+        logger.verbose(addPrefix(`response from: ${userApiUrl} received.`));
+
+        // Process error if one happened
+        if (error) {
+          logger.warn(addPrefix(`getEmail error, failed to fetch user profile information from url: ${userApiUrl}.`));
+          return next({status: 500, msg: error.toString()});
+        }
+
+        // Make sure response was a 200 success
+        if (response.statusCode !== 200) {
+          logger.warn(addPrefix(`bad profile emails response with status code: ${response.statusCode}.`));
+          return next({
+            status: 409,
+            msg: `Could not fetch github profile. Response body: ${JSON.stringify(response.body)}`
+          });
+        }
+
+        // Make sure profile contains an email
+        if (!_.isArray(emails) || emails.length===0) {
+          logger.warn(addPrefix('could not find email from fetched profile.'));
+          return next({status: 409, msg: 'Could not find email address from profile.'});
+        }
+
+        logger.verbose(addPrefix('response contained a valid emails.'));
+        profile.email = emails[0];
+        return next(null, accessToken, headers, profile);
+      });
+    };
+
+    /*
       Ensure the user belongs to the required organization.
     */
     const checkOrganization = (accessToken, headers, profile, next) => {
@@ -458,6 +503,7 @@ class AuthenticationController {
     async.waterfall([
       authorization,
       getProfile,
+      getEmail,
       checkOrganization,
       checkAdmin,
       updateUser,
