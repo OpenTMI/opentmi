@@ -61,10 +61,11 @@ class DefaultController extends EventEmitter {
       if (error) {
         logger.warn(error);
         res.status(300).json({error: error.message});
+      } else if (list) {
+        this.emit('find', list);
+        res.json(list);
       } else {
-        const trimmedList = list.map(doc => doc.toJSON());
-        this.emit('find', trimmedList);
-        res.json(trimmedList);
+        logger.error('Query returned an undefined list!');
       }
     });
   }

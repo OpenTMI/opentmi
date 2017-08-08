@@ -127,6 +127,9 @@ describe('controllers/index.js', () => {
     ]);
   });
 
+  /**
+   * @todo Tests to ensure find works when query parameters are present
+   */
   it('find', function () {
     // Correct case, find an item that exists
     const itemExists = new Promise((resolve) => {
