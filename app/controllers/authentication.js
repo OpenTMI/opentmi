@@ -239,7 +239,7 @@ class AuthenticationController {
       logger.debug(addPrefix('fetching user email information from github.'));
 
       if (profile.email) {
-        next();
+        next(null, accessToken, headers, profile);
         return;
       }
 
@@ -258,18 +258,21 @@ class AuthenticationController {
         if (response.statusCode !== 200) {
           logger.warn(addPrefix(`bad profile emails response with status code: ${response.statusCode}.`));
           return next({
-            status: 409,
+            status: 500,
             msg: `Could not fetch github profile. Response body: ${JSON.stringify(response.body)}`
           });
         }
 
-        // Make sure profile contains an email
+        // Make sure received response is an array and not empty
         if (!_.isArray(emails) || emails.length === 0) {
           logger.warn(addPrefix('could not find email from fetched profile.'));
-          return next({status: 409, msg: 'Could not find email address from profile.'});
+          return next({
+            status: 500,
+            msg: `Could not fetch emails from github profile, received invalid response body: ${emails}.`
+          });
         }
 
-        logger.verbose(addPrefix('response contained a valid emails.'));
+        logger.verbose(addPrefix('response contained valid emails.'));
         _.set(profile, 'email', emails[0]);
         return next(null, accessToken, headers, profile);
       });
