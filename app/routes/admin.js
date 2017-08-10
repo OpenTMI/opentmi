@@ -15,7 +15,7 @@ function Route(app) {
   const controller = new AdminController();
 
   router.route('/api/v0/version.:format?')
-    .get(/*jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, */controller.version.bind(controller))
+    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.version.bind(controller))
     .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.update.bind(controller));
 
   router.route('/api/v0/restart')

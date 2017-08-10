@@ -19,7 +19,9 @@ class Updater extends EventEmitter {
     }
     this._pending = this._update(revision).catch((error) => {
       return this._revert().then(() => {
-        throw error;
+        throw new Error(`Updating fails${error}`);
+      }).catch((revertError) => {
+        throw new Error(`Updating fails - tried to revert to original version but it fails to ${revertError}`);
       });
     });
     return this._pending;
