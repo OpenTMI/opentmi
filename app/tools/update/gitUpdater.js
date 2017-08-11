@@ -2,6 +2,7 @@
 const childProcess = require('child_process');
 // 3rd party modules
 const Promise = require('bluebird');
+const _ = require('lodash');
 // application modules
 const Updater = require('./updater');
 const Npm = require('./npm');
@@ -18,13 +19,34 @@ class GitUpdater extends Updater {
       .then(() => this.emit('status', 'install npm dependencies..'))
       .then(() => Npm.install(this._options).bind(this));
   }
-
+  version() {
+    return Promise
+      .all([this._version(), this.__version()])
+      .then(versions => _.merge({}, versions[0], versions[1]));
+  }
   _isClean() {
     const cmd = 'git diff --quiet HEAD';
     return exec(cmd, this._options).catch(() => {
       throw new Error('workarea are not clean');
     });
   }
+  __version() {
+    return Promise
+      .all([this._commitId(), this._tag()])
+      .then(values => _.merge({}, values[0], values[1]));
+  }
+  _tag() {
+    const cmd = "git describe --exact-match --tags $(git log -n1 --pretty='%h')";
+    return exec(cmd, this._options)
+      .then(line => ({tag: line.trim()}))
+      .catch(() => ({tag: undefined}));
+  }
+  _commitId() {
+    const cmd = 'git rev-parse --verify HEAD';
+    return exec(cmd, this._options)
+      .then(line => ({commitId: line.trim()}));
+  }
+
   _reset(options = '--hard') {
     const cmd = `git reset ${options}`;
     return exec(cmd, this._options).catch((error) => {

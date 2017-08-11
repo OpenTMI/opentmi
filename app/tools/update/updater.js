@@ -17,23 +17,28 @@ class Updater extends EventEmitter {
     if (this._pending.isPending()) {
       return Promise.reject('Updating in progress.');
     }
-    this._pending = this._update(revision).catch((error) => {
-      return this._revert().then(() => {
-        throw new Error(`Updating fails${error}`);
-      }).catch((revertError) => {
-        throw new Error(`Updating fails - tried to revert to original version but it fails to ${revertError}`);
-      });
-    });
+    let currentVersion;
+    this._pending = this
+      .version()
+      .then((version) => { currentVersion = version; })
+      .then(() => this._update(revision)
+        .catch(error => this._revert(currentVersion).then(() => {
+          throw new Error(`Updating fails${error}`);
+        }).catch((revertError) => {
+          throw new Error(`Updating fails - tried to revert to original version but it fails to ${revertError}`);
+        }))
+      );
     return this._pending;
   }
-  version() {
-     if (this._pending.isPending()) {
+  _version() {
+    if (this._pending.isPending()) {
       return Promise.reject('Updating in progress.');
     }
     return Npm.list(super._options);
   }
-  _revert() {
-      return Promise.reject("Not implemented");
+  _revert(version) {
+    // @todo...
+    return Promise.reject("Not implemented");
   }
   restart() {
     if (this._pending.isPending()) {
