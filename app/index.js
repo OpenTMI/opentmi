@@ -69,11 +69,13 @@ DB.connect().catch((error) => {
 
     // Close the Mongoose connection, when receiving SIGINT
     process.on('SIGINT', () => {
-      DB.disconnect().then(() => {
-        process.exit(0);
-      }).catch((err) => {
-        logger.error(`Disconnection fails: ${err}`);
-        process.exit(-1);
+      server.close(() => {
+        DB.disconnect().then(() => {
+          process.exit(0);
+        }).catch((err) => {
+          logger.error(`Disconnection fails: ${err}`);
+          process.exit(-1);
+        });
       });
     });
   });

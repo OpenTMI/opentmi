@@ -22,10 +22,70 @@ function _parseError(error) {
   return jsonObj;
 }
 
+class MasterLogger {
+  constructor() {
+    this.logger = Winston;
+    // Define logger behaviour
+    this.logger.cli(); // activates colors
+
+    // define console logging level
+    this.logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
+    this.logger.debug(`Using cfg: ${configuration}`);
+
+    // Add winston file logger, which rotates daily
+    const fileLevel = 'silly';
+    this.logger.add(WinstonDailyRotateFile, {
+      filename: '../log/app.log',
+      json: false,
+      handleExceptions: false,
+      level: fileLevel,
+      datePatter: '.yyyy-MM-dd_HH-mm'
+    });
+  }
+  set level(level) {
+    this.logger.level = level;
+  }
+
+  handleWorkerLog(worker, data) {
+    const level = data['level'] || 'debug';
+    const args = data['args'] || [];
+    args.unshift(`<Worker#${worker.id}>`);
+    try {
+      this.logger[level](...args);
+    } catch (error) {
+      this.logger.error(data);
+      this.logger.error(error);
+    }
+  }
+  log(level, ...args) {
+    args.unshift('<Master>');
+    this.logger.log(level, ...args);
+  }
+  error(...args) {
+    this.log('error', ...args);
+  }
+  warn(...args) {
+    this.log('warn', ...args);
+  }
+  info(...args) {
+    this.log('info', ...args);
+  }
+  debug(...args) {
+    this.log('debug', ...args);
+  }
+  verbose(...args) {
+    this.log('verbose', ...args);
+  }
+  silly(...args) {
+    this.log('silly', ...args);
+  }
+}
+
 class ClusterLogger {
   constructor() {
     this._emitter = process;
   }
+
   _proxy(level, ...args) {
     const editedArgs = args;
     Object.keys(args).forEach((key) => {
@@ -38,11 +98,13 @@ class ClusterLogger {
       this._emitter.send({type: 'log', level, args: editedArgs});
     }
   }
+
   set level(level) {
     this.warn('Not implemented');
   }
-  log(level, msg, meta) {
-    this._proxy(level, msg, meta);
+
+  log(level, ...args) {
+    this._proxy(level, ...args);
   }
   error(...args) {
     this._proxy('error', ...args);
@@ -65,24 +127,7 @@ class ClusterLogger {
 }
 
 if (cluster.isMaster) {
-  const logger = Winston;
-  // Define logger behaviour
-  logger.cli(); // activates colors
-
-  // define console logging level
-  logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
-  logger.debug(`Using cfg: ${configuration}`);
-
-  // Add winston file logger, which rotates daily
-  const fileLevel = 'silly';
-  logger.add(WinstonDailyRotateFile, {
-    filename: '../log/app.log',
-    json: false,
-    handleExceptions: false,
-    level: fileLevel,
-    datePatter: '.yyyy-MM-dd_HH-mm'
-  });
-  module.exports = logger;
+  module.exports = new MasterLogger();
 } else {
   module.exports = new ClusterLogger();
 }

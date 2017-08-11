@@ -37,8 +37,10 @@ function emit(eventName, ...args) {
 }
 
 module.exports = {
-  emit: emit,
   clusterEventHandler: clusterEventHandler,
+  Event: Event,
+  emit: emit,
   on: localBus.on.bind(localBus),
-  Event: Event
+  removeListener: localBus.removeListener.bind(localBus),
+  removeAllListeners: localBus.removeAllListeners.bind(localBus)
 };
