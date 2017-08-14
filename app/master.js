@@ -29,6 +29,7 @@ class Master {
     // Subscribe handlers for events
     eventBus.on('masterStatus', Master.statusHandler);
     eventBus.on('*', Master.broadcastHandler);
+    eventBus.on('workerRestartNeeded', Master.handleWorkerRestart);
 
     // Handle graceful exit
     process.on('SIGINT', Master.handleSIGINT);
@@ -43,7 +44,23 @@ class Master {
 
     // Fork workers...
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
-      .then(() => { logger.info('All workers ready to serve.'); });
+      .then(() => { logger.info('All workers ready to serve.'); })
+      .catch((error) => { logger.error(error.message); });
+  }
+
+  /**
+   * Informs the client that workers need to be restarted and restarts workers
+   * @param {object} meta - meta data linked to this event
+   * @param {string} reason - reason why restart is needed
+   */
+  static handleWorkerRestart(meta, reason) {
+    if (reason) {
+      logger.info(`Worker needs to restart, reason: ${reason}.`);
+    } else {
+      logger.info('Worker needs to restart, no reason provided.');
+    }
+
+    Master.reloadAllWorkers();
   }
 
   /**
@@ -80,10 +97,10 @@ class Master {
    * @param {object} data
    */
   static statusHandler(meta, data) {
-    if (!data.id) {
-      logger.warn('Cannot process masterStatus event that does not provide data with id property');
-    } else {
+    if (data.id) {
       eventBus.emit(data.id, Master.getStats());
+    } else {
+      logger.warn('Cannot process masterStatus event that does not provide data with id property');
     }
   }
 
@@ -118,79 +135,87 @@ class Master {
         resolve();
       };
 
-      const msgHandlers = {
-        log: logger.handleWorkerLog.bind(logger, worker),
-        event: eventBus.clusterEventHandler,
-        default: (data) => {
-          logger.warn(`Message without type from worker, data: ${JSON.stringify(data)}.`);
-        }
-      };
-
-      const onMessage = (data) => {
-        const dataType = _.get(data, 'type', 'default');
-        if (_.has(msgHandlers, dataType)) {
-          msgHandlers[dataType].call(worker, data);
-        } else {
-          logger.warn(`Unknown message type "${dataType}" from worker, data: ${JSON.stringify(data)}.`);
-        }
-      };
-
       worker.on('listening', onListening);
-      worker.on('message', onMessage);
+      worker.on('message', Master.onWorkerMessage.bind(worker));
       worker.once('exit', onPrematureExit);
     });
   }
 
   /**
-   * Logs how and why master died
-   * @param {string} alias - alias for the process that died
-   * @param {number} code - the exit code, if it exited normally.
-   * @param {string} signal - the name of the signal (e.g. 'SIGHUP') that caused the process to be killed.
+   * Redirects data from worker to the proper handler, eq. log, event, ...
+   * @param {*} data - data received from worker
    */
-  static logMasterDeath(code, signal) {
-    if (signal) {
-      logger.warn(`process was killed by signal: ${signal}.`);
-    } else if (code !== 0) {
-      logger.warn(`process exited with error code: ${code}.`);
-    } else {
-      logger.info('process successfully ended!');
+  static onWorkerMessage(data) {
+    switch (data.type) {
+      case 'log': {
+        logger.handleWorkerLog(this, data);
+        break;
+      }
+      case 'event': {
+        eventBus.clusterEventHandler(this, data);
+        break;
+      }
+      default: {
+        throw new Error(`Message without type from worker, data: ${JSON.stringify(data)}.`);
+      }
     }
   }
 
   /**
-   * Logs how and why worker died
+   * Logs how and why master died.
+   * @param {string} alias - alias for the process that died.
    * @param {number} code - the exit code, if it exited normally.
    * @param {string} signal - the name of the signal (e.g. 'SIGHUP') that caused the process to be killed.
+   * @return {number} code representing ending, 0 for success, 1 for error code, 2 for signal.
+   */
+  static logMasterDeath(code, signal) {
+    if (signal) {
+      logger.warn(`Master process was killed by signal: ${signal}.`);
+      return 2;
+    } else if (code !== 0) {
+      logger.warn(`Master process exited with error code: ${code}.`);
+      return 1;
+    }
+
+    logger.info('Master process successfully ended!');
+    return 0;
+  }
+
+  /**
+   * Logs how and why worker died.
+   * @param {number} code - the exit code, if it exited normally.
+   * @param {string} signal - the name of the signal (e.g. 'SIGHUP') that caused the process to be killed.
+   * @return {number} code representing ending, 0 for success, 1 for error code, 2 for signal.
    */
   static logWorkerDeath(worker, code, signal) {
     if (signal) {
       logger.warn(`Worker ${worker.id} process was killed by signal: ${signal}.`);
+      return 2;
     } else if (code !== 0) {
       logger.warn(`Worker ${worker.id} process exited with error code: ${code}.`);
-    } else {
-      logger.info(`Worker ${worker.id} process successfully ended!`);
+      return 1;
     }
+
+    logger.info(`Worker ${worker.id} process successfully ended!`);
+    return 0;
   }
 
   /**
-   * Defines how master should react to SIGINT signal
+   * Kills workers and exits process.
    */
   static handleSIGINT() {
-    logger.info('SIGINT received, killing workers first...');
-    const promiseKill = worker => new Promise((resolve) => {
-      worker.once('exit', resolve);
-      worker.kill('SIGINT');
-    });
-    const pending = _.map(cluster.workers, worker => promiseKill(worker));
-    return Promise.all(pending).then(() => {
-      logger.info('All workers killed, exiting process.');
-      process.exit();
-    });
+    // @todo SIGINT automatically gets sent to all workers, worker killing might produce weird reslts
+    logger.info('SIGINT received.');
+    return Master.killAllWorkers()
+      .then(() => {
+        logger.info('All workers killed, exiting process.');
+        process.exit();
+      });
   }
 
   /**
-   * Handler for worker  how worker died
-   * @param {object} worker - worker instance defined by cluster module
+   * Handler for worker  how worker died.
+   * @param {object} worker - worker instance defined by cluster module.
    * @param {number} code - the exit code, if it exited normally.
    * @param {string} signal - the name of the signal (e.g. 'SIGHUP') that caused the process to be killed.
    */
@@ -201,31 +226,57 @@ class Master {
       logger.warn(`Worker ${worker.process.pid} died.`);
     }
 
-    // Start a replacement worker if needed
-    if (worker.exitedAfterDisconnect === false) {
+    if (!worker) {
+      logger.error('Undefined worker received.');
+    } else if (worker.exitedAfterDisconnect === false) { // Start a replacement worker if needed
       logger.info('Replacing worker...');
       Master.forkWorker();
     }
   }
 
   /**
+   * Kill single worker, resolves when the worker is dead.
+   * @param {object} worker - worker instance defined by cluster module.
+   * @return {Promise} promise to kill a worker.
+   */
+  static killWorker(worker) {
+    logger.debug(`Killing Worker#${worker.id}.`);
+    return new Promise((resolve) => {
+      worker.on('exit', resolve);
+
+      try {
+        // @†odo this might need more robust solution, finish requests before dying
+        worker.kill('SIGINT');
+      } catch (error) {
+        logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);
+      }
+    });
+  }
+
+  /**
+   * Kills all workers in cluster.
+   * @return {Promise} promise to kill all workers.
+   */
+  static killAllWorkers() {
+    logger.info('Killing all workers...');
+    return Promise.all(_.map(cluster.workers, Master.killWorker))
+      .then(() => { logger.info('All workers killed.'); });
+  }
+
+  /**
    * Reload single worker, resolves when worker is listening socket.
-   * @param {object} worker - worker instance defined by cluster module
-   * @return {Promise} promise to kill a worker and start a new one
+   * @param {object} worker - worker instance defined by cluster module.
+   * @return {Promise} promise to kill a worker and start a new one.
    */
   static reloadWorker(worker) {
     logger.info(`Reloading Worker#${worker.id}.`);
-    return new Promise((resolve, reject) => {
-      worker.once('exit', () => {
-        Master.forkWorker().then(resolve, reject);
-      });
-      worker.kill('SIGINT'); // @†odo this might need more robust solution, finish requests before dying
-    });
+    return Master.killWorker(worker)
+      .then(() => Master.forkWorker());
   }
 
   /** 
    * Reload all fork workers and return Promise.
-   * @return {Promise} promise to reload all workers
+   * @return {Promise} promise to reload all workers.
    */
   static reloadAllWorkers() {
     logger.info('Restarting all workers...');
@@ -234,9 +285,9 @@ class Master {
   }
 
   /**
-   * Returns a file event watcher for a specific directory
-   * @param {string} dir - relative directory from workspace that you want to listen
-   * @return {Emitter} watcher for file events
+   * Returns a file event watcher for a specific directory.
+   * @param {string} dir - relative directory from workspace that you want to listen.
+   * @return {Emitter} watcher for file events.
    */
   static createFileListener(dir = '.') {
     const options = {
@@ -251,13 +302,13 @@ class Master {
    * Start reacting to file changes in the app directory.
    * Reloads all workers if changes are detected, which in turn
    * allows for zero server downtime updates.
-   * @param {Emitter} watcher - emitter that reports file events
+   * @param {Emitter} watcher - emitter that reports file events.
    */
   static activateFileListener(watcher) {
     logger.info('Listening to file changes, reloading workers automatically if changes detected.');
 
     const masterFiles = [
-      'master.js',
+      'app/master.js',
       'tools/logger',
       'tools/eventBus',
       'tools/cluster'
@@ -273,12 +324,13 @@ class Master {
 
     watcher.on('all', (event, path) => {
       if (listenedEvents.indexOf(event) === -1) {
-        logger.debug(`File watch detected: ${event}: ${path}`);
+        logger.debug(`File event detected ${event}: ${path}`);
       } else if (masterFiles.indexOf(path) === -1) {
         logger.info('File changed, need to reload workers...');
-        Master.reloadAllWorkers();
+        eventBus.emit('workerRestartNeeded', `file changed: ${path}`);
       } else {
         logger.info(`Internal files (${path}) changed, the whole server needs to reset!`);
+        eventBus.emit('systemRestartNeeded', `file changed: ${path}`);
       }
     });
   }

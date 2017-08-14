@@ -10,18 +10,18 @@ class Event {
     this.name = name;
 
     if (TYPES.indexOf(type) === -1) {
-      throw new Error(`Invalid type of event: ${type}, expected one of: ${TYPES.toString()}`);
+      throw new Error(`Invalid type of event: ${type}, expected one of: [${TYPES.toString()}].`);
     }
     this.type = type;
 
     if (!(meta instanceof Object)) {
-      throw new Error(`Invalid type of event: ${typeof meta}, expected object`);
+      throw new Error(`Invalid type of event: ${typeof meta}, expected object.`);
     }
     this.meta = meta;
   }
 
   toString() {
-    return `[${this.type}] ${this.name}(${JSON.stringify(this.meta)}): ${JSON.stringify(this.data)}`;
+    return `[${this.type}] ${this.name}(${JSON.stringify(this.meta)}): ${JSON.stringify(this.data)}.`;
   }
 
   toJSON() {

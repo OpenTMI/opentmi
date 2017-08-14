@@ -32,6 +32,7 @@ class MasterLogger {
     this.logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
     this.logger.debug(`Using cfg: ${configuration}`);
 
+    // @todo File logging options should be fetched from config file
     // Add winston file logger, which rotates daily
     const fileLevel = 'silly';
     this.logger.add(WinstonDailyRotateFile, {
@@ -81,7 +82,7 @@ class MasterLogger {
   }
 }
 
-class ClusterLogger {
+class WorkerLogger {
   constructor() {
     this._emitter = process;
   }
@@ -129,5 +130,5 @@ class ClusterLogger {
 if (cluster.isMaster) {
   module.exports = new MasterLogger();
 } else {
-  module.exports = new ClusterLogger();
+  module.exports = new WorkerLogger();
 }

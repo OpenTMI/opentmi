@@ -15,7 +15,7 @@ const eventBus = require('../../app/tools/eventBus');
 const logger = require('../../app/tools/logger');
 
 // Test config
-cluster.fork = () => {};
+cluster.fork = () => {}; // Do not allow forking while testing, will cause all manner of trouble
 logger.level = 'silent';
 
 // Test variables
@@ -24,10 +24,6 @@ const filePath = path.resolve('app');
 let Master;
 
 describe('app/master.js', function () {
-  const originalLogWarn = logger.warn;
-  const originalLogInfo = logger.info;
-  const originalLogDebug = logger.debug;
-
   beforeEach(function (done) {
     delete require.cache[path.join(filePath, 'Master.js')];
     Master = require('../../app/Master'); // eslint-disable-line
@@ -36,14 +32,14 @@ describe('app/master.js', function () {
     process.removeAllListeners();
     cluster.removeAllListeners();
 
-    // Restore function that might have been mocked
-    logger.warn = originalLogWarn;
-    logger.info = originalLogInfo;
-    logger.debug = originalLogDebug;
-
     done();
   });
 
+  after(function (done) {
+    const modulePath = path.join(filePath, 'tools', 'eventBus', 'index.js');
+    delete require.cache[modulePath];
+    done();
+  });
 
   describe('initialize', function () {
     beforeEach(function (done) {
@@ -78,11 +74,6 @@ describe('app/master.js', function () {
     });
 
     it('should listen for eventBus events', function (done) {
-      Master.statusHandler = (meta, data) => {
-        expect(data).to.deep.equal({id: 'testId', data: 'testData'});
-        done();
-      };
-
       Master.broadcastHandler = (event, meta, data) => {
         expect(event).to.equal('testEvent');
         expect(data).to.equal('testData');
@@ -91,11 +82,21 @@ describe('app/master.js', function () {
         eventBus.emit('masterStatus', {id: 'testId', data: 'testData'});
       };
 
+      Master.statusHandler = (meta, data) => {
+        expect(data).to.deep.equal({id: 'testId', data: 'testData'});
+        eventBus.emit('workerRestartNeeded', 'reasons');
+      };
+
+      Master.handleWorkerRestart = (meta, reason) => {
+        expect(reason).to.equal('reasons');
+        done();
+      };
+
       Master.initialize().catch(done);
       eventBus.emit('testEvent', 'testData');
     });
 
-    it('should call listenChanges by default', function (done) {
+    it('should call createFileListeners and activateFileListener by default', function (done) {
       let createCalled = false;
       Master.createFileListener = () => {
         createCalled = true;
@@ -124,6 +125,13 @@ describe('app/master.js', function () {
         expect(forkCalled).to.equal(cpus, 'Should fork worker for each cpu core.');
         done();
       }).catch(done);
+    });
+  });
+
+  describe('handleWorkerRestart', function () {
+    it('should call reloadAllWorkers', function (done) {
+      Master.reloadAllWorkers = done;
+      Master.handleWorkerRestart(undefined, undefined);
     });
   });
 
@@ -178,7 +186,6 @@ describe('app/master.js', function () {
     const forkEmitter = new EventEmitter();
 
     before(function () {
-      forkCalled = true;
       cluster.fork = () => {
         forkCalled = true;
         return forkEmitter;
@@ -186,6 +193,7 @@ describe('app/master.js', function () {
     });
 
     beforeEach(function (done) {
+      forkCalled = false;
       forkEmitter.removeAllListeners();
       done();
     });
@@ -217,138 +225,76 @@ describe('app/master.js', function () {
       return forkPromise;
     });
 
-    it('should pass log messages to logger.handleWorkerLog', function (done) {
-      logger.warn = (message) => {
-        done(new Error(`Should not trigger a warning, message: ${message}`));
+    it('should redirect message from worker to onWorkerMessage', function () {
+      Master.onWorkerMessage = (data) => {
+        expect(data).to.equal('data');
+        forkEmitter.emit('listening');
       };
 
-      logger.handleWorkerLog = (worker, data) => {
-        expect(data).to.have.property('type', 'log');
-        expect(data).to.have.property('level', 'tesbug');
+      const forkPromise = Master.forkWorker();
+
+      forkEmitter.emit('message', 'data');
+      return forkPromise;
+    });
+  });
+
+  describe('onWorkerMessage', function () {
+    it('should pass event message to correct handler', function (done) {
+      eventBus.clusterEventHandler = (worker, data) => {
+        expect(data).to.have.property('type', 'event');
         expect(data).to.have.deep.property('args', ['arg1', 'arg2', 'arg3']);
         done();
       };
 
-      Master.forkWorker().then(() => {
-        forkEmitter.emit('message', {type: 'log', level: 'tesbug', args: ['arg1', 'arg2', 'arg3']});
-      });
-      forkEmitter.emit('listening');
+      const data = {type: 'event', args: ['arg1', 'arg2', 'arg3']};
+      Master.onWorkerMessage.call({id: 1}, data);
     });
 
-    it('should pass event messages to eventBus clusterEventHandler', function (done) {
-      logger.warn = (message) => {
-        done(new Error(`Should not trigger a warning, message: ${message}`));
-      };
-
-      eventBus.clusterEventHandler = (data) => {
-        expect(data).to.have.property('type', 'event');
-        expect(data).to.have.property('data', 'fork_TestData');
-        done();
-      };
-
-      Master.forkWorker().then(() => {
-        forkEmitter.emit('message', {type: 'event', data: 'fork_TestData'});
-      });
-      forkEmitter.emit('listening');
+    it('should throw error with missing message type', function (done) {
+      const data = 'fork_TestData';
+      expect(Master.onWorkerMessage.bind({}, data)).to.throw(
+        'Message without type from worker, data: "fork_TestData".');
+      done();
     });
 
-    it('missing message type should trigger a warning', function (done) {
-      logger.warn = (message) => {
-        expect(message).to.equal('Message without type from worker, data: "fork_TestData".');
-        done();
-      };
-
-      eventBus.clusterEventHandler = () => {
-        done(new Error('Typeless event should not be forwarded to clusterEventHandler'));
-      };
-
-      logger.handleWorkerLog = () => {
-        done(new Error('Typeless event should not be forwarded to handleWorkerLog'));
-      };
-
-      Master.forkWorker().then(() => {
-        forkEmitter.emit('message', 'fork_TestData');
-      });
-      forkEmitter.emit('listening');
-    });
-
-    it('unknown message type should trigger a warning', function (done) {
-      logger.warn = (message) => {
-        expect(message).to.equal(
-          'Unknown message type "Desbug" from worker, data: {"type":"Desbug","data":"fork_TestData"}.');
-        done();
-      };
-
-      eventBus.clusterEventHandler = () => {
-        done(new Error('Unknown message should not be forwarded to clusterEventHandler'));
-      };
-
-      logger.handleWorkerLog = () => {
-        done(new Error('Unknown message should not be forwarded to handleWorkerLog'));
-      };
-
-      Master.forkWorker().then(() => {
-        forkEmitter.emit('message', {type: 'Desbug', data: 'fork_TestData'});
-      });
-      forkEmitter.emit('listening');
+    it('should throw error with unknown message type', function (done) {
+      const data = {type: 'Desbug', data: 'fork_TestData'};
+      expect(Master.onWorkerMessage.bind({}, data)).to.throw('Message without type from worker, data:');
+      done();
     });
   });
 
   describe('logMasterDeath', function () {
-    it('should trigger warning with signal', function (done) {
-      logger.warn = (message) => {
-        expect(message).to.equal('process was killed by signal: SAIGNAL.');
-        done();
-      };
-
-      Master.logMasterDeath(undefined, 'SAIGNAL');
+    it('should return 2 with signal', function (done) {
+      expect(Master.logMasterDeath(undefined, 'SAIGNAL')).to.equal(2);
+      done();
     });
 
-    it('should trigger warning with code and no signal', function (done) {
-      logger.warn = (message) => {
-        expect(message).to.equal('process exited with error code: 1235.');
-        done();
-      };
-
-      Master.logMasterDeath(1235, undefined);
+    it('should return 1 with no signal and a nonzero code', function (done) {
+      expect(Master.logMasterDeath(1235, undefined)).to.equal(1);
+      done();
     });
 
-    it('should trigger info if received code is 0', function (done) {
-      logger.info = (message) => {
-        expect(message).to.equal('process successfully ended!');
-        done();
-      };
-
-      Master.logMasterDeath(0, undefined);
+    it('should return 0 with success code', function (done) {
+      expect(Master.logMasterDeath(0, undefined)).to.equal(0);
+      done();
     });
   });
 
   describe('logWorkerDeath', function () {
-    it('should trigger warning with signal', function (done) {
-      logger.warn = (message) => {
-        expect(message).to.equal('Worker ID1 process was killed by signal: SAIGNAL.');
-        done();
-      };
-
-      Master.logWorkerDeath({id: 'ID1'}, undefined, 'SAIGNAL');
+    it('should return 2 with signal', function (done) {
+      expect(Master.logWorkerDeath({id: 'ID1'}, undefined, 'SAIGNAL')).to.equal(2);
+      done();
     });
 
-    it('should trigger warning with code and no signal', function (done) {
-      logger.warn = (message) => {
-        expect(message).to.equal('Worker ID2 process exited with error code: 1235.');
-        done();
-      };
-
-      Master.logWorkerDeath({id: 'ID2'}, 1235, undefined);
+    it('should return 1 with no signal and a nonzero code', function (done) {
+      expect(Master.logWorkerDeath({id: 'ID2'}, 1235, undefined)).to.equal(1);
+      done();
     });
 
-    it('should trigger info if received code is 0', function (done) {
-      logger.info = (message) => {
-        expect(message).to.equal('Worker ID3 process successfully ended!');
-        done();
-      };
-
-      Master.logWorkerDeath({id: 'ID3'}, 0, undefined);
+    it('should return 0 with success code', function (done) {
+      expect(Master.logWorkerDeath({id: 'ID3'}, 0, undefined)).to.equal(0);
+      done();
     });
   });
 
@@ -383,11 +329,16 @@ describe('app/master.js', function () {
         worker3.emit('exit');
       };
 
-      cluster.workers = [worker1, worker2, worker3];
+      cluster.workers = {1: worker1, 2: worker2, 3: worker3};
       return Master.handleSIGINT().then(() => {
         process.exit = processExitFunction;
-        expect(killCalled1 && killCalled2 && killCalled3).to.equal(true,
-          'Kill function should be called for all workers.');
+        expect(killCalled1).to.equal(true,
+          'Kill function should be called for worker 1.');
+        expect(killCalled2).to.equal(true,
+          'Kill function should be called for worker 2.');
+        expect(killCalled3).to.equal(true,
+          'Kill function should be called for worker 3.');
+
         expect(processExitCalled).to.equal(true,
           'Should call process.exit at some point.');
       }).catch((error) => {
@@ -403,10 +354,7 @@ describe('app/master.js', function () {
         process: {pid: 'PID'},
         exitedAfterDisconnect: false
       };
-
-      Master.forkWorker = () => {
-        done();
-      };
+      Master.forkWorker = () => done();
 
       Master.handleWorkerExit(worker, 1, undefined);
     });
@@ -426,6 +374,41 @@ describe('app/master.js', function () {
     });
   });
 
+  describe('killWorker', function () {
+    it('should kill worker', function () {
+      const worker = new EventEmitter();
+
+      let killCalled = false;
+      worker.kill = (signal) => {
+        expect(signal).to.equal('SIGINT');
+
+        killCalled = true;
+        worker.emit('exit');
+      };
+
+      return Master.killWorker(worker)
+        .then(() => { expect(killCalled).to.equal(true); });
+    });
+  });
+
+  describe('killAllWorkers', function () {
+    it('should call kill for all workers defined in the cluster', function () {
+      const workers = ['worker1', 'worker2', 'worker3'];
+
+      let killCalled = 0;
+      Master.killWorker = (worker) => {
+        expect(worker).to.equal(workers[killCalled]);
+        killCalled += 1;
+        return Promise.resolve;
+      };
+
+      cluster.workers = workers;
+
+      return Master.killAllWorkers()
+        .then(() => { expect(killCalled).to.equal(3); });
+    });
+  });
+
   describe('reloadWorker', function () {
     it('should kill worker and fork a new one', function () {
       Master.forkWorker = () => Promise.resolve();
@@ -440,15 +423,13 @@ describe('app/master.js', function () {
         worker.emit('exit');
       };
 
-      const reloadPromise = Master.reloadWorker(worker)
+      return Master.reloadWorker(worker)
         .then(() => { expect(killCalled).to.equal(true); });
-
-      return reloadPromise;
     });
   });
 
   describe('reloadAllWorkers', function () {
-    it('should call reload for all workers defined in the cluster.', function () {
+    it('should call reload for all workers defined in the cluster', function () {
       const workers = ['worker1', 'worker2', 'worker3'];
 
       let reloadCalled = 0;
@@ -460,11 +441,8 @@ describe('app/master.js', function () {
 
       cluster.workers = workers;
 
-      const reloadPromise = Master.reloadAllWorkers()
-        .then(() => {
-          expect(reloadCalled).to.equal(3);
-        });
-      return reloadPromise;
+      return Master.reloadAllWorkers()
+        .then(() => { expect(reloadCalled).to.equal(3); });
     });
   });
 
@@ -478,57 +456,44 @@ describe('app/master.js', function () {
   });
 
   describe('activateFileListener', function () {
-    it('should ignore changes to master file', function (done) {
-      Master.reloadAllWorkers = () => {
-        done(new Error('Should not reload workers when a master file is edited.'));
-      };
+    it('should emit systemRestartNeeded when master file changed', function (done) {
+      eventBus.on('workerRestartNeeded', () => { done(new Error('Should not restart workers.')); });
+      eventBus.on('systemRestartNeeded', (meta, reason) => {
+        expect(reason).to.equal('file changed: app/master.js');
+        done();
+      });
 
       const watcher = new EventEmitter();
       Master.activateFileListener(watcher);
-
-      // Initial logs have already passed at this point, we want to capture the last one
-      logger.info = (message) => {
-        expect(message).to.equal('Internal files (master.js) changed, the whole server needs to reset!');
-        done();
-      };
 
       // Emit a change event
-      watcher.emit('all', 'change', 'master.js');
+      watcher.emit('all', 'change', 'app/master.js');
     });
 
-    it('should reload all watchers when a worker file is edited', function (done) {
-      Master.reloadAllWorkers = () => {
+    it('should emit workerRestartEvent when a worker file is edited', function (done) {
+      eventBus.on('workerRestartNeeded', (meta, reason) => {
+        expect(reason).to.equal('file changed: random-file.js');
         done();
-      };
+      });
+      eventBus.on('systemRestartNeeded', () => { done(new Error('Should not restart system')); });
 
       const watcher = new EventEmitter();
       Master.activateFileListener(watcher);
-
-      // Initial logs have already passed at this point, we want to capture the last one
-      logger.info = (message) => {
-        expect(message).to.equal('File changed, need to reload workers...');
-      };
 
       // Emit a change event
       watcher.emit('all', 'change', 'random-file.js');
     });
 
-    it('should log unlistened events to debug channel', function (done) {
-      Master.reloadAllWorkers = () => {
-        done(new Error('Should not reload workers when an uninteresting file event happens.'));
-      };
+    it('should not trigger restarts with unlistened events', function (done) {
+      eventBus.on('workerRestartNeeded', () => { done(new Error('Should not restart workers.')); });
+      eventBus.on('systemRestartNeeded', () => { done(new Error('Should not restart system')); });
 
       const watcher = new EventEmitter();
       Master.activateFileListener(watcher);
 
-      // Initial logs have already passed at this point, we want to capture the last one
-      logger.debug = (message) => {
-        expect(message).to.equal('File watch detected: chuaange: random-file.js');
-        done();
-      };
-
       // Emit a change event
       watcher.emit('all', 'chuaange', 'random-file.js');
+      done();
     });
   });
 

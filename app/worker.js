@@ -9,10 +9,15 @@ module.exports = function Worker() {
     shutdown: process.exit,
     event: eventBus.clusterEventHandler
   };
+
   process.on('message', (data) => {
     const type = _.get(data, 'type');
     if (_.has(msgHandlers, type)) {
-      msgHandlers[type].call(cluster.worker, data);
+      try {
+        msgHandlers[type](cluster.worker, data);
+      } catch (error) {
+        logger.error(`Failed to process event: ${error.stack} | ${JSON.stringify(data)}`);
+      }
     } else {
       logger.warn(`Unknown message type "${type}" to worker`);
     }
@@ -30,6 +35,7 @@ module.exports = function Worker() {
       eventBus.emit('helloEvent', {msg: `Worker: ${process.pid}`});
     }, 5000);
   }
+
   // test logger
   let i = 0;
   setInterval(() => { logger.info(`${process.pid}: i:${i += 1}`); }, 2000);
@@ -37,5 +43,6 @@ module.exports = function Worker() {
   // test worker exit
   setTimeout(() => { process.exit(); }, Math.random() * 10000);
   */
+
   this.app = require('.'); // eslint-disable-line global-require
 };
