@@ -3,6 +3,8 @@ const logger = require('winston');
 const QueryPlugin = require('mongoose-query');
 
 const Schema = mongoose.Schema;
+const Types = Schema.Types;
+const ObjectId = Types.ObjectId;
 
 const ItemSchema = new Schema({
   barcode: {type: String, unique: true, sparse: true},
@@ -12,6 +14,7 @@ const ItemSchema = new Schema({
   external_reference: {type: String},
   in_stock: {type: Number, required: true, default: 0, min: 0}, // total amount of SKUs
   available: {type: Number, required: true, default: 0, min: 0}, // in_stock - loaned
+  unique_resources: [{type: ObjectId, ref: 'Resource'}],
   date_created: {type: Date},
   category: {
     type: String,
@@ -24,7 +27,6 @@ const ItemSchema = new Schema({
     default: 'other'
   }
 });
-// ItemSchema.index({barcode:1}, {unique:true});
 
 /**
  * Query plugin

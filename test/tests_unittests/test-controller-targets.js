@@ -10,8 +10,8 @@ const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
-require('./../../app/models/targets.js');
-const TargetsController = require('./../../app/controllers/targets.js');
+require('../../app/models/ResourceModel.js');
+const TargetsController = require('../../app/controllers/resourceModel.js');
 
 // Setup
 logger.level = 'error';
@@ -23,7 +23,7 @@ const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe('controllers/targets.js', () => {
+describe('controllers/resourceModel.js', () => {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');

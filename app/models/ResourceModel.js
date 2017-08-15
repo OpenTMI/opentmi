@@ -3,68 +3,43 @@
  */
 
 const mongoose = require('mongoose');
-// var userPlugin = require('mongoose-user');
-const Schema = mongoose.Schema;
-const _ = require('lodash');
-
 const QueryPlugin = require('mongoose-query');
+
+const Schema = mongoose.Schema;
+
 /**
- * User schema
+ * Resource Model schema
  */
 
-const TargetSchema = new Schema({
+const ResourceModelSchema = new Schema({
   name: {type: String, unique: true},
-  yotta: [{
-    target: {type: String, required: true},
-    toolchain: {type: String, required: true}
-  }],
-  binary: {
-    type: {type: String, required: true}
-  },
-  flash: {
-    method: {type: String, required: true},
-    cycle_s: {type: Number, required: true, min: 0, max: 100}
-  },
-  reset: {
-    method: {type: String, required: true}
-  },
-  meta_info: {
-    manufacturer: {type: String},
-    model: {type: String, default: 'unknown'},
-    type: {type: String, enum: ['', 'other', 'R&D', 'CT', 'OperatorAcceptance']},
-    description: {type: String},
-    components: [{
-      type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
-      sn: {type: String},
-      mac: {type: String}
-    }],
-    hw: {
-      picture: {type: String}, // link
-      sn: {type: String, index: true}, // ue PSN
-      imei: {type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
-      hwid: {type: String},
-      memory: {
-        size: {type: Number},
-        score: {type: Number}
-      },
-      cpu: {
-        vendor: {type: String},
-        model: {type: String},
-        count: {type: Number},
-        freq: {type: Number},
-        score: {type: Number}
-      }/*
-      disk: {
-        score: {type: Number},
-      },
-      system: {
-        score: {type: Number},
-      },
-      components:[{
-
-      }] */
+  manufacturer: {type: String},
+  model: {type: String, default: 'unknown'},
+  type: {type: String, enum: ['', 'other', 'R&D', 'CT', 'OperatorAcceptance']},
+  description: {type: String},
+  hw: {
+    image_src: {type: String}, // this is kind of duplicate with item Schema
+    spec_src: {type: String},
+    memory: {
+      size: {type: Number},
+      score: {type: Number}
+    },
+    cpu: {
+      vendor: {type: String},
+      model: {type: String},
+      count: {type: Number},
+      freq: {type: Number},
+      score: {type: Number}
+    },
+    disk: {
+      size: {type: Number},
+      score: {type: Number}
+    },
+    system: {
+      score: {type: Number}
     }
-    /*
+  }
+  /*
     os: {
         type: {type: String, enum: ['win', 'linux', 'android', 'mbed', unknown']},          // optional
         architecture: {type: String, enum: ['32', '64', 'unknown']}, // e.g. 32 / 64 / unknown
@@ -121,13 +96,14 @@ const TargetSchema = new Schema({
         calibration: {
             intervall: { type: Number },
         },
-    }, */
+    },
   }
+  */
 },
 {toObject: {virtuals: true}});
 
 /** install QueryPlugin */
-TargetSchema.plugin(QueryPlugin);
+ResourceModelSchema.plugin(QueryPlugin);
 
 /**
  * Add your
@@ -135,26 +111,7 @@ TargetSchema.plugin(QueryPlugin);
  * - validations
  * - virtuals
  */
-TargetSchema.method({
-  toGt() {
-    const gtFormat = {
-      yotta_targets: [],
-      properties: {
-        binary_type: this.binary.type,
-        copy_method: this.flash.method,
-        reset_method: this.reset.method,
-        program_cycle_s: this.flash.cycle_s
-      }
-    };
-    _.each(this.yotta, (yt) => {
-      gtFormat.yotta_targets.push({
-        yotta_target: yt.target,
-        mbed_toolchain: yt.toolchain
-      });
-    });
-    return gtFormat;
-  }
-});
+// TargetSchema.method({});
 
 /**
  * Methods
@@ -170,5 +127,5 @@ TargetSchema.method({
 /**
  * Register
  */
-const Target = mongoose.model('Target', TargetSchema);
-module.exports = {Model: Target, Collection: 'Target'};
+const ResourceModel = mongoose.model('ResourceModels', ResourceModelSchema);
+module.exports = {Model: ResourceModel, Collection: 'Target'};

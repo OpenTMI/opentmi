@@ -1,35 +1,37 @@
-
-/*!
- * Module dependencies
- */
-
+// 3rd party modules
 const mongoose = require('mongoose');
-// var userPlugin = require('mongoose-user');
+const _ = require('lodash');
+const logger = require('winston');
+const QueryPlugin = require('mongoose-query');
+
+// application modules
+const ResourceAllocationPlugin = require('./plugins/resource-allocator');
+
+
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
-const logger = require('winston');
-
-const QueryPlugin = require('mongoose-query');
-const ResourceAllocationPlugin = require('./plugins/resource-allocator');
 
 /**
  * Resource schema
  */
 const ResourceSchema = new Schema({
-  name: {type: String, unique: true, required: true}, // Resource Name (more like nickname)
+  name: {type: String}, // Resource Name
   type: {
     type: String,
     required: true,
     enum: [ // Resource type
       'system',
       'dut',
-      'sim',
       'instrument',
-      'accessorie',
+      'accessories',
       'computer',
       'room'
     ]},
+  model: {
+    name: {type: String},
+    ref: {type: ObjectId, ref: 'Model'}
+  },
   status: {
     value: {
       type: String,
@@ -41,14 +43,12 @@ const ResourceSchema = new Schema({
       ],
       default: 'active'
     },
-    availability: {
+    note: {
+      type: String // e.g. notes why it's in maintenance
+    },
+    availability: { // @todo fetch this information from loans details
       type: String,
-      enum: ['free', 'reserved']},
-    installed: {
-      os: {
-        name: {type: String},
-        id: {type: ObjectId, ref: 'Build'}
-      }
+      enum: ['free', 'reserved']
     },
     time: {type: Date, default: Date.now}
   },
@@ -69,7 +69,8 @@ const ResourceSchema = new Schema({
     author: {type: String},
     purchased: {
       timestamp: {type: Date},
-      user: {type: String}
+      user: {type: String},
+      note: {type: String}
     }
   },
   user_info: {
@@ -107,42 +108,64 @@ const ResourceSchema = new Schema({
       }
     }
   },
-  // resource details - target details
-  target: {type: ObjectId, ref: 'Target'},
   ip: {
     hostname: {type: String, unique: true, sparse: true},
     domain: {type: String},
-    lan: [new Schema({
+    lan: [{
       name: {type: String, enum: ['', 'private'], default: 'rmad'}, // rmad if connected rmad
       dhcp: {type: Boolean, default: true},
       ipv4: {type: String}, // IPv4 address
       ipv4netmask: {type: String},
       ipv6: {type: String}, // IPv6 address
       mac: {type: String}
-    })],
+    }],
     remote_connection: {
       type: {type: String, enum: ['', 'vnc', 'http', 'ssh', 'telnet', 'rdm'], default: ''},
       url: {type: String}, // if dedicated
-      authentication: {username: {type: String}, password: {type: String}}
+      authentication: {
+        username: {type: String},
+        password: {type: String}
+      }
     }
   },
-  other_info: {
-    nickname: [{type: String}], // resource nickname
-    location: { // Resource physical location
-      site: {type: String, default: 'unknown'}, // Site
-      country: {type: String}, // Country
-      city: {type: String}, // City
-      adddress: {type: String}, // Street address
-      postcode: {type: String}, // Postcode
-      room: {type: String, default: 'unknown'}, // Room
-      subRoom: {type: String}, // subRoom
-      geo: {type: [Number], index: '2d'}
+  location: { // Resource physical location
+    site: {type: String, default: 'unknown'}, // Site
+    country: {type: String}, // Country
+    city: {type: String}, // City
+    adddress: {type: String}, // Street address
+    postcode: {type: String}, // Postcode
+    room: {type: String, default: 'unknown'}, // Room
+    subRoom: {type: String}, // subRoom
+    geo: {type: [Number], index: '2d'}
+  },
+  tags: Types.Object,
+  hw: {
+    firmware: {
+      name: {type: String},
+      version: {type: String}
     },
-    identification: {
-      sn: {type: String}
-    }
+    sn: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+      required: () => (_.findIndex(['dut', 'instrument'], this.type) >= 0)
+    }, // ue PSN
+    imei: {type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
+    hwid: {type: String},
+    components: [{
+      type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
+      sn: {type: String},
+      mac: {type: String}
+    }]
   },
   /*
+  installed: {
+      os: {
+        name: {type: String},
+        id: {type: ObjectId, ref: 'Build'}
+      }
+    },
   configurations: {
     defaults: {
       testcases: {
@@ -222,7 +245,7 @@ ResourceSchema.method({
     const route = [];
     const Resource = mongoose.model('Resource');
     const loop = function (error, resource) {
-      if (resource && resource.parent) {
+      if (_.has(resource, 'parent')) {
         route.push(resource.parent);
         Resource.find({_id: resource.parent}, loop);
       } else {
@@ -230,11 +253,6 @@ ResourceSchema.method({
       }
     };
     loop(null, this);
-  },
-  setDeviceBuild(build) {
-    this.device.build = build;
-    this.save();
-    logger.info('new build in resource');
   }
 });
 
@@ -242,8 +260,7 @@ ResourceSchema.method({
  * Statics
  */
 
-ResourceSchema.static({
-});
+// ResourceSchema.static({});
 
 /**
  * Register
