@@ -9,6 +9,7 @@ const EventEmitter = require('events');
 // Third party components
 require('colors');
 const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 
 // Local components
 const eventBus = require('../../app/tools/eventBus');
@@ -17,6 +18,7 @@ const logger = require('../../app/tools/logger');
 // Test config
 cluster.fork = () => {}; // Do not allow forking while testing, will cause all manner of trouble
 logger.level = 'silent';
+chai.use(chaiAsPromised);
 
 // Test variables
 const expect = chai.expect;
@@ -24,30 +26,26 @@ const filePath = path.resolve('app');
 let Master;
 
 describe('app/master.js', function () {
-  beforeEach(function (done) {
+  beforeEach(function () {
     delete require.cache[path.join(filePath, 'Master.js')];
     Master = require('../../app/Master'); // eslint-disable-line
 
     eventBus.removeAllListeners();
     process.removeAllListeners();
     cluster.removeAllListeners();
-
-    done();
   });
 
-  after(function (done) {
+  after(function () {
     const modulePath = path.join(filePath, 'tools', 'eventBus', 'index.js');
     delete require.cache[modulePath];
-    done();
   });
 
   describe('initialize', function () {
-    beforeEach(function (done) {
+    beforeEach(function () {
       Master.forkWorker = () => {};
 
       Master.createFileListener = () => {};
       Master.activateFileListener = () => {};
-      done();
     });
 
     it('should listen for process and cluster events', function (done) {
@@ -211,18 +209,10 @@ describe('app/master.js', function () {
     });
 
     it('should reject promise on early exit', function () {
-      const forkPromise = Master.forkWorker()
-        .then(() => Promise.reject('Should not resolve if process exits too early.'))
-        .catch((error) => {
-          expect(error).to.be.instanceOf(Error);
-          expect(error).to.have.property('message', 'Should not exit before listening event.');
-          expect(forkEmitter.listenerCount('listening')).to.equal(0, 'Should remove listening event listeners.');
-          expect(forkEmitter.listenerCount('message')).to.equal(0, 'Should remove message event listeners.');
-          expect(forkEmitter.listenerCount('exit')).to.equal(0, 'Should remove exit event listeners.');
-        });
-
+      const forkPromise = Master.forkWorker();
       forkEmitter.emit('exit');
-      return forkPromise;
+
+      return expect(forkPromise).to.eventually.be.rejectedWith(Error, 'Should not exit before listening event.');
     });
 
     it('should redirect message from worker to onWorkerMessage', function () {

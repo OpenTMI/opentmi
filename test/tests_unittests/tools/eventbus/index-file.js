@@ -17,7 +17,7 @@ const expect = chai.expect;
 const eventBusPath = path.resolve('app/tools/eventBus');
 
 describe('tools/eventBus', function () {
-  beforeEach(function (done) {
+  beforeEach(function () {
     delete require.cache[path.join(eventBusPath, 'index.js')];
     eventbus = require('../../../../app/tools/eventBus'); // eslint-disable-line
 
@@ -26,8 +26,6 @@ describe('tools/eventBus', function () {
 
     delete require.cache[path.join(eventBusPath, 'cluster-event-bus')];
     clusterBus = require('../../../../app/tools/eventBus/cluster-event-bus'); // eslint-disable-line
-
-    done();
   });
 
   describe('clusterEventHandler', function () {
@@ -77,7 +75,7 @@ describe('tools/eventBus', function () {
       let locallyEmitted = false;
       localBus.emit = (event) => {
         // Should have automagically appended worker "id" property
-        expect(event.meta).to.have.property('id', undefined);
+        expect(event.meta).to.have.property('id', 1);
         locallyEmitted = true;
       };
 

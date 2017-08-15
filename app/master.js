@@ -22,6 +22,7 @@ class Master {
   /**
    * Executes the main control flow of Master process,
    * forks number of workers and registers to different events.
+   * @returns {Promise} promise to initialize and fork new workers
    */
   static initialize() {
     logger.info(`${process.pid} is running`);
@@ -42,7 +43,7 @@ class Master {
       Master.activateFileListener(watcher);
     }
 
-    // Fork workers...
+    // Fork workers
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
       .then(() => { logger.info('All workers ready to serve.'); })
       .catch((error) => { logger.error(error.message); });
@@ -65,6 +66,7 @@ class Master {
 
   /**
    * Returns a packet of various data about cpu usage and worker processes
+   * @return {object} with master property that contains various machine data
    */
   static getStats() {
     const master = {};
@@ -202,6 +204,7 @@ class Master {
 
   /**
    * Kills workers and exits process.
+   * @return {Promise} promise to kill all workers
    */
   static handleSIGINT() {
     // @todo SIGINT automatically gets sent to all workers, worker killing might produce weird reslts
