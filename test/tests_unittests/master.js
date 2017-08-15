@@ -27,8 +27,8 @@ let Master;
 
 describe('app/master.js', function () {
   beforeEach(function () {
-    delete require.cache[path.join(filePath, 'Master.js')];
-    Master = require('../../app/Master'); // eslint-disable-line
+    delete require.cache[path.join(filePath, 'master.js')];
+    Master = require('../../app/master'); // eslint-disable-line
 
     eventBus.removeAllListeners();
     process.removeAllListeners();

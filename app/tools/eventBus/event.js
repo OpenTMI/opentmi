@@ -15,7 +15,7 @@ class Event {
     this.type = type;
 
     if (!(meta instanceof Object)) {
-      throw new Error(`Invalid type of event: ${typeof meta}, expected object.`);
+      throw new Error(`Invalid type for meta: ${typeof meta}, expected object.`);
     }
     this.meta = meta;
   }
