@@ -7,8 +7,8 @@ function gruntSetup(grunt) {
     'test/tests_unittests/*.js',
     'test/tests_unittests/tools/*.js',
     'test/tests_unittests/addons/*.js',
-    'test/tests_unittests/routes/*.js',
-    'test/tests_unittests/controllers/*.js'
+    'test/tests_unittests/controllers/*.js',
+    'test/tests_unittests/routes/*.js'
   ];
 
   grunt.initConfig({
