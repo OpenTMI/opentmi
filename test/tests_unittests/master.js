@@ -449,7 +449,7 @@ describe('app/master.js', function () {
     it('should emit systemRestartNeeded when master file changed', function (done) {
       eventBus.on('workerRestartNeeded', () => { done(new Error('Should not restart workers.')); });
       eventBus.on('systemRestartNeeded', (meta, reason) => {
-        expect(reason).to.equal('file changed: app/master.js');
+        expect(reason).to.equal(`file changed: ${path.join('app', 'master.js')}`);
         done();
       });
 
@@ -457,7 +457,7 @@ describe('app/master.js', function () {
       Master.activateFileListener(watcher);
 
       // Emit a change event
-      watcher.emit('all', 'change', 'app/master.js');
+      watcher.emit('all', 'change', path.join('app', 'master.js'));
     });
 
     it('should emit workerRestartEvent when a worker file is edited', function (done) {
@@ -490,7 +490,7 @@ describe('app/master.js', function () {
   describe('deactivateFileListener', function () {
     it('should call removeAllListeners', function (done) {
       const watcher = {
-        removeAllListeners: done
+        close: () => done()
       };
 
       Master.deactivateFileListener(watcher);

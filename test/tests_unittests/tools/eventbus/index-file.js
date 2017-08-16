@@ -28,6 +28,18 @@ describe('tools/eventBus', function () {
     clusterBus = require('../../../../app/tools/eventBus/cluster-event-bus'); // eslint-disable-line
   });
 
+  describe('exports', function () {
+    it('should expose proper functions', function (done) {
+      expect(eventbus).to.have.property('clusterEventHandler');
+      expect(eventbus).to.have.property('Event');
+      expect(eventbus).to.have.property('emit');
+      expect(eventbus).to.have.property('on');
+      expect(eventbus).to.have.property('removeListener');
+      expect(eventbus).to.have.property('removeAllListeners');
+      done();
+    });
+  });
+
   describe('clusterEventHandler', function () {
     it('should emit/forward message to local and cluster busses', function (done) {
       // Simulate master thread
@@ -145,18 +157,6 @@ describe('tools/eventBus', function () {
       expect(locallyEmitted).to.equal(true, 'event should be emitted locally');
       expect(clusterEmitted).to.equal(true, 'event should be emitted to cluster');
 
-      done();
-    });
-  });
-
-  describe('exports', function () {
-    it('should expose proper functions', function (done) {
-      expect(eventbus).to.have.property('clusterEventHandler');
-      expect(eventbus).to.have.property('Event');
-      expect(eventbus).to.have.property('emit');
-      expect(eventbus).to.have.property('on');
-      expect(eventbus).to.have.property('removeListener');
-      expect(eventbus).to.have.property('removeAllListeners');
       done();
     });
   });

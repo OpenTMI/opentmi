@@ -1,6 +1,7 @@
 // Native modules
 const cluster = require('cluster');
 const os = require('os');
+const path = require('path');
 
 // Third party modules
 const _ = require('lodash');
@@ -293,12 +294,25 @@ class Master {
    * @return {Emitter} watcher for file events.
    */
   static createFileListener(dir = '.') {
+    logger.info(`Creating watcher for directory: ${dir}.`);
+
+    // @note Listeners are created recursively, check amount of created listeners before commiting
     const options = {
-      ignored: /(^|[/\\])\../,
+      ignored: /(^|[/\\])\.|node_modules/,
       ignoreInitial: true
     };
 
-    return fileWatcher.watch(dir, options);
+    const watcher = fileWatcher.watch(dir, options);
+    watcher.on('ready', () => {
+      logger.debug(`File watcher ready, watchers included: ${Object.keys(watcher.getWatched()).length}`);
+    });
+
+    watcher.on('error', (error) => {
+      logger.error(`Chokidar reported an error: ${error.message}`);
+      logger.debug(error.stack);
+    });
+
+    return watcher;
   }
 
   /** 
@@ -308,13 +322,13 @@ class Master {
    * @param {Emitter} watcher - emitter that reports file events.
    */
   static activateFileListener(watcher) {
-    logger.info('Listening to file changes, reloading workers automatically if changes detected.');
+    logger.info('Activating file listener, reloading workers automatically if changes detected.');
 
     const masterFiles = [
-      'app/master.js',
-      'tools/logger',
-      'tools/eventBus',
-      'tools/cluster'
+      path.join('app', 'master.js'),
+      path.join('tools', 'logger'),
+      path.join('tools', 'eventBus'),
+      path.join('tools', 'cluster')
     ];
 
     const listenedEvents = [
@@ -325,15 +339,15 @@ class Master {
       'addDir'
     ];
 
-    watcher.on('all', (event, path) => {
+    watcher.on('all', (event, filePath) => {
       if (listenedEvents.indexOf(event) === -1) {
-        logger.debug(`File event detected ${event}: ${path}`);
-      } else if (masterFiles.indexOf(path) === -1) {
+        logger.debug(`File event detected ${event}: ${filePath}`);
+      } else if (masterFiles.indexOf(filePath) === -1) {
         logger.info('File changed, need to reload workers...');
-        eventBus.emit('workerRestartNeeded', `file changed: ${path}`);
+        eventBus.emit('workerRestartNeeded', `file changed: ${filePath}`);
       } else {
-        logger.info(`Internal files (${path}) changed, the whole server needs to reset!`);
-        eventBus.emit('systemRestartNeeded', `file changed: ${path}`);
+        logger.info(`Internal files (${filePath}) changed, the whole server needs to reset!`);
+        eventBus.emit('systemRestartNeeded', `file changed: ${filePath}`);
       }
     });
   }
@@ -343,8 +357,8 @@ class Master {
    * @param {Emitter} watcher - emitter that reports file events
    */
   static deactivateFileListener(watcher) {
-    logger.info('Removing all file listeners, no longer reacting to file changes.');
-    watcher.removeAllListeners();
+    logger.info('Deactivating file listener, no longer reacting to file changes.');
+    watcher.close();
   }
 }
 
