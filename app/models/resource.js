@@ -1,16 +1,16 @@
 // 3rd party modules
 const mongoose = require('mongoose');
 const _ = require('lodash');
-const logger = require('winston');
 const QueryPlugin = require('mongoose-query');
 
 // application modules
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
-
+const tagsValidator = require('../tools/tags');
 
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
+
 
 /**
  * Resource schema
@@ -138,7 +138,13 @@ const ResourceSchema = new Schema({
     subRoom: {type: String}, // subRoom
     geo: {type: [Number], index: '2d'}
   },
-  tags: Types.Object,
+  tags: {
+    type: Types.Object,
+    validate: {
+      validator: tagsValidator,
+      message: '{VALUE} is not a valid tag!'
+    }
+  },
   hw: {
     firmware: {
       name: {type: String},
