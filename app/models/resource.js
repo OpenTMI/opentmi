@@ -5,8 +5,10 @@ const QueryPlugin = require('mongoose-query');
 
 // application modules
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
-const tagsValidator = require('../tools/tags');
+const validators = require('../tools/validators');
 
+
+const tagsValidator = validators.tagsValidator;
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
@@ -165,13 +167,20 @@ const ResourceSchema = new Schema({
       mac: {type: String}
     }]
   },
-  /*
   installed: {
-      os: {
-        name: {type: String},
-        id: {type: ObjectId, ref: 'Build'}
-      }
+    os: {
+      name: {type: String},
+      id: {type: ObjectId, ref: 'Build'}
     },
+    apps: {
+      type: Types.Object,
+      validate: {
+        validator: appValidator,
+        message: '{VALUE} is not a valid app configuration!'
+      }
+    }
+  },
+  /*
   configurations: {
     defaults: {
       testcases: {
