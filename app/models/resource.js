@@ -56,8 +56,8 @@ const ResourceSchema = new Schema({
     time: {type: Date, default: Date.now}
   },
   cre: {
-    user: {type: String, default: ''}, // Resource creator
-    time: {type: Date, default: Date.now} // Create timestamp
+    user: {type: ObjectId, ref: 'User'},
+    time: {type: Date, default: Date.now}
   },
   mod: {
     user: {type: String, default: ''}, // Resource modifier
@@ -111,11 +111,11 @@ const ResourceSchema = new Schema({
       }
     }
   },
-  ip: {
+  network: {
     hostname: {type: String, unique: true, sparse: true},
     domain: {type: String},
     lan: [{
-      name: {type: String, enum: ['', 'private'], default: 'rmad'}, // rmad if connected rmad
+      name: {type: String},
       dhcp: {type: Boolean, default: true},
       ipv4: {type: String}, // IPv4 address
       ipv4netmask: {type: String},
@@ -123,7 +123,7 @@ const ResourceSchema = new Schema({
       mac: {type: String}
     }],
     remote_connection: {
-      type: {type: String, enum: ['', 'vnc', 'http', 'ssh', 'telnet', 'rdm'], default: ''},
+      protocol: {type: String, enum: ['', 'vnc', 'http', 'ssh', 'telnet', 'rdm'], default: ''},
       url: {type: String}, // if dedicated
       authentication: {
         username: {type: String},
@@ -142,7 +142,7 @@ const ResourceSchema = new Schema({
     geo: {type: [Number], index: '2d'}
   },
   tags: {
-    type: Types.Object,
+    type: Types.Mixed,
     validate: {
       validator: tagsValidator,
       message: '{VALUE} is not a valid tag!'
@@ -171,10 +171,10 @@ const ResourceSchema = new Schema({
   installed: {
     os: {
       name: {type: String},
-      id: {type: ObjectId, ref: 'Build'}
+      build: {type: ObjectId, ref: 'Build'}
     },
     apps: {
-      type: Types.Object,
+      type: Types.Mixed,
       validate: {
         validator: appsValidator,
         message: '{VALUE} is not a valid app configuration!'
