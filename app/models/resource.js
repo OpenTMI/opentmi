@@ -9,6 +9,7 @@ const validators = require('../tools/validators');
 
 
 const tagsValidator = validators.tagsValidator;
+const appsValidator = validators.appsValidator;
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
@@ -175,7 +176,7 @@ const ResourceSchema = new Schema({
     apps: {
       type: Types.Object,
       validate: {
-        validator: appValidator,
+        validator: appsValidator,
         message: '{VALUE} is not a valid app configuration!'
       }
     }

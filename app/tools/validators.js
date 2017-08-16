@@ -23,7 +23,7 @@ const APPS = {
     apps: {
       type: 'object',
       patternProperties: {
-        '.+': {
+        '.+': { // key is application name
           type: 'object',
           properties: {
             version: {type: 'string'},
