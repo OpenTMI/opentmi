@@ -11,10 +11,11 @@ const Promise = require('bluebird');
 // Local modules
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
+const config = require('../config');
 
 // Module variables
 const numCPUs = os.cpus().length;
-const autoReload = true; // @todo get from config file
+const autoReload = config.get('auto-reload'); // @todo get from config file
 
 /**
  * Provides a static interface to worker management

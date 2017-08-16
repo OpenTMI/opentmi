@@ -39,6 +39,12 @@ const args = {
     default: false,
     type: 'bool',
     describe: 'Silent mode'
+  },
+  'auto-reload': {
+    alias: 'r',
+    default: false,
+    type: 'bool',
+    describe: 'Automatically restart workers when changes detected in server directory'
   }
 };
 
