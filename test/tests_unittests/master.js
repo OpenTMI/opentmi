@@ -94,20 +94,43 @@ describe('app/master.js', function () {
       eventBus.emit('testEvent', 'testData');
     });
 
-    it('should call createFileListeners and activateFileListener by default', function (done) {
+    it('should call createFileListener and activateFileListener when auto-reload is true', function (done) {
       let createCalled = false;
       Master.createFileListener = () => {
         createCalled = true;
         return 'mockFileWatcher';
       };
 
+      let activateCalled = false;
       Master.activateFileListener = (watcher) => {
         expect(watcher).to.equal('mockFileWatcher');
         expect(createCalled).to.equal(true, 'should call createFileListener before listener activation');
-        done();
+        activateCalled = true;
+      };
+
+      Master.initialize(true);
+
+      expect(createCalled).to.equal(true, 'listener should be created when auto-reload is true');
+      expect(activateCalled).to.equal(true, 'listener should be activated when auto-reload is true');
+      done();
+    });
+
+    it('should not call createFileListener and activateFileListener when auto-reload is false', function (done) {
+      let createCalled = false;
+      Master.createFileListener = () => {
+        createCalled = true;
+      };
+
+      let activateCalled = false;
+      Master.activateFileListener = () => {
+        activateCalled = true;
       };
 
       Master.initialize();
+
+      expect(createCalled).to.equal(false, 'should not create file listener when autoReload is false');
+      expect(activateCalled).to.equal(false, 'should not activate file listener when autoReload is false');
+      done();
     });
 
     it('should call fork os.cpus().length times', function (done) {

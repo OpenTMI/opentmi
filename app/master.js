@@ -15,7 +15,7 @@ const config = require('../config');
 
 // Module variables
 const numCPUs = os.cpus().length;
-const autoReload = config.get('auto-reload'); // @todo get from config file
+const defaultAutoReload = config.get('auto-reload');
 
 /**
  * Provides a static interface to worker management
@@ -26,7 +26,7 @@ class Master {
    * forks number of workers and registers to different events.
    * @returns {Promise} promise to initialize and fork new workers
    */
-  static initialize() {
+  static initialize(autoReload = defaultAutoReload) {
     logger.info(`${process.pid} is running`);
 
     // Subscribe handlers for events
