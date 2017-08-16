@@ -28,9 +28,9 @@ const ResourceSchema = new Schema({
       'computer',
       'room'
     ]},
-  model: {
-    name: {type: String},
-    ref: {type: ObjectId, ref: 'Model'}
+  item: {
+    model: {type: String},
+    ref: {type: ObjectId, ref: 'Item'}
   },
   status: {
     value: {
