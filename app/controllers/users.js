@@ -32,7 +32,7 @@ class UsersController extends DefaultController {
     const namespace = req.params.Namespace;
     this.Model.findById(req.user.sub).then(
       (user) => {
-        const settings = _.get(user, `settings.${namespace}`) || {};
+        const settings = _.get(user, `settings.${namespace}`, {});
         res.send(settings);
       }
     );
