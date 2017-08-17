@@ -104,6 +104,8 @@ class DefaultController extends EventEmitter {
         res.json(doc);
       }
     });
+
+    return undefined;
   }
 
   remove(req, res) {
