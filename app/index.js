@@ -43,10 +43,8 @@ DB.connect().catch((error) => {
   .then(() => AddonManager.init(app, server, io))
   .then(() => AddonManager.loadAddons())
   .then(() => AddonManager.registerAddons())
-  .then(() =>
-    // Error route should be initialized after addonmanager has served all static routes
-    routes.registerErrorRoute(app)
-  )
+  // Error route should be initialized after addonmanager has served all static routes
+  .then(() => routes.registerErrorRoute(app))
   .then(() => {
     function onError(error) {
       if (error.code === 'EACCES' && port < 1024) {
@@ -69,11 +67,13 @@ DB.connect().catch((error) => {
 
     // Close the Mongoose connection, when receiving SIGINT
     process.on('SIGINT', () => {
+      // server.close stops worker from accepting new requests and finishes currently processed requests
+      // @todo test that requests actually get processed 
       server.close(() => {
         DB.disconnect().then(() => {
           process.exit(0);
         }).catch((err) => {
-          logger.error(`Disconnection fails: ${err}`);
+          logger.error(`Disconnection from database failed: ${err}`);
           process.exit(-1);
         });
       });

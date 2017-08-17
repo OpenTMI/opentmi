@@ -8,7 +8,6 @@ function forward(event) {
       if (`${id}` !== `${event.meta.id}`) {
         logger.silly(`Sending event to Worker#${id}.`);
         if (worker.isConnected()) {
-          // @todo better intercommunication..
           worker.send(event.toJSON());
         }
       } else {

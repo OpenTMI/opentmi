@@ -17,6 +17,8 @@ const config = require('../config');
 const numCPUs = os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
+let systemRestartNeeded = false;
+
 /**
  * Provides a static interface to worker management
  */
@@ -33,6 +35,7 @@ class Master {
     eventBus.on('masterStatus', Master.statusHandler);
     eventBus.on('*', Master.broadcastHandler);
     eventBus.on('workerRestartNeeded', Master.handleWorkerRestart);
+    eventBus.once('systemRestartNeeded', () => { systemRestartNeeded = true; });
 
     // Handle graceful exit
     process.on('SIGINT', Master.handleSIGINT);
@@ -71,29 +74,40 @@ class Master {
    * @return {object} with master property that contains various machine data
    */
   static getStats() {
-    const master = {};
-    master.hostname = os.hostname();
-    master.os = `${os.type()} ${os.release()}`;
-    master.averageLoad = os.loadavg().map(n => n.toFixed(2)).join(' ');
-    master.coresUsed = `${Object.keys(cluster.workers).length} of ${numCPUs}`;
-    master.memoryUsageAtBoot = os.freemem();
-    master.totalMem = os.totalmem();
-    master.currentMemoryUsage = (os.totalmem() - os.freemem());
+    const stats = {};
+
+    // General information
+    stats.hostname = os.hostname();
+    stats.os = `${os.type()} ${os.release()}`;
+
+    // Flags
+    stats.requireRestart = systemRestartNeeded;
+
+    // Machine resource stats
+    stats.averageLoad = os.loadavg().map(n => n.toFixed(2)).join(' ');
+    stats.coresUsed = `${Object.keys(cluster.workers).length} of ${numCPUs}`;
+    stats.memoryUsageAtBoot = os.freemem();
+    stats.totalMem = os.totalmem();
+    stats.currentMemoryUsage = (os.totalmem() - os.freemem());
 
     // Calculates the fraction of time cpus spend on average in the user mode.
     function getUCTF(cpu) { // User Cpu Time Fraction
       return cpu.times.user / (cpu.times.user + cpu.times.nice + cpu.times.sys + cpu.times.idle + cpu.times.irq);
     }
     const avgCpuSum = (_.reduce(os.cpus(), (memo, cpu) => memo + getUCTF(cpu), 0) * 100) / numCPUs;
-    master.hostCpu = avgCpuSum.toFixed(2);
+    stats.hostCpu = avgCpuSum.toFixed(2);
 
     // Collect information about workers
-    master.workers = _.map(cluster.workers, (worker, id) => (
-      {isDead: worker.isDead(),
-        isConnected: worker.isConnected(),
-        pid: worker.process.pid,
-        id: id}));
-    return {master: master};
+    stats.workers = _.map(cluster.workers, (worker, id) => ({
+      starting: worker.__starting,
+      closing: worker.__closing,
+      isDead: worker.isDead(),
+      isConnected: worker.isConnected(),
+      pid: worker.process.pid,
+      id: id
+    }));
+
+    return stats;
   }
 
   /**
@@ -125,6 +139,8 @@ class Master {
   static forkWorker() {
     return new Promise((resolve, reject) => {
       const worker = cluster.fork();
+      worker.__starting = true;
+      worker.__closing = false;
 
       const onPrematureExit = (code, signal) => {
         Master.logWorkerDeath(worker, code, signal);
@@ -136,6 +152,7 @@ class Master {
       const onListening = () => {
         logger.info(`Worker#${worker.id} is accepting requests.`);
         worker.removeListener('exit', onPrematureExit);
+        worker.__starting = false;
         resolve();
       };
 
@@ -211,6 +228,10 @@ class Master {
   static handleSIGINT() {
     // @todo SIGINT automatically gets sent to all workers, worker killing might produce weird reslts
     logger.info('SIGINT received.');
+
+    // @todo handle killing more gracefully, atm cluster already forwards sigint to workers as soon as it receives it
+    // This means that master tries to send signals to already interrupted workers which throw EPIPE errors, because
+    // the workers already stopped receiving signals.
     return Master.killAllWorkers()
       .then(() => {
         logger.info('All workers killed, exiting process.');
@@ -246,11 +267,11 @@ class Master {
    */
   static killWorker(worker) {
     logger.debug(`Killing Worker#${worker.id}.`);
+    worker.__closing = true; // eslint-disable-line no-param-reassign
     return new Promise((resolve) => {
       worker.on('exit', resolve);
 
       try {
-        // @†odo this might need more robust solution, finish requests before dying
         worker.kill('SIGINT');
       } catch (error) {
         logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);

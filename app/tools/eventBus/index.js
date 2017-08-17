@@ -37,6 +37,7 @@ module.exports = {
   Event: Event,
   emit: emit,
   on: localBus.on.bind(localBus),
+  once: localBus.once.bind(localBus),
   removeListener: localBus.removeListener.bind(localBus),
   removeAllListeners: localBus.removeAllListeners.bind(localBus)
 };

@@ -160,18 +160,15 @@ describe('app/master.js', function () {
     it('should return object with valid fields', function (done) {
       const stats = Master.getStats();
 
-      expect(stats).to.have.property('master');
-      const masterStats = stats.master;
-
-      expect(masterStats).to.have.property('hostname');
-      expect(masterStats).to.have.property('os');
-      expect(masterStats).to.have.property('averageLoad');
-      expect(masterStats).to.have.property('coresUsed');
-      expect(masterStats).to.have.property('memoryUsageAtBoot');
-      expect(masterStats).to.have.property('totalMem');
-      expect(masterStats).to.have.property('currentMemoryUsage');
-      expect(masterStats).to.have.property('hostCpu');
-      expect(masterStats).to.have.property('workers');
+      expect(stats).to.have.property('hostname');
+      expect(stats).to.have.property('os');
+      expect(stats).to.have.property('averageLoad');
+      expect(stats).to.have.property('coresUsed');
+      expect(stats).to.have.property('memoryUsageAtBoot');
+      expect(stats).to.have.property('totalMem');
+      expect(stats).to.have.property('currentMemoryUsage');
+      expect(stats).to.have.property('hostCpu');
+      expect(stats).to.have.property('workers');
 
       done();
     });

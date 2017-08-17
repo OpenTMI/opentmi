@@ -28,21 +28,5 @@ module.exports = function Worker() {
     logger.verbose(`[eventBus] ${eventName} ${JSON.stringify(meta)}: ${JSON.stringify(data)})`);
   });
 
-  /*
-  // test event bus
-  if (cluster.worker.id === 1) {
-    setInterval(() => {
-      eventBus.emit('helloEvent', {msg: `Worker: ${process.pid}`});
-    }, 5000);
-  }
-
-  // test logger
-  let i = 0;
-  setInterval(() => { logger.info(`${process.pid}: i:${i += 1}`); }, 2000);
-
-  // test worker exit
-  setTimeout(() => { process.exit(); }, Math.random() * 10000);
-  */
-
   this.app = require('.'); // eslint-disable-line global-require
 };
