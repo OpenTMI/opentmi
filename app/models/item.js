@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const logger = require('winston');
+const logger = require('../tools/logger');
 const QueryPlugin = require('mongoose-query');
 const Request = require('request');
 

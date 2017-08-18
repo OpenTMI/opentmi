@@ -5,7 +5,6 @@
 const path = require('path');
 
 // Third party modules
-const logger = require('winston');
 const _ = require('lodash');
 const uuid = require('node-uuid');
 const mongoose = require('mongoose');
@@ -13,6 +12,7 @@ const QueryPlugin = require('mongoose-query');
 const mime = require('mime');
 
 // Local modules
+const logger = require('../tools/logger');
 const FileSchema = require('./extends/file');
 const tools = require('../tools');
 

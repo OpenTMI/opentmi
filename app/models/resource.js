@@ -14,7 +14,6 @@ const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
 
-
 /**
  * Resource schema
  */

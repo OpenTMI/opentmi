@@ -10,7 +10,7 @@ const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const JunitXmlParser = require('junit-xml-parser').parser;
 const uuid = require('node-uuid');
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 // Setup
 mongoose.Promise = Promise;

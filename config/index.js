@@ -39,12 +39,18 @@ const args = {
     default: false,
     type: 'bool',
     describe: 'Silent mode'
+  },
+  'auto-reload': {
+    alias: 'r',
+    default: false,
+    type: 'bool',
+    describe: 'Automatically restart workers when changes detected in server directory'
   }
 };
 
 nconf.argv(args, 'Usage: npm start -- (options)')
   .env()
-  .defaults(require('./../config/config.js'));
+  .defaults(require('./config.js'));
 
 
 module.exports = nconf;

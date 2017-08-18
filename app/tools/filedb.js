@@ -4,7 +4,7 @@ const zlib = require('zlib');
 
 // Third party components
 const nconf = require('../../config');
-const logger = require('winston');
+const logger = require('../tools/logger');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
 
@@ -16,6 +16,14 @@ const usedEncoding = 'utf8';
 const File = mongoose.model('File');
 const filedb = nconf.get('filedb');
 const fileEnding = 'gz';
+
+// Make directory for filedb if it is defined
+if (filedb && filedb !== 'mongodb') {
+  if (!fs.existsSync(filedb)) {
+    logger.info('create %s folder for filedb', filedb);
+    fs.mkdirSync(filedb);
+  }
+}
 
 /**
  * Collection of static functions that can be used to manipulate the filedb

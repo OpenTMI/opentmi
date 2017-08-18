@@ -1,7 +1,6 @@
-const logger = require('winston');
 const EventEmitter = require('events').EventEmitter;
 const mongoose = require('mongoose');
-
+const logger = require('../tools/logger');
 /*
   General ontrollers for "Restfull" services
 */
@@ -89,8 +88,13 @@ class DefaultController extends EventEmitter {
     delete editedReq.body.__v;
     logger.debug(editedReq.body);
 
+    const modelID = editedReq.params[this.modelName];
+    if (modelID === undefined) {
+      return res.status(500).json({error: 'Failed to extract id from request params.'});
+    }
+
     const updateOpts = {runValidators: true};
-    this._model.findByIdAndUpdate(editedReq.params[this.modelName], editedReq.body, updateOpts, (error, doc) => {
+    this._model.findByIdAndUpdate(modelID, editedReq.body, updateOpts, (error, doc) => {
       if (error) {
         logger.warn(error);
         res.status(400).json({error: error.message});
@@ -99,6 +103,8 @@ class DefaultController extends EventEmitter {
         res.json(doc);
       }
     });
+
+    return undefined;
   }
 
   remove(req, res) {

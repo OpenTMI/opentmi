@@ -25,7 +25,9 @@
   },
   "scripts": {
     "start": "NODE_ENV=development node index.js",
+    "cluster": "NODE_ENV=development node app/cluster.js",
     "debug": "NODE_ENV=development node --inspect index.js",
+    "debug-cluster": "NODE_ENV=development node --inspect app/cluster.js",
     "test": "grunt",
     "lint": "node node_modules/eslint/bin/eslint ."
   },
@@ -34,6 +36,7 @@
     "bcryptjs": "^2.4.3",
     "bluebird": "3.5.0",
     "body-parser": "*",
+    "chokidar": "^1.7.0",
     "colors": "^1.1.2",
     "compression": "*",
     "connect-busboy": "0.0.2",
@@ -57,7 +60,7 @@
     "mime": "^1.3.6",
     "moment": "^2.18.1",
     "mongoose": "^4.11.3",
-    "mongoose-query": "^0.2.1",
+    "mongoose-query": "^0.3.0",
     "mongoose-schema-jsonschema": "^1.1.13",
     "nconf": "^0.8.4",
     "node-uuid": "^1.4.7",

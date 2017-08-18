@@ -1,7 +1,7 @@
 // 3rd party modules
-const logger = require('winston');
 const async = require('async');
-
+// application modules
+const logger = require('../tools/logger');
 /**
  * Collection of routers that act like a single router to allow addons to
  * dynamically define and undefine routes
