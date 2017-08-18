@@ -21,9 +21,9 @@ class UsersController extends DefaultController {
           user.settings[namespace] = {}; // eslint-disable-line no-param-reassign
           user.markModified('settings');
           user.save();
-          res.send({message: 'settings cleared'});
+          res.json({message: 'settings cleared'});
         } else {
-          res.send({message: 'no settings to clear'});
+          res.json({message: 'no settings to clear'});
         }
       }
     );
@@ -33,7 +33,7 @@ class UsersController extends DefaultController {
     this.Model.findById(req.user.sub).then(
       (user) => {
         const settings = _.get(user, `settings.${namespace}`, {});
-        res.send(settings);
+        res.json(settings);
       }
     );
   }
@@ -44,8 +44,13 @@ class UsersController extends DefaultController {
         _.defaults(user, {settings: {}});
         user.settings[namespace] = req.body.settings; // eslint-disable-line no-param-reassign
         user.markModified('settings');
-        user.save();
-        res.send({message: 'settings saved'});
+        user.save((error) => {
+          if(error) {
+            res.status(500).json({error.message});
+          } else {
+            res.json({message: 'settings saved'});
+          }
+        });
       }
     );
   }
