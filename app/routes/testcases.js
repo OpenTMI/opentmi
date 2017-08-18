@@ -12,13 +12,13 @@ function Route(app) {
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
 
-  router.route('/api/v0/testcases/:testcase.:format?')
+  router.route('/api/v0/testcases/:Testcase.:format?')
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  router.route('/api/v0/testcases/:testcase/download')
+  router.route('/api/v0/testcases/:Testcase/download')
     .all(controller.all.bind(controller))
     .get(controller.download.bind(controller));
 
