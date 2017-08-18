@@ -20,38 +20,16 @@ class UsersController extends DefaultController {
     req.User.update(doc)
       .catch(error => res.status(500).json({message: error.message}))
       .then((resp) => {
-        if (resp.ok === 1) {
+        if (resp.nModified === 1) {
           res.json({});
         } else {
-          res.status(500).json({message: resp});
+          res.status(404).json({message: resp.message});
         }
       });
-
-    /*
-
-    this.Model.findById(req.user.sub).then(
-      (user) => {
-        if (_.has(user, `settings.${namespace}`)) {
-          user.settings[namespace] = {}; // eslint-disable-line no-param-reassign
-          user.markModified('settings');
-          user.save((error) => {
-            if (error) {
-              res.status(500).json({message: error.message});
-            } else {
-              res.json({message: 'settings cleared'});
-            }
-          });
-        } else {
-          res.json({message: 'no settings to clear'});
-        }
-      }
-    );
-    */
   }
   getSettings(req, res) {
     const namespace = req.params.Namespace;
     const key = `settings.${namespace}`;
-    console.log(req.User)
     const value = _.get(req.User, key);
     if (value) {
       const settings = _.get(req.User, key);
@@ -67,7 +45,7 @@ class UsersController extends DefaultController {
     req.User.update(doc)
       .catch(error => res.status(500).json({message: error.message}))
       .then((resp) => {
-        if (resp.ok === 1) {
+        if (resp.nModified === 1) {
           res.json(req.body);
         } else {
           res.status(500).json({message: resp});

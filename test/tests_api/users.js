@@ -171,7 +171,7 @@ describe('Users', function () {
         statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
         expect(res).to.be.a('Object');
-        // Make sure the document is deleted
+        // Make sure the setting is deleted
         superagent.get(`${api}/users/${newUserId}/settings/test`)
           .set('authorization', authString)
           .end(function (checkError, checkRes) {
@@ -184,25 +184,34 @@ describe('Users', function () {
       });
   });
 
-  it('should allow to delete settings /users/<id>/settings/test DELETE', function (done) {
-    const body = {my: 'custom settings'};
+  it('should allow to delete known settings /users/<id>/settings/test DELETE', function (done) {
     superagent.delete(`${api}/users/${newUserId}/settings/test`)
       .set('authorization', authString)
-      .send(body)
       .end(function (error, res) {
         expect(error).to.equal(null);
         statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
-        // Make sure the document is deleted
+        // Make sure the setting is deleted
         superagent.get(`${api}/users/${newUserId}/settings/test`)
           .set('authorization', authString)
           .end(function (checkError, checkRes) {
-            expect(res.status).to.equal(404);
             expect(checkRes).to.be.a('Object');
-            expect(checkError).to.equal(null);
-            expect(checkRes.body).to.be.deep.equal(body);
+            expect(checkRes.status).to.equal(404);
+            expect(checkError).to.not.equal(null);
+            expect(checkRes.body).to.be.a('Object');
             done();
           });
+      });
+  });
+  it('should not allow to delete unknown settings /users/<id>/settings/unknown DELETE', function (done) {
+    superagent.delete(`${api}/users/${newUserId}/settings/unknown`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.not.equal(null);
+        statusCannotBe300(res.status);
+        expect(res.status).to.equal(404);
+        expect(res.body).to.be.a('Object');
+        done();
       });
   });
 
