@@ -60,8 +60,8 @@ const ResourceSchema = new Schema({
     time: {type: Date, default: Date.now}
   },
   mod: {
-    user: {type: String, default: ''}, // Resource modifier
-    timestamp: {type: Date, default: Date.now} // Modify timestamp
+    user: {type: ObjectId, ref: 'User'},
+    timestamp: {type: Date, default: Date.now}
   },
   ownership: {
     corporation: {type: String},
@@ -72,7 +72,7 @@ const ResourceSchema = new Schema({
     author: {type: String},
     purchased: {
       timestamp: {type: Date},
-      user: {type: String},
+      user: {type: ObjectId, ref: 'User'},
       note: {type: String}
     }
   },
@@ -105,10 +105,7 @@ const ResourceSchema = new Schema({
       default: 'unknown'
     },
     automation: {
-      system: {
-        type: String,
-        enum: ['default']
-      }
+      system: {type: String}
     }
   },
   network: {
