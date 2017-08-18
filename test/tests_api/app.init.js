@@ -2,7 +2,7 @@
 
 // Third party components
 const jwtSimple = require('jwt-simple');
-const nconf = require('nconf');
+const nconf = require('../../config');
 const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');

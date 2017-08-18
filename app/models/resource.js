@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 const QueryPlugin = require('mongoose-query');
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
