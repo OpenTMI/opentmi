@@ -46,31 +46,31 @@ function Route(app) {
   });
 
   // Create user routes
-  const userRouter = express.Route();
+  const userRouter = express.Router();
   userRouter.param('User', userController.modelParam.bind(userController));
 
   // Route for operations that target all users
-  userRouter.route('/.:format?')
+  userRouter.route('/')
     .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.find.bind(userController))
     .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.create.bind(userController));
 
   // Route for operations that target individual users
-  userRouter.route('/:User.:format?')
+  userRouter.route('/:User')
     .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.get.bind(userController))
     .put(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.update.bind(userController))
     .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.remove.bind(userController));
 
 
   // Create User settings routes
-  const settingsRoute = express.Route();
+  const settingsRoute = express.Router();
   settingsRoute.route('/:Namespace')
     .get(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.getSettings.bind(userController))
     .put(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.updateSettings.bind(userController))
     .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.deleteSettings.bind(userController));
-  userRouter.use('/settings', settingsRoute);
+  userRouter.use('/:User/settings', settingsRoute);
 
   // allows to use /client-settings instead of /settings
-  userRouter.use('/client-settings/', express.Route().all((req) => { req.redirect('../settings'); }));
+  userRouter.use('/client-settings/', express.Router().all((req) => { req.redirect('../settings'); }));
 
   // Create authentication routes:
   app.get('/api/v0/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, apiKeys.keys);
@@ -82,7 +82,7 @@ function Route(app) {
   // register user router
   app.use('/api/v0/users', userRouter);
 
-  const authRoute = express.Route();
+  const authRoute = express.Router();
   authRoute
     .post('/login', authController.login.bind(authController))
     .get('/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, authController.getme.bind(authController))

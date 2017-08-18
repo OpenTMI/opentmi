@@ -39,7 +39,7 @@ const UserSchema = new Schema({
   loggedIn: {type: Boolean, default: false},
   groups: [{type: ObjectId, ref: 'Group'}],
   apikeys: [{type: ObjectId, ref: 'ApiKey'}],
-  settings: {type: mongoose.Schema.Types.Mixed}
+  settings: {type: Types.Mixed}
 }).post('save', () => {
   // if (this.isNew) { }
 });
