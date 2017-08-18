@@ -3,7 +3,7 @@
 */
 
 // 3rd party modules
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 // own modules
 const DefaultController = require('./');
@@ -11,7 +11,7 @@ const DefaultController = require('./');
 class ItemsController extends DefaultController {
   constructor() { super('Item'); }
 
-  update(req, res) { // eslint-disable-line 
+  update(req, res) { // eslint-disable-line
     // Handle requests that only provide available or in_stock in a special manner
     if (req.body.in_stock !== undefined && req.body.available === undefined) {
       ItemsController._handleUpdateInStock(req);

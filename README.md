@@ -35,8 +35,10 @@ git clone --recursive https://github.com/OpenTMI/opentmi
 cd opentmi
 npm install
 npm start
-or
-node .
+
+or start in clustered mode
+
+npm run cluster
 ```
 
 # Command line
@@ -60,7 +62,13 @@ Generate ssl certifications:
 * `./scripts/gencerts.sh`
 * start daemon with `--https` -options (`npm start -- -https`)
 
-## Available Plugins:
+## Clustered mode
+
+OpenTMI support clustered mode which gives some benefits in production environment:
+* better performance
+* zero downtime when updating
+
+## Available Plugins
 
 [See from registry](https://github.com/OpenTMI/opentmi-registry)
 

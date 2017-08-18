@@ -4,7 +4,7 @@ const http = require('http');
 const https = require('https');
 
 // application
-const logger = require('winston');
+const logger = require('./tools/logger');
 const nconf = require('../config');
 
 const sslcertKey = '../config/sslcert/server.key';
