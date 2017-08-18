@@ -223,8 +223,7 @@ class AuthenticationController {
 
         // Make sure profile contains an email
         if (!profile.email) {
-          logger.warn(addPrefix('could not find email from fetched profile.'));
-          return next({status: 409, msg: 'Could not find email address from profile.'});
+          logger.warn(addPrefix('could not find email from fetched profile, email is probably set to private.'));
         }
 
         logger.verbose(addPrefix('response contained a valid profile.'));
@@ -243,14 +242,14 @@ class AuthenticationController {
         return;
       }
 
-      logger.verbose(addPrefix('requesting profile emaile information.'));
+      logger.verbose(addPrefix('requesting user email information.'));
       const userEmailUrl = `${userApiUrl}/emails`;
       request.get({url: userEmailUrl, qs: accessToken, headers: headers, json: true}, (error, response, emails) => {
         logger.verbose(addPrefix(`response from: ${userEmailUrl} received.`));
 
         // Process error if one happened
         if (error) {
-          logger.warn(addPrefix(`getEmail error, failed to fetch user profile emails from url: ${userEmailUrl}.`));
+          logger.warn(addPrefix(`getEmail error, failed to fetch user github emails from url: ${userEmailUrl}.`));
           return next({status: 500, msg: error.toString()});
         }
 
@@ -265,15 +264,30 @@ class AuthenticationController {
 
         // Make sure received response is an array and not empty
         if (!_.isArray(emails) || emails.length === 0) {
-          logger.warn(addPrefix('could not find email from fetched profile.'));
+          logger.warn(addPrefix(
+            `received response was not an array with at least one item. Response: ${JSON.stringify(emails)}`));
           return next({
             status: 500,
-            msg: `Could not fetch emails from github profile, received invalid response body: ${emails}.`
+            msg: `Could not fetch emails from github user, received invalid response body: ${JSON.stringify(emails)}.`
           });
         }
 
+        // Find and return the primary email
         logger.verbose(addPrefix('response contained valid emails.'));
-        _.set(profile, 'email', emails[0]);
+        for (let i = 0; i < emails.length; i += 1) {
+          logger.info(JSON.stringify(emails[i]));
+          if (emails[i].primary) {
+            if (!emails[i].verified) {
+              logger.warn(addPrefix('user primary email is unverified.'));
+            }
+
+            _.set(profile, 'email', emails[i].email);
+            return next(null, accessToken, headers, profile);
+          }
+        }
+
+        // Return the first email
+        _.set(profile, 'email', emails[0].email);
         return next(null, accessToken, headers, profile);
       });
     };
