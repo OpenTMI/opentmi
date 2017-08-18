@@ -4,7 +4,7 @@
  */
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 const Schema = mongoose.Schema;
 

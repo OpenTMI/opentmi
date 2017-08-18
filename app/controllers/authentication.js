@@ -8,11 +8,11 @@ const auth = require('./../../config/middlewares/authorization');
 const jwt = require('jwt-simple');
 const async = require('async');
 const _ = require('lodash');
-const logger = require('winston');
 
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 
+const logger = require('../tools/logger');
 // const googleSecret = nconf.get('google_secret');
 const tokenSecret = nconf.get('webtoken');
 const githubAdminTeam = nconf.get('github').adminTeam;
@@ -144,7 +144,7 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   static getGithubClientId(req, res) {
-    logger.log('Github auth: returning github clientID');
+    logger.info('Github auth: returning github clientID');
     const id = clientId;
     if (id === undefined) {
       logger.warn('Github auth: clientId was undefined, perhaps it is not defined in the config.');

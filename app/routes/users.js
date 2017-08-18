@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const nconf = require('../../config');
 const jwt = require('express-jwt');
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 // Local modules
 const auth = require('./../../config/middlewares/authorization');

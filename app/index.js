@@ -1,6 +1,5 @@
 // 3rd party modules
 const Express = require('express');
-const logger = require('winston');
 const SocketIO = require('socket.io');
 
 // application modules
@@ -12,6 +11,7 @@ const models = require('./models');
 const routes = require('./routes');
 const AddonManager = require('./addons');
 const DB = require('./db');
+const logger = require('./tools/logger');
 
 if (nconf.get('help') || nconf.get('h')) {
   nconf.stores.argv.showHelp();
@@ -22,27 +22,7 @@ if (nconf.get('help') || nconf.get('h')) {
 const https = nconf.get('https');
 const listen = nconf.get('listen');
 const port = nconf.get('port');
-const verbose = nconf.get('verbose');
-const silent = nconf.get('silent');
 const configuration = nconf.get('cfg');
-
-// Define logger behaviour
-logger.cli(); // activates colors
-
-// define console logging level
-logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
-
-// Add winston file logger, which rotates daily
-const fileLevel = 'silly';
-logger.add(require('winston-daily-rotate-file'), {
-  filename: 'log/app.log',
-  json: false,
-  handleExceptions: false,
-  level: fileLevel,
-  datePatter: '.yyyy-MM-dd_HH-mm'
-});
-
-logger.debug(`Using cfg: ${configuration}`);
 
 // Create express instance
 const app = Express();
@@ -54,25 +34,18 @@ const server = Server(app);
 const io = SocketIO(server);
 
 // Initialize database connection
-DB.connect();
-
-// Connect models
-models.registerModels();
-
-// Bootstrap application settings
-express(app);
-
-// Bootstrap routes
-routes.registerRoutes(app);
-
-// Bootstrap addons, like default webGUI
-AddonManager.init(app, server, io);
-
-AddonManager.loadAddons().then(() => {
-  AddonManager.registerAddons().then(() => {
-    // Error route should be initialized after addonmanager has served all static routes
-    routes.registerErrorRoute(app);
-
+DB.connect().catch((error) => {
+  logger.error('mongoDB connection failed: ', error.stack);
+  process.exit(-1);
+}).then(() => models.registerModels())
+  .then(() => express(app))
+  .then(() => routes.registerRoutes(app))
+  .then(() => AddonManager.init(app, server, io))
+  .then(() => AddonManager.loadAddons())
+  .then(() => AddonManager.registerAddons())
+  // Error route should be initialized after addonmanager has served all static routes
+  .then(() => routes.registerErrorRoute(app))
+  .then(() => {
     function onError(error) {
       if (error.code === 'EACCES' && port < 1024) {
         logger.error("You haven't access to open port below 1024");
@@ -88,22 +61,24 @@ AddonManager.loadAddons().then(() => {
       logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
       eventBus.emit('start_listening', {url: listenurl});
     }
-
-    server.listen(port, listen);
     server.on('error', onError);
     server.on('listening', onListening);
+    server.listen(port, listen);
 
     // Close the Mongoose connection, when receiving SIGINT
     process.on('SIGINT', () => {
-      DB.disconnect().then(() => {
-        process.exit(0);
-      }).catch((err) => {
-        logger.error(`Disconnection fails: ${err}`);
-        process.exit(-1);
+      // server.close stops worker from accepting new requests and finishes currently processed requests
+      // @todo test that requests actually get processed 
+      server.close(() => {
+        DB.disconnect().then(() => {
+          process.exit(0);
+        }).catch((err) => {
+          logger.error(`Disconnection from database failed: ${err}`);
+          process.exit(-1);
+        });
       });
     });
   });
-});
 
 // This would be useful for testing
 module.exports = {server, eventBus};

@@ -6,7 +6,7 @@
 const mongoose = require('mongoose');
 // var userPlugin = require('mongoose-user');
 const QueryPlugin = require('mongoose-query');
-const logger = require('winston');
+const logger = require('../tools/logger');
 const _ = require('lodash');
 
 // Local components
