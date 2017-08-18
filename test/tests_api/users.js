@@ -19,14 +19,16 @@ const testUserId = '5825bb7afe7545132c88c761';
 let authString;
 let newUserId;
 
-describe('Users', function () {
+// @todo all tests should be able to run individually
+const statusCannotBe300 = (status) => {
+  if (status === 300) {
+    logger.warn('Seems that your DB is not clean!');
+    process.exit(1);
+  }
+};
 
-  const statusCannotBe300 = (status) => {
-    if (status === 300) {
-      logger.warn('Seems that your DB is not clean!');
-      process.exit(1);
-    }
-  };
+
+describe('Users', function () {
 
   // Create fresh DB
   before(function (done) {

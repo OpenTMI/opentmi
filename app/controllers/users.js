@@ -13,7 +13,7 @@ class UsersController extends DefaultController {
   constructor() {
     super('User');
   }
-  deleteSettings(req, res) {
+  deleteSettings(req, res) { // eslint-disable-line class-methods-use-this
     const namespace = req.params.Namespace;
     const doc = {$unset: {}};
     doc.$unset[`settings.${namespace}`] = 1;
@@ -27,7 +27,7 @@ class UsersController extends DefaultController {
         }
       });
   }
-  getSettings(req, res) {
+  getSettings(req, res) { // eslint-disable-line class-methods-use-this
     const namespace = req.params.Namespace;
     const key = `settings.${namespace}`;
     const value = _.get(req.User, key);
@@ -38,7 +38,7 @@ class UsersController extends DefaultController {
       res.status(404).json({message: `No settings for ${namespace}`});
     }
   }
-  updateSettings(req, res) {
+  updateSettings(req, res) { // eslint-disable-line class-methods-use-this
     const namespace = req.params.Namespace;
     const doc = {};
     doc[`settings.${namespace}`] = req.body;
