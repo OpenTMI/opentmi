@@ -74,10 +74,10 @@ function Route(app) {
 
   // Create authentication routes:
   app.get('/api/v0/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, apiKeys.keys);
-  userRouter
-    .get('/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.userKeys)
-    .get('/apikeys/new', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.createKey)
-    .delete('/apikeys/:Key', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.deleteKey);
+  userRouter.route('/:User/apikeys')
+    .get('/', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.userKeys)
+    .get('/new', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.createKey)
+    .delete('/:Key', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.deleteKey);
 
   // register user router
   app.use('/api/v0/users', userRouter);

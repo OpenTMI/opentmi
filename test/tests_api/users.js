@@ -29,7 +29,6 @@ const statusCannotBe300 = (status) => {
 
 
 describe('Users', function () {
-
   // Create fresh DB
   before(function (done) {
     this.timeout(5000);
@@ -141,7 +140,7 @@ describe('Users', function () {
       });
   });
 
-  it.skip('should not delete a user that is referenced in a loan', function (done) {
+  it('should not delete a user that is referenced in a loan', function (done) {
     superagent.del(`${api}/users/${userWithLoanId}`)
       .set('authorization', authString)
       .end(function (error, res) {
