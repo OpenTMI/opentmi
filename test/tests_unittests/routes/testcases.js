@@ -49,14 +49,14 @@ describe('routes/testcases.js', function () {
           'expecting result route to define all and post methods'
         );
 
-        expect(router.stack[2].route).to.have.property('path', '/api/v0/testcases/:testcase.:format?');
+        expect(router.stack[2].route).to.have.property('path', '/api/v0/testcases/:Testcase.:format?');
         expect(router.stack[2].route).to.have.deep.property(
           'methods',
           {_all: true, get: true, put: true, delete: true},
           'expecting testcase route to define all, get and put methods'
         );
 
-        expect(router.stack[3].route).to.have.property('path', '/api/v0/testcases/:testcase/download');
+        expect(router.stack[3].route).to.have.property('path', '/api/v0/testcases/:Testcase/download');
         expect(router.stack[3].route).to.have.deep.property(
           'methods',
           {_all: true, get: true},
