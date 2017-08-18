@@ -33,7 +33,7 @@ describe('routes/testcases.js', function () {
     // Check that all routes are defined and implement the right methods
     it('Route - should define correct routes', function (done) {
       const app = {use: (router) => {
-        expect(router).to.have.property('stack').with.lengthOf(4);
+        expect(router).to.have.property('stack').with.lengthOf(3);
 
         expect(router.stack[0].route).to.have.property('path', '/api/v0/testcases.:format?');
         expect(router.stack[0].route).to.have.deep.property(
@@ -42,22 +42,15 @@ describe('routes/testcases.js', function () {
           'expecting all route to define all methods'
         );
 
-        expect(router.stack[1].route).to.have.property('path', '/api/v0/testcases/result.:format?');
+        expect(router.stack[1].route).to.have.property('path', '/api/v0/testcases/:Testcase.:format?');
         expect(router.stack[1].route).to.have.deep.property(
-          'methods',
-          {_all: true, post: true},
-          'expecting result route to define all and post methods'
-        );
-
-        expect(router.stack[2].route).to.have.property('path', '/api/v0/testcases/:Testcase.:format?');
-        expect(router.stack[2].route).to.have.deep.property(
           'methods',
           {_all: true, get: true, put: true, delete: true},
           'expecting testcase route to define all, get and put methods'
         );
 
-        expect(router.stack[3].route).to.have.property('path', '/api/v0/testcases/:Testcase/download');
-        expect(router.stack[3].route).to.have.deep.property(
+        expect(router.stack[2].route).to.have.property('path', '/api/v0/testcases/:Testcase/download');
+        expect(router.stack[2].route).to.have.deep.property(
           'methods',
           {_all: true, get: true},
           'expecting testcase download to define all and get methods'

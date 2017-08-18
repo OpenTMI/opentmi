@@ -13,10 +13,6 @@ function Route(app) {
     .post(controller.create.bind(controller))
     .put(controller.upsert.bind(controller));
 
-  router.route('/api/v0/testcases/result.:format?')
-    .all(controller.all.bind(controller))
-    .post(controller.upsertAndResult.bind(controller));
-
   router.route('/api/v0/testcases/:Testcase.:format?')
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
