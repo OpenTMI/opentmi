@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const async = require('async');
 const QueryPlugin = require('mongoose-query');
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
@@ -147,7 +147,7 @@ LoanSchema.methods.extractItemIds = function extractIds() {
   const counts = {};
   for (let i = 0; i < this.items.length; i += 1) {
     counts[this.items[i].item] = !counts[this.items[i].item] ?
-      -1 : counts[this.items[i].item] - 1; // negative because we are 
+      -1 : counts[this.items[i].item] - 1; // negative because we are
   }
 
   // Convert counts to array of objects

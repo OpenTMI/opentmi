@@ -3,7 +3,7 @@
 */
 
 // 3rd party modules
-const logger = require('winston');
+const logger = require('../tools/logger');
 
 // own modules
 const DefaultController = require('./');

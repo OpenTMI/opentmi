@@ -16,10 +16,10 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const busboy = require('connect-busboy');
 const cors = require('cors');
-
+const Promise = require('bluebird');
 const MongoStore = require('connect-mongo')(session);
 
-const logger = require('winston');
+const logger = require('./tools/logger');
 const expressWinston = require('express-winston');
 
 /* Project libraries */
@@ -43,12 +43,12 @@ module.exports = (app) => {
   app.use(expressWinston.logger({
     winstonInstance: logger,
     meta: false, // optional: control whether you want to log the meta data about the request (default to true)
-    // msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", 
-    // optional: customize the default logging message. 
+    // msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}",
+    // optional: customize the default logging message.
     // E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
     // Use the default Express/morgan request formatting, with the same colors.
     expressFormat: true,
-    // Enabling this will override any msg and colorStatus if true. 
+    // Enabling this will override any msg and colorStatus if true.
     // Will only output colors on transports with colorize set to true.
     // Color the status code
     // uses the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red).
@@ -119,4 +119,5 @@ module.exports = (app) => {
   app.on('mount', function (parent) {
     console.log(parent); // refers to the parent app
   }); */
+  return Promise.resolve();
 };

@@ -1,7 +1,7 @@
 // Third party moduls
 const mongoose = require('mongoose');
 const _ = require('lodash');
-const logger = require('winston');
+const logger = require('../tools/logger');
 const express = require('express');
 
 // Application modules

@@ -2,7 +2,7 @@
 const path = require('path');
 
 // Third party modules
-const logger = require('winston');
+const logger = require('../../tools/logger');
 const mongoose = require('mongoose');
 
 // local module
