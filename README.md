@@ -79,7 +79,7 @@ Available [here](doc/APIs)
 
 ## Configuration
 
-By default it start server as development mode. You can configure environment you are using using [`config/env/env.example.json](env.json)
+By default it start server as development mode. You can configure environment you are using using [env.json](`config/env/env.example.json`)
 ```
 {
  FACEBOOK_CLIENTID: "ID",
