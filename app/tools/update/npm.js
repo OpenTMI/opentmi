@@ -1,8 +1,10 @@
-// native modules
+// Native modules
 const childProcess = require('child_process');
-// 3rd party modules
+
+// Third party modules
 const Promise = require('bluebird');
 const _ = require('lodash');
+
 // app modules
 const logger = require('../logger');
 
@@ -18,6 +20,13 @@ class Npm {
       throw new Error(`npm list fails: ${error.message}`);
     }).then(stdout => JSON.parse(stdout));
   }
+
+  /**
+   * 
+   * @param {*} execOptions 
+   * @param {*} options
+   * @todo emit installation stream back to client/admin 
+   */
   static install(execOptions, options = '--on-optional --only=production') {
     const cmd = `npm install ${options}`;
     return exec(cmd, execOptions).catch((error) => {

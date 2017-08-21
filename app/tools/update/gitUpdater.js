@@ -14,55 +14,78 @@ class GitUpdater extends Updater {
   _update(revision) {
     return this._isClean()
       .catch(() => this._reset())
-      .then(() => this.emit('status', `checkout revision ${revision}..`))
-      .then(() => this._checkout(revision))
-      .then(() => this.emit('status', 'install npm dependencies..'))
-      .then(() => Npm.install(this._options).bind(this));
+      .then(() => {
+        this.emit('status', 'cleaning workspace');
+        return this._clean();
+      })
+      .then(() => {
+        this.emit('status', `checking out revision: ${revision}`);
+        return this._checkout(revision);
+      })
+      .then(() => {
+        this.emit('status', 'installing npm dependencies');
+        return Npm.install(this._options).bind(this);
+      });
   }
+
   version() {
+    const gitVersion = this._commitId()
+      .then(commitId => this._tag(commitId)
+        .then(tag => _.merge(commitId, tag)));
+
     return Promise
-      .all([this._version(), this.__version()])
+      .all([super.version(), gitVersion])
       .then(versions => _.merge({}, versions[0], versions[1]));
   }
+
   _isClean() {
     const cmd = 'git diff --quiet HEAD';
     return exec(cmd, this._options).catch(() => {
-      throw new Error('workarea are not clean');
+      throw new Error('workspace is not clean');
     });
   }
-  __version() {
-    return Promise
-      .all([this._commitId(), this._tag()])
-      .then(values => _.merge({}, values[0], values[1]));
-  }
-  _tag() {
-    const cmd = "git describe --exact-match --tags $(git log -n1 --pretty='%h')";
+
+  _tag(commitId = this._commitId()) {
+    const cmd = `git describe --exact-match --tags ${commitId}`;
     return exec(cmd, this._options)
       .then(line => ({tag: line.trim()}))
       .catch(() => ({tag: undefined}));
   }
+
   _commitId() {
     const cmd = 'git rev-parse --verify HEAD';
     return exec(cmd, this._options)
-      .then(line => ({commitId: line.trim()}));
+      .then(line => ({commitId: line.trim()}))
+      .catch((error) => {
+        throw new Error(`git rev-parse failed: ${error.message}`);
+      });
   }
 
   _reset(options = '--hard') {
     const cmd = `git reset ${options}`;
     return exec(cmd, this._options).catch((error) => {
-      throw new Error(`resetting workarea fails! error: ${error.message}`);
+      throw new Error(`git reset failed: ${error.message}`);
     });
   }
+
   _fetch() {
     const cmd = 'git -c core.askpass=true _fetch --all --tags --prune';
     return exec(cmd, this._options).catch((error) => {
-      throw new Error(`git fetch fails: ${error.message}`);
+      throw new Error(`git fetch failed: ${error.message}`);
     });
   }
+
+  _clean() {
+    const cmd = 'git clean -f -d';
+    return exec(cmd, this._options).catch((error) => {
+      throw new Error(`git clean failed: ${error.message}`);
+    });
+  }
+
   _checkout(revision) {
     const cmd = `git checkout ${revision}`;
     return exec(cmd, this._options).catch((error) => {
-      throw new Error(`git checkout fails: ${error.message}`);
+      throw new Error(`git checkout failed: ${error.message}`);
     });
   }
 }
