@@ -15,6 +15,7 @@ class Updater extends EventEmitter {
     super();
     this._options = {cwd, env};
     this._pending = Promise.resolve();
+    this.npm = new Npm();
   }
   update(revision) {
     if (this._pending.isPending()) {
@@ -55,7 +56,7 @@ class Updater extends EventEmitter {
     if (this._pending.isPending()) {
       return Promise.reject('Updating in progress');
     }
-    return Npm.list(super._options);
+    return this.npm.list(super._options);
   }
 
   _revert(version) { // eslint-disable-line class-methods-use-this

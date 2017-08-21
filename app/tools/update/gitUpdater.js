@@ -1,9 +1,11 @@
-// native modules
+// Native modules
 const childProcess = require('child_process');
-// 3rd party modules
+
+// Third party modules
 const Promise = require('bluebird');
 const _ = require('lodash');
-// application modules
+
+// Application modules
 const Updater = require('./updater');
 const Npm = require('./npm');
 
