@@ -20,7 +20,7 @@ function Route(app) {
     router.param('Cluster', controller.idParam.bind(this));
 
     router.route('/api/v0/clusters.:format?')
-      .get(/* jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, */controller.find.bind(controller))
+      .get(controller.find.bind(controller))
       .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.create.bind(controller));
 
     router.route('/api/v0/clusters/:Cluster.:format?')

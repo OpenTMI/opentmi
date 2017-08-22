@@ -223,11 +223,71 @@ class AuthenticationController {
 
         // Make sure profile contains an email
         if (!profile.email) {
-          logger.warn(addPrefix('could not find email from fetched profile.'));
-          return next({status: 409, msg: 'Could not find email address from profile.'});
+          logger.warn(addPrefix('could not find email from fetched profile, email is probably set to private.'));
         }
 
         logger.verbose(addPrefix('response contained a valid profile.'));
+        return next(null, accessToken, headers, profile);
+      });
+    };
+
+    /*
+      Retrieve the user's github profile email.
+    */
+    const getEmail = (accessToken, headers, profile, next) => {
+      logger.debug(addPrefix('fetching user email information from github.'));
+
+      if (profile.email) {
+        next(null, accessToken, headers, profile);
+        return;
+      }
+
+      logger.verbose(addPrefix('requesting user email information.'));
+      const userEmailUrl = `${userApiUrl}/emails`;
+      request.get({url: userEmailUrl, qs: accessToken, headers: headers, json: true}, (error, response, emails) => {
+        logger.verbose(addPrefix(`response from: ${userEmailUrl} received.`));
+
+        // Process error if one happened
+        if (error) {
+          logger.warn(addPrefix(`getEmail error, failed to fetch user github emails from url: ${userEmailUrl}.`));
+          return next({status: 500, msg: error.toString()});
+        }
+
+        // Make sure response was a 200 success
+        if (response.statusCode !== 200) {
+          logger.warn(addPrefix(`bad profile emails response with status code: ${response.statusCode}.`));
+          return next({
+            status: 500,
+            msg: `Could not fetch github profile. Response body: ${JSON.stringify(response.body)}`
+          });
+        }
+
+        // Make sure received response is an array and not empty
+        if (!_.isArray(emails) || emails.length === 0) {
+          logger.warn(addPrefix(
+            `received response was not an array with at least one item. Response: ${JSON.stringify(emails)}`));
+          return next({
+            status: 500,
+            msg: `Could not fetch emails from github user, received invalid response body: ${JSON.stringify(emails)}.`
+          });
+        }
+
+        // Find and return the primary email
+        logger.verbose(addPrefix('response contained valid emails.'));
+        for (let i = 0; i < emails.length; i += 1) {
+          logger.info(JSON.stringify(emails[i]));
+          if (emails[i].primary) {
+            if (!emails[i].verified) {
+              logger.warn(addPrefix('user primary email is unverified.'));
+            }
+
+            _.set(profile, 'email', emails[i].email);
+            return next(null, accessToken, headers, profile);
+          }
+        }
+
+        // Return the first email
+        _.set(profile, 'email', emails[0].email);
         return next(null, accessToken, headers, profile);
       });
     };
@@ -458,6 +518,7 @@ class AuthenticationController {
     async.waterfall([
       authorization,
       getProfile,
+      getEmail,
       checkOrganization,
       checkAdmin,
       updateUser,

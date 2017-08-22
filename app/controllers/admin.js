@@ -2,6 +2,9 @@
   Admin Controller
 */
 
+// Third party modules
+const _ = require('lodash');
+
 // own modules
 const logger = require('../tools/logger');
 const Updater = require('../tools/update');

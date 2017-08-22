@@ -3,7 +3,6 @@ const childProcess = require('child_process');
 
 // Third party modules
 const Promise = require('bluebird');
-const _ = require('lodash');
 
 // Application modules
 const logger = require('../logger');

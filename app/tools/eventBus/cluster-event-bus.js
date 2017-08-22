@@ -6,14 +6,13 @@ function forward(event) {
   if (cluster.isMaster) {
     _.each(cluster.workers, (worker, id) => {
       if (`${id}` !== `${event.meta.id}`) {
-        logger.silly(`Master: Sending event to Worker#${id}`);
+        logger.silly(`Sending event to Worker#${id}.`);
         if (worker.isConnected()) {
-          // @todo better intercommunication..
           worker.send(event.toJSON());
         }
       } else {
         // do not send event back to worker
-        logger.silly(`Master: Skip Worker#${id}`);
+        logger.silly(`Skip Worker#${id}.`);
       }
     });
   } else {
@@ -24,7 +23,7 @@ function forward(event) {
 function emit(event) {
   if (cluster.isMaster) {
     _.each(cluster.workers, (worker, id) => {
-      logger.silly(`Master: Sending event to Worker#${id}`);
+      logger.silly(`Sending event to Worker#${id}.`);
       if (worker.isConnected()) {
         // @todo better intercommunication..
         worker.send(event.toJSON());
