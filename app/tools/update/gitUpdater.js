@@ -13,6 +13,12 @@ const exec = Promise.promisify(childProcess.exec);
 
 
 class GitUpdater extends Updater {
+  constructor(execModule = exec) {
+    super();
+    this.exec = execModule;
+    this.npm = new Npm(exec);
+  }
+
   _update(revision) {
     return this._isClean()
       .catch(() => this._reset())
@@ -26,37 +32,37 @@ class GitUpdater extends Updater {
       })
       .then(() => {
         this.emit('status', 'installing npm dependencies');
-        return Npm.install(this._options).bind(this);
+        return this.npm.install(this._options);
       });
   }
 
   version() {
     const gitVersion = this._commitId()
       .then(commitId => this._tag(commitId)
-        .then(tag => _.merge(commitId, tag)));
+        .then(tag => Object.assign({commitID: commitId}, tag)));
 
     return Promise
       .all([super.version(), gitVersion])
-      .then(versions => _.merge({}, versions[0], versions[1]));
+      .then(versions => Object.assign({}, versions[0], versions[1]));
   }
 
   _isClean() {
     const cmd = 'git diff --quiet HEAD';
-    return exec(cmd, this._options).catch(() => {
+    return this.exec(cmd, this._options).catch(() => {
       throw new Error('workspace is not clean');
     });
   }
 
   _tag(commitId = this._commitId()) {
     const cmd = `git describe --exact-match --tags ${commitId}`;
-    return exec(cmd, this._options)
+    return this.exec(cmd, this._options)
       .then(line => ({tag: line.trim()}))
       .catch(() => ({tag: undefined}));
   }
 
   _commitId() {
     const cmd = 'git rev-parse --verify HEAD';
-    return exec(cmd, this._options)
+    return this.exec(cmd, this._options)
       .then(line => ({commitId: line.trim()}))
       .catch((error) => {
         throw new Error(`git rev-parse failed: ${error.message}`);
@@ -65,28 +71,28 @@ class GitUpdater extends Updater {
 
   _reset(options = '--hard') {
     const cmd = `git reset ${options}`;
-    return exec(cmd, this._options).catch((error) => {
+    return this.exec(cmd, this._options).catch((error) => {
       throw new Error(`git reset failed: ${error.message}`);
     });
   }
 
   _fetch() {
     const cmd = 'git -c core.askpass=true _fetch --all --tags --prune';
-    return exec(cmd, this._options).catch((error) => {
+    return this.exec(cmd, this._options).catch((error) => {
       throw new Error(`git fetch failed: ${error.message}`);
     });
   }
 
   _clean() {
     const cmd = 'git clean -f -d';
-    return exec(cmd, this._options).catch((error) => {
+    return this.exec(cmd, this._options).catch((error) => {
       throw new Error(`git clean failed: ${error.message}`);
     });
   }
 
   _checkout(revision) {
     const cmd = `git checkout ${revision}`;
-    return exec(cmd, this._options).catch((error) => {
+    return this.exec(cmd, this._options).catch((error) => {
       throw new Error(`git checkout failed: ${error.message}`);
     });
   }

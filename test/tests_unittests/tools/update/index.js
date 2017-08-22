@@ -1,7 +1,5 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
-// Native components
-
 // Third party components
 const chai = require('chai');
 

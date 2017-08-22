@@ -19,44 +19,41 @@ class Updater extends EventEmitter {
   }
   update(revision) {
     if (this._pending.isPending()) {
-      return Promise.reject('Cannot update, updating already in progress.');
+      return Promise.reject(new Error('Cannot update, pending action exists.'));
     }
 
     let currentVersion;
     this._pending = this.version()
       .then((version) => { currentVersion = version; })
       .then(() => {
-        logger.info(`Updating to version: ${currentVersion}...`);
-        return this._update(revision).catch((error) => {
-          const _error = error;
-          logger.error(`Update failed: ${error.message}.`);
-          return this._revert(currentVersion).catch((revertError) => {
-            const revertResult = `failed to revert back to previous version, ${revertError.message}`;
-            _error.message = `error: ${error.message}\nrevert: ${revertResult}`;
-            throw _error;
-          }).then(() => {
-            const revertResult = `reverted back to version: ${currentVersion}`;
-            _error.message = `error: ${error.message}\nrevert: ${revertResult}`;
-            throw _error;
+        logger.info(`Updating to version: ${revision}...`);
+        return this._update(revision)
+          .catch((error) => {
+            const _error = error;
+            logger.error(`Update failed: ${error.message}.`);
+            return this._revert(currentVersion)
+              .catch((revertError) => {
+                const revertResult = `failed to revert back to previous version, ${revertError.message}`;
+                _error.message = `error: ${error.message}\nrevert: ${revertResult}`;
+                throw _error;
+              })
+              .then(() => {
+                const revertResult = `reverted back to version: ${currentVersion}`;
+                _error.message = `error: ${error.message}\nrevert: ${revertResult}`;
+                throw _error;
+              });
           });
-        });
-      })
-      .catch((error) => {
-        throw new Error(`Update failed: ${error}`);
+      }).catch((error) => {
+        const _error = error;
+        _error.message = `Update failed: ${error.message}`;
+        throw _error;
       });
 
     return this._pending;
   }
 
-  _update() { // eslint-disable-line class-methods-use-this
+  _update(revision) { // eslint-disable-line
     return Promise.reject();
-  }
-
-  version() {
-    if (this._pending.isPending()) {
-      return Promise.reject('Updating in progress');
-    }
-    return this.npm.list(super._options);
   }
 
   _revert(version) { // eslint-disable-line class-methods-use-this
@@ -64,6 +61,13 @@ class Updater extends EventEmitter {
 
     // @todo...
     return Promise.reject('Not implemented');
+  }
+
+  version() {
+    if (this._pending.isPending()) {
+      return Promise.reject('Cannot fetch version, pending action exists.');
+    }
+    return this.npm.list(this._options);
   }
 
   restart() {

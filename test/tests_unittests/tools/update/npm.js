@@ -1,12 +1,9 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
-// Native components
-
 // Third party components
 const chai = require('chai');
 
 // Application components
-// const Updater = require('../../../../app/tools/update/updater');
 const Npm = require('../../../../app/tools/update/npm');
 
 // Variables
