@@ -6,7 +6,7 @@
 
 // 3rd party modules
 const _ = require('lodash');
-const uuid = require('node-uuid');
+const uuid = require('uuid/v1');
 
 // own modules
 const cluster = require('cluster');
@@ -34,7 +34,7 @@ class ClusterController {
   }
 
   get(req, res) {
-    const payload = {id: uuid.v1()};
+    const payload = {id: uuid()};
     eventBus.once(payload.id, (data) => {
       const worker = _.find(data.workers, {id: this.id});
       if (worker) {
@@ -47,7 +47,7 @@ class ClusterController {
   }
 
   find(req, res) { // eslint-disable-line class-methods-use-this
-    const payload = {id: uuid.v1()};
+    const payload = {id: uuid()};
     eventBus.once(payload.id, (data) => {
       res.json(data);
     });

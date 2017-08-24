@@ -3,7 +3,7 @@
  */
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
-const uuid = require('node-uuid');
+const uuidv4 = require('uuid/v4');
 
 /* Implementation */
 const Schema = mongoose.Schema;
@@ -13,7 +13,7 @@ const Schema = mongoose.Schema;
  */
 const ApiKeySchema = new Schema({
   name: {type: String},
-  key: {type: String, default: uuid.v4, index: true},
+  key: {type: String, default: uuidv4, index: true},
   description: {type: String}
 });
 
