@@ -24,10 +24,10 @@
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "NODE_ENV=development node index.js",
-    "cluster": "NODE_ENV=development node app/cluster.js",
-    "debug": "NODE_ENV=development node --inspect index.js",
-    "debug-cluster": "NODE_ENV=development node --inspect app/cluster.js",
+    "start": "node index.js",
+    "cluster": "node app/cluster.js",
+    "debug": "node --inspect index.js",
+    "debug-cluster": "node --inspect app/cluster.js",
     "test": "grunt",
     "lint": "node node_modules/eslint/bin/eslint ."
   },
