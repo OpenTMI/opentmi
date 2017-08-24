@@ -137,8 +137,18 @@ describe('addons/index.js', function () {
     });
   });
 
+  describe('readAddons', function () {
+    // @TODO Do tests
+  });
+
+  describe('installAddons', function () {
+    // @TODO Do tests
+  });
+
   describe('loadAddons', function () {
     it('loadAddons - recursive 2 valid addons', function () {
+      AddonManager.addons = ['addon1', 'addon2'];
+
       // Mock addon manager
       const addonProto = Object.getPrototypeOf(AddonManager);
       addonProto.constructor._recursiveLoad = (addonArray) => {
@@ -170,6 +180,14 @@ describe('addons/index.js', function () {
         return Promise.resolve();
       });
     });
+  });
+
+  describe('startJobs', function () {
+    // @TODO Do tests
+  });
+
+  describe('clearJobLocks', function () {
+    // @TODO Do tests
   });
 
   describe('findAddon', function () {

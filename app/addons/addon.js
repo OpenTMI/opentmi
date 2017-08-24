@@ -1,6 +1,7 @@
 require('colors');
 
 // native modules
+const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 
@@ -233,6 +234,37 @@ class Addon {
   }
 
   /**
+   * 
+   * @param {*} addon 
+   */
+  static startJobs(addon) {
+    logger.debug(`[${addon.name}] Starting background jobs.`);
+    if (addon.instance && addon.instance.startJobs) {
+      if (fs.existsSync(path.join(addon.addonPath, 'cronjob.lock'))) {
+        const created = parseInt(fs.readFileSync(path.join(addon.addonPath, 'cronjob.lock'), 'utf8'), 10);
+        logger.warn(`[${addon.name}] Background lock exists, skipping startup. ${new Date(created).toString()}`);
+      } else {
+        fs.writeFileSync(path.join(addon.addonPath, 'cronjob.lock'), Date.now());
+        addon.instance.startJobs();
+      }
+    } else {
+      logger.debug(`[${addon.name}] Has no background jobs to start.`);
+    }
+  }
+
+  /**
+   * 
+   * @param {*} addon 
+   */
+  static clearJobLock(addon) {
+    logger.debug(`[${addon.name}] Clearing job logs...`);
+    if (fs.existsSync(path.join(addon.addonPath, 'cronjob.lock'))) {
+      logger.info(`[${addon.name}] Removing background job lockfile.`);
+      fs.unlinkSync(path.join(addon.addonPath, 'cronjob.lock'));
+    }
+  }
+
+  /**
    * Performs the actions needed to load a module
    * Note: addon reference is needed because promises tend to mess up the
    *       reference to "this" variable
@@ -248,8 +280,7 @@ class Addon {
         editedAddon.version = packageFile.version;
         editedAddon.repository = packageFile.repository;
 
-        return Addon._installDependencies(editedAddon)
-          .then(() => Addon._checkDependencies(editedAddon, packageFile.dependencies || {}));
+        return Addon._checkDependencies(editedAddon, packageFile.dependencies || {});
       })
       .catch((error) => {
         if (error.canContinue) { // If this error is from require package file, it will have this property
@@ -267,7 +298,7 @@ class Addon {
    * @param {Addon} addon - instance of an addon
    * @return {Promise} promise to install dependencies eventually
    */
-  static _installDependencies(addon) {
+  static installDependencies(addon) {
     const command = 'npm install';
 
     logger.debug(`[${addon.name}] npm installing, working directory: ${addon.addonPath}.`);

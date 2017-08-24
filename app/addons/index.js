@@ -1,10 +1,11 @@
 // native modules
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 
 // 3rd party modules
 const logger = require('../tools/logger');
 const Addon = require('./addon').Addon;
+const Promise = require('bluebird');
 
 const DynamicRouter = require('./dynamic-router');
 
@@ -96,9 +97,11 @@ class AddonManager {
   }
 
   /**
-   * Loads all addons using a specific loading method, eq. recursive, async
+   * 
    */
-  loadAddons(recursive = true) {
+  readAddons() {
+    logger.info('Reading addons...');
+
     const relativeAddonPath = path.relative('.', __dirname);
 
     // Function that returns whether a file is a directory or not
@@ -107,9 +110,25 @@ class AddonManager {
     }
 
     // Iterate through all directory files in the addons folder
-    const addonNames = fs.readdirSync(relativeAddonPath).filter(isAddon);
-    this.addons = addonNames.map(name => new Addon(name, true));
+    return fs.readdir(relativeAddonPath).then((addonNames) => {
+      this.addons = addonNames.filter(isAddon).map(name => new Addon(name, true));
+    });
+  }
 
+  /**
+   * 
+   */
+  installAddons() {
+    logger.info('Installing addons...');
+
+    // Promise to install each addon serially
+    return Promise.each(this.addons, Addon.installDependencies);
+  }
+
+  /**
+   * Loads all addons using a specific loading method, eq. recursive, async
+   */
+  loadAddons(recursive = true) {
     const loadMethod = recursive ? AddonManager._recursiveLoad : AddonManager._asyncLoad;
     return loadMethod(this.addons, this.app, this.server, this.io);
   }
@@ -132,6 +151,24 @@ class AddonManager {
         this.app.use(this.dynamicRouter.router.bind(this.dynamicRouter));
         return Promise.resolve(results);
       });
+  }
+
+  /**
+   * 
+   */
+  clearJobLocks() {
+    this.addons.forEach((addon) => {
+      Addon.clearJobLock(addon);
+    });
+  }
+
+  /**
+   *  
+   */
+  startJobs() {
+    this.addons.forEach((addon) => {
+      Addon.startJobs(addon);
+    });
   }
 
   /**

@@ -1,10 +1,13 @@
+// Third party components
 const express = require('express');
+
+// Application components
 const logger = require('../../tools/logger');
+
 
 class AddonCore {
   constructor(app, server, io) {
     // Defined variables
-    this.router = express.Router();
     this.staticPath = { prefix: '/test', folder: '/public/' };
 
     // Own variables
@@ -14,6 +17,7 @@ class AddonCore {
 
   // Default implementation of register
   register() {
+    this.router = express.Router();
     logger.warn('registering instance of sample class');
     this.router.get('/test', (req, res) => {
       res.json({ ok: 1 });
@@ -32,6 +36,10 @@ class AddonCore {
 
   unregister() {
     logger.warn('unregistering instance of sample class');
+  }
+
+  startJobs() {
+    logger.warn('starting jobs for sample class');
   }
 }
 
