@@ -3,9 +3,11 @@
  [![Build Status][build-image]][build-url]
  [![Dependencies Status][depupdated-image]][depupdated-url]
  [![devDependencies Status][devdepupdated-image]][devdepupdated-url]
- [![Test Coverage][coveralls-image]][coveralls-url]
-
-
+ 
+ 
+ <!-- 
+[![Test Coverage][coveralls-image]][coveralls-url] 
+-->
 
 OpenTMI is Open Source Test Management System. It is written in Node.js / Javascript and uses MongoDB as backing store. It is published in GPLv3 license.
 
@@ -15,18 +17,18 @@ OpenTMI is extremely customizable through plugins.
 
 # Ideology
 
-Basic idea is to store **all** meta information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when users can directly see what is tested in individual Device with individual Build...
+Basic idea is to store **all** information related to test execution, like software under test (Build), test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when users can directly see what is tested in individual Device with individual Build...
 
 # Pre-requirements
 
-* Node-js v4.2< (tested with 4.2, recommented to use latest version)
-* mongodb v2.6< (recommented to use latest version)
+* Node-js v6.1< (tested with 6.1, recommented to use latest version)
+* mongodb v3.2< (recommented to use latest version)
 
 # Installation
 
 ## Prepare
 
-You need to install mongodb and run it. File `mongod.sh` contains simple script to start mongod instance (db location ./db and logs ./db.logs).
+You need to install mongodb and run it. File `mongod.sh` contains simple script to start single mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
 
 ## Clone, install dependencies and start
 
@@ -68,30 +70,30 @@ OpenTMI support clustered mode which gives some benefits in production environme
 * better performance
 * zero downtime when updating
 
+## API documentation
+Available [here](doc/APIs)
+
 ## Available Plugins
 
-[See from registry](https://github.com/OpenTMI/opentmi-registry)
+[See from registry](https://github.com/OpenTMI/opentmi-registry) (NOT READY!)
 
 ## Configuration
 
-By default it start as development mode so configure file is:
-`./config/env/development`
-example..
+By default it start server as development mode. You can configure environment you are using using [env.json](`config/env/env.example.json`)
 ```
-module.exports = {
-  name: 'OpenTMI',
-  host: '127.0.0.1',
-  port: 3000,
-  db: 'mongodb://localhost/tmi_dev',
-  admin: {
-    //default values
-    'user': 'admin',
-    'pwd': 'admin',
-  },
-  ldap: {
-    url: process.env.LDAP_URL
-  },
-  ...
+{
+ FACEBOOK_CLIENTID: "ID",
+ FACEBOOK_SECRET: "SECRET",
+ TWITTER_CLIENTID: "ID",
+ TWITTER_SECRET: "SECRET",
+ GITHUB_CLIENTID: "ID",
+ GITHUB_SECRET: "SECRET",
+ LINKEDIN_CLIENTID: "ID",
+ LINKEDIN_SECRET: "SECRET",
+ GOOGLE_CLIENTID: "ID",
+ GOOGLE_SECRET: "SECRET",
+ GITHUB_ORG: "ORGANIZATION",
+ GITHUB_ADMINTEAM: "ADMIN-TEAM"
 }
 ```
 
@@ -111,7 +113,7 @@ module.exports = {
 This Repository provide backend for OpenTMI.
 
 Service contains full RESTFull json -API, as well as websockets.
-Also there will several different kind of backend-services as addons, like scheduler, result-analyser, report-generator, suite-generator, etc...
+Also there will be several different kind of backend-services as addons, like scheduler, result-analyser, report-generator, suite-generator, etc...
 
 ## Service resources (with API) are
 * Accounts
@@ -133,11 +135,9 @@ Also there will several different kind of backend-services as addons, like sched
 * Addons
 
 ### Accounts ###
-(not yet fully implemented)
 Accounts provide information and configuration related individual accounts. It also give authentication and access policy. External authentication methods, like github/google/... can be easily to integrate to provide simple and easy login -mechanism.
 
 ### Groups ###
-(not yet fully implemented)
 Groups provide access policy to other API's. Access policy is very similar than linux has, we have users (=Accounts), groups and others.
 ### admin -API ###
 admin API is allowed only admin -users. It provide remote control service configuration. For example, it can be use to install new addons, or control addon configurations.
@@ -195,7 +195,6 @@ Report templates contains specification for Actual Report. Report template is li
 * Word
 
 ### Addons ###
-(partially implemented)
 Way to extend this backend-service easily. Addon registry (future plan) contains information about existing addons, which can easily to install via administrator API.
 There is available several example addons like:
 * gui (first web-ui revision)
