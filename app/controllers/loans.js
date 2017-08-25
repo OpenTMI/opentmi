@@ -3,7 +3,7 @@
 */
 
 // 3rd party modules
-const winston = require('winston');
+const logger = require('../tools/logger');
 
 // own modules
 const DefaultController = require('./');
@@ -13,26 +13,26 @@ class LoansController extends DefaultController {
 
   update(req, res) {
     if (req.body.items !== undefined) {
-      winston.info('PUT request with items property received');
+      logger.info('PUT request with items property received');
       LoansController._handleItemsInUpdate(req, (handlingError) => {
         if (handlingError) {
-          winston.warn(handlingError.message);
-          return res.status(400).json({ error: handlingError.message });
+          logger.warn(handlingError.message);
+          return res.status(400).json({error: handlingError.message});
         }
 
         // Update safe values
-        for (const key in req.body) {
+        Object.keys(req.body).forEach((key) => {
           req.Loan[key] = req.body[key];
-        }
+        });
 
         // Save the result
         req.Loan.save((saveError) => {
           if (saveError) {
-            winston.warn(saveError.message);
-            return res.status(400).json({ error: saveError.message });
+            logger.warn(saveError.message);
+            return res.status(400).json({error: saveError.message});
           }
 
-          winston.info('Update completed successfully');
+          logger.info('Update completed successfully');
           return res.status(200).json(req.Loan);
         });
 
@@ -69,12 +69,12 @@ class LoansController extends DefaultController {
   }
 
   findUsersLoans(req, res) {
-    this.Model.find({ loaner: req.user.sub })
-      .populate('items')
+    this.Model.find({loaner: req.user.sub})
+      .populate('items.item')
       .exec((err, loans) => {
         if (err) {
-          winston.warn(err.message);
-          return res.status(500).json({ error: err.message });
+          logger.warn(err.message);
+          return res.status(500).json({error: err.message});
         }
 
         return res.json(loans);

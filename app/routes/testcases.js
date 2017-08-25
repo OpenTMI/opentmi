@@ -1,7 +1,7 @@
 const express = require('express');
 const TestCaseController = require('./../controllers/testcases');
 
-const Route = function (app, passport) {
+function Route(app) {
   const router = express.Router();
   const controller = new TestCaseController();
 
@@ -12,17 +12,17 @@ const Route = function (app, passport) {
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
 
-  router.route('/api/v0/testcases/:testcase.:format?')
+  router.route('/api/v0/testcases/:Testcase.:format?')
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  router.route('/api/v0/testcases/:testcase/download')
+  router.route('/api/v0/testcases/:Testcase/download')
     .all(controller.all.bind(controller))
     .get(controller.download.bind(controller));
 
   app.use(router);
-};
+}
 
 module.exports = Route;

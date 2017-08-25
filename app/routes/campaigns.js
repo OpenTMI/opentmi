@@ -1,7 +1,7 @@
 const express = require('express');
 const CampaignsRouter = require('./../controllers/campaigns');
 
-const Route = function (app, passport) {
+function Route(app) {
   const router = express.Router();
   const controller = new CampaignsRouter();
 
@@ -19,6 +19,6 @@ const Route = function (app, passport) {
     .delete(controller.remove.bind(controller));
 
   app.use(router);
-};
+}
 
 module.exports = Route;

@@ -1,64 +1,72 @@
-var jwt_s = require('jwt-simple');
-var nconf = require('nconf');
-var moment = require('moment');
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
-var superagent = require('superagent');
-var chai = require('chai');
-var expect = chai.expect;
-var should = require('should');
+// Third party components
+const jwtSimple = require('jwt-simple');
+const nconf = require('../../config');
+const moment = require('moment');
+const superagent = require('superagent');
+const chai = require('chai');
+const logger = require('winston');
 
-var user_with_loan_id = '5825bb7cfe7545132c88c773';
+// Setup
+logger.level = 'error';
 
-var api = 'http://localhost:3000/api/v0';
-var mongodbUri = 'mongodb://localhost/opentmi_dev';
-var test_user_id = '5825bb7afe7545132c88c761';
+// Test variables
+const expect = chai.expect;
+const userWithLoanId = '5825bb7cfe7545132c88c773';
+const api = 'http://localhost:3000/api/v0';
+const testUserId = '5825bb7afe7545132c88c761';
+let authString;
+let newUserId;
+
+// @todo all tests should be able to run individually
+const statusCannotBe300 = (status) => {
+  if (status === 300) {
+    logger.warn('Seems that your DB is not clean!');
+    process.exit(1);
+  }
+};
+
 
 describe('Users', function () {
-  var auth_string;	
-
   // Create fresh DB
-  before(function(done) {
+  before(function (done) {
     this.timeout(5000);
-    
-    // Initialize nconf
-    nconf.argv({ cfg:{ default:'development' } })
-         .env()
-         .defaults(require('./../../config/config.js'));  
-    
+
     // Create token for requests
-    var payload = { sub:test_user_id,
-		                group:'admins',
-		                iat:moment().unix(), 
-		                exp:moment().add(2, 'h').unix()
+    const payload = {
+      sub: testUserId,
+      group: 'admins',
+      iat: moment().unix(),
+      exp: moment().add(2, 'h').unix()
     };
-    var token = jwt_s.encode(payload, nconf.get('webtoken')); 
-    auth_string = 'Bearer ' + token;
+
+    const token = jwtSimple.encode(payload, nconf.get('webtoken'));
+    authString = `Bearer ${token}`;
     done();
   });
-  
-  var new_user_id;
+
   it('should add a SINGLE user on /users POST', function (done) {
-    var body = {
-      name:'Test User',
-      email:'testuser@fakemail.se',
+    const body = {
+      name: 'Test User',
+      email: 'testuser@fakemail.se',
       displayName: 'Tester',
-      apikeys:[],
-      groups:[]
+      apikeys: [],
+      groups: []
     };
 
-    superagent.post(api+'/users')
-      .set('authorization', auth_string)
+    superagent.post(`${api}/users`)
+      .set('authorization', authString)
       .send(body)
-      .end(function (e, res) {
-        res.should.be.json;
-        if ( res.status === 300 ) {
-          console.log('seems that your DB is not clean!');
-          process.exit(1);
-        }
-        expect(res.status).to.equal(200);
-        expect(e).to.equal(null);
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        statusCannotBe300(res.status);
+        expect(res).to.have.property('status', 200);
+
         expect(res.body).to.have.property('_id');
-        new_user_id = res.body._id;
+        newUserId = res.body._id;
+
         expect(res.body.name).to.eql(body.name);
         expect(res.body.email).to.eql(body.email);
         expect(res.body.displayName).to.eql(body.displayName);
@@ -72,19 +80,16 @@ describe('Users', function () {
   });
 
   it('should return a SINGLE user on /users/<id> GET', function (done) {
-    superagent.get(api + '/users/' + new_user_id)
-      .set('authorization', auth_string)
+    superagent.get(`${api}/users/${newUserId}`)
+      .set('authorization', authString)
       .type('json')
-      .end(function (e, res) {
-        res.should.be.json;
-        if ( res.status === 300 ) {
-          console.log('seems that your DB is not clean!');
-          process.exit(1);
-        }
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
-        expect(e).to.equal(null);
 
-        //TODO: take properties straight from model
+        // TODO: take properties straight from model
         expect(res.body).to.have.property('_id');
         expect(res.body.name).to.eql('Test User');
         expect(res.body.email).to.eql('testuser@fakemail.se');
@@ -99,75 +104,136 @@ describe('Users', function () {
   });
 
   it('should update a SINGLE user on /users/<id> PUT', function (done) {
-    var body = { email: 'newtestermail@fakemail.se' };
+    const body = {email: 'newtestermail@fakemail.se'};
 
-    superagent.put(api + '/users/' + new_user_id)
-      .set('authorization', auth_string)
+    superagent.put(`${api}/users/${newUserId}`)
+      .set('authorization', authString)
       .send(body)
-      .end(function (e, res) {
-        res.should.be.json;
-        if (res.status === 300) {
-          console.log('seems that your DB is not clean!');
-          process.exit(1);
-        }
+      .end(function (error, res) {
+        expect(res).to.be.a('Object');
+        statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
-        expect(e).to.equal(null);
-        
-        superagent.get(api + '/users/' + new_user_id)
-          .set('authorization', auth_string)
+        expect(error).to.equal(null);
+
+        superagent.get(`${api}/users/${newUserId}`)
+          .set('authorization', authString)
           .type('json')
-          .end(function (e, res) {
-            res.should.be.json;
-            if (res.status === 300) {
-              console.log('seems that your DB is not clean!');
+          .end(function (checkError, checkRes) {
+            expect(checkError).to.equal(null);
+            expect(checkRes).to.be.a('Object');
+            if (checkRes.status === 300) {
+              logger.warn('Seems that your DB is not clean!');
               process.exit(1);
             }
-            expect(res.body).to.have.property('_id');
-            expect(res.body.name).to.eql('Test User');
-            expect(res.body.email).to.eql('newtestermail@fakemail.se');
-            expect(res.body.displayName).to.eql('Tester');
-            expect(res.body).to.have.property('apikeys');
-            expect(res.body).to.have.property('groups');
-            expect(res.body).to.have.property('loggedIn');
-            expect(res.body).to.have.property('lastVisited');
-            expect(res.body).to.have.property('registered');
+
+            expect(checkRes.body).to.have.property('_id');
+            expect(checkRes.body.name).to.eql('Test User');
+            expect(checkRes.body.email).to.eql('newtestermail@fakemail.se');
+            expect(checkRes.body.displayName).to.eql('Tester');
+            expect(checkRes.body).to.have.property('apikeys');
+            expect(checkRes.body).to.have.property('groups');
+            expect(checkRes.body).to.have.property('loggedIn');
+            expect(checkRes.body).to.have.property('lastVisited');
+            expect(checkRes.body).to.have.property('registered');
             done();
           });
       });
   });
 
-  it('should not delete a user that is referenced in a loan', function(done) {
-	  superagent.del(api + '/users/' + user_with_loan_id)
-	    .set('authorization', auth_string)
-	    .end(function(e, res) {
-		    res.should.be.json;
-		    expect(e).to.not.equal(null); 
-		    expect(res.status).to.equal(400);
-		    done();	 
-	    });  
+  it('should not delete a user that is referenced in a loan', function (done) {
+    superagent.del(`${api}/users/${userWithLoanId}`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(res).to.be.a('Object');
+        expect(error).to.not.equal(null);
+        expect(res.status).to.equal(400);
+        done();
+      });
+  });
+
+  it('should not give unknown setting /users/<id>/settings/notexists GET', function (done) {
+    superagent.get(`${api}/users/${newUserId}/settings/notexists`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(res).to.be.a('Object');
+        expect(error).to.not.equal(null);
+        expect(res.status).to.equal(404);
+        done();
+      });
+  });
+
+  it('should allow to store settings /users/<id>/settings/test PUT', function (done) {
+    const body = {my: 'custom settings'};
+    superagent.put(`${api}/users/${newUserId}/settings/test`)
+      .set('authorization', authString)
+      .send(body)
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        statusCannotBe300(res.status);
+        expect(res.status).to.equal(200);
+        expect(res).to.be.a('Object');
+        // Make sure the setting is deleted
+        superagent.get(`${api}/users/${newUserId}/settings/test`)
+          .set('authorization', authString)
+          .end(function (checkError, checkRes) {
+            expect(res.status).to.equal(200);
+            expect(checkRes).to.be.a('Object');
+            expect(checkError).to.equal(null);
+            expect(checkRes.body).to.be.deep.equal(body);
+            done();
+          });
+      });
+  });
+
+  it('should allow to delete known settings /users/<id>/settings/test DELETE', function (done) {
+    superagent.delete(`${api}/users/${newUserId}/settings/test`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        statusCannotBe300(res.status);
+        expect(res.status).to.equal(200);
+        // Make sure the setting is deleted
+        superagent.get(`${api}/users/${newUserId}/settings/test`)
+          .set('authorization', authString)
+          .end(function (checkError, checkRes) {
+            expect(checkRes).to.be.a('Object');
+            expect(checkRes.status).to.equal(404);
+            expect(checkError).to.not.equal(null);
+            expect(checkRes.body).to.be.a('Object');
+            done();
+          });
+      });
+  });
+  it('should not allow to delete unknown settings /users/<id>/settings/unknown DELETE', function (done) {
+    superagent.delete(`${api}/users/${newUserId}/settings/unknown`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.not.equal(null);
+        statusCannotBe300(res.status);
+        expect(res.status).to.equal(404);
+        expect(res.body).to.be.a('Object');
+        done();
+      });
   });
 
   it('should delete a SINGLE user on /users/<id> DELETE', function (done) {
-    superagent.del(api + '/users/' + new_user_id)
-      .set('authorization', auth_string)
-      .end(function(e, res) {
-        res.should.be.json;
-        if (res.status === 300) {
-          console.log('seems that your DB is not clean!');
-          process.exit(1);
-        }
+    superagent.del(`${api}/users/${newUserId}`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
-        expect(e).to.equal(null);
-        
+
         // Make sure the document is deleted
-        superagent.get(api + '/users/' + new_user_id)
-          .set('authorization', auth_string)
-          .end(function(e, res) {
-		        res.should.be.json
-		        expect(e).to.not.equal(null);
-		        expect(res.status).to.equal(404);
-		        done();
-		      });
+        superagent.get(`${api}/users/${newUserId}`)
+          .set('authorization', authString)
+          .end(function (checkError, checkRes) {
+            expect(checkRes).to.be.a('Object');
+            expect(checkError).to.not.equal(null);
+            expect(checkRes.status).to.equal(404);
+            done();
+          });
       });
   });
 });

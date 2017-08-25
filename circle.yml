@@ -26,13 +26,17 @@ database:
 
 dependencies:
     pre:
+        - node --version
+        - npm --version
         - npm install -g grunt-cli
         - mkdir -p shippable/testresults
         - mkdir -p shippable/codecoverage
+        - npm install
 
 test:
     override:
         - npm test
+        - npm run lint
 
 general:
     artifacts:

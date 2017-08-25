@@ -1,36 +1,38 @@
-const jwt_s = require('jwt-simple');
-const nconf = require('nconf');
+/* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
+
+// Third party components
+const jwtSimple = require('jwt-simple');
 const moment = require('moment');
+// const superagent = require('superagent');
+// const chai = require('chai');
+const logger = require('winston');
 
-const superagent = require('superagent');
-const should = require('should');
-const chai = require('chai');
-const expect = chai.expect;
+// Local components
+const nconf = require('nconf');
 
-const api = 'http://localhost:3000/api/v0';
-const mongodbUri = 'mongodb://localhost/opentmi_dev';
-const test_user_id = '5825bb7afe7545132c88c761';
+// Setup
+logger.level = 'error';
 
-const authString = '';
+// Test variables
+// const expect = chai.expect;
+// const api = 'http://localhost:3000/api/v0';
+const testUserId = '5825bb7afe7545132c88c761';
+let authString; // eslint-disable-line no-unused-vars
 
 describe('Builds', function () {
   // Create fresh DB
   before(function (done) {
     this.timeout(5000);
 
-    // Initialize nconf
-    nconf.argv({ cfg: { default: 'development' } })
-         .env()
-         .defaults(require('./../../config/config.js'));
-
     // Create token for requests
     const payload = {
-      sub: test_user_id,
+      sub: testUserId,
       group: 'admins',
       iat: moment().unix(),
-      exp: moment().add(2, 'h').unix(),
+      exp: moment().add(2, 'h').unix()
     };
-    const token = jwt_s.encode(payload, nconf.get('webtoken'));
+
+    const token = jwtSimple.encode(payload, nconf.get('webtoken'));
     authString = `Bearer ${token}`;
     done();
   });

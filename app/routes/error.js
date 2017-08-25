@@ -1,27 +1,37 @@
-var winston = require('winston')
+const logger = require('../tools/logger');
+
 /**
  * Error handling
  */
- 
-var Route = function(app, passport){
-  winston.log('-AddRoute: error');
-  app.use(function (err, req, res, next) {
+function Route(app) {
+  logger.debug('Adding error route.');
+  app.use((error, req, res, next) => {
     // treat as 404
-    if (err.message
-      && (~err.message.indexOf('not found')
-      || (~err.message.indexOf('Cast to ObjectId failed')))) {
+    const msg = error.message;
+    if (msg && (msg.indexOf('not found') >= 0 || msg.indexOf('Cast to ObjectId failed') >= 0)) {
       return next();
     }
-    winston.error(err.stack);
+
+    logger.error(error.stack);
+
     // error page
-    res.status(500).json({ 
+    res.status(500).json({
       url: req.originalUrl,
-      error: err.stack 
+      error: error.stack
     });
+
+    return undefined;
   });
 
   // assume 404 since no middleware responded
-  app.use(function (req, res, next) {
+  app.use((req, res) => {
+    // TEMPORARY hack so this branch does not break functionality
+    // will be removed very soon due to new addon manager merge
+    const path = require('path'); // eslint-disable-line
+    if (req.originalUrl.match(/^\/inventory/)) {
+      res.status(200).sendFile(path.resolve(__dirname, '../addons/inventory-service/dist/index.html'));
+    }
+
     res.status(404).json({
       url: req.originalUrl,
       error: 'Not found'

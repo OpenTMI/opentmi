@@ -2,22 +2,20 @@
 /*!
  * Module dependencies
  */
+const mongoose = require('mongoose');
+// var userPlugin = require('mongoose-user');
+const Schema = mongoose.Schema;
+const QueryPlugin = require('mongoose-query');
+const _ = require('lodash');
 
-var mongoose = require('mongoose');
-//var userPlugin = require('mongoose-user');
-var Schema = mongoose.Schema;
-var QueryPlugin = require('mongoose-query');
-var _ = require('lodash')
-
-var Schema = mongoose.Schema;
-var Types = Schema.Types;
-var ObjectId = Types.ObjectId;
+const Types = Schema.Types;
+const ObjectId = Types.ObjectId;
 /**
  * User schema
  */
 
-var CampaignSchema = new Schema({
-  name: { type: String, required: true },
+const CampaignSchema = new Schema({
+  name: {type: String, required: true},
   enable: {
     value: {type: Boolean, default: true},
     user: {type: String},
@@ -25,11 +23,11 @@ var CampaignSchema = new Schema({
   },
   cre: {
     user: {type: String},
-    time: {type: Date, default: Date.now},
+    time: {type: Date, default: Date.now}
   },
   mod: {
     user: {type: String},
-    time: {type: Date, default: Date.now},
+    time: {type: Date, default: Date.now}
   },
   auth: {
     author: {type: String},
@@ -45,14 +43,14 @@ var CampaignSchema = new Schema({
   },
   tcs: {type: String, required: true},
   linkedCampaigns: [
-    { type: ObjectId, ref: "Campaign" }
+    {type: ObjectId, ref: 'Campaign'}
   ]
 });
 
 /**
  * User plugin
  */
-CampaignSchema.plugin( QueryPlugin ); //install QueryPlugin
+CampaignSchema.plugin(QueryPlugin); // install QueryPlugin
 
 /**
  * Add your
@@ -64,32 +62,28 @@ CampaignSchema.plugin( QueryPlugin ); //install QueryPlugin
 /**
  * Methods
  */
-
-CampaignSchema.method({
-  findTestcases: function(query, cb) {
-  
-    if( !this.tcs ) {
-      cb('test_cases field missing!');
-      return;
-    }
-    if( this.tcs[0] == '{' ) {
-      _.extend(query, {q: this.tcs});
-    } else { 
-      var parts = this.tcs.matches.split('&'), i;
-      for(i=0;i<parts.length;i++){
-        var x = parts[i].split('=');
-        if( x.length == 2 ){
-          var q = {};
-          q[x[0]] = x[1];
-          _.extend(query, q);
-        }
+CampaignSchema.methods.findTestcases = function findTestcases(query, cb) {
+  if (!this.tcs) {
+    cb('test_cases field missing!');
+    return;
+  }
+  if (this.tcs[0] === '{') {
+    _.extend(query, {q: this.tcs});
+  } else {
+    const parts = this.tcs.matches.split('&');
+    for (let i = 0; i < parts.length; i += 1) {
+      const x = parts[i].split('=');
+      if (x.length === 2) {
+        const q = {};
+        q[x[0]] = x[1];
+        _.extend(query, q);
       }
     }
-    Testcase = mongoose.model('Testcase')
-    Testcase.query( query, cb );
-
   }
-});
+
+  Testcase = mongoose.model('Testcase'); // eslint-disable-line no-undef
+  Testcase.query(query, cb); // eslint-disable-line no-undef
+};
 
 /**
  * Add your
@@ -114,4 +108,5 @@ CampaignSchema.static({
 /**
  * Register
  */
-mongoose.model('Campaign', CampaignSchema);
+const Campaign = mongoose.model('Campaign', CampaignSchema);
+module.exports = {Model: Campaign, Collection: 'Campaign'};

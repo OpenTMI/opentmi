@@ -1,3 +1,4 @@
+/* eslint-disable */
 const mockTestResults = `
   <testsuite id="codereview.cobol.analysisProvider" name="COBOL Code Review" tests="45" failures="17" time="0.001">
     <system-out>raw_system_out_data</system-out>
@@ -44,5 +45,5 @@ Line: 6
 
 module.exports = {
   valid: mockTestResults,
-  typo: badMockTestResults,
+  typo: badMockTestResults
 };

@@ -1,10 +1,11 @@
 /*!
  * Module dependencies.
  */
+const fs = require('fs');
+const path = require('path');
 
-var fs = require('fs');
-var env = {};
-var envFile = __dirname + '/env.json';
+let env = {};
+const envFile = path.join(__dirname, 'env.json');
 
 // Read env.json file, if it exists, load the id's and secrets from that
 // Note that this is only in the development env
@@ -13,25 +14,21 @@ var envFile = __dirname + '/env.json';
 if (fs.existsSync(envFile)) {
   env = fs.readFileSync(envFile, 'utf-8');
   env = JSON.parse(env);
-  Object.keys(env).forEach(function (key) {
+  Object.keys(env).forEach((key) => {
     process.env[key] = env[key];
   });
 }
 
-/**
- * Expose
- */
-
-module.exports = {
+const developmentConfig = {
   name: 'OpenTMI-dev',
   host: '0.0.0.0',
   port: 3000,
-  webtoken:'OpenTMI-toP-SeCRet-tOKEn',
+  webtoken: 'OpenTMI-toP-SeCRet-tOKEn',
   db: 'mongodb://localhost/opentmi_dev',
   admin: {
-    //default values
-    'user': 'admin',
-    'pwd': 'admin'
+    // default values
+    user: 'admin',
+    pwd: 'admin'
   },
   filedb: process.env.FILE_DB || './data',
   ldap: {
@@ -47,12 +44,12 @@ module.exports = {
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
     clientSecret: process.env.FACEBOOK_SECRET,
-    callbackURL: "http://localhost:3000/auth/facebook/callback"
+    callbackURL: 'http://localhost:3000/auth/facebook/callback'
   },
   twitter: {
     clientID: process.env.TWITTER_CLIENTID,
     clientSecret: process.env.TWITTER_SECRET,
-    callbackURL: "http://localhost:3000/auth/twitter/callback"
+    callbackURL: 'http://localhost:3000/auth/twitter/callback'
   },
   github: {
     clientID: process.env.GITHUB_CLIENTID,
@@ -73,6 +70,11 @@ module.exports = {
   google: {
     clientID: process.env.GOOGLE_CLIENTID,
     clientSecret: process.env.GOOGLE_SECRET,
-    callbackURL: "http://localhost:3000/auth/google/callback"
+    callbackURL: 'http://localhost:3000/auth/google/callback'
   }
 };
+
+/**
+ * Expose
+ */
+module.exports = developmentConfig;

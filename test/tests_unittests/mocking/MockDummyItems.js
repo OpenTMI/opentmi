@@ -10,7 +10,7 @@ const mockDummies = [{
   number_required: 9314,
   number_freeform: 42063,
   string_enum: 'category2',
-  date: new Date('01.02.2017'),
+  date: new Date('01.02.2017')
 }, {
   text_unique_sparse: 'another stuff',
   text_unique_required: 'another secondary_stuff',
@@ -19,7 +19,7 @@ const mockDummies = [{
   number_required: 13046,
   number_freeform: 15285,
   string_enum: 'category3',
-  date: new Date('07.11.2017'),
+  date: new Date('07.11.2017')
 }];
 
 

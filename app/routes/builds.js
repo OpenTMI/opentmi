@@ -1,7 +1,7 @@
 const express = require('express');
 const BuildController = require('./../controllers/builds');
 
-const Route = function (app, passport) {
+function Route(app) {
   const router = express.Router();
   const controller = new BuildController();
 
@@ -22,6 +22,6 @@ const Route = function (app, passport) {
     .get(BuildController.download);
 
   app.use(router);
-};
+}
 
 module.exports = Route;

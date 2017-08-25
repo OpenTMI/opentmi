@@ -1,30 +1,25 @@
-
-/**
- * Expose
- */
-
-module.exports = {
+const testConfig = {
   db: 'mongodb://localhost/tmt_test',
   port: 3000,
   ldap: {
     url: process.env.LDAP_URL
   },
-  webtoken:'OpenTMI-toP-SeCRet-tOKEn',
+  webtoken: 'OpenTMI-toP-SeCRet-tOKEn',
   admin: {
-    //default values
-    'user': 'admin',
-    'pwd': 'admin'
+    // default values
+    user: 'admin',
+    pwd: 'admin'
   },
   filedb: process.env.FILE_DB || './data',
   facebook: {
     clientID: process.env.FACEBOOK_CLIENTID,
     clientSecret: process.env.FACEBOOK_SECRET,
-    callbackURL: "http://localhost:3000/auth/facebook/callback"
+    callbackURL: 'http://localhost:3000/auth/facebook/callback'
   },
   twitter: {
     clientID: process.env.TWITTER_CLIENTID,
     clientSecret: process.env.TWITTER_SECRET,
-    callbackURL: "http://localhost:3000/auth/twitter/callback"
+    callbackURL: 'http://localhost:3000/auth/twitter/callback'
   },
   github: {
     clientID: process.env.GITHUB_CLIENTID,
@@ -45,6 +40,11 @@ module.exports = {
   google: {
     clientID: process.env.GOOGLE_CLIENTID,
     clientSecret: process.env.GOOGLE_SECRET,
-    callbackURL: "http://localhost:3000/auth/google/callback"
+    callbackURL: 'http://localhost:3000/auth/google/callback'
   }
 };
+
+/**
+ * Expose
+ */
+module.exports = testConfig;

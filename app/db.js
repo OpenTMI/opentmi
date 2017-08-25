@@ -1,43 +1,56 @@
-var winston = require('winston');
-var mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
+const logger = require('./tools/logger');
+const mongoose = require('mongoose');
+const Promise = require('bluebird');
 
-var nconf = require('nconf');
+const nconf = require('../config');
+
 const dbUrl = nconf.get('db');
+mongoose.Promise = Promise;
 
-var isConnectedBefore = false;
-var connect = function() {
-    var options = { server: { 
-                        socketOptions: { keepAlive: 1 },
-                        auto_reconnect: true } };
-    mongoose.connect(dbUrl, options);
+const connect = function () {
+  /**
+   const options = {
+    server: {
+      socketOptions: {keepAlive: 1},
+      auto_reconnect: true
+    }
+  }; */
+  const options = {
+    useMongoClient: true,
+    // logger: logger,
+    loggerLevel: 'warning' // @todo fetch from config file
+  };
+  logger.info(`Create MongoDB connection: ${dbUrl}`);
+  return mongoose
+    .connect(dbUrl, options)
+    .then(() => {
+      mongoose.connection.on('error', () => {
+        logger.error(`Could not connect to MongoDB: ${dbUrl}`);
+      });
+    });
 };
 
-mongoose.connection.on('error', function() {
-    winston.error('Could not connect to MongoDB: ' + dbUrl);
+const close = Promise.promisify(mongoose.connection.close.bind(mongoose.connection));
+function disconnect() {
+  logger.info(`Force to close the MongoDB connection: ${dbUrl}`);
+  return close();
+}
+
+mongoose.connection.on('disconnected', () => {
+  logger.warn('MongoDB connection lost, try again');
+  connect();
 });
 
-mongoose.connection.on('disconnected', function(){
-    winston.warn('Lost MongoDB connection...');
-    if (!isConnectedBefore)
-        connect();
-});
-mongoose.connection.on('connected', function() {
-    isConnectedBefore = true;
-    winston.info('Connection established to MongoDB: ' + dbUrl);
+mongoose.connection.on('connected', () => {
+  logger.info(`Connection established to MongoDB: ${dbUrl}`);
 });
 
-mongoose.connection.on('reconnected', function() {
-    winston.info('Reconnected to MongoDB: ' + dbUrl);
+mongoose.connection.on('reconnected', () => {
+  logger.info(`Reconnected to MongoDB: ${dbUrl}`);
 });
 
-// Close the Mongoose connection, when receiving SIGINT
-process.on('SIGINT', function() {
-    mongoose.connection.close(function () {
-        console.log('Force to close the MongoDB conection: ' + dbUrl);
-        process.exit(0);
-    });
-});
-
-// Connect to mongodb
-connect();
+module.exports = {
+  connect,
+  disconnect,
+  mongoose
+};

@@ -1,29 +1,46 @@
+// Third party moduls
 const mongoose = require('mongoose');
-const restify = require('express-restify-mongoose');
 const _ = require('lodash');
-const winston = require('winston');
+const logger = require('../tools/logger');
+const express = require('express');
 
-const Route = function (app, passport) {
+// Application modules
+const GroupController = require('../controllers/groups');
+
+// Route variables
+const Group = mongoose.model('Group');
+
+function Route(app) {
   // easy way, but not support format -functionality..
-  const Group = mongoose.model('Group');
-  restify.serve(app, Group, {
-    version: '/v0',
-    name: 'groups',
-    idProperty: '_id',
-    protected: '__v',
-  });
+  const router = express.Router();
+  const controller = new GroupController();
 
-  Group.count({}, (err, count) => {
+  router.param('Group', controller.modelParam.bind(controller));
+
+  router.route('/api/v0/groups.:format?')
+    .all(controller.all.bind(controller))
+    .get(controller.find.bind(controller))
+    .post(controller.create.bind(controller));
+
+  router.route('/api/v0/groups/:Group.:format?')
+    .all(controller.all.bind(controller))
+    .get(controller.get.bind(controller))
+    .put(controller.update.bind(controller))
+    .delete(controller.remove.bind(controller));
+
+  app.use(router);
+
+  Group.count({}, (error, count) => {
     if (count === 0) {
-      (new Group({ name: 'admins', users: [] })).save();
-      (new Group({ name: 'users', users: [] })).save();
+      (new Group({name: 'admins', users: []})).save();
+      (new Group({name: 'users', users: []})).save();
     }
   });
 
   Group.getUsers('admins', (error, users) => {
-    const admins = _.map(users, (user) => { return user.name || user.displayName || user.email; });
-    winston.info('Admin Users: ' + admins.join(','));
+    const admins = _.map(users, user => user.name || user.displayName || user.email);
+    logger.info(`Admin Users: ${admins.join(',')}`);
   });
-};
+}
 
 module.exports = Route;

@@ -1,3 +1,5 @@
+const logger = require('../../tools/logger');
+
 /**
  * @method isEmpty
  * @param {mongoose.Schema} schema
@@ -5,13 +7,15 @@
  * @param {Function}        [options.fn=Math.random]
  * @param {String}          [options.path='random']
  */
-var IsEmpty = function(schema, options){
-  schema.statics.isEmpty = function(cb){
-    this.count({}, function(error, count){
-      cb(error, count===0);
+function IsEmpty(schema, options) { // eslint-disable-line no-unused-vars
+  const editedSchema = schema;
+  editedSchema.statics.isEmpty = function isEmpty(next) {
+    this.count({}, (error, count) => {
+      next(error, count === 0);
     });
-  }
-  console.log("isEmpty registered");
+  };
+
+  logger.info('isEmpty registered');
 }
 
-module.exports = exports = IsEmpty;
+module.exports = IsEmpty;
