@@ -55,7 +55,7 @@ function Route(app) {
     .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.create.bind(userController));
 
   // Route for operations that target individual users
-  const singleUserRouter = express.Router();
+  const singleUserRouter = express.Router({mergeParams: true});
   singleUserRouter.route('/')
     .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.get.bind(userController))
     .put(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.update.bind(userController))
