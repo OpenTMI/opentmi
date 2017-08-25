@@ -21,10 +21,10 @@ if (fs.existsSync(envFile)) {
 
 const developmentConfig = {
   name: 'OpenTMI-dev',
-  host: '0.0.0.0',
-  port: 3000,
-  webtoken: 'OpenTMI-toP-SeCRet-tOKEn',
-  db: 'mongodb://localhost/opentmi_dev',
+  host: process.env.OPENTMI_BIND || '0.0.0.0',
+  port: process.env.OPENTMI_PORT || 3000,
+  webtoken: process.env.WEBTOKEN || 'OpenTMI-toP-SeCRet-tOKEn',
+  db: process.env.MONGODB || 'mongodb://localhost/opentmi_dev',
   admin: {
     // default values
     user: 'admin',
