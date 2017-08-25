@@ -6,7 +6,7 @@ const path = require('path');
 
 // Third party modules
 const _ = require('lodash');
-const uuid = require('node-uuid');
+const uuidv4 = require('uuid/v4');
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const mime = require('mime');
@@ -55,7 +55,7 @@ const BuildSchema = new Schema({
     user: {type: String},
     time: {type: Date, default: Date.now}
   },
-  uuid: {type: String, default: uuid.v4, index: true},
+  uuid: {type: String, default: uuidv4, index: true},
   vcs: [
     new Schema({
       name: {type: String}, // e.g. "github"

@@ -9,7 +9,7 @@ require('colors');
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const JunitXmlParser = require('junit-xml-parser').parser;
-const uuid = require('node-uuid');
+const uuid = require('uuid/v1');
 const logger = require('../tools/logger');
 
 // Setup
@@ -77,7 +77,7 @@ class ResultsController extends DefaultController {
 
   handleJunitXml(junitXml) {
     return JunitXmlParser.parse(junitXml).then((results) => {
-      const jobId = uuid.v1();
+      const jobId = uuid();
 
       return Promise.each(results.suite.tests, this._doResult.bind(this, jobId)).then(() => {
         logger.info('Store new results');
