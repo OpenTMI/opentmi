@@ -62,7 +62,10 @@ const EventSchema = new Schema({
   msg: {type: String}
 });
 
-EventSchema.virtual('priority').get(() => `${this.priority.facility}.${this.priority.level}`);
+EventSchema.virtual('priorityStr')
+  .get(function getPriority() {
+    return `${this.priority.facility}.${this.priority.level}`;
+  });
 
 /**
  * Register plugins

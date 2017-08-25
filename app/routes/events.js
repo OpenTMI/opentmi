@@ -16,7 +16,10 @@ function Route(app) {
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .delete(controller.remove.bind(controller));
-
+  router.route('/api/v0/resources/:Resource/utilization')
+    .get(controller.utilization.bind(controller));
+  router.route('/api/v0/resources/:Resource/statistics')
+    .get(controller.statistics.bind(controller));
   app.use(router);
 }
 
