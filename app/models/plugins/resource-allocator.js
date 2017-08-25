@@ -1,7 +1,7 @@
 const Validator = require('jsonschema').Validator;
 const async = require('async');
 const _ = require('lodash');
-const uuid = require('node-uuid');
+const uuid = require('uuid');
 const logger = require('winston');
 
 /**
@@ -59,7 +59,7 @@ function ResourceAllocator(schema, options) { // eslint-disable-line no-unused-v
   editedSchema.methods.allocate = function allocate(next) {
     if (this.status.availability !== 'reserved') {
       this.status.availability = 'reserved';
-      this.status.allocId = uuid.v1();
+      this.status.allocId = uuid();
 
       this.save(next);
       logger.silly('resource allocated :)');
