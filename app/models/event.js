@@ -4,6 +4,16 @@ const QueryPlugin = require('mongoose-query');
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
+const MSGIDS = [
+  'ALLOCATE',
+  'RELEASED',
+  'FLASHED',
+  'MAINTENANCE',
+  'UNMAINTENANCE',
+  'CREATED',
+  'DELETED'
+];
+
 
 const EventSchema = new Schema({
   cre: {
@@ -15,7 +25,7 @@ const EventSchema = new Schema({
     result: {type: Types.ObjectId, ref: 'Result'},
     testcase: {type: ObjectId, ref: 'Testcase'}
   },
-  priority_: {
+  priority: {
     level: {
       type: String,
       required: true,
@@ -41,12 +51,13 @@ const EventSchema = new Schema({
         'news',
         'syslog',
         'user',
-        'resource'
+        'resource',
+        'testcase'
       ]
     }
   },
-  id: {type: String}, // PID of the
-  msgid: {type: String, enum: []}, //
+  id: {type: String}, // PID of the process
+  msgid: {type: String, enum: MSGIDS}, // pre-defined ID's
   tag: {type: String},
   msg: {type: String}
 });
