@@ -19,6 +19,15 @@ const testUserId = '5825bb7afe7545132c88c761';
 let authString;
 let newUserId;
 
+// @todo all tests should be able to run individually
+const statusCannotBe300 = (status) => {
+  if (status === 300) {
+    logger.warn('Seems that your DB is not clean!');
+    process.exit(1);
+  }
+};
+
+
 describe('Users', function () {
   // Create fresh DB
   before(function (done) {
@@ -52,10 +61,7 @@ describe('Users', function () {
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
-        if (res.status === 300) {
-          logger.warn('Seems that your DB is not clean!');
-          process.exit(1);
-        }
+        statusCannotBe300(res.status);
         expect(res).to.have.property('status', 200);
 
         expect(res.body).to.have.property('_id');
@@ -80,10 +86,7 @@ describe('Users', function () {
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
-        if (res.status === 300) {
-          logger.warn('Seems that your DB is not clean!');
-          process.exit(1);
-        }
+        statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
 
         // TODO: take properties straight from model
@@ -108,10 +111,7 @@ describe('Users', function () {
       .send(body)
       .end(function (error, res) {
         expect(res).to.be.a('Object');
-        if (res.status === 300) {
-          logger.warn('Seems that your DB is not clean!');
-          process.exit(1);
-        }
+        statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
         expect(error).to.equal(null);
 
@@ -151,16 +151,78 @@ describe('Users', function () {
       });
   });
 
+  it('should not give unknown setting /users/<id>/settings/notexists GET', function (done) {
+    superagent.get(`${api}/users/${newUserId}/settings/notexists`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(res).to.be.a('Object');
+        expect(error).to.not.equal(null);
+        expect(res.status).to.equal(404);
+        done();
+      });
+  });
+
+  it('should allow to store settings /users/<id>/settings/test PUT', function (done) {
+    const body = {my: 'custom settings'};
+    superagent.put(`${api}/users/${newUserId}/settings/test`)
+      .set('authorization', authString)
+      .send(body)
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        statusCannotBe300(res.status);
+        expect(res.status).to.equal(200);
+        expect(res).to.be.a('Object');
+        // Make sure the setting is deleted
+        superagent.get(`${api}/users/${newUserId}/settings/test`)
+          .set('authorization', authString)
+          .end(function (checkError, checkRes) {
+            expect(res.status).to.equal(200);
+            expect(checkRes).to.be.a('Object');
+            expect(checkError).to.equal(null);
+            expect(checkRes.body).to.be.deep.equal(body);
+            done();
+          });
+      });
+  });
+
+  it('should allow to delete known settings /users/<id>/settings/test DELETE', function (done) {
+    superagent.delete(`${api}/users/${newUserId}/settings/test`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        statusCannotBe300(res.status);
+        expect(res.status).to.equal(200);
+        // Make sure the setting is deleted
+        superagent.get(`${api}/users/${newUserId}/settings/test`)
+          .set('authorization', authString)
+          .end(function (checkError, checkRes) {
+            expect(checkRes).to.be.a('Object');
+            expect(checkRes.status).to.equal(404);
+            expect(checkError).to.not.equal(null);
+            expect(checkRes.body).to.be.a('Object');
+            done();
+          });
+      });
+  });
+  it('should not allow to delete unknown settings /users/<id>/settings/unknown DELETE', function (done) {
+    superagent.delete(`${api}/users/${newUserId}/settings/unknown`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.not.equal(null);
+        statusCannotBe300(res.status);
+        expect(res.status).to.equal(404);
+        expect(res.body).to.be.a('Object');
+        done();
+      });
+  });
+
   it('should delete a SINGLE user on /users/<id> DELETE', function (done) {
     superagent.del(`${api}/users/${newUserId}`)
       .set('authorization', authString)
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
-        if (res.status === 300) {
-          logger.warn('Seems that your DB is not clean!');
-          process.exit(1);
-        }
+        statusCannotBe300(res.status);
         expect(res.status).to.equal(200);
 
         // Make sure the document is deleted

@@ -37,9 +37,9 @@ const UserSchema = new Schema({
   registered: {type: Date, default: Date.now},
   lastVisited: {type: Date, default: Date.now},
   loggedIn: {type: Boolean, default: false},
-
   groups: [{type: ObjectId, ref: 'Group'}],
-  apikeys: [{type: ObjectId, ref: 'ApiKey'}]
+  apikeys: [{type: ObjectId, ref: 'ApiKey'}],
+  settings: {type: Types.Mixed}
 }).post('save', () => {
   // if (this.isNew) { }
 });
