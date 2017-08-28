@@ -13,6 +13,7 @@ class AdminController {
   constructor() {
     this._updater = new Updater();
   }
+
   version(req, resp) {
     this._updater.version()
       .then(resp.json.bind(resp))
@@ -22,6 +23,7 @@ class AdminController {
           .json({message: error.message, error: error});
       });
   }
+
   update(req, resp) {
     if (!_.isString(req.body, 'revision')) {
       resp.status(403)
@@ -29,15 +31,16 @@ class AdminController {
       return;
     }
     this._updater.update(req.body.revision)
-      .then(resp.json.bind(resp))
+      .then(resp.sendStatus(204))
       .catch((error) => {
         resp.status(500)
           .json({message: error.message});
       });
   }
+
   restart(req, resp) {
     this._updater.restart(req.body)
-      .then(resp.json.bind(resp))
+      .then(resp.sendStatus(204))
       .catch((error) => {
         resp.status(500)
           .json({message: error.message});

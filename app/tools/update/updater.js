@@ -60,7 +60,7 @@ class Updater extends EventEmitter {
     logger.info(`Reverting back to version: ${version}.`);
 
     // @todo...
-    return Promise.reject('Not implemented');
+    return Promise.reject(new Error('Not implemented'));
   }
 
   version() {
