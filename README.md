@@ -53,7 +53,7 @@ Options:
   --listen, -l   set binding interface             [string] [default: "0.0.0.0"]
   --https        use https                                      [default: false]
   --port         set listen port                      [required] [default: 3000]
-  --cfg, -c      Select configuration (development,test,production)
+  --env, -e      Select environment (development,test,production)
                                                [string] [default: "development"]
   --verbose, -v  verbose level                                           [count]
   --silent, -s   Silent mode                                    [default: false]
@@ -79,21 +79,21 @@ Available [here](doc/APIs)
 
 ## Configuration
 
-By default it start server as development mode. You can configure environment you are using using [env.json](`config/env/env.example.json`)
+By default it start server as development mode. You can configure environment using [env.json](`config/env/env.example.json`)
 ```
 {
- FACEBOOK_CLIENTID: "ID",
- FACEBOOK_SECRET: "SECRET",
- TWITTER_CLIENTID: "ID",
- TWITTER_SECRET: "SECRET",
- GITHUB_CLIENTID: "ID",
- GITHUB_SECRET: "SECRET",
- LINKEDIN_CLIENTID: "ID",
- LINKEDIN_SECRET: "SECRET",
- GOOGLE_CLIENTID: "ID",
- GOOGLE_SECRET: "SECRET",
- GITHUB_ORG: "ORGANIZATION",
- GITHUB_ADMINTEAM: "ADMIN-TEAM"
+  "OPENTMI_BIND": "0.0.0.0",
+  "OPENTMI_PORT": 80,
+  "WEBTOKEN": "token",
+  "MONGODB": "mongodb://localhost/opentmi",
+  "FILE_DB": "./data",
+  "OPENTMI_ADMIN_USERNAME": "admin",
+  "OPENTMI_ADMIN_PASSWORD": "admin",
+  "GITHUB_CLIENTID": "ID",
+  "GITHUB_SECRET": "SECRET",
+  "GITHUB_ORG": "ORGANIZATION",
+  "GITHUB_CBURL": "GITHUB_CBURL",
+  "GITHUB_ADMINTEAM": "ADMIN-TEAM"
 }
 ```
 

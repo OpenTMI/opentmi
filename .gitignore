@@ -9,3 +9,4 @@ data/
 sslcert
 .idea/
 *.log
+env.json

@@ -22,7 +22,7 @@ if (nconf.get('help') || nconf.get('h')) {
 const https = nconf.get('https');
 const listen = nconf.get('listen');
 const port = nconf.get('port');
-const configuration = nconf.get('cfg');
+const environment = nconf.get('env');
 
 // Create express instance
 const app = Express();
@@ -58,7 +58,7 @@ DB.connect().catch((error) => {
 
     function onListening() {
       const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
-      logger.info(`OpenTMI started on ${listenurl} in ${configuration} mode`);
+      logger.info(`OpenTMI started on ${listenurl} in ${environment} mode`);
       eventBus.emit('start_listening', {url: listenurl});
     }
     server.on('error', onError);
@@ -68,7 +68,7 @@ DB.connect().catch((error) => {
     // Close the Mongoose connection, when receiving SIGINT
     process.on('SIGINT', () => {
       // server.close stops worker from accepting new requests and finishes currently processed requests
-      // @todo test that requests actually get processed 
+      // @todo test that requests actually get processed
       server.close(() => {
         DB.disconnect().then(() => {
           process.exit(0);

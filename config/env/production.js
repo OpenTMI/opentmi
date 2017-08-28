@@ -1,42 +1,34 @@
 const productionConfig = {
-  db: 'mongodb://localhost/opentmi_prod',
-  port: 80,
+  name: 'OpenTMI-prod',
+  host: process.env.OPENTMI_BIND || '0.0.0.0',
+  port: process.env.OPENTMI_PORT || 3000,
+  webtoken: process.env.WEBTOKEN || 'OpenTMI-toP-SeCRet-tOKEn',
+  db: process.env.MONGODB || 'mongodb://localhost/opentmi_prod',
+  filedb: process.env.FILE_DB || './data',
+  admin: {
+    user: process.env.OPENTMI_ADMIN_USERNAME || 'admin',
+    pwd: process.env.OPENTMI_ADMIN_PASSWORD || 'admin'
+  },
   ldap: {
     url: process.env.LDAP_URL
   },
-  webtoken: 'OpenTMI-toP-SeCRet-tOKEn',
-  admin: {
-    // default values
-    user: 'admin',
-    pwd: 'admin'
+  jenkins: {
+    // url: 'my@host.jenkins.com/'
   },
-  filedb: process.env.FILE_DB || './data',
-  facebook: {
-    clientID: process.env.FACEBOOK_CLIENTID,
-    clientSecret: process.env.FACEBOOK_SECRET,
-    callbackURL: 'http://nodejs-express-demo.herokuapp.com/auth/facebook/callback'
-  },
-  twitter: {
-    clientID: process.env.TWITTER_CLIENTID,
-    clientSecret: process.env.TWITTER_SECRET,
-    callbackURL: 'http://nodejs-express-demo.herokuapp.com/auth/twitter/callback'
+  slack: {
+    // token: 'my-token'
   },
   github: {
     clientID: process.env.GITHUB_CLIENTID,
     clientSecret: process.env.GITHUB_SECRET,
-    callbackURL: process.env.GITHUB_CBURL,
+    callbackURL: process.env.GITHUB_CBURL || 'http://localhost:3000/auth/github/callback',
     organization: process.env.GITHUB_ORG,
     adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
-  },
-  linkedin: {
-    clientID: process.env.LINKEDIN_CLIENTID,
-    clientSecret: process.env.LINKEDIN_SECRET,
-    callbackURL: 'http://nodejs-express-demo.herokuapp.com/auth/linkedin/callback'
   },
   google: {
     clientID: process.env.GOOGLE_CLIENTID,
     clientSecret: process.env.GOOGLE_SECRET,
-    callbackURL: 'http://nodejs-express-demo.herokuapp.com/auth/google/callback'
+    callbackURL: 'http://localhost:3000/auth/google/callback'
   }
 };
 
