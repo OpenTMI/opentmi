@@ -21,7 +21,7 @@ const args = {
     default: 3000,
     nargs: 1
   },
-  cfg: {
+  env: {
     alias: 'c',
     default: process.env.NODE_ENV || 'development',
     type: 'string',

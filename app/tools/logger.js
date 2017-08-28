@@ -1,11 +1,11 @@
 const cluster = require('cluster');
 const Winston = require('winston');
 const WinstonDailyRotateFile = require('winston-daily-rotate-file');
-const nconf = require('../../config');
+const nconf = require('../../config/index');
 
 const verbose = nconf.get('verbose');
 const silent = nconf.get('silent');
-const configuration = nconf.get('cfg');
+const environment = nconf.get('env');
 
 function _parseError(error) {
   const jsonObj = {
@@ -30,7 +30,7 @@ class MasterLogger {
 
     // define console logging level
     this.logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
-    this.logger.debug(`Using cfg: ${configuration}`);
+    this.logger.debug(`Using cfg: ${environment}`);
 
     // @todo File logging options should be fetched from config file
     // Add winston file logger, which rotates daily
