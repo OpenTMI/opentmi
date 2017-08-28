@@ -22,10 +22,10 @@ const args = {
     nargs: 1
   },
   env: {
-    alias: 'c',
+    alias: 'e',
     default: process.env.NODE_ENV || 'development',
     type: 'string',
-    describe: 'Select configuration (development,test,production)',
+    describe: 'Select environment (development,test,production)',
     nargs: 1
   },
   verbose: {

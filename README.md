@@ -53,7 +53,7 @@ Options:
   --listen, -l   set binding interface             [string] [default: "0.0.0.0"]
   --https        use https                                      [default: false]
   --port         set listen port                      [required] [default: 3000]
-  --cfg, -c      Select configuration (development,test,production)
+  --env, -e      Select environment (development,test,production)
                                                [string] [default: "development"]
   --verbose, -v  verbose level                                           [count]
   --silent, -s   Silent mode                                    [default: false]

@@ -58,12 +58,3 @@ const developmentConfig = {
  * Expose
  */
 module.exports = developmentConfig;
-
-
-
-
-
-
-
-
-
