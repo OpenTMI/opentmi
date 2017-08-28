@@ -26,6 +26,10 @@ const productionConfig = {
     clientSecret: process.env.GITHUB_SECRET,
     callbackURL: process.env.GITHUB_CBURL,
     organization: process.env.GITHUB_ORG,
+    authentication: {
+        type: "oauth",
+        token: process.env.GITHUB_TOKEN
+    },
     adminTeam: process.env.GITHUB_ADMINTEAM || 'admins'
   },
   linkedin: {
