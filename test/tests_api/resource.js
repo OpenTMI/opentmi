@@ -17,7 +17,10 @@ describe('Resource', function () {
   it('add resource', function (done) {
     const body = {
       name: 'dev1',
-      type: 'dut'
+      type: 'dut',
+      hw: {
+        sn: 'SerialNumber'
+      }
     };
 
     superagent.post(`${api}/resources`)
