@@ -37,9 +37,12 @@ describe('update/updater.js', function () {
       });
 
       it('should assign options from constructor properties', function (done) {
-        updater = new Updater('CWDD', 'ENVV');
+        updater = new Updater('CWDD', {ENV: 'ENVV'});
 
-        expect(updater).to.have.deep.property('_options', {cwd: 'CWDD', env: 'ENVV'});
+        expect(updater).to.have.property('_options');
+        expect(updater._options).to.have.property('cwd', 'CWDD');
+        expect(updater._options).to.have.property('env');
+        expect(updater._options.env).to.have.property('ENV', 'ENVV');
 
         expect(updater).to.have.deep.property('_pending');
         expect(updater._pending).to.have.property('then');
@@ -168,10 +171,12 @@ describe('update/updater.js', function () {
 
     describe('version', function () {
       it('should return the result of npm.list', function () {
-        updater = new Updater('CWDD', 'ENVV');
+        updater = new Updater('CWDD', {ENV: 'ENVV'});
 
         updater.npm.list = (options) => {
-          expect(options).to.deep.equal({cwd: 'CWDD', env: 'ENVV'});
+          expect(options).to.have.property('cwd', 'CWDD');
+          expect(options).to.have.property('env');
+          expect(options.env).to.have.property('ENV', 'ENVV');
           return Promise.resolve('NpmListData');
         };
 

@@ -22,7 +22,7 @@ describe('update/gitUpdater', function () {
   describe('GitUpdater', function () {
     describe('constructor', function () {
       it('should define right properties with no parameters', function (done) {
-        gitUpdater = new GitUpdater();
+        gitUpdater = new GitUpdater(undefined, undefined);
 
         expect(gitUpdater).to.have.property('exec');
         expect(gitUpdater).to.have.property('npm');
@@ -31,7 +31,7 @@ describe('update/gitUpdater', function () {
       });
 
       it('should define right properties with parameters', function (done) {
-        gitUpdater = new GitUpdater('ExecModule');
+        gitUpdater = new GitUpdater(undefined, undefined, 'ExecModule');
 
         expect(gitUpdater).to.have.property('exec', 'ExecModule');
         expect(gitUpdater).to.have.property('npm');
@@ -42,7 +42,7 @@ describe('update/gitUpdater', function () {
 
     describe('_update', function () {
       it('should call functions in the right order', function () {
-        gitUpdater = new GitUpdater(() => { throw new Error('Nothing should be executed here!'); });
+        gitUpdater = new GitUpdater(undefined, undefined, () => { throw new Error('Nothing should be executed here!'); });
 
         let cleanlinessChecked = false;
         gitUpdater._isClean = () => {
@@ -88,7 +88,8 @@ describe('update/gitUpdater', function () {
       });
 
       it('should call reset if not clean', function () {
-        gitUpdater = new GitUpdater(() => { throw new Error('Nothing should be executed here!'); });
+        gitUpdater = new GitUpdater(undefined, undefined,
+          () => { throw new Error('Nothing should be executed here!'); });
 
         let cleanlinessChecked = false;
         gitUpdater._isClean = () => {
@@ -138,7 +139,7 @@ describe('update/gitUpdater', function () {
       });
 
       it('should fail if reset fails', function () {
-        gitUpdater = new GitUpdater();
+        gitUpdater = new GitUpdater(undefined, undefined);
 
         gitUpdater._isClean = () => Promise.reject();
         gitUpdater._reset = () => Promise.reject(new Error('Reset failed'));
@@ -147,7 +148,7 @@ describe('update/gitUpdater', function () {
       });
 
       it('should fail if clean fails', function () {
-        gitUpdater = new GitUpdater();
+        gitUpdater = new GitUpdater(undefined, undefined);
 
         gitUpdater._isClean = () => Promise.resolve();
         gitUpdater._clean = () => Promise.reject(new Error('Clean failed'));
@@ -156,7 +157,7 @@ describe('update/gitUpdater', function () {
       });
 
       it('should fail if _checkout fails', function () {
-        gitUpdater = new GitUpdater();
+        gitUpdater = new GitUpdater(undefined, undefined);
 
         gitUpdater._isClean = () => Promise.resolve();
         gitUpdater._clean = () => Promise.resolve();
@@ -166,7 +167,7 @@ describe('update/gitUpdater', function () {
       });
 
       it('should fail if install fails', function () {
-        gitUpdater = new GitUpdater();
+        gitUpdater = new GitUpdater(undefined, undefined);
 
         gitUpdater._isClean = () => Promise.resolve();
         gitUpdater._clean = () => Promise.resolve();
@@ -188,7 +189,7 @@ describe('update/gitUpdater', function () {
       });
 
       it('should fetch git version and combine it with super.version', function () {
-        gitUpdater = new GitUpdater();
+        gitUpdater = new GitUpdater(undefined, undefined);
 
         gitUpdater._commitId = () => Promise.resolve('COMMIT_ID');
 
@@ -216,7 +217,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('CleanResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater(undefined, undefined, exec);
 
         return expect(gitUpdater._isClean()).to.eventually.equal('CleanResolved');
       });
@@ -228,7 +229,7 @@ describe('update/gitUpdater', function () {
           return Promise.reject(new Error('CleanFailed'));
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._isClean()).to.be.rejectedWith(Error, 'workspace is not clean');
       });
@@ -242,7 +243,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('TagResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._tag('COMMIT_ID')).to.eventually.deep.equal({tag: 'TagResolved'});
       });
@@ -254,7 +255,7 @@ describe('update/gitUpdater', function () {
           return Promise.reject(new Error('TagFailed'));
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._tag('COMMIT_ID')).to.eventually.deep.equal({tag: undefined});
       });
@@ -268,7 +269,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('CommitIdResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._commitId()).to.eventually.deep.equal({commitId: 'CommitIdResolved'});
       });
@@ -280,7 +281,7 @@ describe('update/gitUpdater', function () {
           return Promise.reject(new Error('CommitIdFailed'));
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._commitId()).to.be.rejectedWith(Error, 'CommitIdFailed');
       });
@@ -294,7 +295,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('CommitIdResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._reset()).to.eventually.equal('CommitIdResolved');
       });
@@ -306,7 +307,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('CommitIdResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._reset('OPTIONS')).to.eventually.equal('CommitIdResolved');
       });
@@ -318,7 +319,7 @@ describe('update/gitUpdater', function () {
           return Promise.reject(new Error('CommitIdFailed'));
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._reset()).to.be.rejectedWith(Error, 'CommitIdFailed');
       });
@@ -332,7 +333,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('FetchResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._fetch()).to.eventually.equal('FetchResolved');
       });
@@ -344,7 +345,7 @@ describe('update/gitUpdater', function () {
           return Promise.reject(new Error('FetchFailed'));
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._fetch()).to.be.rejectedWith(Error, 'FetchFailed');
       });
@@ -358,7 +359,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('CleanResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._clean()).to.eventually.equal('CleanResolved');
       });
@@ -370,7 +371,7 @@ describe('update/gitUpdater', function () {
           return Promise.reject(new Error('CleanFailed'));
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._clean()).to.be.rejectedWith(Error, 'CleanFailed');
       });
@@ -384,7 +385,7 @@ describe('update/gitUpdater', function () {
           return Promise.resolve('CheckoutResolved');
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._checkout('REVISION')).to.eventually.equal('CheckoutResolved');
       });
@@ -396,7 +397,7 @@ describe('update/gitUpdater', function () {
           return Promise.reject(new Error('CheckoutFailed'));
         };
 
-        gitUpdater = new GitUpdater(exec);
+        gitUpdater = new GitUpdater('.', '', exec);
 
         return expect(gitUpdater._checkout('REVISION')).to.be.rejectedWith(Error, 'CheckoutFailed');
       });
