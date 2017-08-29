@@ -1,7 +1,7 @@
 {
   "name": "OpenTMI",
   "description": "OpenTMI - Open Source Test Management Infrastructure",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "author": {
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
