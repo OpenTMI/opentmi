@@ -32,7 +32,7 @@ class AdminController {
       return resp.status(403).json({message: 'Invalid or missing revision'});
     }
 
-    this._updater.update(req.body.revision)
+    return this._updater.update(req.body.revision)
       .then(() => resp.sendStatus(204))
       .catch((error) => {
         resp.status(500)

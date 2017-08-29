@@ -42,7 +42,9 @@ describe('update/gitUpdater', function () {
 
     describe('_update', function () {
       it('should call functions in the right order', function () {
-        gitUpdater = new GitUpdater(undefined, undefined, () => { throw new Error('Nothing should be executed here!'); });
+        gitUpdater = new GitUpdater(undefined, undefined, () => {
+          throw new Error('Nothing should be executed here!');
+        });
 
         let cleanlinessChecked = false;
         gitUpdater._isClean = () => {
