@@ -12,8 +12,8 @@ const exec = Promise.promisify(childProcess.exec);
 
 
 class GitUpdater extends Updater {
-  constructor(execModule = exec) {
-    super();
+  constructor(cwd, env, execModule = exec) {
+    super(cwd, env);
     this.exec = execModule;
     this.npm = new Npm(exec);
   }

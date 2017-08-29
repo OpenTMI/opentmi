@@ -13,7 +13,12 @@ const logger = require('../logger');
 class Updater extends EventEmitter {
   constructor(cwd = __dirname, env = _.pick(process.env, ['PWD', 'PATH', 'HOME'])) {
     super();
-    this._options = {cwd, env};
+
+    this._options = {
+      cwd,
+      env: Object.assign({}, process.env, env)
+    };
+
     this._pending = Promise.resolve();
     this.npm = new Npm();
   }
@@ -76,7 +81,7 @@ class Updater extends EventEmitter {
     }
 
     eventBus.emit('workerRestartNeeded', 'Request from updater tool.');
-    return Promise.reject('Not implemented');
+    return Promise.resolve('Server will be restarted.');
   }
 }
 
