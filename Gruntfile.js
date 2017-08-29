@@ -6,7 +6,7 @@ function gruntSetup(grunt) {
   const testFilesUnit = [
     'test/tests_unittests/*.js',
     'test/tests_unittests/tools/*.js',
-    'test/tests_unittests/tools/eventBus/*.js',
+    'test/tests_unittests/tools/**/*.js',
     'test/tests_unittests/addons/*.js',
     'test/tests_unittests/controllers/*.js',
     'test/tests_unittests/routes/*.js'
