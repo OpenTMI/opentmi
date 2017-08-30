@@ -35,7 +35,8 @@ class UsersController extends DefaultController {
       const settings = _.get(req.User, key);
       res.json(settings);
     } else {
-      res.status(404).json({error: `No settings for ${namespace}`});
+      // no settings stored under that namespace - give empty object
+      res.json({});
     }
   }
   updateSettings(req, res) { // eslint-disable-line class-methods-use-this
