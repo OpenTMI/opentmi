@@ -61,11 +61,11 @@ class FileDB {
     if (!file.checksum()) {
       return Promise.reject(new Error('Could not resolve a checksum for the file.'));
     }
-
+    const fileData = file.data;
     logger.info(`Storing file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
     return FileDB._checkFilenameAvailability(file.checksum()).then((available) => {
       if (available) {
-        return FileDB._compress(file.data).then((compressedData) => {
+        return FileDB._compress(fileData).then((compressedData) => {
           const filename = file.checksum();
           return FileDB._writeFile(filename, compressedData);
         });
@@ -225,5 +225,5 @@ class FileDB {
   }
 }
 
-
+FileDB.provider = filedb;
 module.exports = FileDB;

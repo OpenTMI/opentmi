@@ -134,7 +134,13 @@ ResultSchema.pre('validate', function preValidate(next) {
           logger.warn('store file %s to mongodb', file.name);
         } else if (fileProvider) {
           // store to filesystem
-          filedb.storeFile(file);
+          filedb.storeFile(file)
+            .then(() => {
+              logger.silly(`File ${file.name} stored`);
+            })
+            .catch((storeError) => {
+              logger.warn(storeError);
+            });
           file.data = undefined;
         } else {
           // do not store at all..
