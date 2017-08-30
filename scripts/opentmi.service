@@ -1,3 +1,6 @@
+# Place this file under `/etc/systemd/system/opentmi.service`
+# Enable service with `systemctl enable opentmi`
+# Start opentmi `sudo systemctl start opentmi`
 [Unit]
 Description=OpenTMI
 Requires=After=mongodb.service
