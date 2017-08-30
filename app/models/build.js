@@ -169,7 +169,13 @@ BuildSchema.pre('validate', function validate(next) {
       } else if (fileProvider) {
         // store data to filesystem
         logger.debug('storing file %s into filesystem', file.name);
-        file.storeInfileDB();
+        filedb.storeFile(file)
+          .then(() => {
+            logger.silly(`File ${file.name} stored`);
+          })
+          .catch((storeError) => {
+            logger.warn(storeError);
+          });
 
         // stored data seperately, unassign data from schema
         file.data = undefined; // eslint-disable-line no-param-reassign
@@ -225,7 +231,9 @@ BuildSchema.methods.download = function download(index, res) {
     if (file.data) {
       return cb(null, file);
     }
-    filedb.readFile(file, cb);
+    filedb.readFile(file)
+      .then((data) => { cb(null, data); })
+      .catch((error) => { cb(error); });
   } else {
     return res.status(500).json({error: 'file not found'});
   }
