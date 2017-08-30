@@ -3,17 +3,14 @@ const path = require('path');
 const zlib = require('zlib');
 
 // Third party components
+const _ = require('lodash');
 const nconf = require('../../config');
 const logger = require('../tools/logger');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
 
 // Local components
-const mongoose = require('mongoose');
-require('../models/extends/file.js');
-
 const usedEncoding = 'utf8';
-const File = mongoose.model('File');
 const filedb = nconf.get('filedb');
 const fileEnding = 'gz';
 
@@ -36,7 +33,7 @@ class FileDB {
    * @returns {Promise} promise to read a file with a File as resolve parameter
    */
   static readFile(file) {
-    if (!(file instanceof File)) {
+    if (!_.isFunction(file.checksum)) {
       return Promise.reject(new TypeError('Provided file is not an instance of FileSchema.'));
     }
 
@@ -54,7 +51,7 @@ class FileDB {
    * @returns {Promise} promise to write a compressed file with a File as resolve parameter
    */
   static storeFile(file) {
-    if (!(file instanceof File)) {
+    if (!_.isFunction(file.checksum)) {
       return Promise.reject(new TypeError('Provided file is not an instance of FileSchema.'));
     }
 
