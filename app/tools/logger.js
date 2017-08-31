@@ -1,5 +1,6 @@
 // Native components
 const cluster = require('cluster');
+const path = require('path');
 
 // Third party components
 const Winston = require('winston');
@@ -43,7 +44,7 @@ class MasterLogger {
           level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
         }),
         new (Winston.transports.DailyRotateFile)({
-          filename: './log/app.log',
+          filename: path.resolve(__dirname, '..', '..', 'log', 'app.log'),
           json: false,
           handleExceptions: false,
           level: fileLevel,
