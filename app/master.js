@@ -177,7 +177,7 @@ class Master {
         break;
       }
       default: {
-        throw new Error(`Message without type from worker, data: ${JSON.stringify(data)}.`);
+        logger.error(`Message without type from worker, data: ${JSON.stringify(data)}.`);
       }
     }
   }
