@@ -1,11 +1,18 @@
+// Native components
 const cluster = require('cluster');
-const Winston = require('winston');
-const WinstonDailyRotateFile = require('winston-daily-rotate-file');
-const nconf = require('../../config/index');
 
-const verbose = nconf.get('verbose');
-const silent = nconf.get('silent');
-const environment = nconf.get('env');
+// Third party components
+const Winston = require('winston');
+require('winston-daily-rotate-file');
+
+// Application components
+const config = require('../../config/index');
+
+// Setup
+const verbose = config.get('verbose');
+const silent = config.get('silent');
+const environment = config.get('env');
+
 
 function _parseError(error) {
   const jsonObj = {
@@ -25,23 +32,28 @@ function _parseError(error) {
 class MasterLogger {
   constructor() {
     this.logger = Winston;
-    // Define logger behaviour
-    this.logger.cli(); // activates colors
-
-    // define console logging level
-    this.logger.level = silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4];
-    this.logger.debug(`Using cfg: ${environment}`);
 
     // @todo File logging options should be fetched from config file
     // Add winston file logger, which rotates daily
     const fileLevel = 'silly';
-    this.logger.add(WinstonDailyRotateFile, {
-      filename: '../log/app.log',
-      json: false,
-      handleExceptions: false,
-      level: fileLevel,
-      datePatter: '.yyyy-MM-dd_HH-mm'
+    this.logger.configure({
+      transports: [
+        new (Winston.transports.Console)({
+          colorize: true,
+          level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+        }),
+        new (Winston.transports.DailyRotateFile)({
+          filename: './log/app.log',
+          json: false,
+          handleExceptions: false,
+          level: fileLevel,
+          datePatter: '.yyyy-MM-dd_HH-mm.log'
+        })
+      ]
     });
+
+    // Print current config
+    this.logger.debug(`Using cfg: ${environment}.`);
   }
   set level(level) {
     this.logger.level = level;
@@ -127,8 +139,5 @@ class WorkerLogger {
   }
 }
 
-if (cluster.isMaster) {
-  module.exports = new MasterLogger();
-} else {
-  module.exports = new WorkerLogger();
-}
+
+module.exports = cluster.isMaster ? new MasterLogger() : new WorkerLogger();
