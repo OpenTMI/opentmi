@@ -6,6 +6,7 @@ const logger = require('../../tools/logger');
 const mongoose = require('mongoose');
 
 // local module
+const filedb = require('../../tools/filedb.js');
 const nconf = require('../../../config');
 const checksum = require('../../tools/checksum.js');
 
@@ -46,8 +47,6 @@ FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
 };
 
 FileSchema.methods.storeInFileDB = function storeInFileDB() {
-  // filedb is reuired here because it causes a circular dependency otherwise
-  const filedb = require('../tools/filedb.js'); // eslint-disable-line
   return filedb.storeFile(this).catch((error) => {
     logger.error(`Could not save file to filedb, reason: ${error.message}.`);
     throw error;
@@ -55,8 +54,6 @@ FileSchema.methods.storeInFileDB = function storeInFileDB() {
 };
 
 FileSchema.methods.retrieveFromFileDB = function retrieveFromFileDB() {
-  // filedb is reuired here because it causes a circular dependency otherwise
-  const filedb = require('../tools/filedb.js'); // eslint-disable-line
   return filedb.readFile(this).then((data) => {
     this.data = data;
     return data;
@@ -64,6 +61,14 @@ FileSchema.methods.retrieveFromFileDB = function retrieveFromFileDB() {
     logger.error(`Could not read file from filedb, reason: ${error.message}.`);
     throw error;
   });
+};
+
+FileSchema.methods.readStreamFromFileDB = function retrieveFromFileDB(options = {skip: 0, limit: 100}) {
+  return filedb.readStream(this, options)
+    .catch((error) => {
+      logger.error(`Could not read file from filedb, reason: ${error.message}.`);
+      throw error;
+    });
 };
 
 FileSchema.methods.checksum = function getChecksum() {

@@ -10,6 +10,8 @@ const Promise = require('bluebird');
 const fs = require('fs-extra');
 
 // Local components
+const StreamLimiter = require('./streamLimiter');
+
 const usedEncoding = 'utf8';
 const filedb = nconf.get('filedb');
 const fileEnding = 'gz';
@@ -43,6 +45,23 @@ class FileDB {
 
     logger.info(`Reading file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
     return FileDB._readFile(file.checksum()).then(FileDB._uncompress);
+  }
+
+  static readStream(file, options = {skip: 0, limit: 10}) {
+    if (!_.isFunction(file.checksum)) {
+      return Promise.reject(new TypeError('Provided file is not an instance of FileSchema.'));
+    }
+
+    if (!file.checksum()) {
+      return Promise.reject(new Error('Could not resolve a checksum for the file.'));
+    }
+
+    logger.info(`Reading file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
+    const unzip = zlib.Unzip();
+    const limiter = new StreamLimiter(options);
+    return FileDB._readStream(file.checksum())
+      .then(stream => stream.pipe(unzip))
+      .then(stream => stream.pipe(limiter));
   }
 
   /**
@@ -106,6 +125,21 @@ class FileDB {
     return fs.readFile(filePath).then((dataBuffer) => {
       logger.debug(`Read file (filename: ${filename} size: ${dataBuffer.size}).`);
       return dataBuffer;
+    }).catch((error) => {
+      const errorMessage = `Could not read file with path: ${filePath}, error: ${error.message}.`;
+      logger.warn(errorMessage);
+      throw error;
+    });
+  }
+
+  static _readStream(filename) {
+    const filePath = FileDB._resolveFilePath(filename);
+
+    logger.debug(`Reading file from file system with path: ${filePath}.`);
+    return Promise.try(() => {
+      const stream = fs.createReadStream(filePath);
+      logger.debug(`Readstream file (filename: ${filename}).`);
+      return stream;
     }).catch((error) => {
       const errorMessage = `Could not read file with path: ${filePath}, error: ${error.message}.`;
       logger.warn(errorMessage);
@@ -224,3 +258,8 @@ class FileDB {
 
 FileDB.provider = filedb;
 module.exports = FileDB;
+/*
+FileDB.readStream({checksum: () => '123'})
+  .then(stream => stream.pipe(process.stdout))
+  .catch(console.error);
+*/
