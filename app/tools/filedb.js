@@ -59,9 +59,11 @@ class FileDB {
     logger.info(`Reading file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
     const unzip = zlib.Unzip();
     const limiter = new StreamLimiter(options);
-    return FileDB._readStream(file.checksum())
-      .then(stream => stream.pipe(unzip))
-      .then(stream => stream.pipe(limiter));
+    return Promise.try(() => (
+      FileDB._readStream(file.checksum())
+        .then(stream => stream.pipe(unzip))
+        .then(stream => stream.pipe(limiter))
+    ));
   }
 
   /**

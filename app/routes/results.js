@@ -23,6 +23,9 @@ function Route(app) {
   router.route('/api/v0/results/:Result/builds/:Index/download')
     .all(controller.all.bind(controller))
     .get(ResultController.buildDownload);
+  router.route('/api/v0/results/:Result/logs/:Index/load')
+    .all(controller.all.bind(controller))
+    .get(ResultController.partialLogDownload);
 
   app.use(router);
 }
