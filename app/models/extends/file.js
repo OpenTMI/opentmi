@@ -26,8 +26,7 @@ FileSchema.set('toObject', {virtuals: true});
 
 FileSchema.virtual('hrefs').get(function getHrefs() {
   const hasHref = fileProvider && (fileProvider !== 'mongodb') && this.sha1;
-  const pathToFile = path.join(fileProvider, this.sha1);
-  return hasHref ? pathToFile : undefined;
+  return hasHref ? path.join(fileProvider, this.sha1) : undefined;
 });
 
 FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
