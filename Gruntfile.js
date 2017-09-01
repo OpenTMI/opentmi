@@ -1,5 +1,9 @@
 require('xunit-file');
 const fs = require('fs');
+const path = require('path');
+
+const dbPath = path.join('.', 'scripts', 'dbrestore.sh');
+const dumpPath = path.join('.', 'test', 'seeds', 'test_dump');
 
 function gruntSetup(grunt) {
   const testFilesApi = ['test/tests_api/*.js'];
@@ -18,6 +22,7 @@ function gruntSetup(grunt) {
         options: {
           delay: 15000,
           script: 'index.js',
+          node_env: 'test',
           args: ['-s'] // to more traces set -vvv instead of -s (silent)
         }
       }
@@ -31,18 +36,10 @@ function gruntSetup(grunt) {
       }
     },
     exec: {
-      restore_db_windows: {
-        cmd: 'bash .\\scripts\\dbrestore_windows.sh local .\\test\\seeds\\test_dump\\',
+      restore_db: {
+        cmd: `sh ${dbPath} local ${dumpPath}`,
         stdout: false,
         stderr: false
-      },
-      restore_db_linux: {
-        cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
-        stdout: false,
-        stderr: false,
-        options: {
-          shell: 'bash'
-        }
       }
     },
     simplemocha: {
@@ -62,10 +59,10 @@ function gruntSetup(grunt) {
 
   grunt.registerTask('FindApiTests', 'Find all tests under the addons', () => {
     const root = 'app/addons';
-    function walk(path) {
-      const items = fs.readdirSync(path);
+    function walk(_path) {
+      const items = fs.readdirSync(_path);
       items.forEach((item) => {
-        const dirName = `${path}/${item}`;
+        const dirName = `${_path}/${item}`;
         if (fs.statSync(dirName).isDirectory()) {
           // find only directories that ends with /test
           if (dirName.substr(dirName.length - 5) === '/test') {
@@ -93,15 +90,15 @@ function gruntSetup(grunt) {
     'simplemocha:unit',
     'express:test',
     'waitServer',
-    'exec:restore_db_linux',
+    'exec:restore_db',
     'simplemocha:api'
   ]);
 
   grunt.registerTask('apitests', [
     'FindApiTests',
+    'exec:restore_db',
     'express:test',
     'waitServer',
-    'exec:restore_db_linux',
     'simplemocha:api'
   ]);
 

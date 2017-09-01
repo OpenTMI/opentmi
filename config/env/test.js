@@ -4,7 +4,7 @@ const testConfig = {
   port: process.env.OPENTMI_PORT || 3000,
   webtoken: process.env.WEBTOKEN || 'OpenTMI-toP-SeCRet-tOKEn',
   db: process.env.MONGODB || 'mongodb://localhost/opentmi_test',
-  filedb: process.env.FILE_DB || './data',
+  filedb: process.env.FILE_DB || './test/test_filedb_data',
   admin: {
     user: process.env.OPENTMI_ADMIN_USERNAME || 'admin',
     pwd: process.env.OPENTMI_ADMIN_PASSWORD || 'admin'
