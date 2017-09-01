@@ -37,7 +37,7 @@ function gruntSetup(grunt) {
     },
     exec: {
       restore_db: {
-        cmd: `sh ${dbPath} local ${dumpPath}`,
+        cmd: `bash ${dbPath} local ${dumpPath}`,
         stdout: false,
         stderr: false
       }
