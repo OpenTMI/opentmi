@@ -262,14 +262,13 @@ describe('app/master.js', function () {
 
     it('should throw error with missing message type', function (done) {
       const data = 'fork_TestData';
-      expect(Master.onWorkerMessage.bind({}, data)).to.throw(
-        'Message without type from worker, data: "fork_TestData".');
+      expect(Master.onWorkerMessage.bind({}, data)).not.to.throw();
       done();
     });
 
     it('should throw error with unknown message type', function (done) {
       const data = {type: 'Desbug', data: 'fork_TestData'};
-      expect(Master.onWorkerMessage.bind({}, data)).to.throw('Message without type from worker, data:');
+      expect(Master.onWorkerMessage.bind({}, data)).not.to.throw();
       done();
     });
   });
