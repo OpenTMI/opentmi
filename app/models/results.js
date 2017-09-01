@@ -113,43 +113,51 @@ ResultSchema.pre('validate', function preValidate(next) {
   const buildSha1 = _.get(this, 'exec.sut.buildSha1');
 
   const logs = _.get(this, 'exec.logs');
-  if (_.isArray(logs)) {
+  if (Array.isArray(logs)) {
     for (let i = 0; i < logs.length; i += 1) {
       const file = logs[i];
       if (!file.name) {
         error = new Error(`file[${i}].name missing`);
         break;
       }
+
+      if (!file.data) {
+        logger.warn(`file[${i}].data missing`);
+        file.data = '';
+        // error = new Error(`file[${i}].data missing`);
+        // break;
+      }
+
       if (file.base64) {
         file.data = new Buffer(file.base64, 'base64');
         file.base64 = undefined;
       }
-      if (file.data) {
-        file.size = file.data.length;
-        // file.type = mimetype(file.name(
-        file.sha1 = checksum(file.data, 'sha1');
-        file.sha256 = checksum(file.data, 'sha256');
-        if (fileProvider === 'mongodb') {
-          // use mongodb document
-          logger.warn('store file %s to mongodb', file.name);
-        } else if (fileProvider) {
-          // store to filesystem
-          filedb.storeFile(file)
-            .then(() => {
-              logger.silly(`File ${file.name} stored`);
-            })
-            .catch((storeError) => {
-              logger.warn(storeError);
-            });
-          file.data = undefined;
-        } else {
-          // do not store at all..
-          file.data = undefined;
-          logger.warn('filedb is not configured');
-        }
+
+      file.size = file.data.length;
+      file.sha1 = checksum(file.data, 'sha1');
+      file.sha256 = checksum(file.data, 'sha256');
+
+      if (fileProvider === 'mongodb') {
+        // use mongodb document
+        logger.warn('store file %s to mongodb', file.name);
+      } else if (fileProvider) {
+        // store to filesystem
+        filedb.storeFile(file)
+          .then(() => {
+            logger.silly(`File ${file.name} stored`);
+          })
+          .catch((storeError) => {
+            logger.warn(storeError);
+          });
+        file.data = undefined;
+      } else {
+        // do not store at all..
+        file.data = undefined;
+        logger.warn('filedb is not configured');
       }
     }
   }
+
   if (error) {
     return next(error);
   }
