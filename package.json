@@ -87,7 +87,6 @@
     "grunt-express-server": "^0.5.3",
     "grunt-simple-mocha": "^0.4.1",
     "grunt-wait-server": "*",
-    "mock-fs": "4.4.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mockgoose": "^7.3.3",
