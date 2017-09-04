@@ -7,42 +7,48 @@ const nconf = require('../config');
 const dbUrl = nconf.get('db');
 mongoose.Promise = Promise;
 
+let tearingDown = false;
+
 const connect = function () {
-  /**
-   const options = {
-    server: {
-      socketOptions: {keepAlive: 1},
-      auto_reconnect: true
-    }
-  }; */
   const options = {
     useMongoClient: true,
-    // logger: logger,
-    loggerLevel: 'warning' // @todo fetch from config file
+    logger: logger.log.bind(logger),
+    loggerLevel: 'debug' // @todo fetch from config file
   };
-  logger.info(`Create MongoDB connection: ${dbUrl}`);
+
+  // Resolve after database connection is ready and listening
+  const connectionPending = new Promise((resolve) => {
+    mongoose.connection.once('connected', resolve);
+  });
+
+  logger.info(`Connecting to MongoDB: ${dbUrl}`);
   return mongoose
     .connect(dbUrl, options)
-    .then(() => {
-      mongoose.connection.on('error', () => {
-        logger.error(`Could not connect to MongoDB: ${dbUrl}`);
-      });
-    });
+    .then(() => connectionPending);
 };
 
 const close = Promise.promisify(mongoose.connection.close.bind(mongoose.connection));
 function disconnect() {
+  tearingDown = true;
   logger.info(`Force to close the MongoDB connection: ${dbUrl}`);
   return close();
 }
 
+mongoose.connection.on('error', (error) => {
+  logger.error(`MongoDB connection error: ${error.message}`);
+});
+
 mongoose.connection.on('disconnected', () => {
-  logger.warn('MongoDB connection lost, try again');
-  connect();
+  logger.warn(`MongoDB disconnected: ${dbUrl}`);
+
+  // If not tearingDown, immediately try to reconnect
+  if (!tearingDown) {
+    logger.info('Retrying mongoDB connection...');
+  }
 });
 
 mongoose.connection.on('connected', () => {
-  logger.info(`Connection established to MongoDB: ${dbUrl}`);
+  logger.info(`Connected to MongoDB: ${dbUrl}`);
 });
 
 mongoose.connection.on('reconnected', () => {
