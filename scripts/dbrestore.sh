@@ -14,7 +14,7 @@
 # Used if arg = 'local'
 LOCAL_MONGO_HOST="127.0.0.1"
 LOCAL_MONGO_PORT="27017" # default mongoDB port
-LOCAL_DB_NAME="opentmi_dev"
+LOCAL_DB_NAME="opentmi_test"
 
 # Used if arg = 'remote'
 REMOTE_MONGO_HOST=""

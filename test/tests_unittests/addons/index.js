@@ -2,11 +2,11 @@
 
 // Native components
 const path = require('path');
+const fs = require('fs');
 
 // Third party components
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
-const mock = require('mock-fs');
 const logger = require('winston');
 
 // Local components
@@ -19,22 +19,53 @@ chai.use(chaiAsPromised);
 // Test variables
 const expect = chai.expect;
 const cachePath = path.resolve('./app/addons/index.js');
+const rootPath = path.resolve(__dirname, '..', '..', '..', 'app', 'addons');
 let AddonManager;
 
+function createMockAddons(next) {
+  // Create directory for all mock addons
+  Object.keys(addonMockFiles).forEach((mockAddonKey) => {
+    const mockAddon = addonMockFiles[mockAddonKey];
+    fs.mkdirSync(path.join(rootPath, mockAddonKey));
+
+    // Create files defined in addon-mock-files to created directory
+    Object.keys(mockAddon).forEach((fileKey) => {
+      fs.writeFileSync(path.join(rootPath, mockAddonKey, fileKey), mockAddon[fileKey]);
+    });
+  });
+
+  next();
+}
+
+function cleanupMockAddons(next) {
+  // Remove all mock addon directories
+  Object.keys(addonMockFiles).forEach((mockAddonKey) => {
+    const addonPath = path.join(rootPath, mockAddonKey);
+    // Only remove if the directory actually exists
+    if (fs.existsSync(addonPath)) {
+      // Unlink everything in the addon directory
+      fs.readdirSync(addonPath).forEach((file) => {
+        fs.unlinkSync(path.join(addonPath, file));
+      });
+
+      // Remove the empty directory
+      fs.rmdirSync(addonPath);
+    }
+  });
+
+  next();
+}
+
 describe('addons/index.js', function () {
+  before(cleanupMockAddons);
   beforeEach(function (done) {
-    // Note require calls must be made with unmocked fs... naturally
+    // AddonManager functions get overriden in the tests, we need to re-require it for every test
     delete require.cache[cachePath];
     AddonManager = require('../../../app/addons'); // eslint-disable-line
 
-    mock(addonMockFiles);
-    done();
+    createMockAddons(done);
   });
-
-  afterEach(function (done) {
-    mock.restore();
-    done();
-  });
+  afterEach(cleanupMockAddons);
 
   describe('constructor', function () {
     it('constructor - created successfully', function (done) {
@@ -143,7 +174,11 @@ describe('addons/index.js', function () {
       const addonProto = Object.getPrototypeOf(AddonManager);
       addonProto.constructor._recursiveLoad = (addonArray) => {
         expect(addonArray.length).to.equal(AddonManager.addons.length);
-        expect(addonArray).to.have.lengthOf(2);
+
+        Object.keys(addonMockFiles).forEach((addonName) => {
+          expect(addonArray.find(addon => addon.name === addonName)).to.exist;
+        });
+
         return Promise.resolve('finished');
       };
       Object.setPrototypeOf(AddonManager, addonProto);
