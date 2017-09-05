@@ -194,7 +194,7 @@ BuildSchema.pre('validate', function validate(next) {
     return undefined;
   });
 
-  next();
+  return next();
 });
 
 // Ensure target is properly defined
