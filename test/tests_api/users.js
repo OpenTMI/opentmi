@@ -151,13 +151,14 @@ describe('Users', function () {
       });
   });
 
-  it('should not give unknown setting /users/<id>/settings/notexists GET', function (done) {
+  it('should default unknown settings to empty object /users/<id>/settings/notexists GET', function (done) {
     superagent.get(`${api}/users/${newUserId}/settings/notexists`)
       .set('authorization', authString)
       .end(function (error, res) {
         expect(res).to.be.a('Object');
-        expect(error).to.not.equal(null);
-        expect(res.status).to.equal(404);
+        expect(error).to.equal(null);
+        expect(res.status).to.equal(200);
+        expect(res.body).to.deep.equal({});
         done();
       });
   });
@@ -197,9 +198,9 @@ describe('Users', function () {
           .set('authorization', authString)
           .end(function (checkError, checkRes) {
             expect(checkRes).to.be.a('Object');
-            expect(checkRes.status).to.equal(404);
-            expect(checkError).to.not.equal(null);
-            expect(checkRes.body).to.be.a('Object');
+            expect(checkRes.status).to.equal(200);
+            expect(checkError).to.equal(null);
+            expect(checkRes.body).to.deep.equal({});
             done();
           });
       });
