@@ -13,18 +13,12 @@ const connect = function () {
   const options = {
     useMongoClient: true,
     logger: logger.log.bind(logger),
-    loggerLevel: 'debug' // @todo fetch from config file
+    loggerLevel: 'silly' // @todo fetch from config file
   };
-
-  // Resolve after database connection is ready and listening
-  const connectionPending = new Promise((resolve) => {
-    mongoose.connection.once('connected', resolve);
-  });
 
   logger.info(`Connecting to MongoDB: ${dbUrl}`);
   return mongoose
-    .connect(dbUrl, options)
-    .then(() => connectionPending);
+    .connect(dbUrl, options);
 };
 
 const close = Promise.promisify(mongoose.connection.close.bind(mongoose.connection));
