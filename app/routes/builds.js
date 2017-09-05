@@ -6,6 +6,7 @@ function Route(app) {
   const controller = new BuildController();
 
   router.param('Build', controller.modelParam.bind(controller));
+  router.param('Index', BuildController.indexParam);
 
   router.route('/api/v0/duts/builds.:format?')
     .all(controller.all.bind(controller))
