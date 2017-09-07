@@ -65,14 +65,6 @@ describe('tools/filedb.js', function () {
     done();
   });
 
-  after(function (done) {
-    // logger.verbose('[After]'.gray);
-    // Remove folder where temp files are stored, please do be careful if editing
-    // TODO uncomment, but only after test environment is configured and used
-    // fs.rmdir(tempStoragePath, done);
-    done();
-  });
-
   beforeEach(function (done) {
     logger.debug('[Before Each] Requiring fresh filedb for test so we can mock some of its functionality.'.gray);
     delete require.cache[filedbPath];
@@ -84,7 +76,7 @@ describe('tools/filedb.js', function () {
   afterEach(function (done) {
     // Read and unlink files in temp storage folder
     logger.debug('[After Each] Deleting all files from filedb location.'.gray);
-    const items = fs.readdirSync(filedbLocation).filter(item => ignoredFiles.indexOf(item) >= 0);
+    const items = fs.readdirSync(filedbLocation).filter(item => ignoredFiles.indexOf(item) === -1);
     items.map(item => fs.unlinkSync(path.join(filedbLocation, item)));
 
     // Solve all promises
