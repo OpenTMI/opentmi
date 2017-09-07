@@ -65,7 +65,7 @@ class MasterLogger {
     const args = data['args'] || [];
     args.unshift(`<Worker#${worker.id}>`);
     try {
-      this.logger[level](...args);
+      this.logger.log(level, ...args);
     } catch (error) {
       this.logger.error(data);
       this.logger.error(error);
