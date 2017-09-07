@@ -12,8 +12,8 @@ let tearingDown = false;
 const connect = function () {
   const options = {
     useMongoClient: true,
-    logger: logger.log.bind(logger),
-    loggerLevel: 'silly' // @todo fetch from config file
+    logger: logger.info.bind(logger),
+    loggerLevel: 'info' // @todo fetch from config file
   };
 
   logger.info(`Connecting to MongoDB: ${dbUrl}`);
