@@ -27,7 +27,7 @@ class BuildsController extends DefaultController {
 
   static download(req, res, next) {
     // Retrieve file from wherever it is stored
-    req.Build.getFile(req.Index)
+    return req.Build.getFile(req.Index)
       .then((file) => {
         // Set correct headers
         const headers = {
@@ -50,8 +50,6 @@ class BuildsController extends DefaultController {
         error.message = `Could not download file: ${error.message}`;
         next(error);
       });
-
-    return undefined;
   }
 }
 

@@ -28,6 +28,12 @@ describe('tools/eventBus', function () {
     clusterBus = require('../../../../app/tools/eventBus/cluster-event-bus'); // eslint-disable-line
   });
 
+  after(function () {
+    // Return the original master status
+    cluster.isWorker = false;
+    cluster.isMaster = true;
+  });
+
   describe('exports', function () {
     it('should expose proper functions', function (done) {
       expect(eventbus).to.have.property('clusterEventHandler');
