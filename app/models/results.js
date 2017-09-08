@@ -50,7 +50,7 @@ const ResultSchema = new Schema({
     verdict: {
       type: String,
       required: true,
-      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'],
+      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error', 'skip'],
       index: true
     },
     note: {type: String, default: ''},
