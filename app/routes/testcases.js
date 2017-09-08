@@ -10,7 +10,8 @@ function Route(app) {
   router.route('/api/v0/testcases.:format?')
     .all(controller.all.bind(controller))
     .get(controller.find.bind(controller))
-    .post(controller.create.bind(controller));
+    .post(controller.create.bind(controller))
+    .put(controller.upsert.bind(controller));
 
   router.route('/api/v0/testcases/:Testcase.:format?')
     .all(controller.all.bind(controller))

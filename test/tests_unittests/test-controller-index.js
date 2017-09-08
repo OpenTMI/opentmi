@@ -127,6 +127,9 @@ describe('controllers/index.js', () => {
     ]);
   });
 
+  /**
+   * @todo Tests to ensure find works when query parameters are present
+   */
   it('find', function () {
     // Correct case, find an item that exists
     const itemExists = new Promise((resolve) => {
@@ -186,7 +189,7 @@ describe('controllers/index.js', () => {
 
   it('create', function () {
     // Correct case, create item with valid body
-    const validBody = new Promise((resolve) => {
+    const validBody = new Promise((resolve, reject) => {
       // Mock request and response
       const req = {body: mockDummies[1]};
       const res = new MockResponse((value) => {
@@ -198,22 +201,29 @@ describe('controllers/index.js', () => {
       });
 
       // Call the tested function
-      defaultController.create(req, res);
+      defaultController.create(req, res, (error) => {
+        reject(error);
+      });
     });
 
     // Invalid body case
-    const invalidBody = new Promise((resolve) => {
+    const invalidBody = new Promise((resolve, reject) => {
       // Mock request and response
       const req = {body: {}};
-      const res = new MockResponse((value) => {
-        expect(value).to.have.property('error');
-        resolve();
-      }, (value) => {
-        expect(value).to.equal(400);
+      const res = new MockResponse(() => {
+        reject('Should not respond anything.');
+      }, () => {
+        reject('Should not respond anything.');
       });
 
       // Call the tested function
-      defaultController.create(req, res);
+      defaultController.create(req, res, (error) => {
+        expect(error).to.have.property('name', 'ValidationError');
+        expect(error).to.have.property('message',
+          'DummyItem validation failed: number_required: Path `number_required` is required., '
+        + 'text_unique_required: Path `text_unique_required` is required.');
+        resolve();
+      });
     });
 
     // Waterfall cases

@@ -176,7 +176,7 @@ ResultSchema.pre('validate', function preValidate(next) {
 });
 ResultSchema.virtual('exec.sut.sha1');
 /* .get()
-.set(function(v) {
+  .set(function(v) {
 
 }); */
 ResultSchema.methods.setBuild = function setBuild() {
