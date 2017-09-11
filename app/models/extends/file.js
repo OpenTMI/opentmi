@@ -14,10 +14,10 @@ const fileProvider = nconf.get('filedb');
 
 const FileSchema = new mongoose.Schema({
   // buffer limit 16MB when attached to document!
-  name: {type: String},
+  name: {type: String, default: 'no-name'},
   mime_type: {type: String},
   encoding: {type: String, enum: ['raw', 'base64'], default: 'raw'},
-  data: {type: Buffer},
+  data: {type: Buffer, default: new Buffer('', 'utf8')},
   size: {type: Number},
   sha1: {type: String, index: true, sparse: true},
   sha256: {type: String}
@@ -32,6 +32,13 @@ FileSchema.virtual('hrefs').get(function getHrefs() {
 FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
   logger.info(`Preparing file (name: ${this.name}) for storage.`);
 
+  if (this.base64) {
+    logger.warn(`file[${i}] base64 field is deprecated! Please use encoding field to represent data encoding.`);
+    this.data = this.base64;
+    this.encoding = 'base64';
+    this.base64 = undefined;
+  }
+
   if (this.encoding === 'base64') {
     logger.debug('Base64 file detected, storing data to a buffer.');
     this.data = new Buffer(this.data, 'base64');
@@ -45,25 +52,28 @@ FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
   }
 };
 
-FileSchema.methods.storeInFileDB = function storeInFileDB() {
-  // filedb is reuired here because it causes a circular dependency otherwise
-  const filedb = require('../tools/filedb.js'); // eslint-disable-line
-  return filedb.storeFile(this).catch((error) => {
-    logger.error(`Could not save file to filedb, reason: ${error.message}.`);
-    throw error;
-  });
+FileSchema.methods.keepInMongo = function (i) { // eslint-disable-line
+  logger.warn(`file[${i}] storing to mongodb`);
 };
 
-FileSchema.methods.retrieveFromFileDB = function retrieveFromFileDB() {
-  // filedb is reuired here because it causes a circular dependency otherwise
-  const filedb = require('../tools/filedb.js'); // eslint-disable-line
-  return filedb.readFile(this).then((data) => {
-    this.data = data;
-    return data;
-  }).catch((error) => {
-    logger.error(`Could not read file from filedb, reason: ${error.message}.`);
-    throw error;
-  });
+FileSchema.methods.storeInFiledb = function (filedb, i) { // eslint-disable-line
+  // Store to filesystem
+  filedb.storeFile(this)
+    .then(() => {
+      logger.silly(`file[${i}] ${this.name} stored`);
+    })
+    .catch((storeError) => {
+      logger.warn(`file[${i}] failed to store: ${storeError.message}`);
+      logger.debug(storeError.stack);
+    });
+
+  // Unallocate from mongo document
+  this.data = undefined;
+};
+
+FileSchema.methods.dumpData = function (i) { // eslint-disable-line
+  this.data = undefined;
+  logger.warn(`file[${i}] cannot store, filedb is not configured`);
 };
 
 FileSchema.methods.checksum = function getChecksum() {

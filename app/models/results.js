@@ -4,7 +4,6 @@
 
 // Third party modules
 const mongoose = require('mongoose');
-// var userPlugin = require('mongoose-user');
 const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
 const _ = require('lodash');
@@ -13,12 +12,13 @@ const _ = require('lodash');
 const FileSchema = require('./extends/file');
 const tools = require('../tools');
 
+// Model variables
 const Schema = mongoose.Schema;
-const checksum = tools.checksum;
 const filedb = tools.filedb;
 const fileProvider = filedb.provider;
 const Build = mongoose.model('Build');
 
+// @Todo justify why file schema is extended here instead of adding to root model
 FileSchema.add({
   ref: {
     type: Schema.Types.ObjectId,
@@ -108,92 +108,78 @@ ResultSchema.plugin(QueryPlugin); // install QueryPlugin
 /**
  * Methods
  */
-ResultSchema.pre('validate', function preValidate(next) {
-  let error;
-  const buildSha1 = _.get(this, 'exec.sut.buildSha1');
+ResultSchema.methods.getBuildId = function () { // eslint-disable-line func-names
+  logger.debug('lookup build..');
+  return _.get(this, 'exec.sut.ref', undefined);
+};
 
-  const logs = _.get(this, 'exec.logs');
-  if (Array.isArray(logs)) {
-    for (let i = 0; i < logs.length; i += 1) {
-      const file = logs[i];
-      if (!file.name) {
-        error = new Error(`file[${i}].name missing`);
-        break;
-      }
-
-      if (!file.data) {
-        logger.warn(`file[${i}].data missing`);
-        file.data = '';
-        // error = new Error(`file[${i}].data missing`);
-        // break;
-      }
-
-      if (file.base64) {
-        file.data = new Buffer(file.base64, 'base64');
-        file.base64 = undefined;
-      }
-
-      file.size = file.data.length;
-      file.sha1 = checksum(file.data, 'sha1');
-      file.sha256 = checksum(file.data, 'sha256');
-
-      if (fileProvider === 'mongodb') {
-        // use mongodb document
-        logger.warn('store file %s to mongodb', file.name);
-      } else if (fileProvider) {
-        // store to filesystem
-        filedb.storeFile(file)
-          .then(() => {
-            logger.silly(`File ${file.name} stored`);
-          })
-          .catch((storeError) => {
-            logger.warn(storeError);
-          });
-        file.data = undefined;
-      } else {
-        // do not store at all..
-        file.data = undefined;
-        logger.warn('filedb is not configured');
-      }
+/**
+ * Validation
+ */
+function linkRelatedBuild(buildChecksum, next) {
+  logger.debug(`Processing result build sha1: ${buildChecksum}`);
+  Build.findOne({'files.sha1': buildChecksum}, (findError, build) => {
+    if (build) {
+      logger.debug(`Build found, linking Result: ${this._id} with Build: ${build._id}`);
+      this.exec.sut.ref = build._id;
     }
-  }
+    next();
+  });
+}
 
-  if (error) {
+ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
+  // Validate logs field
+  // @Todo Maybe this check is unnecessary
+  // can exec.logs be something else from an array since it is defined by the schema?
+  const logs = _.get(this, 'exec.logs');
+  if (!Array.isArray(logs)) {
+    const error = new Error(`Result corrupted, logs field does not contain an array, found: ${logs}`);
     return next(error);
   }
 
-  if (buildSha1) {
-    logger.debug('result build sha1: ', buildSha1);
-    Build.findOne({'files.sha1': buildSha1}, (findError, build) => {
-      if (build) {
-        this.exec.sut.ref = build._id;
-      }
-      next();
-    });
+  // Iterate over all logs
+  logs.forEach((file, i) => {
+    file.prepareDataForStorage();
+
+    // Decide what to do with file
+    if (fileProvider === 'mongodb') {
+      file.keepInMongo(i);
+    } else if (fileProvider) {
+      file.storeInFiledb(filedb, i);
+    } else {
+      file.dumpData(i);
+    }
+  });
+
+  // Link related build to this result
+  const buildChecksum = _.get(this, 'exec.sut.buildSha1');
+  if (buildChecksum) {
+    linkRelatedBuild(buildChecksum, next);
+  } else {
+    next();
   }
 
-  return next(error);
+  return undefined;
 });
+
+/**
+ * Virtuals
+ */
+/*
 ResultSchema.virtual('exec.sut.sha1');
-/* .get()
-.set(function(v) {
-
-}); */
-ResultSchema.methods.setBuild = function setBuild() {
-
-};
-ResultSchema.methods.getBuild = function getBuild(next) {
-  logger.debug('lookup build..');
-  Build.findOne({_id: _.get(this, 'exec.sut.ref')}, next);
-};
+  .get()
+  .set(function(v) {
+});
+*/
 
 /**
  * Statics
  */
-
+/* 
 ResultSchema.static({
 
 });
+*/
 
 /**
  * Register
