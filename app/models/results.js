@@ -50,7 +50,7 @@ const ResultSchema = new Schema({
     verdict: {
       type: String,
       required: true,
-      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'],
+      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error', 'skip'],
       index: true
     },
     note: {type: String, default: ''},
@@ -139,7 +139,7 @@ ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
 
   // Iterate over all logs
   logs.forEach((file, i) => {
-    file.prepareDataForStorage();
+    file.prepareDataForStorage(i);
 
     // Decide what to do with file
     if (fileProvider === 'mongodb') {

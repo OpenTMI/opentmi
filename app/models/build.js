@@ -9,7 +9,6 @@ const _ = require('lodash');
 const uuidv4 = require('uuid/v4');
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
-const mime = require('mime');
 
 // Local modules
 const logger = require('../tools/logger');
@@ -159,42 +158,58 @@ BuildSchema.plugin(QueryPlugin); // install QueryPlugin
 
 
 BuildSchema.pre('validate', function validate(next) {
-  let error;
-  if (_.isArray(this.files)) {
-    this.files.forEach((file) => {
-      file.prepareDataForStorage();
-      if (fileProvider === 'mongodb') {
-        // use mongodb document
-        logger.warn('storing file %s to mongodb', file.name);
-      } else if (fileProvider) {
-        // store data to filesystem
-        logger.debug('storing file %s into filesystem', file.name);
-        filedb.storeFile(file)
-          .then(() => {
-            logger.silly(`File ${file.name} stored`);
-          })
-          .catch((storeError) => {
-            logger.warn(storeError);
-          });
-
-        // stored data seperately, unassign data from schema
-        file.data = undefined; // eslint-disable-line no-param-reassign
-      } else {
-        // do not store at all..
-        logger.warn('filedb is not configured, ignoring data');
-        file.data = undefined; // eslint-disable-line no-param-reassign
-      }
-    });
-  }
-
-  if (error) {
+  // Files property should be an array
+  if (!Array.isArray(this.files)) {
+    const error = new Error('Expected files property to be an array');
     return next(error);
   }
+
+  // Prepare all files for storage
+  this.files.forEach((file, i) => {
+    // Prepare for storage
+    file.prepareDataForStorage(i);
+
+    // Save document according to fileProvider
+    if (fileProvider === 'mongodb') { // MongoDB
+      return logger.warn(`[${file.name}] keeping file data in mongodb`);
+    }
+
+    if (fileProvider) { // Local filesystem
+      logger.debug(`[${file.name}] moving file data to filesystem...`);
+      filedb.storeFile(file)
+        .then(() => {
+          logger.verbose(`[${file.name}] file stored to filedb`);
+        })
+        .catch((_error) => {
+          const error = _error;
+          error.message = `Failed to store file data: ${error.message}`;
+          logger.warn(error.message);
+        });
+    } else { // dev/null
+      logger.warn('Filedb is not configured, ignoring data');
+    }
+
+    // stored data seperately, unassign data from schema
+    file.data = undefined; // eslint-disable-line no-param-reassign
+    return undefined;
+  });
+
+  return next();
+});
+
+// Ensure target is properly defined
+BuildSchema.pre('validate', function validate(next) {
+  let error;
+
+  // If target type is simulate, target must define simulator property
   if (_.get(this, 'target.type') === 'simulate') {
     if (!_.get(this, 'target.simulator')) {
       error = new Error('simulator missing');
     }
-  } else if (_.get(this, 'target.type') === 'hardware') {
+  }
+
+  // If target type is hardware, target must define both hw and hw.model
+  if (_.get(this, 'target.type') === 'hardware') {
     if (!_.get(this, 'target.hw')) {
       error = new Error('target.hw missing');
     } else if (!_.get(this, 'target.hw.model')) {
@@ -206,49 +221,39 @@ BuildSchema.pre('validate', function validate(next) {
 });
 
 /**
- * Methods
+ * Virtual fields
  */
-BuildSchema.methods.download = function download(index, res) {
-  const editedIndex = index || 0;
-  const cb = function (err, file) {
-    const editedRes = res;
-    if (file.data) {
-      const mimetype = mime.lookup(file.name);
-      editedRes.writeHead(200, {
-        'Content-Type': mimetype,
-        'Content-disposition': `attachment;filename=${file.name}`,
-        'Content-Length': file.data.length
-      });
-      editedRes.send(file.data);
-    } else {
-      editedRes.status(404).send('not found');
-    }
-    return undefined;
-  };
-
-  if (_.get(this.files, editedIndex)) {
-    const file = _.get(this.files, editedIndex);
-    if (file.data) {
-      return cb(null, file);
-    }
-    filedb.readFile(file)
-      .then((data) => { cb(null, data); })
-      .catch((error) => { cb(error); });
-  } else {
-    return res.status(500).json({error: 'file not found'});
-  }
-
-  return undefined;
-};
-
-BuildSchema.virtual('file').get(function getFile() {
+BuildSchema.virtual('file').get(function getFirstFile() {
   if (this.files.length === 1) {
     if (fileProvider && fileProvider !== 'mongodb' && this.files[0].sha1) {
       return path.join(fileProvider, this.files[0].sha1);
     }
   }
+
   return undefined;
 });
+
+/**
+ * Methods
+ */
+BuildSchema.methods.getFile = function getFile(index = 0) {
+  if (index >= this.files.length) {
+    const error = new Error(`Index does not point to a file, index: ${index}`);
+    error.status = 400;
+    return Promise.reject(error);
+  }
+
+  // Get file subdocument from document
+  const file = this.files[index];
+
+  // If data stored in mongoose document, use that
+  if (file.data) {
+    return Promise.resolve(file);
+  }
+
+  // Read data from filedb
+  return filedb.readFile(file);
+};
 
 /**
  * Statics

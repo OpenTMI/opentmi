@@ -32,7 +32,8 @@ class FileDB {
    * @param {FileSchema} file - valid instance of FileSchema, used to resolve the filename
    * @returns {Promise} promise to read a file with a File as resolve parameter
    */
-  static readFile(file) {
+  static readFile(_file) {
+    const file = _file;
     if (!_.isFunction(file.checksum)) {
       return Promise.reject(new TypeError('Provided file is not an instance of FileSchema.'));
     }
@@ -42,7 +43,12 @@ class FileDB {
     }
 
     logger.info(`Reading file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
-    return FileDB._readFile(file.checksum()).then(FileDB._uncompress);
+    return FileDB._readFile(file.checksum())
+      .then(FileDB._uncompress)
+      .then((data) => {
+        file.data = data;
+        return file;
+      });
   }
 
   /**
@@ -59,7 +65,7 @@ class FileDB {
       return Promise.reject(new Error('Could not resolve a checksum for the file.'));
     }
     const fileData = file.data;
-    logger.info(`Storing file ${file.name} (filename: ${file.checksum()}.${fileEnding}).`);
+    logger.info(`[${file.name}] storing file, filename: ${file.checksum()}.${fileEnding}.`);
     return FileDB._checkFilenameAvailability(file.checksum()).then((available) => {
       if (available) {
         return FileDB._compress(fileData).then((compressedData) => {

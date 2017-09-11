@@ -2,35 +2,44 @@
 const path = require('path');
 
 // Third party modules
-const logger = require('../../tools/logger');
+const mime = require('mime');
 const mongoose = require('mongoose');
 
 // local module
+const logger = require('../../tools/logger');
 const nconf = require('../../../config');
 const checksum = require('../../tools/checksum.js');
 
 // Model variables
 const fileProvider = nconf.get('filedb');
 
+
 const FileSchema = new mongoose.Schema({
   // buffer limit 16MB when attached to document!
   name: {type: String, default: 'no-name'},
   mime_type: {type: String},
   encoding: {type: String, enum: ['raw', 'base64'], default: 'raw'},
-  data: {type: Buffer, default: new Buffer('', 'utf8')},
+  data: {type: Buffer},
   size: {type: Number},
   sha1: {type: String, index: true, sparse: true},
   sha256: {type: String}
 });
 FileSchema.set('toObject', {virtuals: true});
 
+/**
+ * Virtual fields
+ */
 FileSchema.virtual('hrefs').get(function getHrefs() {
   const hasHref = fileProvider && (fileProvider !== 'mongodb') && this.sha1;
   return hasHref ? path.join(fileProvider, this.sha1) : undefined;
 });
 
-FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
+FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
   logger.info(`Preparing file (name: ${this.name}) for storage.`);
+
+  if (this.name) {
+    this.mime_type = mime.lookup(this.name);
+  }
 
   if (this.base64) {
     logger.warn(`file[${i}] base64 field is deprecated! Please use encoding field to represent data encoding.`);
@@ -40,7 +49,7 @@ FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
   }
 
   if (this.encoding === 'base64') {
-    logger.debug('Base64 file detected, storing data to a buffer.');
+    logger.debug(`file[${i}] base64 encoding, storing data to a buffer.`);
     this.data = new Buffer(this.data, 'base64');
   }
 
@@ -76,9 +85,9 @@ FileSchema.methods.dumpData = function (i) { // eslint-disable-line
   logger.warn(`file[${i}] cannot store, filedb is not configured`);
 };
 
-FileSchema.methods.checksum = function getChecksum() {
+FileSchema.methods.checksum = function () { // eslint-disable-line
   if (!this.sha1) {
-    logger.warn('File without sha1 checksum processed, prepareDataForStorage not called?');
+    logger.warn('File without sha1 checksum processed, prepareForStorage not called?');
 
     if (this.data) {
       this.sha1 = checksum(this.data, 'sha1');
