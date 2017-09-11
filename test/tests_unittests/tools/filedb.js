@@ -25,6 +25,10 @@ const expect = chai.expect;
 const File = mongoose.model('File');
 const filedbPath = path.resolve('app/tools/filedb.js');
 let filedb;
+const ignoredFiles = [
+  '76679b85f00e7811f2437fcb992d20ae7ea1e09f.gz'
+];
+
 
 // const tempStoragePath = './test/tests_unittests/tests_tools/temp_files';
 const sampleTextsToStore = [
@@ -61,14 +65,6 @@ describe('tools/filedb.js', function () {
     done();
   });
 
-  after(function (done) {
-    // logger.verbose('[After]'.gray);
-    // Remove folder where temp files are stored, please do be careful if editing
-    // TODO uncomment, but only after test environment is configured and used
-    // fs.rmdir(tempStoragePath, done);
-    done();
-  });
-
   beforeEach(function (done) {
     logger.debug('[Before Each] Requiring fresh filedb for test so we can mock some of its functionality.'.gray);
     delete require.cache[filedbPath];
@@ -80,7 +76,7 @@ describe('tools/filedb.js', function () {
   afterEach(function (done) {
     // Read and unlink files in temp storage folder
     logger.debug('[After Each] Deleting all files from filedb location.'.gray);
-    const items = fs.readdirSync(filedbLocation);
+    const items = fs.readdirSync(filedbLocation).filter(item => ignoredFiles.indexOf(item) === -1);
     items.map(item => fs.unlinkSync(path.join(filedbLocation, item)));
 
     // Solve all promises
@@ -104,7 +100,8 @@ describe('tools/filedb.js', function () {
       };
 
       // Test read and unzip dummy files
-      const readPromises = expect(filedb.readFile(sampleFile)).to.eventually.equal(uncompressedData);
+      const readPromises = expect(filedb.readFile(sampleFile)
+        .then(file => file.data.toString())).to.eventually.equal(uncompressedData);
       return Promise.all(readPromises);
     });
 

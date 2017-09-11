@@ -15,7 +15,8 @@ function Route(app) {
     logger.error(error.stack);
 
     // error page
-    res.status(500).json({
+    const status = error.status || 500;
+    res.status(status).json({
       url: req.originalUrl,
       error: error.stack
     });
