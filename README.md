@@ -3,10 +3,10 @@
  [![Build Status][build-image]][build-url]
  [![Dependencies Status][depupdated-image]][depupdated-url]
  [![devDependencies Status][devdepupdated-image]][devdepupdated-url]
- 
- 
- <!-- 
-[![Test Coverage][coveralls-image]][coveralls-url] 
+
+
+ <!--
+[![Test Coverage][coveralls-image]][coveralls-url]
 -->
 
 OpenTMI is Open Source Test Management System. It is written in Node.js / Javascript and uses MongoDB as backing store. It is published in GPLv3 license.
@@ -25,6 +25,10 @@ Basic idea is to store **all** information related to test execution, like softw
 * mongodb v3.2< (recommented to use latest version)
 
 # Installation
+
+## From Dockers
+
+See [here](doc/docker.md) for more instructions.
 
 ## Prepare
 
