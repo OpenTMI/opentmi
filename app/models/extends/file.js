@@ -42,7 +42,7 @@ FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
   }
 
   if (!this.data) {
-    this.data = new Buffer('', 'utf8');
+    this.data = Buffer.alloc(0);
   }
 
   if (this.base64) {
