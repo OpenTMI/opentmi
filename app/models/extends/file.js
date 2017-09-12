@@ -71,17 +71,17 @@ FileSchema.methods.keepInMongo = function (i) { // eslint-disable-line
 
 FileSchema.methods.storeInFiledb = function (filedb, i) { // eslint-disable-line
   // Store to filesystem
-  filedb.storeFile(this)
+  return filedb.storeFile(this)
     .then(() => {
+      // Unallocate from mongo document
+      this.data = undefined;
+
       logger.silly(`file[${i}] ${this.name} stored`);
     })
     .catch((storeError) => {
       logger.warn(`file[${i}] failed to store: ${storeError.message}`);
       logger.debug(storeError.stack);
     });
-
-  // Unallocate from mongo document
-  this.data = undefined;
 };
 
 FileSchema.methods.dumpData = function (i) { // eslint-disable-line

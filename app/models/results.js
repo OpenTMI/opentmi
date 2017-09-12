@@ -137,29 +137,29 @@ ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
     return next(error);
   }
 
+  // Link related build to this result
+  const buildChecksum = _.get(this, 'exec.sut.buildSha1');
+  if (buildChecksum) {
+    linkRelatedBuild(buildChecksum, next);
+  }
+
   // Iterate over all logs
-  logs.forEach((file, i) => {
+  return Promise.all(logs.map((file, i) => {
     file.prepareDataForStorage(i);
 
     // Decide what to do with file
     if (fileProvider === 'mongodb') {
       file.keepInMongo(i);
+      return Promise.resolve();
     } else if (fileProvider) {
-      file.storeInFiledb(filedb, i);
-    } else {
-      file.dumpData(i);
+      return file.storeInFiledb(filedb, i);
     }
-  });
 
-  // Link related build to this result
-  const buildChecksum = _.get(this, 'exec.sut.buildSha1');
-  if (buildChecksum) {
-    linkRelatedBuild(buildChecksum, next);
-  } else {
-    next();
-  }
-
-  return undefined;
+    file.dumpData(i);
+    return Promise.resolve();
+  }))
+    .then(() => next())
+    .catch(next);
 });
 
 /**
