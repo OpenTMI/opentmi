@@ -41,6 +41,10 @@ FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
     this.mime_type = mime.lookup(this.name);
   }
 
+  if (!this.data) {
+    this.data = new Buffer('', 'utf8');
+  }
+
   if (this.base64) {
     logger.warn(`file[${i}] base64 field is deprecated! Please use encoding field to represent data encoding.`);
     this.data = this.base64;
@@ -89,7 +93,7 @@ FileSchema.methods.checksum = function () { // eslint-disable-line
   if (!this.sha1) {
     logger.warn('File without sha1 checksum processed, prepareForStorage not called?');
 
-    if (this.data) {
+    if (this.data !== undefined) {
       this.sha1 = checksum(this.data, 'sha1');
     } else {
       logger.warn('Could not calculate checksum for file without data.');

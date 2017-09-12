@@ -150,31 +150,14 @@ describe('tools/filedb.js', function () {
       return expect(filedb.storeFile('not a file')).to.be.rejectedWith(TypeError);
     });
 
-    it('storeFile - unresolvable checksum, no data', function () {
+    it('storeFile - unresolvable checksum', function () {
       // Should pass with default data
-      const compressedData = 'compressed data';
       const sampleFile = new File({name: 'test name'});
 
-      let compressCalled = false;
-      filedb._compress = (data) => {
-        expect(data.toString()).to.equal('');
-        compressCalled = true;
-        return Promise.resolve(compressedData);
-      };
+      filedb._compress = () => Promise.resolve('');
+      filedb._writeFile = () => Promise.resolve('');
 
-      let writeCalled = false;
-      filedb._writeFile = (filename, data) => {
-        expect(filename).to.equal('da39a3ee5e6b4b0d3255bfef95601890afd80709'); // Default empty string sha1
-        expect(data).to.equal(compressedData);
-        writeCalled = true;
-        return Promise.resolve('file stored');
-      };
-
-      return filedb.storeFile(sampleFile).then((file) => {
-        expect(file).to.equal('file stored');
-        expect(compressCalled).to.equal(true, 'compress should be called at some point');
-        expect(writeCalled).to.equal(true, 'write should be called at some point');
-      });
+      return expect(filedb.storeFile(sampleFile)).to.be.rejectedWith(Error, 'Could not resolve');
     });
 
     it('storeFile - name already taken', function () {
