@@ -1,5 +1,9 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
+// Native components
+const path = require('path');
+const fs = require('fs');
+
 // Third party components
 const jwtSimple = require('jwt-simple');
 const moment = require('moment');
@@ -24,6 +28,9 @@ const validResultBody = require('./mocking/mockResult.json');
 
 const existingResultId = '5858375fbee7d73c703c5e13';
 const existingResultBody = require('./expectedValues/expectedResult.json');
+
+const relativeFiledbPath = config.get('filedb');
+const absoluteFiledbPath = path.resolve(__dirname, '..', '..', relativeFiledbPath);
 
 let authString;
 
@@ -88,6 +95,11 @@ describe('Results', function () {
         expect(res.body.exec.logs[0].sha256).to.exist;
         expect(res.body.exec.logs[0].mime_type).to.exist;
 
+        // Make sure file exists
+        const filename = `${res.body.exec.logs[0].sha1}.gz`;
+        const fileExists = fs.existsSync(path.join(absoluteFiledbPath, filename));
+        expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
+
         done();
       });
   });
@@ -120,12 +132,17 @@ describe('Results', function () {
         expect(res.body.exec.logs[0].sha256).to.exist;
         expect(res.body.exec.logs[0].mime_type).to.exist;
 
+        // Make sure file exists
+        const filename = `${res.body.exec.logs[0].sha1}.gz`;
+        const fileExists = fs.existsSync(path.join(absoluteFiledbPath, filename));
+        expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
+
         done();
       });
   });
 
   function acceptPostWithVerdict(verdict) {
-    it(`should accept post with verdict ${verdict}`, function (done) {
+    it(`should accept POST with verdict ${verdict}`, function (done) {
       const requestBody = JSON.parse(JSON.stringify(validResultBody));
       requestBody.exec.verdict = verdict;
 
@@ -154,6 +171,11 @@ describe('Results', function () {
           expect(res.body.exec.logs[0].sha1).to.exist;
           expect(res.body.exec.logs[0].sha256).to.exist;
           expect(res.body.exec.logs[0].mime_type).to.exist;
+
+          // Make sure file exists
+          const filename = `${res.body.exec.logs[0].sha1}.gz`;
+          const fileExists = fs.existsSync(path.join(absoluteFiledbPath, filename));
+          expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
 
           done();
         });
