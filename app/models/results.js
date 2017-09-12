@@ -116,14 +116,17 @@ ResultSchema.methods.getBuildId = function () { // eslint-disable-line func-name
 /**
  * Validation
  */
-function linkRelatedBuild(buildChecksum, next) {
+function linkRelatedBuild(buildChecksum) {
+  if (!buildChecksum) {
+    return Promise.resolve();
+  }
+
   logger.debug(`Processing result build sha1: ${buildChecksum}`);
-  Build.findOne({'files.sha1': buildChecksum}, (findError, build) => {
+  return Build.findOne({'files.sha1': buildChecksum}).then((build) => {
     if (build) {
       logger.debug(`Build found, linking Result: ${this._id} with Build: ${build._id}`);
       this.exec.sut.ref = build._id;
     }
-    next();
   });
 }
 
@@ -137,14 +140,7 @@ ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
     return next(error);
   }
 
-  // Link related build to this result
-  const buildChecksum = _.get(this, 'exec.sut.buildSha1');
-  if (buildChecksum) {
-    linkRelatedBuild(buildChecksum, next);
-  }
-
-  // Iterate over all logs
-  return Promise.all(logs.map((file, i) => {
+  const mapFile = (file, i) => {
     file.prepareDataForStorage(i);
 
     // Decide what to do with file
@@ -157,7 +153,11 @@ ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
 
     file.dumpData(i);
     return Promise.resolve();
-  }))
+  };
+
+  // Link related build to this result
+  return linkRelatedBuild(_.get(this, 'exec.sut.buildSha1'))
+    .then(() => Promise.all(logs.map(mapFile))) // Promise to store all files
     .then(() => next())
     .catch(next);
 });

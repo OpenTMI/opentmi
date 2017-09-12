@@ -98,6 +98,8 @@ describe('Results', function () {
         // Make sure file exists
         const filename = `${res.body.exec.logs[0].sha1}.gz`;
         const fileExists = fs.existsSync(path.join(absoluteFiledbPath, filename));
+
+        console.log('File path', path.join(absoluteFiledbPath, filename));
         expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
 
         done();
@@ -135,6 +137,8 @@ describe('Results', function () {
         // Make sure file exists
         const filename = `${res.body.exec.logs[0].sha1}.gz`;
         const fileExists = fs.existsSync(path.join(absoluteFiledbPath, filename));
+
+        console.log('File path', path.join(absoluteFiledbPath, filename));
         expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
 
         done();
@@ -175,6 +179,8 @@ describe('Results', function () {
           // Make sure file exists
           const filename = `${res.body.exec.logs[0].sha1}.gz`;
           const fileExists = fs.existsSync(path.join(absoluteFiledbPath, filename));
+
+          console.log('File path', path.join(absoluteFiledbPath, filename));
           expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
 
           done();
