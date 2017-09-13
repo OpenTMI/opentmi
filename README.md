@@ -28,6 +28,12 @@ Basic idea is to store **all** information related to test execution, like softw
 
 ## From Dockers
 
+```
+docker pull opentmi/opentmi:latest mongo:latest
+docker run -v "$(pwd)":/data --name mongo -d mongo mongod --smallfiles
+docker run --name opentmi -p 3000:3000 --link mongo:mongo -d opentmi/opentmi
+```
+
 See [here](doc/docker.md) for more instructions.
 
 ## Prepare
