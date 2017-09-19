@@ -141,11 +141,11 @@ describe('controllers/results.js', () => {
   });
 
   describe('buildDownload', function () {
-    it('should call getBuildId and redirect to build route', function (done) {
+    it('should call getBuildRef and redirect to build route', function (done) {
       let buildCalled = false;
       const req = {
         params: {Index: 90123},
-        Result: {getBuildId() {
+        Result: {getBuildRef() {
           buildCalled = true;
           return '5';
         }}
@@ -156,7 +156,7 @@ describe('controllers/results.js', () => {
         redirect(url) {
           expect(url.indexOf('/5/')).to.not.equal(-1, 'url should contain build id substring /5/');
           expect(url.indexOf('/90123/')).to.not.equal(-1, 'url should contain Index substring /90123/');
-          expect(buildCalled).to.equal(true, 'getBuildId should be called before redirect');
+          expect(buildCalled).to.equal(true, 'getBuildRef should be called before redirect');
           redirectCalled = true;
         }
       };

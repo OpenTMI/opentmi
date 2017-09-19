@@ -108,7 +108,7 @@ ResultSchema.plugin(QueryPlugin); // install QueryPlugin
 /**
  * Methods
  */
-ResultSchema.methods.getBuildId = function () { // eslint-disable-line func-names
+ResultSchema.methods.getBuildRef = function () { // eslint-disable-line func-names
   logger.debug('lookup build..');
   return _.get(this, 'exec.sut.ref', undefined);
 };
@@ -131,15 +131,7 @@ function linkRelatedBuild(buildChecksum) {
 }
 
 ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
-  // Validate logs field
-  // @Todo Maybe this check is unnecessary
-  // can exec.logs be something else from an array since it is defined by the schema?
-  const logs = _.get(this, 'exec.logs');
-  if (!Array.isArray(logs)) {
-    const error = new Error(`Result corrupted, logs field does not contain an array, found: ${logs}`);
-    return next(error);
-  }
-
+  const logs = _.get(this, 'exec.logs', []);
   const mapFile = (file, i) => {
     file.prepareDataForStorage(i);
 

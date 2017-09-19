@@ -106,7 +106,7 @@ class ResultsController extends DefaultController {
   }
 
   static buildDownload(req, res) {
-    const buildId = req.Result.getBuildId();
+    const buildId = req.Result.getBuildRef();
     res.redirect(`/api/v0/duts/builds/${buildId}/files/${req.params.Index}/download`);
   }
 }
