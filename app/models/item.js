@@ -1,8 +1,13 @@
+// 3rd party modules
 const mongoose = require('mongoose');
-const logger = require('../tools/logger');
-const QueryPlugin = require('mongoose-query');
 const Request = require('request');
+const QueryPlugin = require('mongoose-query');
 
+// application modules
+const logger = require('../tools/logger');
+const {manageVersion} = require('./extends/atomic');
+
+// Implementation
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
@@ -152,7 +157,7 @@ const ItemSchema = new Schema({
     }
   }
 });
-
+manageVersion(ItemSchema);
 /**
  * Query plugin
  */

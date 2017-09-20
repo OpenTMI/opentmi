@@ -7,7 +7,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const QueryPlugin = require('mongoose-query');
 const _ = require('lodash');
+// application modules
+const {manageVersion} = require('./extends/atomic');
 
+// implementation
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
 /**
@@ -46,7 +49,7 @@ const CampaignSchema = new Schema({
     {type: ObjectId, ref: 'Campaign'}
   ]
 });
-
+manageVersion(CampaignSchema);
 /**
  * User plugin
  */

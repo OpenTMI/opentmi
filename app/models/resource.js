@@ -6,7 +6,7 @@ const QueryPlugin = require('mongoose-query');
 // application modules
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
 const validators = require('../tools/validators');
-
+const {manageVersion} = require('./extends/atomic');
 
 const tagsValidator = validators.tagsValidator;
 const appsValidator = validators.appsValidator;
@@ -213,6 +213,7 @@ const ResourceSchema = new Schema({
   // Parent Resource
   parent: {type: ObjectId, ref: 'Resource'}
 });
+manageVersion(ResourceSchema);
 ResourceSchema.set('toJSON', {
   virtuals: true,
   getters: true,
