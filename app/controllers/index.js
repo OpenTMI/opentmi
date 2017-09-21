@@ -114,7 +114,18 @@ class DefaultController extends EventEmitter {
         this.emit('update', doc.toObject());
         res.json(doc);
       } else {
-        res.status(404).json({message: 'not found'});
+        // if we didn't get document it might be that version number was invalid,
+        // double check if that is the case ->
+        this._model.findById(modelID, (err, found) => {
+          if (err) {
+            logger.warn(err);
+            res.status(400).json({error: err.message});
+          } else if (found) {
+            res.status(409).json(found); // conflicting with another update request
+          } else {
+            res.status(404).json({message: 'document not found'});
+          }
+        });
       }
     });
 

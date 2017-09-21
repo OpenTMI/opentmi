@@ -112,7 +112,7 @@ describe('Resource', function () {
         throw new Error('Should not pass');
       })
       .catch((error) => {
-        expect(error.status).to.be.equal(404);
+        expect(error.status).to.be.equal(409);
       });
     return getResource()
       .then(doUpdate);
