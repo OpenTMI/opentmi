@@ -29,6 +29,10 @@ function Route(app) {
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
+  router.route('/api/v0/resources/:Resource/version/:Version')
+    .all(controller.all.bind(controller))
+    .put(controller.update.bind(controller));
+
   router.route('/api/v0/resources/:Resource/alloc')
     .put(ResourceController.alloc);
 

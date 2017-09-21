@@ -224,9 +224,7 @@ ResourceSchema.set('toJSON', {
     if (!jsonResource.id) {
       jsonResource.id = ret._id;
     }
-
     delete jsonResource._id;
-    delete jsonResource.__v;
 
     const ip = jsonResource.ip;
     if (ip && ip.remote_connection && ip.remote_connection.authentication) {

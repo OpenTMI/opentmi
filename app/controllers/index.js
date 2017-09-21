@@ -1,6 +1,12 @@
+// native modules
 const EventEmitter = require('events').EventEmitter;
+// 3rd party modules
 const mongoose = require('mongoose');
+const _ = require('lodash');
+
+// application modules
 const logger = require('../tools/logger');
+
 /*
   General ontrollers for "Restfull" services
 */
@@ -86,21 +92,30 @@ class DefaultController extends EventEmitter {
     const editedReq = req;
     delete editedReq.body._id;
     delete editedReq.body.__v;
+    // increment version number every time when updating document
+    editedReq.body.$inc = {__v: 1};
     logger.debug(editedReq.body);
 
     const modelID = editedReq.params[this.modelName];
     if (modelID === undefined) {
       return res.status(500).json({error: 'Failed to extract id from request params.'});
     }
-
-    const updateOpts = {runValidators: true};
-    this._model.findByIdAndUpdate(modelID, editedReq.body, updateOpts, (error, doc) => {
+    const query = {_id: modelID};
+    if (_.has(req.params, 'Version')) {
+      // if version number is included use it when updating
+      // to avoid update collisions (multiple parallel writers)
+      query.__v = parseInt(req.params.Version, 10);
+    }
+    const updateOpts = {runValidators: true, new: true};
+    this._model.findOneAndUpdate(query, editedReq.body, updateOpts, (error, doc) => {
       if (error) {
         logger.warn(error);
         res.status(400).json({error: error.message});
-      } else {
+      } else if (doc) {
         this.emit('update', doc.toObject());
         res.json(doc);
+      } else {
+        res.status(404).json({message: 'not found'});
       }
     });
 

@@ -157,7 +157,6 @@ const ItemSchema = new Schema({
     }
   }
 });
-manageVersion(ItemSchema);
 /**
  * Query plugin
  */
@@ -171,7 +170,7 @@ ItemSchema.pre('save', function preSave(next) {
   if (this.available > this.in_stock) {
     return next(new Error('availability cannot be higher than in_stock'));
   }
-
+  this.increment();
   return next();
 });
 

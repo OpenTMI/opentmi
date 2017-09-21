@@ -1,6 +1,7 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
+const Promise = require('bluebird');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
@@ -65,7 +66,6 @@ describe('Resource', function () {
       .send(body)
       .end(function (error, res) {
         expect(error).to.equal(null);
-
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.have.property('status');
@@ -73,6 +73,50 @@ describe('Resource', function () {
         expect(res.body.status.value).to.be.equal('active');
         done();
       });
+  });
+  it('update resource with valid version key', function () {
+    const body = {'status.value': 'storage'};
+    const getResource = () => superagent.get(`${api}/resources/${resourceId}`)
+      .type('json')
+      .then((res) => {
+        if (res.status !== 200) {
+          throw new Error(`invalid status code ${res ? res.status : ''}`);
+        }
+        return res.body;
+      });
+    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}/version/${resource.__v}`)
+      .send(body)
+      .then((res) => {
+        expect(res).to.be.a('Object');
+        expect(res).to.have.property('status', 200);
+        expect(res.body).to.have.property('status');
+        expect(res.body.__v).to.be.equal(resource.__v + 1);
+        expect(res.body.status).to.have.property('value');
+        expect(res.body.status.value).to.be.equal('storage');
+      });
+    return getResource()
+      .then(doUpdate);
+  });
+  it('update resource with valid version key', function () {
+    const body = {'status.value': 'broken'};
+    const getResource = () => superagent.get(`${api}/resources/${resourceId}`)
+      .type('json')
+      .then(function (res) {
+        if (res.status !== 200) {
+          throw new Error(`invalid status code ${res ? res.status : ''}`);
+        }
+        return res.body;
+      });
+    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}/version/${resource.__v - 1}`)
+      .send(body)
+      .then(() => {
+        throw new Error('Should not pass');
+      })
+      .catch((error) => {
+        expect(error.status).to.be.equal(404);
+      });
+    return getResource()
+      .then(doUpdate);
   });
 
   it('remove resource', function (done) {
