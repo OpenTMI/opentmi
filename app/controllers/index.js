@@ -89,14 +89,14 @@ class DefaultController extends EventEmitter {
   }
 
   update(req, res) {
-    const editedReq = req;
-    delete editedReq.body._id;
-    delete editedReq.body.__v;
+    const update = _.cloneDeep(req.body);
+    delete update._id;
+    delete update.__v;
     // increment version number every time when updating document
-    editedReq.body.$inc = {__v: 1};
-    logger.debug(editedReq.body);
+    update.$inc = {__v: 1};
+    logger.debug(update);
 
-    const modelID = editedReq.params[this.modelName];
+    const modelID = req.params[this.modelName];
     if (modelID === undefined) {
       return res.status(500).json({error: 'Failed to extract id from request params.'});
     }
@@ -107,7 +107,7 @@ class DefaultController extends EventEmitter {
       query.__v = parseInt(req.params.Version, 10);
     }
     const updateOpts = {runValidators: true, new: true};
-    this._model.findOneAndUpdate(query, editedReq.body, updateOpts, (error, doc) => {
+    this._model.findOneAndUpdate(query, update, updateOpts, (error, doc) => {
       if (error) {
         logger.warn(error);
         res.status(400).json({error: error.message});

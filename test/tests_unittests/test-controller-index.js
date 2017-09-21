@@ -233,7 +233,6 @@ describe('controllers/index.js', () => {
 
       const req = {params: {DummyItem: mockItem1}, body: mockDataCopy};
       const res = new MockResponse((value) => {
-        console.log(value, mockDataCopy);
         expect(value).to.not.have.property('error');
         expect(value).to.containSubset(
           _.assign(

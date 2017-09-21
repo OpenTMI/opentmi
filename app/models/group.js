@@ -9,8 +9,6 @@ const logger = require('../tools/logger');
 const Schema = mongoose.Schema;
 
 /* Implementation */
-const {manageVersion} = require('./extends/atomic');
-
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
 
@@ -26,7 +24,6 @@ const GroupSchema = new Schema({
   },
   description: {type: String}
 });
-manageVersion(GroupSchema);
 /**
  * Group plugin
  */
