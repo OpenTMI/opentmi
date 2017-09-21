@@ -18,7 +18,7 @@ function Route(app) {
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  router.route('/api/v0/testcases/:Testcase/version/:Version')
+  router.route('/api/v0/testcases/:Testcase/version/:Version([0-9]+)')
     .all(controller.all.bind(controller))
     .put(controller.update.bind(controller));
 
