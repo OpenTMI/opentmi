@@ -83,7 +83,7 @@ describe('Resource', function () {
         }
         return res.body;
       });
-    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}/version/${resource.__v}`)
+    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}?__v=${resource.__v}`)
       .send(body)
       .then((res) => {
         expect(res).to.be.a('Object');
@@ -106,7 +106,7 @@ describe('Resource', function () {
         }
         return res.body;
       });
-    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}/version/${resource.__v - 1}`)
+    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}?__v=${resource.__v - 1}`)
       .send(body)
       .then(() => {
         throw new Error('Should not pass');

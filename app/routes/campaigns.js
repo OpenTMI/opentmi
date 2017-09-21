@@ -18,10 +18,6 @@ function Route(app) {
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  router.route('/api/v0/campaigns/:Campaign/version/:Version([0-9]+)')
-    .all(controller.all.bind(controller))
-    .put(controller.update.bind(controller));
-
   app.use(router);
 }
 

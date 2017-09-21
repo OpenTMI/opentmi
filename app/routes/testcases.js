@@ -18,10 +18,6 @@ function Route(app) {
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  router.route('/api/v0/testcases/:Testcase/version/:Version([0-9]+)')
-    .all(controller.all.bind(controller))
-    .put(controller.update.bind(controller));
-
   router.route('/api/v0/testcases/:Testcase/download')
     .all(controller.all.bind(controller))
     .get(controller.download.bind(controller));
