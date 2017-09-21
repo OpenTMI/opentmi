@@ -238,7 +238,7 @@ describe('controllers/index.js', () => {
           _.assign(
             {},
             mockDummies[0],
-            {text_freeform: mockDataCopy.text_freeform}));
+            _.pick(mockDataCopy, ['text_freeform'])));
         resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([400]);

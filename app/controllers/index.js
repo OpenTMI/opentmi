@@ -89,9 +89,7 @@ class DefaultController extends EventEmitter {
   }
 
   update(req, res) {
-    const update = _.cloneDeep(req.body);
-    delete update._id;
-    delete update.__v;
+    const update = _.omit(req.body, ['_id', '__v']);
     // increment version number every time when updating document
     update.$inc = {__v: 1};
     logger.debug(update);
