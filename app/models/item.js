@@ -5,7 +5,6 @@ const QueryPlugin = require('mongoose-query');
 
 // application modules
 const logger = require('../tools/logger');
-const {manageVersion} = require('./extends/atomic');
 
 // Implementation
 const Schema = mongoose.Schema;

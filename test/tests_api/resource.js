@@ -1,7 +1,6 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const Promise = require('bluebird');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
