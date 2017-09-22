@@ -1,0 +1,62 @@
+{
+  "_id": "5858375fbee7d73c703c5e13",
+  "tcid": "Testcase-1000",
+  "__v": 1,
+  "exec":
+  {
+      "verdict": "pass",
+      "duration": 283,
+      "logs":
+      [
+          {
+              "sha256": "08baf7cd01615d5a592b59010696d9f2157bb15680b966d0ff323d64cc377bf8",
+              "sha1": "76679b85f00e7811f2437fcb992d20ae7ea1e09f",
+              "size": 34215,
+              "from": "dut",
+              "_id": "59ae98113f94d63e64f5dc01",
+              "encoding": "raw",
+              "name": "mockLog"
+          }
+      ],
+      "dut":
+      {
+          "vendor": "atmel",
+          "type": "hw"
+      },
+      "sut":
+      {
+          "fut":
+          [
+          ],
+          "cut":
+          [
+              "fea-1"
+          ],
+          "tag":
+          [
+          ],
+          "commitId": "",
+          "branch": "",
+          "buildUrl": "",
+          "gitUrl": ""
+      },
+      "env":
+      {
+          "framework":
+          {
+              "ver": "",
+              "name": ""
+          }
+      },
+      "note": ""
+  },
+  "cre":
+  {
+      "time": "2016-12-19T19:39:11.683Z"
+  },
+  "campaign": "",
+  "job":
+  {
+      "id": "test-job-C"
+  }
+}

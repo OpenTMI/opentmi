@@ -19,12 +19,15 @@ if (fs.existsSync(envFile)) {
   });
 }
 
+// env variable for docker
+const MONGODB = process.env.MONGO_PORT_27017_TCP_ADDR ? `mongodb://${process.env.MONGO_PORT_27017_TCP_ADDR}:${process.env.MONGO_PORT_27017_TCP_PORT}/opentmi_dev` : null;
+
 const developmentConfig = {
   name: 'OpenTMI-dev',
   host: process.env.OPENTMI_BIND || '0.0.0.0',
   port: process.env.OPENTMI_PORT || 3000,
   webtoken: process.env.WEBTOKEN || 'OpenTMI-toP-SeCRet-tOKEn',
-  db: process.env.MONGODB || 'mongodb://localhost/opentmi_dev',
+  db: process.env.MONGODB || MONGODB || 'mongodb://localhost/opentmi_dev',
   filedb: process.env.FILE_DB || './data',
   admin: {
     // default values
