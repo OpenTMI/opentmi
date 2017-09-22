@@ -151,9 +151,13 @@ describe('tools/filedb.js', function () {
     });
 
     it('storeFile - unresolvable checksum', function () {
-      // Should fail
+      // Should pass with default data
       const sampleFile = new File({name: 'test name'});
-      return expect(filedb.storeFile(sampleFile)).to.be.rejectedWith(Error);
+
+      filedb._compress = () => Promise.resolve('');
+      filedb._writeFile = () => Promise.resolve('');
+
+      return expect(filedb.storeFile(sampleFile)).to.be.rejectedWith(Error, 'Could not resolve');
     });
 
     it('storeFile - name already taken', function () {

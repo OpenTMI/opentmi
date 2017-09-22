@@ -1,6 +1,6 @@
 machine:
     environment:
-        NODE_ENV: development
+        NODE_ENV: test
         XUNIT_FILE: shippable/testresults/result.xml
         
     services:

@@ -165,9 +165,9 @@ BuildSchema.pre('validate', function validate(next) {
   }
 
   // Prepare all files for storage
-  this.files.forEach((file) => {
+  this.files.forEach((file, i) => {
     // Prepare for storage
-    file.prepareForStorage();
+    file.prepareDataForStorage(i);
 
     // Save document according to fileProvider
     if (fileProvider === 'mongodb') { // MongoDB

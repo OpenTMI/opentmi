@@ -16,7 +16,7 @@ const fileProvider = nconf.get('filedb');
 
 const FileSchema = new mongoose.Schema({
   // buffer limit 16MB when attached to document!
-  name: {type: String},
+  name: {type: String, default: 'no-name'},
   mime_type: {type: String},
   encoding: {type: String, enum: ['raw', 'base64'], default: 'raw'},
   data: {type: Buffer},
@@ -34,48 +34,74 @@ FileSchema.virtual('hrefs').get(function getHrefs() {
   return hasHref ? path.join(fileProvider, this.sha1) : undefined;
 });
 
-/**
- * Methods
- */
-FileSchema.methods = {
-  prepareForStorage() {
-    logger.info(`[${this.name}] preparing file for storage.`);
+FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
+  logger.info(`Preparing file (name: ${this.name}) for storage.`);
 
-    // Determine file mimetype from filename
-    this.mime_type = this.name ? mime.lookup(this.name) : mime.default_type;
-    logger.debug(`[${this.mime_type}] mime_type: ${this.mime_type}`);
-
-    // Handle encoding
-    logger.debug(`[${this.name}] used encoding: ${this.encoding}.`);
-    switch (this.encoding) {
-      case 'base64':
-        this.data = new Buffer(this.data, 'base64');
-        break;
-      default:
-        break;
-    }
-
-    // Calculate data size and checksums
-    if (this.data) {
-      this.size = this.data.length;
-      this.sha1 = checksum(this.data, 'sha1');
-      this.sha256 = checksum(this.data, 'sha256');
-    }
-  },
-  checksum() {
-    if (!this.sha1) {
-      logger.warn('File without sha1 checksum processed, prepareForStorage not called?');
-
-      if (this.data) {
-        this.sha1 = checksum(this.data, 'sha1');
-      } else {
-        logger.warn('Could not calculate checksum for file without data.');
-        return null;
-      }
-    }
-
-    return this.sha1;
+  if (this.name) {
+    this.mime_type = mime.lookup(this.name);
   }
+
+  if (!this.data) {
+    this.data = Buffer.alloc(0);
+  }
+
+  if (this.base64) {
+    logger.warn(`file[${i}] base64 field is deprecated! Please use encoding field to represent data encoding.`);
+    this.data = this.base64;
+    this.encoding = 'base64';
+    this.base64 = undefined;
+  }
+
+  if (this.encoding === 'base64') {
+    logger.debug(`file[${i}] base64 encoding, storing data to a buffer.`);
+    this.data = new Buffer(this.data, 'base64');
+  }
+
+  if (this.data) {
+    this.size = this.data.length;
+    // file.type = mimetype(file.name(
+    this.sha1 = checksum(this.data, 'sha1');
+    this.sha256 = checksum(this.data, 'sha256');
+  }
+};
+
+FileSchema.methods.keepInMongo = function (i) { // eslint-disable-line
+  logger.warn(`file[${i}] storing to mongodb`);
+};
+
+FileSchema.methods.storeInFiledb = function (filedb, i) { // eslint-disable-line
+  // Store to filesystem
+  return filedb.storeFile(this)
+    .then(() => {
+      // Unallocate from mongo document
+      this.data = undefined;
+
+      logger.silly(`file[${i}] ${this.name} stored`);
+    })
+    .catch((storeError) => {
+      logger.warn(`file[${i}] failed to store: ${storeError.message}`);
+      logger.debug(storeError.stack);
+    });
+};
+
+FileSchema.methods.dumpData = function (i) { // eslint-disable-line
+  this.data = undefined;
+  logger.warn(`file[${i}] cannot store, filedb is not configured`);
+};
+
+FileSchema.methods.checksum = function () { // eslint-disable-line
+  if (!this.sha1) {
+    logger.warn('File without sha1 checksum processed, prepareForStorage not called?');
+
+    if (this.data !== undefined) {
+      this.sha1 = checksum(this.data, 'sha1');
+    } else {
+      logger.warn('Could not calculate checksum for file without data.');
+      return null;
+    }
+  }
+
+  return this.sha1;
 };
 
 mongoose.model('File', FileSchema);
