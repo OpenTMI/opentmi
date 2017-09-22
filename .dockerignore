@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+log
+shippable
+data
+db
+db.log
