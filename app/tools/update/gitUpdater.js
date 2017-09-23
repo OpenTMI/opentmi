@@ -62,7 +62,7 @@ class GitUpdater extends Updater {
   _commitId() {
     const cmd = 'git rev-parse --verify HEAD';
     return this.exec(cmd, this._options)
-      .then(line => ({commitId: line.trim()}))
+      .then(line => (line.trim()))
       .catch((error) => {
         throw new Error(`git rev-parse failed: ${error.message}`);
       });

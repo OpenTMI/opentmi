@@ -37,7 +37,9 @@ module.exports = (app) => {
     threshold: 512
   }));
 
-  app.use(express.static(`${nconf.get('root')}/public`));
+  const publicFolder = `${nconf.get('root')}/app/static`;
+  logger.debug(`share public folder: ${publicFolder}`);
+  app.use(express.static(publicFolder));
 
   // Logging middleware
   app.use(expressWinston.logger({
