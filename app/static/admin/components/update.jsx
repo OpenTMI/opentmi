@@ -1,12 +1,9 @@
 class Link extends React.Component {
   render() {
     return (
-      <div>
-      Version:
       <a href={this.props.url}>
         {this.props.text}
       </a>
-      </div>
     );
   }
 }
@@ -14,16 +11,20 @@ class UpdateForm extends React.Component {
   constructor(props) {
     super(props);
     console.log(props);
-    this.state = {value: '', version: '', url: ''};
+    this.state = {
+      value: '',
+      version: '',
+      url: '',
+      status: ''};
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this._headers = {Authorization: `Bearer ${this.props.token}`};
+    this._headers = {headers: {Authorization: `Bearer ${this.props.token}`}};
     console.log(this._headers);
     this.updateCurrentVersion();
   }
   updateCurrentVersion() {
     axios
-      .get('/api/v0/version', {headers: this._headers})
+      .get('/api/v0/version', this._headers)
       .then((response) => {
         console.log(response);
         let version = `${response.data.version}-${response.data.commitID}`;
@@ -42,7 +43,7 @@ class UpdateForm extends React.Component {
     this.setState({value: event.target.value});
   }
   handleSubmit(event) {
-    alert(`Updating in progress..${this.state.value}`);
+    this.setState({status: `Updating in progress..${this.state.value}`});
     event.preventDefault();
     axios
       .post('/api/v0/version',
@@ -50,22 +51,29 @@ class UpdateForm extends React.Component {
         this._headers)
       .then((response) => {
         console.log(response);
-        alert("Updating in progress...")
+        this.setState({status: `Update success`});
       })
       .catch((error) => {
+        this.setState({status: `Update fails: ${error.response.data.message}`});
         alert(error.response.data.message)
+      })
+      .then(() => {
+        this.updateCurrentVersion();
       });
   }
   render() {
     return (
       <div>
-      <Link text={this.state.version} url={this.state.url}/>
+      Current version: <Link text={this.state.version} url={this.state.url}/>
+      <br/>
+      {this.state.status}
+      <br/>
       <form onSubmit={this.handleSubmit}>
       <label>
-        Version:
+        Version to be updated:
         <input type="text" value={this.state.value} onChange={this.handleChange} />
       </label>
-      <input type="submit" value="Submit" />
+      <input type="submit" value="Start Updating" />
     </form>
     </div>
     );
