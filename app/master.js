@@ -55,15 +55,45 @@ class Master {
       .catch((error) => { logger.error(error.message); });
   }
   static handleStdin(line) {
+    const status = () =>
+      Promise.try(() => {
+        const stats = Master.getStats();
+        console.log('OpenTMI service status:');
+        _.map(_.keys(_.omit(stats, ['workers'])), key => console.log(`${key}: ${stats[key]}`));
+        console.log('Workers:');
+        _.map(stats.workers, worker => console[worker.isDead ? 'error' : 'log'](`worker id: ${worker.id}`));
+      });
+    const kill = (id) => {
+      const worker = _.find(cluster.workers, w => `${w.id}` === id);
+      if (!worker) return Promise.reject(`Worker with id ${id} not found`);
+      return Master.killWorker(worker);
+    };
+
     const cmds = {
       reload: Master.reloadAllWorkers,
-      exit: Master.handleSIGINT
+      exit: Master.handleSIGINT,
+      status,
+      fork: Master.forkWorker,
+      kill
     };
-    if (_.has(cmds, line)) {
-      cmds[line]();
-    } else {
-      logger.warn(`Unknown command: ${line}`);
-    }
+    const help = () => {
+      console.log(`Supported commands: "${_.keys(cmds).join('", "')}".`);
+      return Promise.resolve();
+    };
+    cmds.help = help;
+    const unknown = () => {
+      console.error(`Unknown command: ${line}.`);
+      return help();
+    };
+
+    const cmdMatches = line.match(/([\S]+)\s?(.*)?/);
+    const cmdStr = cmdMatches ? cmdMatches[1] : false;
+    const paramameters = cmdMatches ? cmdMatches[2] : undefined;
+    const command = _.has(cmds, cmdStr) ? cmds[cmdStr] : unknown;
+    logger.silly(cmdStr, paramameters);
+    command(paramameters)
+      .then(() => logger.info('OK'))
+      .catch(error => console.error(error));
   }
   /**
    * Informs the client that workers need to be restarted and restarts workers
@@ -265,9 +295,9 @@ class Master {
    */
   static handleWorkerExit(worker, code, signal) {
     if (signal) {
-      logger.warn(`Worker ${worker.process.pid} died with signal: ${signal}.`);
+      logger.warn(`Worker ${worker.id} died with signal: ${signal}.`);
     } else {
-      logger.warn(`Worker ${worker.process.pid} died.`);
+      logger.warn(`Worker ${worker.id} died.`);
     }
 
     if (!worker) {
@@ -286,20 +316,23 @@ class Master {
   static killWorker(worker) {
     logger.debug(`Killing Worker#${worker.id}.`);
     worker.__closing = true; // eslint-disable-line no-param-reassign
-    const resolver = new Promise((resolve) => {
+    const resolver = () => new Promise((resolve) => {
       worker.once('exit', resolve);
     });
-    const killer = new Promise((resolve) => {
-      try {
-        worker.kill('SIGINT');
-      } catch (error) {
-        logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);
-      }
+    const killer = Promise.try(() => {
+      const exit = resolver();
+      worker.kill('SIGINT');
+      return exit;
     })
-      .timeout(5000)
+      .timeout(2000)
       .catch(Promise.TimeoutError, () => {
         logger.warn("Can't kill worker kindly - try SIGTERM..");
+        const exit = resolver();
         worker.kill('SIGTERM');
+        return exit;
+      })
+      .catch((error) => {
+        logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);
       });
     return Promise.all([resolver, killer]);
   }
