@@ -1,11 +1,9 @@
-
 {
   "name": "tmt-sample",
   "version": "0.1.0",
   "description": "TMT sample addon",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "https://bitbucket.com/_tmt_/tmt-sample.git"
@@ -28,8 +26,6 @@
       "controller": "SampleCtrl"
     }
   },
-  "devDependencies": {
-  },
-  "dependencies": {
-  }
+  "devDependencies": {},
+  "dependencies": {}
 }
