@@ -10,7 +10,6 @@ class Link extends React.Component {
 class UpdateForm extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
       value: '',
       version: '',

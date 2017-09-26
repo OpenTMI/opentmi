@@ -29,21 +29,31 @@ class LoginForm extends React.Component {
   render() {
     if (this.state.token) {
       return (
-        <UpdateForm
-          token={this.state.token}
-        />
+        <div>
+          <UpdateForm
+            token={this.state.token}
+            />
+          <ClusterStatus
+            token={this.state.token}
+            />
+        </div>
       );
     } else
     return (
-      <form onSubmit={this.handleSubmit}>
-      <label>
-        Username:
-        <input type="text" value={this.state.email} onChange={this.handleEmailChange} />
-        Password:
-        <input type="password" value={this.state.password} onChange={this.handlePasswordChange} />
-      </label>
-      <input type="submit" value="Submit" />
-    </form>
+      <div>
+        <form onSubmit={this.handleSubmit}>
+        <label>
+          Username:
+          <input type="text" value={this.state.email} onChange={this.handleEmailChange} />
+          Password:
+          <input type="password" value={this.state.password} onChange={this.handlePasswordChange} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+      <ClusterStatus
+        token={this.state.token}
+        />
+    </div>
     );
   }
 }

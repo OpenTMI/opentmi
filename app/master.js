@@ -41,6 +41,7 @@ class Master {
     process.on('SIGINT', Master.handleSIGINT);
     process.on('exit', Master.logMasterDeath);
     cluster.on('exit', Master.handleWorkerExit);
+    process.stdin.on('data', line => Master.handleStdin(line.toString().trim()));
 
     // Start listening to changes in file system
     if (autoReload) {
@@ -53,7 +54,17 @@ class Master {
       .then(() => { logger.info('All workers ready to serve.'); })
       .catch((error) => { logger.error(error.message); });
   }
-
+  static handleStdin(line) {
+    const cmds = {
+      reload: Master.reloadAllWorkers,
+      exit: Master.handleSIGINT
+    };
+    if (_.has(cmds, line)) {
+      cmds[line]();
+    } else {
+      logger.warn(`Unknown command: ${line}`);
+    }
+  }
   /**
    * Informs the client that workers need to be restarted and restarts workers
    * @param {object} meta - meta data linked to this event
@@ -75,7 +86,7 @@ class Master {
    */
   static getStats() {
     const stats = {};
-
+    logger.silly('Collecting service stats..');
     // General information
     stats.hostname = os.hostname();
     stats.os = `${os.type()} ${os.release()}`;
@@ -98,15 +109,22 @@ class Master {
     stats.hostCpu = avgCpuSum.toFixed(2);
 
     // Collect information about workers
-    stats.workers = _.map(cluster.workers, (worker, id) => ({
-      starting: worker.__starting,
-      closing: worker.__closing,
-      isDead: worker.isDead(),
-      isConnected: worker.isConnected(),
-      pid: worker.process.pid,
-      id: id
-    }));
-
+    const mapper = (worker, id) => {
+      try {
+        return {
+          starting: worker.__starting,
+          closing: worker.__closing,
+          isDead: worker.isDead(),
+          isConnected: worker.isConnected(),
+          pid: worker.process.pid,
+          id: id
+        };
+      } catch (err) {
+        return {};
+      }
+    };
+    stats.workers = _.map(cluster.workers, mapper);
+    logger.silly('stats', stats);
     return stats;
   }
 
@@ -268,15 +286,22 @@ class Master {
   static killWorker(worker) {
     logger.debug(`Killing Worker#${worker.id}.`);
     worker.__closing = true; // eslint-disable-line no-param-reassign
-    return new Promise((resolve) => {
-      worker.on('exit', resolve);
-
+    const resolver = new Promise((resolve) => {
+      worker.once('exit', resolve);
+    });
+    const killer = new Promise((resolve) => {
       try {
         worker.kill('SIGINT');
       } catch (error) {
         logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);
       }
-    });
+    })
+      .timeout(5000)
+      .catch(Promise.TimeoutError, () => {
+        logger.warn("Can't kill worker kindly - try SIGTERM..");
+        worker.kill('SIGTERM');
+      });
+    return Promise.all([resolver, killer]);
   }
 
   /**
@@ -300,7 +325,7 @@ class Master {
       .then(() => Master.forkWorker());
   }
 
-  /** 
+  /**
    * Reload all fork workers and return Promise.
    * @return {Promise} promise to reload all workers.
    */
@@ -337,7 +362,7 @@ class Master {
     return watcher;
   }
 
-  /** 
+  /**
    * Start reacting to file changes in the app directory.
    * Reloads all workers if changes are detected, which in turn
    * allows for zero server downtime updates.

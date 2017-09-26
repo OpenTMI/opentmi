@@ -25,13 +25,16 @@ function emit(event) {
     _.each(cluster.workers, (worker, id) => {
       logger.silly(`Sending event to Worker#${id}.`);
       if (worker.isConnected()) {
-        // @todo better intercommunication..
         worker.send(event.toJSON());
       }
     });
   } else {
     logger.silly('Sending event to Master');
-    process.send(event.toJSON());
+    try {
+      process.send(event.toJSON());
+    } catch (error) {
+      logger.warn(`Cannot write to master: ${error}`);
+    }
   }
 }
 
