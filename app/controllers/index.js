@@ -99,11 +99,11 @@ class DefaultController extends EventEmitter {
       return res.status(500).json({error: 'Failed to extract id from request params.'});
     }
     const query = {_id: modelID};
-    if (_.has(req.body, '__v')) {
+    if (_.has(update, '__v')) {
       // if version number is included use it when updating
       // to avoid update collisions (multiple parallel writers)
-      query.__v = parseInt(req.body.__v, 10);
-      _.unset(req.body, '__v');
+      query.__v = parseInt(update.__v, 10);
+      _.unset(update, '__v');
       logger.silly(`Use version '${query.__v}' for updating ${modelID}`);
     }
     const updateOpts = {runValidators: true, new: true};
