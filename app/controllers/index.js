@@ -1,6 +1,12 @@
+// native modules
 const EventEmitter = require('events').EventEmitter;
+// 3rd party modules
 const mongoose = require('mongoose');
+const _ = require('lodash');
+
+// application modules
 const logger = require('../tools/logger');
+
 /*
   General ontrollers for "Restfull" services
 */
@@ -83,24 +89,43 @@ class DefaultController extends EventEmitter {
   }
 
   update(req, res) {
-    const editedReq = req;
-    delete editedReq.body._id;
-    delete editedReq.body.__v;
-    logger.debug(editedReq.body);
+    const update = _.omit(req.body, ['_id', '__v']);
+    // increment version number every time when updating document
+    update.$inc = {__v: 1};
+    logger.debug(update);
 
-    const modelID = editedReq.params[this.modelName];
+    const modelID = req.params[this.modelName];
     if (modelID === undefined) {
       return res.status(500).json({error: 'Failed to extract id from request params.'});
     }
-
-    const updateOpts = {runValidators: true};
-    this._model.findByIdAndUpdate(modelID, editedReq.body, updateOpts, (error, doc) => {
+    const query = {_id: modelID};
+    if (_.has(req.body, '__v')) {
+      // if version number is included use it when updating
+      // to avoid update collisions (multiple parallel writers)
+      query.__v = parseInt(req.body.__v, 10);
+      logger.silly(`Use version '${query.__v}' for updating ${modelID}`);
+    }
+    const updateOpts = {runValidators: true, new: true};
+    this._model.findOneAndUpdate(query, update, updateOpts, (error, doc) => {
       if (error) {
         logger.warn(error);
         res.status(400).json({error: error.message});
-      } else {
+      } else if (doc) {
         this.emit('update', doc.toObject());
         res.json(doc);
+      } else {
+        // if we didn't get document it might be that version number was invalid,
+        // double check if that is the case ->
+        this._model.findById(modelID, (err, found) => {
+          if (err) {
+            logger.warn(err);
+            res.status(400).json({error: err.message});
+          } else if (found) {
+            res.status(409).json(found); // conflicting with another update request
+          } else {
+            res.status(404).json({message: 'document not found'});
+          }
+        });
       }
     });
 

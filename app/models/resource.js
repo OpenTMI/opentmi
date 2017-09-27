@@ -6,8 +6,7 @@ const QueryPlugin = require('mongoose-query');
 // application modules
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
 const validators = require('../tools/validators');
-
-
+// Implementation
 const tagsValidator = validators.tagsValidator;
 const appsValidator = validators.appsValidator;
 const Schema = mongoose.Schema;
@@ -223,9 +222,7 @@ ResourceSchema.set('toJSON', {
     if (!jsonResource.id) {
       jsonResource.id = ret._id;
     }
-
     delete jsonResource._id;
-    delete jsonResource.__v;
 
     const ip = jsonResource.ip;
     if (ip && ip.remote_connection && ip.remote_connection.authentication) {

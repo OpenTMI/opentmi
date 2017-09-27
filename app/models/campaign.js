@@ -8,6 +8,7 @@ const Schema = mongoose.Schema;
 const QueryPlugin = require('mongoose-query');
 const _ = require('lodash');
 
+// implementation
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
 /**
@@ -46,7 +47,6 @@ const CampaignSchema = new Schema({
     {type: ObjectId, ref: 'Campaign'}
   ]
 });
-
 /**
  * User plugin
  */
