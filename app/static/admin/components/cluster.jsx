@@ -1,8 +1,9 @@
 class ClusterStatus extends React.Component {
   constructor(props) {
     super(props);
-    this.state  = {
+    this.state = {
       clusters: {workers: []},
+      memory: [], hostCpu: [],
       loading: false, version: {}};
     this._restOptions = {
       timeout: 500,
@@ -29,7 +30,9 @@ class ClusterStatus extends React.Component {
     // fetch your data
     this.getClusters()
       .then((data) => {
-        this.setState({clusters: data});
+        this.state.memory.push({x: new Date(), y: data.currentMemoryUsage/1024/1024});
+        this.state.hostCpu.push({x: new Date(), y: parseFloat(data.hostCpu)})
+        this.setState({clusters: data, memory: this.state.memory, hostCpu: this.state.hostCpu});
       })
       .then(() => {
         // Update react-table
@@ -46,6 +49,88 @@ class ClusterStatus extends React.Component {
   }
   render() {
     const ReactTable = window.ReactTable.default;
+    const Chart = window['react-chartjs'];
+    const {Line} = Chart;
+    var chartData = {
+      labels: [],
+      datasets: [{
+          label: 'Memory Usage',
+          data: this.state.memory,
+          borderWidth: 1,
+          fill: true,
+          yAxisID: 'mem'
+      },
+      {
+          label: 'Host CPU',
+          data: this.state.hostCpu,
+          borderWidth: 1,
+          fill: true,
+          yAxisID: 'cpu'
+      }]
+    }
+
+    var chartOptions = {
+      scales: {
+          xAxes: [{
+              ticks: {
+                source: 'auto'
+              },
+              type: 'time',
+              time: {
+                  displayFormats: {
+                      quarter: 'MMM YYYY hh:mm:ss'
+                  }
+              }
+          }],
+          yAxes: [{
+            id: 'mem',
+            type: 'linear',
+            position: 'left',
+          }, {
+            id: 'cpu',
+            type: 'linear',
+            position: 'right'
+          }]
+      }
+    };
+    const tableColumns = [
+      {
+        Header: "Workers",
+        columns: [
+          {
+            Header: "ID",
+            accessor: "id"
+          },
+          {
+            Header: "PID",
+            id: "pid",
+            accessor: o => `${o.pid}`
+          },
+          {
+            Header: "status",
+            accessor: 'status',
+            Cell: row => (
+              <span>
+                <span style={{
+                  color: row.row._original.isDead ? '#ff2e00'
+                    : (row.row._original.closing || row.row._original.starting) ? '#ffbf00'
+                    : '#57d500',
+                  transition: 'all .3s ease'
+                }}>
+                  &#x25cf;
+                </span> {
+                  row.row._original.isDead ? 'DEAD'
+                  : row.row._original.starting ? 'starting'
+                  : row.row._original.isConnected ? 'OK'
+                  : row.row._original.closing ? 'closing'
+                  : '?!?!'
+                }
+              </span>)
+          }
+        ]
+      }
+    ];
+
     return (
       <div>
         <button onClick={this.reload.bind(this)}>reload workers</button>
@@ -55,43 +140,7 @@ class ClusterStatus extends React.Component {
           onFetchData={(state, instance) => {
             this.updateData();
           }}
-          columns={[
-            {
-              Header: "Workers",
-              columns: [
-                {
-                  Header: "ID",
-                  accessor: "id"
-                },
-                {
-                  Header: "PID",
-                  id: "pid",
-                  accessor: o => `${o.pid}`
-                },
-                {
-                  Header: "status",
-                  accessor: 'status',
-                  Cell: row => (
-                    <span>
-                      <span style={{
-                        color: row.row._original.isDead ? '#ff2e00'
-                          : row.row._original.closing ? '#ffbf00'
-                          : '#57d500',
-                        transition: 'all .3s ease'
-                      }}>
-                        &#x25cf;
-                      </span> {
-                        row.row._original.isDead ? 'DEAD'
-                        : row.row._original.starting ? 'starting'
-                        : row.row._original.isConnected ? 'OK'
-                        : row.row._original.closing ? 'closing'
-                        : '?!?!'
-                      }
-                    </span>)
-                }
-              ]
-            }
-          ]}
+          columns={tableColumns}
           minRows={4}
           showPageJump={false}
           showPagination={false}
@@ -99,6 +148,7 @@ class ClusterStatus extends React.Component {
           showPageSizeOptions={false}
           className="-striped -highlight"
         />
+        <Line data={chartData} options={chartOptions} width="400" height="100"/>
       </div>
     );
   }
