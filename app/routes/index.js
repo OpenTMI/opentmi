@@ -5,7 +5,7 @@ const fs = require('fs');
 const Promise = require('bluebird');
 const logger = require('../tools/logger');
 
-function registerRoutes(app) {
+function registerRoutes(app, io) {
   logger.info('Adding Routers...');
   fs.readdirSync(__dirname).forEach((file) => {
     if (file.match(/\.js$/) && !file.match(/^(index|error)\.js$/)) {
@@ -14,7 +14,7 @@ function registerRoutes(app) {
       try {
         const router = require(`./${file}`); // eslint-disable-line global-require, import/no-dynamic-require
         if (typeof router === 'function') {
-          router(app);
+          router(app, io);
         } else {
           logger.warn('Router was not a function!');
         }

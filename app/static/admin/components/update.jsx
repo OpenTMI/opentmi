@@ -26,8 +26,8 @@ class UpdateForm extends React.Component {
       .get('/api/v0/version', this._headers)
       .then((response) => {
         console.log(response);
-        let version = `${response.data.version}-${response.data.commitID}`;
-        let url = `https://github.com/OpenTMI/opentmi/commit/${response.data.commitID}`;
+        let version = `${response.data.version}-${response.data.commitId}`;
+        let url = `https://github.com/OpenTMI/opentmi/commit/${response.data.commitId}`;
         if(response.data.tag) {
           version = response.data.tag;
           url = `https://github.com/OpenTMI/opentmi/releases/tag/${response.data.tag}`;

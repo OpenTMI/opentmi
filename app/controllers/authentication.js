@@ -79,7 +79,8 @@ class AuthenticationController {
         if (saveError) {
           res.status(500).send({message: saveError.message});
         }
-        res.send({token: auth.createJWT(result)});
+        auth.createJWT(result)
+          .then(token => res.json({token}));
       });
 
       return undefined;
@@ -96,8 +97,8 @@ class AuthenticationController {
         if (!isMatch) {
           return res.status(401).send({message: 'Invalid email and/or password'});
         }
-
-        return res.send({token: auth.createJWT(user)});
+        return auth.createJWT(user)
+          .then(token => res.json({token}));
       });
       return undefined;
     });
@@ -473,7 +474,7 @@ class AuthenticationController {
           logger.verbose(addPrefix(`user is in the correct group: ${groupname}.`));
 
           // Save user and create token with groupname
-          return next(null, user, groupname);
+          return next(null, user);
         }
 
         return undefined;
@@ -483,7 +484,7 @@ class AuthenticationController {
     /*
       Save changes made to user
     */
-    const saveUser = (user, groupname, next) => {
+    const saveUser = (user, next) => {
       logger.debug(addPrefix('saving changes to user.'));
       user.save((error) => {
         logger.verbose(addPrefix('user saving finished.'));
@@ -495,7 +496,10 @@ class AuthenticationController {
         }
 
         logger.verbose(addPrefix('creating a token for the user.'));
-        return next(null, auth.createJWT(user, groupname));
+        return auth.createJWT(user)
+          .then((token) => {
+            next(null, token);
+          });
       });
 
       return undefined;
@@ -573,8 +577,8 @@ class AuthenticationController {
               editedUser.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
               editedUser.displayName = user.displayName || profile.name;
               editedUser.save(() => {
-                const actualToken = auth.createJWT(editedUser);
-                res.send({token: actualToken});
+                auth.createJWT(editedUser)
+                  .then(jwtToken => res.json({jwtToken}));
               });
               return undefined;
             });
@@ -585,7 +589,8 @@ class AuthenticationController {
           // Step 3b. Create a new user account or return an existing one.
           User.findOne({google: profile.sub}, (error, existingUser) => {
             if (existingUser) {
-              return res.send({token: this.createJWT(existingUser)});
+              return this.createJWT(existingUser)
+                .then(jwtToken => res.json({jwtToken}));
             }
 
             const newUser = new User();
@@ -593,8 +598,8 @@ class AuthenticationController {
             newUser.picture = profile.picture.replace('sz=50', 'sz=200');
             newUser.displayName = profile.name;
             newUser.save(() => {
-              const actualToken = auth.createJWT(newUser);
-              res.send({token: actualToken});
+              auth.createJWT(newUser)
+                .then(jwtToken => res.json({jwtToken}));
             });
 
             return undefined;
