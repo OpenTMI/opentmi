@@ -29,6 +29,13 @@ function Route(app) {
       .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.remove.bind(controller));
 
     app.use(router);
+  } else {
+    const notClustered = (req, res) => { res.status(404).json({message: 'clusters is not in use'}); };
+    const router = express.Router();
+    router.route('/api/v0/clusters')
+      .get(notClustered)
+      .post(notClustered);
+    app.use(router);
   }
 }
 

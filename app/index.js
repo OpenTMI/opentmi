@@ -1,6 +1,7 @@
 // 3rd party modules
 const Express = require('express');
 const SocketIO = require('socket.io');
+const Promise = require('bluebird');
 
 // application modules
 const express = require('./express');
@@ -69,14 +70,22 @@ DB.connect().catch((error) => {
     process.on('SIGINT', () => {
       // server.close stops worker from accepting new requests and finishes currently processed requests
       // @todo test that requests actually get processed
-      server.close(() => {
-        DB.disconnect().then(() => {
+      logger.warn('SIGTERM received, attempt to exit OpenTMI');
+      logger.debug('Closing socketIO server..');
+      const ioClose = Promise.promisify(io.close.bind(io));
+      io.emit('exit');
+      ioClose()
+        .then(() => logger.debug('Closing express server'))
+        .then(() => new Promise(resolve => server.close(resolve)))
+        .then(() => logger.debug('Closing DB connection'))
+        .then(DB.disconnect.bind(DB))
+        .catch((err) => {
+          logger.error(`Error: ${err}`);
+        })
+        .finally(() => {
+          logger.info('Exit OpenTMI');
           process.exit(0);
-        }).catch((err) => {
-          logger.error(`Disconnection from database failed: ${err}`);
-          process.exit(-1);
         });
-      });
     });
   });
 

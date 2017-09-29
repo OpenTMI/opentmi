@@ -1,17 +1,14 @@
 // Third party modules
 const socketioJwt = require('socketio-jwt');
-const _ = require('lodash');
 
 // Application modules
 const nconf = require('../../config');
-const logger = require('../../app/tools/logger');
+const Controller = require('../../app/controllers/socketio');
 
 // Route variables
 const TOKEN_SECRET = nconf.get('webtoken');
 
 function Route(app, io) {
-  logger.debug('register socketio-jwt middleware');
-
   // IO security
   io.use(socketioJwt.authorize({
     secret: TOKEN_SECRET,
@@ -19,14 +16,14 @@ function Route(app, io) {
     callback: false
   }));
 
+  io.on('disconnect', (reason) => {
+    console.log(reason);
+  });
+
   io.on('connection', (socket) => {
-    const groups = _.get(socket, 'decoded_token.groups');
-    const user = socket.decoded_token;
-    socket.isAdmin = _.find(groups, {name: 'admins'}) === 'admins'; // eslint-disable-line no-param-reassign
-    logger.info(`New IO connection: ${JSON.stringify(user._id)} ${socket.isAdmin ? 'admin' : ''}`);
-    socket.on('disconnect', () => {
-      logger.info(`IO client disconnected: ${user._id}`);
-    });
+    const controller = new Controller(socket);
+    socket.on('disconnect', controller.disconnect.bind(controller));
+    socket.on('whoami', controller.whoami.bind(controller));
   });
 }
 module.exports = Route;
