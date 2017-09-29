@@ -21,13 +21,12 @@ function Route(app, io) {
 
   io.on('connection', (socket) => {
     const groups = _.get(socket, 'decoded_token.groups');
-    socket.isAdmin = _.find(groups, 'admins') === 'admins';
-    logger.info(`New IO connection: ${JSON.stringify(socket.decoded_token)} ${socket.isAdmin ? 'admin' : ''}`);
+    const user = socket.decoded_token;
+    socket.isAdmin = _.find(groups, {name: 'admins'}) === 'admins'; // eslint-disable-line no-param-reassign
+    logger.info(`New IO connection: ${JSON.stringify(user._id)} ${socket.isAdmin ? 'admin' : ''}`);
     socket.on('disconnect', () => {
-      logger.info('IO client disconnected: ', socket);
+      logger.info(`IO client disconnected: ${user._id}`);
     });
-    socket.on('pong', latency => logger.info(`pong latency: ${latency}`));
-    socket.on('ping', latency => logger.info(`ping latency: ${latency}`));
   });
 }
 module.exports = Route;

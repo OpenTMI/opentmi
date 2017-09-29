@@ -4,7 +4,6 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const logger = require('../../app/tools/logger');
 const async = require('async');
-const Promise = require('bluebird');
 const _ = require('lodash');
 
 // Local modules

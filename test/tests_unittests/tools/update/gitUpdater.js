@@ -193,7 +193,7 @@ describe('update/gitUpdater', function () {
       it('should fetch git version and combine it with super.version', function () {
         gitUpdater = new GitUpdater(undefined, undefined);
 
-        gitUpdater._commitId = () => Promise.resolve('COMMIT_ID');
+        gitUpdater._commitId = () => Promise.resolve({commitId: 'COMMIT_ID'});
 
         gitUpdater._tag = (commitId) => {
           expect(commitId).to.equal('COMMIT_ID');
@@ -204,7 +204,7 @@ describe('update/gitUpdater', function () {
           Promise.resolve({superVersion: 'SUPER_VERSION'});
 
         return expect(gitUpdater.version()).to.eventually.deep.equal({
-          commitID: 'COMMIT_ID',
+          commitId: 'COMMIT_ID',
           tag: 'TAG',
           superVersion: 'SUPER_VERSION'
         });
