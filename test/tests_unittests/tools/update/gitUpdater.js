@@ -273,7 +273,7 @@ describe('update/gitUpdater', function () {
 
         gitUpdater = new GitUpdater('.', '', exec);
 
-        return expect(gitUpdater._commitId()).to.eventually.deep.equal({commitId: 'CommitIdResolved'});
+        return expect(gitUpdater._commitId()).to.equal('CommitIdResolved');
       });
 
       it('should throw error when exec fails', function () {
