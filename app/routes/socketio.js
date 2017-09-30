@@ -16,10 +16,6 @@ function Route(app, io) {
     callback: false
   }));
 
-  io.on('disconnect', (reason) => {
-    console.log(reason);
-  });
-
   io.on('connection', (socket) => {
     const controller = new Controller(socket);
     socket.on('disconnect', controller.disconnect.bind(controller));
