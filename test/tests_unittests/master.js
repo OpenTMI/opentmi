@@ -159,7 +159,7 @@ describe('app/master.js', function () {
   describe('getStats', function () {
     it('should return object with valid fields', function () {
       Master.getStats()
-        .then(stats => {
+        .then((stats) => {
           expect(stats).to.have.property('master');
           expect(stats).to.have.property('os');
           expect(stats).to.have.property('osStats');
@@ -173,8 +173,8 @@ describe('app/master.js', function () {
           expect(stats.osStats).to.have.property('totalMem');
           expect(stats.osStats).to.have.property('currentMemoryUsage');
           expect(stats.osStats).to.have.property('cpu');
-
         });
+
     });
   });
 
