@@ -26,8 +26,8 @@ class ClusterStatus extends React.Component {
     // fetch your data
     return this.getClusters()
       .then((data) => {
-        this.state.memory.push({x: new Date(), y: data.currentMemoryUsage/1024/1024});
-        this.state.hostCpu.push({x: new Date(), y: parseFloat(data.hostCpu)})
+        this.state.memory.push({x: new Date(), y: data.master.memoryUsage.rss/1024/1024});
+        this.state.hostCpu.push({x: new Date(), y: parseFloat(data.osStats.cpu)})
         this.setState({clusters: data, memory: this.state.memory, hostCpu: this.state.hostCpu});
       })
       .then(() => {
@@ -50,20 +50,20 @@ class ClusterStatus extends React.Component {
     var chartData = {
       labels: [],
       datasets: [{
-          label: 'Memory Usage',
+          label: 'Master memory Usage',
           data: this.state.memory,
           borderWidth: 1,
           fill: true,
           yAxisID: 'mem'
       },
       {
-          label: 'Host CPU',
+          label: 'CPU usage',
           data: this.state.hostCpu,
           borderWidth: 1,
           fill: true,
           yAxisID: 'cpu'
       }]
-    }
+    };
 
     var chartOptions = {
       scales: {
@@ -79,10 +79,18 @@ class ClusterStatus extends React.Component {
               }
           }],
           yAxes: [{
+            scaleLabel: {
+                display: true,
+                labelString: 'Memory [Mb]'
+            },
             id: 'mem',
             type: 'linear',
-            position: 'left',
+            position: 'left'
           }, {
+            scaleLabel: {
+                display: true,
+                labelString: 'avgCpu [%]'
+            },
             id: 'cpu',
             type: 'linear',
             position: 'right'

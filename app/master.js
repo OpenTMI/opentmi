@@ -75,26 +75,32 @@ class Master {
   static getStats() {
     const stats = {};
     logger.silly('Collecting service stats..');
-    // General information
-    stats.hostname = os.hostname();
-    stats.os = `${os.type()} ${os.release()}`;
-
-    // Flags
-    stats.requireRestart = systemRestartNeeded;
+    // General information about master process
+    stats.master = {
+      title: process.title,
+      requireRestart: systemRestartNeeded,
+      pid: process.pid,
+      memoryUsage: process.memoryUsage(),
+      uptime: Math.floor(process.uptime())
+    };
 
     // Machine resource stats
-    stats.averageLoad = os.loadavg().map(n => n.toFixed(2)).join(' ');
     stats.coresUsed = `${Object.keys(cluster.workers).length} of ${numCPUs}`;
-    stats.memoryUsageAtBoot = os.freemem();
-    stats.totalMem = os.totalmem();
-    stats.currentMemoryUsage = (os.totalmem() - os.freemem());
-
+    stats.hostname = os.hostname();
+    stats.os = `${os.type()} ${os.release()}`;
+    stats.osStats = {
+      uptime: Math.floor(os.uptime()),
+      averageLoad: os.loadavg().map(n => n.toFixed(2)).join(' '),
+      memoryUsageAtBoot: os.freemem(),
+      totalMem: os.totalmem(),
+      currentMemoryUsage: (os.totalmem() - os.freemem())
+    };
     // Calculates the fraction of time cpus spend on average in the user mode.
     function getUCTF(cpu) { // User Cpu Time Fraction
       return cpu.times.user / (cpu.times.user + cpu.times.nice + cpu.times.sys + cpu.times.idle + cpu.times.irq);
     }
     const avgCpuSum = (_.reduce(os.cpus(), (memo, cpu) => memo + getUCTF(cpu), 0) * 100) / numCPUs;
-    stats.hostCpu = avgCpuSum.toFixed(2);
+    stats.osStats.cpu = avgCpuSum.toFixed(2);
 
     // Collect information about workers
     const mapper = (worker, id) => {
