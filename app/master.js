@@ -81,11 +81,11 @@ class Master {
       requireRestart: systemRestartNeeded,
       pid: process.pid,
       memoryUsage: process.memoryUsage(),
-      uptime: Math.floor(process.uptime())
+      uptime: Math.floor(process.uptime()),
+      coresUsed: `${Object.keys(cluster.workers).length} of ${numCPUs}`
     };
 
     // Machine resource stats
-    stats.coresUsed = `${Object.keys(cluster.workers).length} of ${numCPUs}`;
     stats.hostname = os.hostname();
     stats.os = `${os.type()} ${os.release()}`;
     stats.osStats = {
@@ -121,7 +121,7 @@ class Master {
       }
     };
     stats.workers = _.map(cluster.workers, mapper);
-    return stats;
+    return Promise.resolve(stats);
   }
 
   /**
@@ -130,7 +130,9 @@ class Master {
    */
   static statusHandler(meta, data) {
     if (data.id) {
-      eventBus.emit(data.id, Master.getStats());
+      Master.getStats().then((stats) => {
+        eventBus.emit(data.id, stats);
+      });
     } else {
       logger.warn('Cannot process masterStatus event that does not provide data with id property');
     }
