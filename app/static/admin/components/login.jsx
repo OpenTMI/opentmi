@@ -1,10 +1,23 @@
+const {Transport, Authentication} = opentmiClient;
+
 class LoginForm extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {email: '', password: '', token: ''};
+    this._transport = new opentmiClient.Transport();
+    this._transport.token = localStorage.getItem("token");
+    this._auth = new Authentication(this._transport);
+    this.state = {email: '', password: ''};
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
+  }
+  logout(event) {
+    this._auth.logout().then(() => {
+      localStorage.removeItem("token");
+      console.log('logout succesfully');
+      this.setState({token: undefined});
+    })
   }
   handleEmailChange(event) {
     this.setState({email: event.target.value});
@@ -12,46 +25,46 @@ class LoginForm extends React.Component {
   handlePasswordChange(event) {
     this.setState({password: event.target.value});
   }
-  handleSubmit(event) {
-    console.log(this.state);
+  login(event) {
     event.preventDefault();
-    axios
-      .post('/auth/login', this.state)
-      .then((response) => {
-        console.log(response);
-        this.setState({token: response.data.token});
+    this._auth.login(this.state.email, this.state.password)
+      .then((token) => {
+        localStorage.setItem("token", token);
+        console.log('Saved tokeb to localStorage');
+        this.setState({token});
       })
       .catch((error) => {
-        this.setState({token: ''});
         alert(error.response.data.message)
       });
   }
   render() {
-    if (this.state.token) {
+    if (this._transport.token) {
       return (
         <div>
+          <button onClick={this.logout}>logout</button>
+          <br/>
           <UpdateForm
-            token={this.state.token}
+            transport={this._transport}
             />
           <ClusterStatus
-            token={this.state.token}
+            transport={this._transport}
             />
         </div>
       );
     } else
     return (
       <div>
-        <form onSubmit={this.handleSubmit}>
+        <form onSubmit={this.login}>
         <label>
           Username:
           <input type="text" value={this.state.email} onChange={this.handleEmailChange} />
           Password:
           <input type="password" value={this.state.password} onChange={this.handlePasswordChange} />
         </label>
-        <input type="submit" value="Submit" />
+        <input type="submit" value="Login" />
       </form>
       <ClusterStatus
-        token={this.state.token}
+        transport={this._transport}
         />
     </div>
     );

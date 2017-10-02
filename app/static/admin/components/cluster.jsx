@@ -1,18 +1,14 @@
 class ClusterStatus extends React.Component {
   constructor(props) {
     super(props);
+    this._cluster = new opentmiClient.Cluster(props.transport);
     this.state = {
       clusters: {workers: []},
       memory: [], hostCpu: [],
       loading: false, version: {}};
-    this._restOptions = {
-      timeout: 500,
-      headers: {Authorization: `Bearer ${this.props.token}`}};
-    setInterval(this.updateData.bind(this), 1000);
   }
   reload() {
-    axios
-    .post('/api/v0/restart', this._restOptions)
+    this._cluster.restartWorkers()
       .then((response) => {
         //this.setState({restart: response.data});
       });
@@ -26,9 +22,9 @@ class ClusterStatus extends React.Component {
   }
   updateData() {
     // show the loading overlay
-    this.setState({loading: true})
+    this.setState({loading: true});
     // fetch your data
-    this.getClusters()
+    return this.getClusters()
       .then((data) => {
         this.state.memory.push({x: new Date(), y: data.currentMemoryUsage/1024/1024});
         this.state.hostCpu.push({x: new Date(), y: parseFloat(data.hostCpu)})
@@ -38,12 +34,12 @@ class ClusterStatus extends React.Component {
         // Update react-table
         this.setState({loading: false});
       })
+      .then(() => setTimeout(()=> this.updateData(), 2000));
   }
   getClusters() {
-    return axios
-    .get('/api/v0/clusters', this._restOptions)
-      .then((response) => {
-        return response.data;
+    return this._cluster.refresh()
+      .then(() => {
+        return this._cluster.data;
       })
       //.catch(() => {workers: []});
   }

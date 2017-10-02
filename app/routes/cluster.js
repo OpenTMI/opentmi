@@ -9,6 +9,7 @@ const jwt = require('express-jwt');
 const nconf = require('../../config');
 const auth = require('./../../config/middlewares/authorization');
 const ClusterController = require('./../controllers/clusters');
+const {notClustered} = require('./../controllers/common');
 
 const TOKEN_SECRET = nconf.get('webtoken');
 
@@ -30,11 +31,10 @@ function Route(app) {
 
     app.use(router);
   } else {
-    const notClustered = (req, res) => { res.status(404).json({message: 'clusters is not in use'}); };
     const router = express.Router();
     router.route('/api/v0/clusters')
       .get(notClustered)
-      .post(notClustered);
+      .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, notClustered);
     app.use(router);
   }
 }
