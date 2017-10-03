@@ -5,13 +5,24 @@ class ClusterStatus extends React.Component {
     this.state = {
       clusters: {workers: []},
       memory: [], hostCpu: [],
-      loading: false, version: {}};
+      loading: false, version: {}
+    };
+    this.updateData = this.updateData.bind(this);
+    this.reloadIntervall = 1000;
+  }
+  componentWillUnmount() {
+    if(this._updateTimeout)
+      clearTimeout(this.updateData);
   }
   reload() {
+    this.reloadIntervall = 500;
     this._cluster.restartWorkers()
       .then((response) => {
         //this.setState({restart: response.data});
-      });
+      })
+      .finally(() => {
+        this.reloadIntervall = 2000;
+      })
   }
   version() {
     axios
@@ -28,6 +39,7 @@ class ClusterStatus extends React.Component {
 
   updateData() {
     // show the loading overlay
+    this._updateTimeout = undefined;
     this.setState({loading: true});
     // fetch your data
     return this.getClusters()
@@ -39,13 +51,16 @@ class ClusterStatus extends React.Component {
           this.state.memory.splice(0, 1);
           this.state.hostCpu.splice(0, 1);
         }
-        this.setState({clusters: data, memory: this.state.memory, hostCpu: this.state.hostCpu});
+        // Update react-table
+        this.setState({
+          clusters: data,
+          memory: this.state.memory,
+          hostCpu: this.state.hostCpu,
+          loading: false});
       })
       .then(() => {
-        // Update react-table
-        this.setState({loading: false});
-      })
-      .then(() => setTimeout(()=> this.updateData(), 2000));
+        this._updateTimeout = setTimeout(this.updateData, this.reloadIntervall)
+      });
   }
   getClusters() {
     return this._cluster.refresh()
