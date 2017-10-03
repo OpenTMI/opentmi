@@ -20,6 +20,12 @@ class ClusterStatus extends React.Component {
         this.setState({version: response.data});
       });
   }
+  static lessThan(date, minutesAgo = 10) {
+    const DURATION = 1000 * 60 * minutesAgo;
+    let anSomeTimeAgo = Date.now() - DURATION;
+    return date > anSomeTimeAgo;
+  }
+
   updateData() {
     // show the loading overlay
     this.setState({loading: true});
@@ -27,7 +33,12 @@ class ClusterStatus extends React.Component {
     return this.getClusters()
       .then((data) => {
         this.state.memory.push({x: new Date(), y: data.master.memoryUsage.rss/1024/1024});
-        this.state.hostCpu.push({x: new Date(), y: parseFloat(data.osStats.cpu)})
+        this.state.hostCpu.push({x: new Date(), y: parseFloat(data.osStats.cpu)});
+
+        if(!ClusterStatus.lessThan(this.state.memory[0].x)) {
+          this.state.memory.splice(0, 1);
+          this.state.hostCpu.splice(0, 1);
+        }
         this.setState({clusters: data, memory: this.state.memory, hostCpu: this.state.hostCpu});
       })
       .then(() => {

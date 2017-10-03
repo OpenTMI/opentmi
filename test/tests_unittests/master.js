@@ -174,7 +174,6 @@ describe('app/master.js', function () {
           expect(stats.osStats).to.have.property('currentMemoryUsage');
           expect(stats.osStats).to.have.property('cpu');
         });
-
     });
   });
 
@@ -345,15 +344,23 @@ describe('app/master.js', function () {
       cluster.workers = {1: worker1, 2: worker2, 3: worker3};
       return Master.handleSIGINT().then(() => {
         process.exit = processExitFunction;
-        expect(killCalled1).to.equal(true,
-          'Kill function should be called for worker 1.');
-        expect(killCalled2).to.equal(true,
-          'Kill function should be called for worker 2.');
-        expect(killCalled3).to.equal(true,
-          'Kill function should be called for worker 3.');
+        expect(killCalled1).to.equal(
+          true,
+          'Kill function should be called for worker 1.'
+        );
+        expect(killCalled2).to.equal(
+          true,
+          'Kill function should be called for worker 2.'
+        );
+        expect(killCalled3).to.equal(
+          true,
+          'Kill function should be called for worker 3.'
+        );
 
-        expect(processExitCalled).to.equal(true,
-          'Should call process.exit at some point.');
+        expect(processExitCalled).to.equal(
+          true,
+          'Should call process.exit at some point.'
+        );
       }).catch((error) => {
         process.exit = processExitFunction;
         throw error;
