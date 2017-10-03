@@ -12,6 +12,7 @@ const Promise = require('bluebird');
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 const config = require('../config');
+const AddonManager = require('./addons');
 
 // Module variables
 const numCPUs = os.cpus().length;
@@ -48,7 +49,18 @@ class Master {
       Master.activateFileListener(watcher);
     }
 
-    // Fork workers
+    // Clear background job locks
+    return Master._initAddons()
+      .then(() => Master._forkWorkers);
+  }
+
+  static _initAddons() {
+    return AddonManager.readAddons()
+      .then(() => AddonManager.clearJobLocks())
+      .then(() => AddonManager.installAddons());
+  }
+
+  static _forkWorkers() {
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
       .then(() => { logger.info('All workers ready to serve.'); })
       .catch((error) => { logger.error(error.message); });

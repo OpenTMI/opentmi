@@ -1,3 +1,6 @@
+// Native modules
+const cluster = require('cluster');
+
 // 3rd party modules
 const Express = require('express');
 const SocketIO = require('socket.io');
@@ -41,8 +44,18 @@ DB.connect().catch((error) => {
   .then(() => express(app))
   .then(() => routes.registerRoutes(app))
   .then(() => AddonManager.init(app, server, io))
+  .then(() => AddonManager.readAddons())
+  .then(() => {
+    // Run only if server is handled by the master process
+    if (cluster.isMaster) {
+      return AddonManager.clearJobLocks()
+        .then(() => AddonManager.installAddons());
+    }
+    return Promise.resolve();
+  })
   .then(() => AddonManager.loadAddons())
   .then(() => AddonManager.registerAddons())
+  .then(() => AddonManager.startJobs())
   // Error route should be initialized after addonmanager has served all static routes
   .then(() => routes.registerErrorRoute(app))
   .then(() => {

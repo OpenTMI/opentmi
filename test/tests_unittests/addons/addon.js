@@ -246,18 +246,20 @@ describe('addon.js', function () {
     });
   });
 
+  describe('startJobs', function () {
+    // @TODO Do tests
+  });
+
+  describe('clearJobLock', function () {
+    // @TODO Do tests
+  });
+
   describe('_loadAddonModule', function () {
     it('_loadAddonModule', function () {
       global.createErrorMessage = error => Promise.reject(error);
 
       addonPrototype.constructor._requirePackageFile = () => Promise.resolve(
         {description: 'desc', version: 'version', repository: 'repo'});
-
-      let installCalled = false;
-      addonPrototype.constructor._installDependencies = () => {
-        installCalled = true;
-        return Promise.resolve();
-      };
 
       let checkCalled = false;
       addonPrototype.constructor._checkDependencies = () => {
@@ -275,7 +277,6 @@ describe('addon.js', function () {
         .then(() => {
           delete global.createErrorMessage;
 
-          expect(installCalled).to.equal(true);
           expect(checkCalled).to.equal(true);
           expect(requireCalled).to.equal(true);
 
@@ -286,8 +287,8 @@ describe('addon.js', function () {
     });
   });
 
-  describe('_installDependencies', function () {
-    it.skip('_installDependencies', function (done) {
+  describe('installDependencies', function () {
+    it.skip('installDependencies', function (done) {
       // TODO actually test that a command is executed
       done();
     });
