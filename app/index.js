@@ -72,11 +72,14 @@ DB.connect().catch((error) => {
       // @todo test that requests actually get processed
       logger.warn('SIGTERM received, attempt to exit OpenTMI');
       logger.debug('Closing socketIO server..');
-      const ioClose = Promise.promisify(io.close.bind(io));
+      const ioClose = Promise.promisify(io.close, {context: io});
+      const restClose = () => new Promise(resolve => server.close(resolve));
       io.emit('exit');
-      ioClose()
+      ioClose().timeout(1000).catch(() => { logger.warn('there is still io connections..'); })
         .then(() => logger.debug('Closing express server'))
-        .then(() => new Promise(resolve => server.close(resolve)))
+        .then(() => restClose()
+          .timeout(1000)
+          .catch(() => { logger.warn('there is still rest connections..'); }))
         .then(() => logger.debug('Closing DB connection'))
         .then(DB.disconnect.bind(DB))
         .catch((err) => {

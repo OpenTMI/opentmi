@@ -32,6 +32,7 @@ class LoginForm extends React.Component {
         localStorage.setItem("token", token);
         console.log('Saved tokeb to localStorage');
         this.setState({token});
+        return this._transport.connect();
       })
       .catch((error) => {
         alert(error.response.data.message)
