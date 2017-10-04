@@ -57,8 +57,8 @@ class Master {
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
       .then(() => { logger.info('All workers ready to serve.'); })
       .then(Master.listen)
-      .then(() => { logger.info(`Master listening on port ${port}`)})
-      .catch((error) => { logger.error(error.message); });
+      .then(() => { logger.info(`Master listening on port ${port}`); })
+      .catch((error) => { logger.error(`System establish failed: ${error.message}`); });
   }
 
   static listen() {
@@ -95,7 +95,7 @@ class Master {
     });
     return new Promise((resolve) => {
       Master._server.once('listening', resolve);
-    }).timeout(10000)
+    }).timeout(10000) // try 10 times to open port
       .catch(Promise.TimeoutError, (error) => {
         clearTimeout(retryTimeout);
         logger.warn('Listen timeouts - probably port was reserved already.');
@@ -273,6 +273,13 @@ class Master {
     return 0;
   }
 
+  static close() {
+    if(Master._server) {
+      Master._server.close();
+    }
+    return Promise.resolve();
+  }
+
   /**
    * Kills workers and exits process.
    * @return {Promise} promise to kill all workers
@@ -285,6 +292,7 @@ class Master {
     // This means that master tries to send signals to already interrupted workers which throw EPIPE errors, because
     // the workers already stopped receiving signals.
     return Master.killAllWorkers()
+      .then(Master.close)
       .then(() => {
         logger.info('All workers killed, exiting process.');
         process.exit();
@@ -441,5 +449,6 @@ class Master {
 }
 
 Master.workers = [];
+Master._server = undefined;
 
 module.exports = Master;

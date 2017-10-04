@@ -138,12 +138,18 @@ describe('app/master.js', function () {
 
       // Overwrite fork so we do not actually fork a child process
       let forkCalled = 0;
+      let listenCalled = 0;
       Master.forkWorker = () => {
         forkCalled += 1;
+      };
+      Master.listen = () => {
+        listenCalled += 1;
+        return Promise.resolve();
       };
 
       Master.initialize().then(() => {
         expect(forkCalled).to.equal(cpus, 'Should fork worker for each cpu core.');
+        expect(listenCalled).to.equal(1, 'sould call listen once');
         done();
       }).catch(done);
     });
@@ -219,9 +225,12 @@ describe('app/master.js', function () {
     it('should call fork', function () {
       const forkPromise = Master.forkWorker().then(() => {
         expect(forkCalled).to.equal(true);
-        expect(forkEmitter.listenerCount('exit')).to.equal(1, 'Should remove rejecting exit event listener before rejecting.');
-        expect(forkEmitter.listenerCount('listening')).to.equal(1, 'Should still listen to listening events');
-        expect(forkEmitter.listenerCount('message')).to.equal(1, 'Should listen to message events');
+        expect(forkEmitter.listenerCount('exit')).to
+          .equal(1, 'Should remove rejecting exit event listener before rejecting.');
+        expect(forkEmitter.listenerCount('listening')).to
+          .equal(1, 'Should still listen to listening events');
+        expect(forkEmitter.listenerCount('message')).to
+          .equal(1, 'Should listen to message events');
       });
 
       forkEmitter.emit('listening');
