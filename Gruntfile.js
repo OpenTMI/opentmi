@@ -117,8 +117,8 @@ function gruntSetup(grunt) {
     'simplemocha:api'
   ]);
   grunt.registerTask('default', [
-    'unittests',
-    'apitests'
+    'apitests',
+    'unittests'
   ]);
 }
 
