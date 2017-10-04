@@ -86,6 +86,7 @@ class Master {
 
     let retryTimeout;
     Master._server.on('error', (e) => {
+      logger.warn(`server error: ${e.message}`);
       if (e.code === 'EADDRINUSE') {
         logger.warn(`Port ${port} in use, retrying...`);
         retryTimeout = setTimeout(() => {
