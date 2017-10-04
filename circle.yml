@@ -2,13 +2,13 @@ machine:
     environment:
         NODE_ENV: test
         XUNIT_FILE: shippable/testresults/result.xml
-        
+
     services:
         # MongoDB is running in the background by default
-        
+
     node:
         version: 6.1.0
-        
+
 database:
     # Circle will execute the below commands
     pre:
@@ -31,8 +31,8 @@ dependencies:
         - npm install -g grunt-cli
         - mkdir -p shippable/testresults
         - mkdir -p shippable/codecoverage
-        - git submodule sync --recursive
-        - git submodule update --recursive --init
+        # - git submodule sync --recursive
+        # - git submodule update --recursive --init
         - npm install
 
 test:

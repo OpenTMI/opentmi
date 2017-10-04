@@ -26,14 +26,14 @@ const gruntConfig = {
         delay: 15000,
         script: 'index.js',
         node_env: 'test',
-        args: ['-vvv'] // to more traces set -vvv instead of -s (silent)
+        args: ['-s'] // to more traces set -vvv instead of -s (silent)
       }
     }
   },
   waitServer: {
     server: {
       options: {
-        timeout: 120000,
+        timeout: 30000,
         url: 'http://localhost:3000/api/v0'
       }
     }
