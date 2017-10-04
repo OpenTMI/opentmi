@@ -19,7 +19,7 @@ const config = require('../config');
 // Module variables
 const port = config.get('port');
 const listen = config.get('listen');
-const numCPUs = os.cpus().length;
+const numCPUs = process.env.CI ? 2 : os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
 let systemRestartNeeded = false;
