@@ -18,10 +18,19 @@ const testFilesUnit = [
   'test/tests_unittests/controllers/*.js',
   'test/tests_unittests/routes/*.js'
 ];
+const testFilesCluster = ['test/tests_cluster/*.js', 'test/tests_api/socketio.js'];
 
 const gruntConfig = {
   express: {
-    test: {
+    single_server: {
+      options: {
+        delay: 15000,
+        script: 'app/index.js',
+        node_env: 'test',
+        args: ['-s'] // to more traces set -vvv instead of -s (silent)
+      }
+    },
+    cluster_server: {
       options: {
         delay: 15000,
         script: 'index.js',
@@ -33,7 +42,7 @@ const gruntConfig = {
   waitServer: {
     server: {
       options: {
-        timeout: 30000,
+        timeout: 60000,
         url: 'http://localhost:3000/api/v0'
       }
     }
@@ -50,6 +59,9 @@ const gruntConfig = {
       globals: ['should', 'check'],
       timeout: 120000,
       ignoreLeaks: false
+    },
+    cluster: {
+      src: testFilesCluster
     },
     api: {
       src: testFilesApi
@@ -112,13 +124,19 @@ function gruntSetup(grunt) {
   grunt.registerTask('apitests', [
     'findAddonApiTests',
     'exec:restore_db',
-    'express:test',
+    'express:single_server',
     'waitServer',
     'simplemocha:api'
   ]);
+  grunt.registerTask('clustertests', [
+    'express:cluster_server',
+    'waitServer',
+    'simplemocha:cluster'
+  ]);
   grunt.registerTask('default', [
     'unittests',
-    'apitests'
+    'apitests',
+    'clustertests'
   ]);
 }
 
