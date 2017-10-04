@@ -201,7 +201,7 @@ describe('app/master.js', function () {
 
   describe('forkWorker', function () {
     let forkCalled = false;
-    const forkEmitter = new EventEmitter();
+    let forkEmitter;
 
     before(function () {
       cluster.fork = () => {
@@ -211,15 +211,15 @@ describe('app/master.js', function () {
     });
 
     beforeEach(function (done) {
+      forkEmitter = new EventEmitter();
       forkCalled = false;
-      forkEmitter.removeAllListeners();
       done();
     });
 
     it('should call fork', function () {
       const forkPromise = Master.forkWorker().then(() => {
         expect(forkCalled).to.equal(true);
-        expect(forkEmitter.listenerCount('exit')).to.equal(0, 'Should remove exit event listener before rejecting.');
+        expect(forkEmitter.listenerCount('exit')).to.equal(1, 'Should remove rejecting exit event listener before rejecting.');
         expect(forkEmitter.listenerCount('listening')).to.equal(1, 'Should still listen to listening events');
         expect(forkEmitter.listenerCount('message')).to.equal(1, 'Should listen to message events');
       });

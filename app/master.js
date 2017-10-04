@@ -55,29 +55,28 @@ class Master {
 
     // Fork workers
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
-      .then(Master.listen)
       .then(() => { logger.info('All workers ready to serve.'); })
+      .then(Master.listen)
+      .then(() => { logger.info(`Master listening on port ${port}`)})
       .catch((error) => { logger.error(error.message); });
   }
 
   static listen() {
-    logger.info(`Master start listening port ${port}`);
+    logger.silly(`Master start listening port ${port}`);
     // Create the outside facing server listening on our port.
     Master._server = net.createServer({pauseOnConnect: true});
     Master._server.on('connection', (socket) => {
       // We received a connection and need to pass it to the appropriate
       // worker. Get the worker for this connection's source IP and pass
       // it the connection.
-      console.log(socket.remoteAddress);
-      console.log(Master.workers.length);
       const index = Master.getWorkerIndex(socket.remoteAddress);
       const worker = _.get(Master.workers, index);
       if (worker) {
-        if(worker.isConnected()) {
+        if (worker.isConnected()) {
           worker.send('sticky-session:connection', socket);
         } else {
           socket.end();
-          logger.warn("connection was dropped because worker was not valid anymore..");
+          logger.warn('connection was dropped because worker was not valid anymore..');
         }
       } else {
         logger.warn(`Worker doesn't found with index ${index}`);
@@ -198,9 +197,7 @@ class Master {
         reject(new Error('Should not exit before listening event.'));
       };
       const onRemoveWorker = () => {
-        _.remove(Master.workers, (w) => {
-          return w === worker;
-        });
+        _.remove(Master.workers, w => w === worker);
       };
 
       const onListening = () => {
