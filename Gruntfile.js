@@ -26,7 +26,7 @@ const gruntConfig = {
         delay: 15000,
         script: 'index.js',
         node_env: 'test',
-        args: ['-vv'] // to more traces set -vvv instead of -s (silent)
+        args: ['-vvv'] // to more traces set -vvv instead of -s (silent)
       }
     }
   },

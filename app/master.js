@@ -63,7 +63,7 @@ class Master {
   }
 
   static listen() {
-    logger.silly(`Master start listening port ${port}`);
+    logger.debug(`Master start listening port ${port}`);
     // Create the outside facing server listening on our port.
     Master._server = net.createServer({pauseOnConnect: true});
     Master._server.on('connection', (socket) => {
@@ -87,7 +87,7 @@ class Master {
     let retryTimeout;
     Master._server.on('error', (e) => {
       if (e.code === 'EADDRINUSE') {
-        logger.silly(`Port ${port} in use, retrying...`);
+        logger.warn(`Port ${port} in use, retrying...`);
         retryTimeout = setTimeout(() => {
           Master._server.close();
           Master._server.listen(port, listen);
