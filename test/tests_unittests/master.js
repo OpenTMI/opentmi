@@ -134,7 +134,7 @@ describe('app/master.js', function () {
     });
 
     it('should call fork os.cpus().length times', function (done) {
-      const cpus = os.cpus().length;
+      const cpus = process.env.CI ? 2 : os.cpus().length;
 
       // Overwrite fork so we do not actually fork a child process
       let forkCalled = 0;
