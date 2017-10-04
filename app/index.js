@@ -1,7 +1,9 @@
+const cluster = require('cluster');
+
 // 3rd party modules
 const Express = require('express');
 const SocketIO = require('socket.io');
-var mongoAdapter = require('socket.io-adapter-mongo');
+const mongoAdapter = require('socket.io-adapter-mongo');
 
 // application modules
 const express = require('./express');
@@ -21,8 +23,8 @@ if (nconf.get('help') || nconf.get('h')) {
 
 // Defines
 const https = nconf.get('https');
-const listen = 'localhost'; //nconf.get('listen', 'localhost');
-const port = 0; //nconf.get('port', 0);
+const listen = cluster.isMaster ? nconf.get('listen') : 'localhost';
+const port = cluster.isMaster ? nconf.get('port') : 0;
 const environment = nconf.get('env');
 const dbUrl = nconf.get('db');
 

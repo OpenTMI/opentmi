@@ -18,6 +18,7 @@ const config = require('../config');
 
 // Module variables
 const port = config.get('port');
+const listen = config.get('listen');
 const numCPUs = os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
@@ -60,22 +61,47 @@ class Master {
   }
 
   static listen() {
-    console.log('start listening...');
-      // Create the outside facing server listening on our port.
-    Master._server = net.createServer({ pauseOnConnect: true }, (connection) => {
+    logger.info(`Master start listening port ${port}`);
+    // Create the outside facing server listening on our port.
+    Master._server = net.createServer({pauseOnConnect: true});
+    Master._server.on('connection', (socket) => {
       // We received a connection and need to pass it to the appropriate
       // worker. Get the worker for this connection's source IP and pass
       // it the connection.
-      console.log('connection', port, connection);
-      const index = Master.getWorkerIndex(connection.remoteAddress, numCPUs);
+      console.log(socket.remoteAddress);
+      console.log(Master.workers.length);
+      const index = Master.getWorkerIndex(socket.remoteAddress);
       const worker = _.get(Master.workers, index);
       if (worker) {
-        worker.send('sticky-session:connection', connection);
+        if(worker.isConnected()) {
+          worker.send('sticky-session:connection', socket);
+        } else {
+          socket.end();
+          logger.warn("connection was dropped because worker was not valid anymore..");
+        }
       } else {
         logger.warn(`Worker doesn't found with index ${index}`);
       }
-    }).listen(port);
-    return Promise.resolve();
+    });
+    Master._server.listen(port, listen);
+    let retryTimeout;
+    Master._server.on('error', (e) => {
+      if (e.code === 'EADDRINUSE') {
+        logger.silly(`Port ${port} in use, retrying...`);
+        retryTimeout = setTimeout(() => {
+          Master._server.close();
+          Master._server.listen(port, listen);
+        }, 1000);
+      }
+    });
+    return new Promise((resolve) => {
+      Master._server.once('listening', resolve);
+    }).timeout(10000)
+      .catch(Promise.TimeoutError, (error) => {
+        clearTimeout(retryTimeout);
+        logger.warn('Listen timeouts - probably port was reserved already.');
+        throw error;
+      });
   }
   /**
    * Informs the client that workers need to be restarted and restarts workers
@@ -168,9 +194,13 @@ class Master {
 
       const onPrematureExit = (code, signal) => {
         Master.logWorkerDeath(worker, code, signal);
-        _.remove(Master.workers, worker);
         worker.removeAllListeners();
         reject(new Error('Should not exit before listening event.'));
+      };
+      const onRemoveWorker = () => {
+        _.remove(Master.workers, (w) => {
+          return w === worker;
+        });
       };
 
       const onListening = () => {
@@ -182,6 +212,7 @@ class Master {
 
       worker.on('listening', onListening);
       worker.on('message', Master.onWorkerMessage.bind(worker));
+      worker.once('exit', onRemoveWorker);
       worker.once('exit', onPrematureExit);
     });
   }
@@ -284,9 +315,9 @@ class Master {
     }
   }
 
-  static getWorkerIndex(ip, len) {
-		return farmhash.fingerprint32(ip) % len; // Farmhash is the fastest and works with IPv6, too
-	};
+  static getWorkerIndex(ip) {
+    return farmhash.fingerprint32(ip) % Master.workers.length; // Farmhash is the fastest and works with IPv6, too
+  }
 
   /**
    * Kill single worker, resolves when the worker is dead.
@@ -297,7 +328,7 @@ class Master {
     logger.debug(`Killing Worker#${worker.id}.`);
     worker.__closing = true; // eslint-disable-line no-param-reassign
     return new Promise((resolve) => {
-      worker.on('exit', resolve);
+      worker.once('exit', resolve);
 
       try {
         worker.kill('SIGINT');

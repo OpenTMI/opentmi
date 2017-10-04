@@ -41,5 +41,4 @@ module.exports = function Worker() {
   });
 
   this.app = require('.'); // eslint-disable-line global-require
-
 };
