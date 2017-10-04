@@ -81,9 +81,9 @@
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-react": "^7.1.0",
     "eslint-plugin-node": "^5.1.0",
     "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-react": "^7.1.0",
     "grunt": "^1.0.1",
     "grunt-exec": "^3.0.0",
     "grunt-express-server": "^0.5.3",
@@ -94,6 +94,7 @@
     "mockgoose": "^7.3.3",
     "protractor": "^5.1.2",
     "should": "11.2.1",
+    "socket.io-client": "^2.0.3",
     "superagent": "^3.5.2",
     "xunit-file": "^1.0.0"
   }
