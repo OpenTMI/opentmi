@@ -82,7 +82,7 @@ class Master {
         logger.warn(`Worker doesn't found with index ${index}`);
       }
     });
-    Master._server.listen(port, listen);
+
     let retryTimeout;
     Master._server.on('error', (e) => {
       if (e.code === 'EADDRINUSE') {
@@ -93,7 +93,7 @@ class Master {
         }, 1000);
       }
     });
-    return new Promise((resolve) => {
+    const pending = new Promise((resolve) => {
       Master._server.once('listening', resolve);
     }).timeout(10000) // try 10 times to open port
       .catch(Promise.TimeoutError, (error) => {
@@ -101,6 +101,8 @@ class Master {
         logger.warn('Listen timeouts - probably port was reserved already.');
         throw error;
       });
+    Master._server.listen(port, listen);
+    return pending;
   }
   /**
    * Informs the client that workers need to be restarted and restarts workers
@@ -274,7 +276,7 @@ class Master {
   }
 
   static close() {
-    if(Master._server) {
+    if (Master._server) {
       Master._server.close();
     }
     return Promise.resolve();
