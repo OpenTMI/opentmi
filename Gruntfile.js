@@ -33,7 +33,7 @@ const gruntConfig = {
   waitServer: {
     server: {
       options: {
-        timeout: 60000,
+        timeout: 120000,
         url: 'http://localhost:3000/api/v0'
       }
     }

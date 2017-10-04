@@ -54,6 +54,7 @@ class Master {
     }
 
     // Fork workers
+    logger.info(`Start forking ${numCPUs} workers..`);
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
       .then(() => { logger.info('All workers ready to serve.'); })
       .then(Master.listen)
