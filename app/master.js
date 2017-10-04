@@ -2,18 +2,22 @@
 const cluster = require('cluster');
 const os = require('os');
 const path = require('path');
+const net = require('net');
 
 // Third party modules
 const _ = require('lodash');
 const fileWatcher = require('chokidar');
 const Promise = require('bluebird');
+const farmhash = require('farmhash');
 
 // Local modules
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 const config = require('../config');
 
+
 // Module variables
+const port = config.get('port');
 const numCPUs = os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
@@ -50,10 +54,29 @@ class Master {
 
     // Fork workers
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
+      .then(Master.listen)
       .then(() => { logger.info('All workers ready to serve.'); })
       .catch((error) => { logger.error(error.message); });
   }
 
+  static listen() {
+    console.log('start listening...');
+      // Create the outside facing server listening on our port.
+    Master._server = net.createServer({ pauseOnConnect: true }, (connection) => {
+      // We received a connection and need to pass it to the appropriate
+      // worker. Get the worker for this connection's source IP and pass
+      // it the connection.
+      console.log('connection', port, connection);
+      const index = Master.getWorkerIndex(connection.remoteAddress, numCPUs);
+      const worker = _.get(Master.workers, index);
+      if (worker) {
+        worker.send('sticky-session:connection', connection);
+      } else {
+        logger.warn(`Worker doesn't found with index ${index}`);
+      }
+    }).listen(port);
+    return Promise.resolve();
+  }
   /**
    * Informs the client that workers need to be restarted and restarts workers
    * @param {object} meta - meta data linked to this event
@@ -139,12 +162,13 @@ class Master {
   static forkWorker() {
     return new Promise((resolve, reject) => {
       const worker = cluster.fork();
+      Master.workers.push(worker);
       worker.__starting = true;
       worker.__closing = false;
 
       const onPrematureExit = (code, signal) => {
         Master.logWorkerDeath(worker, code, signal);
-
+        _.remove(Master.workers, worker);
         worker.removeAllListeners();
         reject(new Error('Should not exit before listening event.'));
       };
@@ -260,6 +284,10 @@ class Master {
     }
   }
 
+  static getWorkerIndex(ip, len) {
+		return farmhash.fingerprint32(ip) % len; // Farmhash is the fastest and works with IPv6, too
+	};
+
   /**
    * Kill single worker, resolves when the worker is dead.
    * @param {object} worker - worker instance defined by cluster module.
@@ -300,7 +328,7 @@ class Master {
       .then(() => Master.forkWorker());
   }
 
-  /** 
+  /**
    * Reload all fork workers and return Promise.
    * @return {Promise} promise to reload all workers.
    */
@@ -337,7 +365,7 @@ class Master {
     return watcher;
   }
 
-  /** 
+  /**
    * Start reacting to file changes in the app directory.
    * Reloads all workers if changes are detected, which in turn
    * allows for zero server downtime updates.
@@ -383,5 +411,7 @@ class Master {
     watcher.close();
   }
 }
+
+Master.workers = [];
 
 module.exports = Master;
