@@ -353,26 +353,32 @@ class Master {
   static killWorker(worker) {
     logger.debug(`Killing Worker#${worker.id}.`);
     worker.__closing = true; // eslint-disable-line no-param-reassign
-    const tryTerminate = signal => new Promise((resolve) => {
+    const tryTerminate = signal => new Promise((resolve, reject) => {
       worker.once('exit', resolve);
       logger.silly(`Killing worker#${worker.id} with ${signal}`);
-      worker.kill(signal);
+      try {
+        worker.kill(signal);
+      } catch (error) {
+        reject(error);
+      }
     });
 
-    return tryTerminate('SIGINT')
-      .timeout(3000)
+    return tryTerminate('SIGINT').timeout(Master.SIGINT_TIMEOUT)
       .catch(Promise.TimeoutError, () => {
         logger.warn(`Can't kill worker#${worker.id} kindly`);
-        return tryTerminate('SIGTERM');
+        return tryTerminate('SIGTERM').timeout(Master.GIGTERM_TIMEOUT);
       })
-      .timeout(2000)
       .catch(Promise.TimeoutError, () => {
         logger.warn(`Can't kill worker#${worker.id} less kindly`);
-        return tryTerminate('SIGKILL');
+        return tryTerminate('SIGKILL').timeout(Master.SIGKILL_TIMEOUT);
       })
-      .timeout(2000)
       .catch(Promise.TimeoutError, (error) => {
         logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);
+        throw error;
+      })
+      .catch((error) => {
+        logger.warn(`kill throws error: ${error.message}`);
+        throw error;
       });
   }
 
@@ -383,7 +389,8 @@ class Master {
   static killAllWorkers() {
     logger.info('Killing all workers...');
     return Promise.all(_.map(cluster.workers, Master.killWorker))
-      .then(() => { logger.info('All workers killed.'); });
+      .then(() => { logger.info('All workers killed.'); })
+      .catch((error) => { logger.error(error); });
   }
 
   /**
@@ -480,6 +487,10 @@ class Master {
     watcher.close();
   }
 }
+
+Master.SIGINT_TIMEOUT = 3000;
+Master.GIGTERM_TIMEOUT = 2000;
+Master.SIGKILL_TIMEOUT = 1000;
 
 Master.workers = [];
 Master._server = undefined;

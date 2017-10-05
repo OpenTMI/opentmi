@@ -404,19 +404,102 @@ describe('app/master.js', function () {
   });
 
   describe('killWorker', function () {
-    it('should kill worker', function () {
-      const worker = new EventEmitter();
+    beforeEach(function () {
+      Master.SIGINT_TIMEOUT = 100;
+      Master.GIGTERM_TIMEOUT = 100;
+      Master.SIGKILL_TIMEOUT = 100;
+      return Promise.resolve();
+    });
 
+    const shouldReject = promise => new Promise((resolve, reject) => {
+      promise
+        .then(reject)
+        .catch(resolve);
+    });
+    it('should kill worker when SIGINT success', function () {
+      const worker = new EventEmitter();
       let killCalled = false;
       worker.kill = (signal) => {
         expect(signal).to.equal('SIGINT');
-
         killCalled = true;
         worker.emit('exit');
       };
-
       return Master.killWorker(worker)
         .then(() => { expect(killCalled).to.equal(true); });
+    });
+    it('should give second chance to kill worker with SIGTERM', function () {
+      const worker = new EventEmitter();
+      let killCalled = false;
+      let iteration = 0;
+      worker.kill = (signal) => {
+        iteration += 1;
+        if (iteration === 1) {
+          expect(signal).to.equal('SIGINT');
+        } else if (iteration === 2) {
+          expect(signal).to.equal('SIGTERM');
+          killCalled = true;
+          worker.emit('exit');
+        } else {
+          throw new Error('should no go here.');
+        }
+      };
+      return Master.killWorker(worker)
+        .then(() => { expect(killCalled).to.equal(true); });
+    });
+    it('should give third chance to kill worker with SIGKILL', function () {
+      const worker = new EventEmitter();
+      let killCalled = false;
+      let iteration = 0;
+      worker.kill = (signal) => {
+        iteration += 1;
+        if (iteration === 1) {
+          expect(signal).to.equal('SIGINT');
+        } else if (iteration === 2) {
+          expect(signal).to.equal('SIGTERM');
+        } else if (iteration === 3) {
+          expect(signal).to.equal('SIGKILL');
+          killCalled = true;
+          worker.emit('exit');
+        } else {
+          throw new Error('should no go here.');
+        }
+      };
+      return Master.killWorker(worker)
+        .then(() => { expect(killCalled).to.equal(true); });
+    });
+    it('should reject if cannot kill worker', function () {
+      const worker = new EventEmitter();
+      let killCalled = false;
+      let iteration = 0;
+      worker.kill = (signal) => {
+        iteration += 1;
+        if (iteration === 1) {
+          expect(signal).to.equal('SIGINT');
+        } else if (iteration === 2) {
+          expect(signal).to.equal('SIGTERM');
+        } else if (iteration === 3) {
+          expect(signal).to.equal('SIGKILL');
+          killCalled = true;
+        } else {
+          throw new Error('should no go here.');
+        }
+      };
+      return shouldReject(Master.killWorker(worker)
+        .catch((error) => {
+          expect(killCalled).to.equal(true);
+          throw error;
+        }));
+    });
+    it('should catch kill exception', function () {
+      const worker = new EventEmitter();
+      worker.kill = () => {
+        throw new Error('ohno');
+      };
+      return shouldReject(Master.killWorker(worker)
+        .catch((error) => {
+          expect(error.message).to.equal('ohno');
+          throw error;
+        }));
     });
   });
 
