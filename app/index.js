@@ -4,6 +4,7 @@ const cluster = require('cluster');
 const Express = require('express');
 const SocketIO = require('socket.io');
 const mongoAdapter = require('socket.io-adapter-mongo');
+const Promise = require('bluebird');
 
 // application modules
 const express = require('./express');
@@ -74,19 +75,33 @@ DB.connect().catch((error) => {
     server.on('listening', onListening);
     server.listen(port, listen);
 
-    // Close the Mongoose connection, when receiving SIGINT
-    process.on('SIGINT', () => {
+    const termination = (signal) => {
       // server.close stops worker from accepting new requests and finishes currently processed requests
-      // @todo test that requests actually get processed
-      server.close(() => {
-        DB.disconnect().then(() => {
+      logger.warn(`${signal} received, attempt to exit OpenTMI`);
+      logger.debug('Closing socketIO server..');
+      const ioClose = Promise.promisify(io.close, {context: io});
+      const restClose = Promise.promisify(server.close, {context: server});
+      io.emit('exit');
+      ioClose()
+        .timeout(1000)
+        .catch((error) => { logger.warn(`io closing fails: ${error}`); })
+        .then(() => logger.debug('Closing express server'))
+        .then(() => restClose()
+          .timeout(1000)
+          .catch((error) => { logger.warn(`restClose fails: ${error}`); }))
+        .then(() => logger.debug('Closing DB connection'))
+        .then(() => DB.disconnect().timeout(2000))
+        .catch((error) => {
+          logger.error(`shutdown Error: ${error}`);
+        })
+        .finally(() => {
+          logger.info('Exit OpenTMI');
           process.exit(0);
-        }).catch((err) => {
-          logger.error(`Disconnection from database failed: ${err}`);
-          process.exit(-1);
         });
-      });
-    });
+    };
+    // Close the Mongoose connection, when receiving SIGINT or SIGTERM
+    process.on('SIGINT', () => termination('SIGINT'));
+    process.on('SIGTERM', () => termination('SIGTERM'));
   });
 
 // This would be useful for testing
