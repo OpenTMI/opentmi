@@ -37,8 +37,8 @@ class GitUpdater extends Updater {
 
   version() {
     const gitVersion = this._commitId()
-      .then(commitId => this._tag(commitId)
-        .then(tag => Object.assign({commitID: commitId}, tag)));
+      .then(obj => this._tag(obj.commitId)
+        .then(tag => Object.assign({commitId: obj.commitId}, tag)));
 
     return Promise
       .all([super.version(), gitVersion])
@@ -52,7 +52,7 @@ class GitUpdater extends Updater {
     });
   }
 
-  _tag(commitId = this._commitId()) {
+  _tag(commitId) {
     const cmd = `git describe --exact-match --tags ${commitId}`;
     return this.exec(cmd, this._options)
       .then(line => ({tag: line.trim()}))
