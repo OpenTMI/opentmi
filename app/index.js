@@ -4,6 +4,7 @@ const cluster = require('cluster');
 const Express = require('express');
 const SocketIO = require('socket.io');
 const mongoAdapter = require('socket.io-adapter-mongo');
+const Promise = require('bluebird');
 
 // application modules
 const express = require('./express');
