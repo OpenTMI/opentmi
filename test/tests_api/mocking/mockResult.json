@@ -7,7 +7,7 @@
     },
     "logs": [
       {
-        "name": "MockFile",
+        "name": "MockFile.txt",
         "data": "This is mock file data that is to be stored in an apitest"
       }
     ]
