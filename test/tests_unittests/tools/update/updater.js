@@ -177,10 +177,11 @@ describe('update/updater.js', function () {
           expect(options).to.have.property('cwd', 'CWDD');
           expect(options).to.have.property('env');
           expect(options.env).to.have.property('ENV', 'ENVV');
-          return Promise.resolve('NpmListData');
+          return Promise.resolve({data: 'NpmListData'});
         };
+        updater.npm.version = (options) => Promise.resolve({});
 
-        return expect(updater.version()).to.eventually.equal('NpmListData');
+        return expect(updater.version(true)).to.eventually.equal({data: 'NpmListData'});
       });
 
       it('should return rejected Promise when _pending is pending', function () {
