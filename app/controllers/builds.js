@@ -31,7 +31,7 @@ class BuildsController extends DefaultController {
       .then((file) => {
         // Set correct headers
         const headers = {
-          'Content-Type': mime.lookup(file.name),
+          'Content-Type': mime.getType(file.name),
           'Content-disposition': `attachment;filename=${file.name}`,
           'Content-Length': file.data.length
         };
