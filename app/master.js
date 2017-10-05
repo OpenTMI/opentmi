@@ -2,19 +2,24 @@
 const cluster = require('cluster');
 const os = require('os');
 const path = require('path');
+const net = require('net');
 
 // Third party modules
 const _ = require('lodash');
 const fileWatcher = require('chokidar');
 const Promise = require('bluebird');
+const farmhash = require('farmhash');
 
 // Local modules
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 const config = require('../config');
 
+
 // Module variables
-const numCPUs = os.cpus().length;
+const port = config.get('port');
+const listen = config.get('listen');
+const numCPUs = process.env.CI ? 2 : os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
 let systemRestartNeeded = false;
@@ -49,9 +54,57 @@ class Master {
     }
 
     // Fork workers
+    logger.info(`Start forking ${numCPUs} workers..`);
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
       .then(() => { logger.info('All workers ready to serve.'); })
-      .catch((error) => { logger.error(error.message); });
+      .then(Master.listen)
+      .then(() => { logger.info(`Master listening on port ${port}`); })
+      .catch((error) => { logger.error(`System establish failed: ${error.message}`); });
+  }
+
+  static listen() {
+    logger.debug(`Master start listening port ${port}`);
+    // Create the outside facing server listening on our port.
+    Master._server = net.createServer({pauseOnConnect: true});
+    Master._server.on('connection', (socket) => {
+      // We received a connection and need to pass it to the appropriate
+      // worker. Get the worker for this connection's source IP and pass
+      // it the connection.
+      const index = Master.getWorkerIndex(socket.remoteAddress);
+      const worker = _.get(Master.workers, index);
+      if (worker) {
+        if (worker.isConnected()) {
+          worker.send('sticky-session:connection', socket);
+        } else {
+          socket.end();
+          logger.warn('connection was dropped because worker was not valid anymore..');
+        }
+      } else {
+        logger.warn(`Worker doesn't found with index ${index}`);
+      }
+    });
+
+    let retryTimeout;
+    Master._server.on('error', (e) => {
+      logger.warn(`server error: ${e.message}`);
+      if (e.code === 'EADDRINUSE') {
+        logger.warn(`Port ${port} in use, retrying...`);
+        retryTimeout = setTimeout(() => {
+          Master._server.close();
+          Master._server.listen(port, listen);
+        }, 1000);
+      }
+    });
+    const pending = new Promise((resolve) => {
+      Master._server.once('listening', resolve);
+    }).timeout(10000) // try 10 times to open port
+      .catch(Promise.TimeoutError, (error) => {
+        clearTimeout(retryTimeout);
+        logger.warn('Listen timeouts - probably port was reserved already.');
+        throw error;
+      });
+    Master._server.listen(port, listen);
+    return pending;
   }
   /**
    * Informs the client that workers need to be restarted and restarts workers
@@ -155,14 +208,17 @@ class Master {
   static forkWorker() {
     return new Promise((resolve, reject) => {
       const worker = cluster.fork();
+      Master.workers.push(worker);
       worker.__starting = true;
       worker.__closing = false;
 
       const onPrematureExit = (code, signal) => {
         Master.logWorkerDeath(worker, code, signal);
-
         worker.removeAllListeners();
         reject(new Error('Should not exit before listening event.'));
+      };
+      const onRemoveWorker = () => {
+        _.remove(Master.workers, w => w === worker);
       };
 
       const onListening = () => {
@@ -174,6 +230,7 @@ class Master {
 
       worker.on('listening', onListening);
       worker.on('message', Master.onWorkerMessage.bind(worker));
+      worker.once('exit', onRemoveWorker);
       worker.once('exit', onPrematureExit);
     });
   }
@@ -237,6 +294,13 @@ class Master {
     return 0;
   }
 
+  static close() {
+    if (Master._server) {
+      Master._server.close();
+    }
+    return Promise.resolve();
+  }
+
   /**
    * Kills workers and exits process.
    * @return {Promise} promise to kill all workers
@@ -249,6 +313,7 @@ class Master {
     // This means that master tries to send signals to already interrupted workers which throw EPIPE errors, because
     // the workers already stopped receiving signals.
     return Master.killAllWorkers()
+      .then(Master.close)
       .then(() => {
         logger.info('All workers killed, exiting process.');
         process.exit();
@@ -274,6 +339,10 @@ class Master {
       logger.info('Replacing worker...');
       Master.forkWorker();
     }
+  }
+
+  static getWorkerIndex(ip) {
+    return farmhash.fingerprint32(ip) % Master.workers.length; // Farmhash is the fastest and works with IPv6, too
   }
 
   /**
@@ -411,5 +480,8 @@ class Master {
     watcher.close();
   }
 }
+
+Master.workers = [];
+Master._server = undefined;
 
 module.exports = Master;

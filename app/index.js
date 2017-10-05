@@ -1,7 +1,10 @@
+const cluster = require('cluster');
+
 // 3rd party modules
 const Express = require('express');
 const SocketIO = require('socket.io');
 const Promise = require('bluebird');
+const mongoAdapter = require('socket.io-adapter-mongo');
 
 // application modules
 const express = require('./express');
@@ -21,9 +24,11 @@ if (nconf.get('help') || nconf.get('h')) {
 
 // Defines
 const https = nconf.get('https');
-const listen = nconf.get('listen');
-const port = nconf.get('port');
+const listen = cluster.isMaster ? nconf.get('listen') : 'localhost';
+const port = cluster.isMaster ? nconf.get('port') : 0;
 const environment = nconf.get('env');
+const dbUrl = nconf.get('db');
+
 
 // Create express instance
 const app = Express();
@@ -33,6 +38,10 @@ const server = Server(app);
 
 // Register socket io
 const io = SocketIO(server);
+
+// Register mongo adapter for socket.io
+const ioAdapter = mongoAdapter(dbUrl);
+io.adapter(ioAdapter);
 
 // Initialize database connection
 DB.connect().catch((error) => {

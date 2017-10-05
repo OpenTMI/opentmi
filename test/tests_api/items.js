@@ -122,6 +122,7 @@ describe('Items', function () {
   });
 
   it('should return an image from /items/id/image', function (done) {
+    this.timeout(3000);
     superagent.get(`${api}/items/582c7948850f298a5acff981/image`)
       .set('authorization', authString)
       .type('json')
