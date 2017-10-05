@@ -74,8 +74,8 @@ class Updater extends EventEmitter {
     }
     return Promise.all([
       this.npm.version(this._options),
-      deep ? this.npm.list(this._options) : Promise.resolve({})]  )
-      .then((results) => Object.assign({}, results[0], results[1]))
+      deep ? this.npm.list(this._options) : Promise.resolve({})])
+      .then(results => Object.assign({}, results[0], results[1]));
   }
 
   restart() {

@@ -179,7 +179,7 @@ describe('update/updater.js', function () {
           expect(options.env).to.have.property('ENV', 'ENVV');
           return Promise.resolve({data: 'NpmListData'});
         };
-        updater.npm.version = (options) => Promise.resolve({});
+        updater.npm.version = () => Promise.resolve({});
 
         return expect(updater.version(true)).to.eventually.equal({data: 'NpmListData'});
       });
