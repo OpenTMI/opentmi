@@ -100,8 +100,8 @@ DB.connect().catch((error) => {
         });
     };
     // Close the Mongoose connection, when receiving SIGINT or SIGTERM
-    process.on('SIGINT', termination);
-    process.on('SIGTERM', termination);
+    process.on('SIGINT', () => termination('SIGINT'));
+    process.on('SIGTERM', () => termination('SIGTERM'));
   });
 
 // This would be useful for testing
