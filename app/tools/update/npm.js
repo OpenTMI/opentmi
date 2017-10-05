@@ -16,8 +16,11 @@ class Npm {
     this.exec = execModule;
   }
 
-  list(execOptions) {
-    const cmd = 'npm list --json --depth=0 --prod';
+  list(execOptions, deep = false) {
+    const cmd = deep ? 'npm list --json --depth=0 --prod' : 'npm version --json';
+    // @todo if dependencies has messed up this might be rejected.
+    // uncomment above line to ignore stderr and pass everytime
+    // cmd += ' 2>/dev/null || true';
     logger.silly('Reading npm packages');
     const _options = Object.assign({maxBuffer: 1024 * 1024}, execOptions);
     return this.exec(cmd, _options)
@@ -28,10 +31,10 @@ class Npm {
   }
 
   /**
-   * 
-   * @param {*} execOptions 
+   *
+   * @param {*} execOptions
    * @param {*} options
-   * @todo emit installation stream back to client/admin 
+   * @todo emit installation stream back to client/admin
    */
   install(execOptions, options = '--on-optional --only=production') {
     const cmd = `npm install ${options}`;

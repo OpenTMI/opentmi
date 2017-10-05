@@ -35,13 +35,12 @@ class GitUpdater extends Updater {
       });
   }
 
-  version() {
+  version(deep = false) {
     const gitVersion = this._commitId()
       .then(obj => this._tag(obj.commitId)
         .then(tag => Object.assign({commitId: obj.commitId}, tag)));
-
     return Promise
-      .all([super.version(), gitVersion])
+      .all([super.version(deep), gitVersion])
       .then(versions => Object.assign({}, versions[0], versions[1]));
   }
 
