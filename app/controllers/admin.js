@@ -18,7 +18,7 @@ class AdminController {
   }
 
   version(req, resp) {
-    this._updater.version()
+    this._updater.version(_.get(req.query, 'deep', false))
       .then(version => resp.json(version))
       .catch((error) => {
         logger.warn(error);
