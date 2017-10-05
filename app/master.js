@@ -341,7 +341,7 @@ class Master {
       logger.silly(`Killing worker#${worker.id} with ${signal}`);
       try {
         worker.kill(signal);
-      } catch(error){
+      } catch (error) {
         reject(error);
       }
     });
@@ -362,7 +362,7 @@ class Master {
       .catch((error) => {
         logger.warn(`kill throws error: ${error.message}`);
         throw error;
-      })
+      });
   }
 
   /**

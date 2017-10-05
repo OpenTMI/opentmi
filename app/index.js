@@ -83,8 +83,8 @@ DB.connect().catch((error) => {
       const restClose = Promise.promisify(server.close, {context: server});
       io.emit('exit');
       ioClose()
-          .timeout(1000)
-          .catch((error) => { logger.warn(`io closing fails: ${error}`); })
+        .timeout(1000)
+        .catch((error) => { logger.warn(`io closing fails: ${error}`); })
         .then(() => logger.debug('Closing express server'))
         .then(() => restClose()
           .timeout(1000)
