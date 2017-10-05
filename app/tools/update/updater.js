@@ -72,7 +72,10 @@ class Updater extends EventEmitter {
     if (this._pending.isPending()) {
       return Promise.reject('Cannot fetch version, pending action exists.');
     }
-    return this.npm.list(this._options, deep);
+    return Promise.all([
+      this.npm.version(this._options),
+      deep ? this.npm.list(this._options) : Promise.resolve({})]  )
+      .then((results) => Object.assign({}, results[0], results[1]))
   }
 
   restart() {
