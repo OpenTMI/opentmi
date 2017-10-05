@@ -181,7 +181,7 @@ describe('update/updater.js', function () {
         };
         updater.npm.version = () => Promise.resolve({});
 
-        return expect(updater.version(true)).to.eventually.equal({data: 'NpmListData'});
+        return expect(updater.version(true)).to.eventually.deep.equal({data: 'NpmListData'});
       });
 
       it('should return rejected Promise when _pending is pending', function () {
