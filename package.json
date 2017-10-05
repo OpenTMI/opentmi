@@ -95,7 +95,7 @@
     "protractor": "^5.1.2",
     "should": "13.1.0",
     "socket.io-client": "^2.0.3",
-    "superagent": "^3.5.3",
+    "superagent": "^3.6.3",
     "xunit-file": "^1.0.0"
   }
 }
