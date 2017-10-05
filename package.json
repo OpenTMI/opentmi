@@ -90,7 +90,7 @@
     "grunt-simple-mocha": "^0.4.1",
     "grunt-wait-server": "^0.3.0",
     "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
+    "mocha": "^4.0.0",
     "mockgoose": "^7.3.3",
     "protractor": "^5.1.2",
     "should": "13.1.0",
