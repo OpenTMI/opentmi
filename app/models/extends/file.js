@@ -38,7 +38,7 @@ FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
   logger.info(`Preparing file (name: ${this.name}) for storage.`);
 
   if (this.name) {
-    this.mime_type = mime.lookup(this.name);
+    this.mime_type = mime.getType(this.name);
   }
 
   if (!this.data) {
@@ -59,7 +59,6 @@ FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
 
   if (this.data) {
     this.size = this.data.length;
-    // file.type = mimetype(file.name(
     this.sha1 = checksum(this.data, 'sha1');
     this.sha256 = checksum(this.data, 'sha256');
   }
