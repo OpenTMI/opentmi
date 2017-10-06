@@ -34,7 +34,7 @@
   "dependencies": {
     "async": "^2.5.0",
     "bcryptjs": "^2.4.3",
-    "bluebird": "3.5.0",
+    "bluebird": "3.5.1",
     "body-parser": "*",
     "chokidar": "^1.7.0",
     "colors": "^1.1.2",
