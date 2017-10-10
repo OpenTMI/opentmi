@@ -93,7 +93,7 @@
     "mocha": "^4.0.0",
     "mockgoose": "^7.3.3",
     "protractor": "^5.1.2",
-    "should": "13.1.1",
+    "should": "13.1.2",
     "socket.io-client": "^2.0.3",
     "superagent": "^3.6.3",
     "xunit-file": "^1.0.0"
