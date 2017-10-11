@@ -8,5 +8,6 @@ db.log
 data/
 sslcert
 .idea/
+log
 *.log
 env.json
