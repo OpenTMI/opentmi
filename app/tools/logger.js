@@ -18,8 +18,8 @@ const environment = config.get('env');
 
 const logDir = path.resolve(__dirname, '..', '..', 'log', 'app.log');
 
-if (!fs.existsSync(logDir)){
-    fs.mkdirSync(logDir);
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
 }
 
 function _parseError(error) {
