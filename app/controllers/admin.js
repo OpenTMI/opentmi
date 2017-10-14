@@ -44,7 +44,7 @@ class AdminController {
     this._updater.restart(req.body)
       .then(() => resp.sendStatus(204))
       .catch((error) => {
-        resp.status(_.get(error, 'status', 500))
+        resp.status(500)
           .json({message: error.message});
       });
   }

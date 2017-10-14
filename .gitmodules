@@ -1,0 +1,4 @@
+[submodule "app/addons/opentmi-adminui"]
+	path = app/addons/opentmi-adminui
+	url = https://github.com/opentmi/opentmi-adminui.git
+	branch = master
