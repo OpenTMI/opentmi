@@ -36,11 +36,11 @@ module.exports = (app) => {
   app.use(compression({
     threshold: 512
   }));
-
-  const publicFolder = `${nconf.get('root')}/app/static`;
+  /*
+  const publicFolder = `${nconf.get('root')}/app/public`;
   logger.debug(`share public folder: ${publicFolder}`);
   app.use(express.static(publicFolder));
-
+  */
   // Logging middleware
   app.use(expressWinston.logger({
     winstonInstance: logger,
