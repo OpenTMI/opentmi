@@ -22,8 +22,4 @@ There is JSON REST and SocketIO API's. REST provide most of the current features
 
 ## SocketIO API's
 
-## rooms:
-
-`/` default room
-
-`/admin` admin room
+Read more from [here](socketio.md)

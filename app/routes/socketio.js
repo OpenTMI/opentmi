@@ -1,5 +1,6 @@
 // Third party modules
 const socketioJwt = require('socketio-jwt');
+const _ = require('lodash');
 
 // Application modules
 const nconf = require('../../config');
@@ -28,10 +29,12 @@ function Route(app, io) {
     callback: false
   }));
 
+  const ioEvents = ['disconnect', 'whoami'];
+
   io.on('connection', (socket) => {
     const controller = new Controller(socket);
-    socket.on('disconnect', controller.disconnect.bind(controller));
-    socket.on('whoami', controller.whoami.bind(controller));
+    _.each(ioEvents, event => socket.on(event, controller[event].bind(controller)));
   });
 }
+
 module.exports = Route;
