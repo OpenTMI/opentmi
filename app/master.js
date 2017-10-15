@@ -23,6 +23,7 @@ const numCPUs = process.env.CI ? 2 : os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
 let systemRestartNeeded = false;
+const memoryUsageAtBoot = os.freemem();
 
 /**
  * Provides a static interface to worker management
@@ -123,7 +124,36 @@ class Master {
 
   /**
    * Returns a packet of various data about cpu usage and worker processes
-   * @return {object} with master property that contains various machine data
+   * @return {Promise<object>} with master property that contains various machine data
+   * @example
+   * // example resolved object:
+   * {
+   *  master: {
+   *    title: 'opentmi',
+   *    requireRestart: false,
+   *    pid: 1234,
+   *    memoryUsage: {rss: 123, heapTotal: 123, heapUsed: 123},
+   *    uptime: 100000, // [seconds]
+   *    coresUsed: '1 of 4'
+   *  },
+   *  hostname: 'opentmi-host',
+   *  os: 'linux',
+   *  osStats: {
+   *    uptime: 1000, // [seconds]
+   *    averageLoad: [5, 4, 5], // 1, 5, and 15 minute load averages
+   *    memoryUsageAtBoot: 1234, // [bytes]
+   *    totalMem: 8000000, // [bytes]
+   *    currentMemoryUsage: 12345, // [bytes]
+   *    cpu: 12 // [%]
+   *  },
+   *  workers: [{
+   *    starting: false,
+   *    closing: false,
+   *    isDead: false,
+   *    isConnected: true,
+   *    pid: 1235,
+   *    id: 1
+   *  }]
    */
   static getStats() {
     const stats = {};
@@ -144,7 +174,7 @@ class Master {
     stats.osStats = {
       uptime: Math.floor(os.uptime()),
       averageLoad: os.loadavg().map(n => n.toFixed(2)).join(' '),
-      memoryUsageAtBoot: os.freemem(),
+      memoryUsageAtBoot,
       totalMem: os.totalmem(),
       currentMemoryUsage: (os.totalmem() - os.freemem())
     };
