@@ -195,6 +195,7 @@ describe('update/gitUpdater', function () {
 
         gitUpdater._commitId = () => Promise.resolve({commitId: 'COMMIT_ID'});
 
+
         gitUpdater._tag = (commitId) => {
           expect(commitId).to.equal('COMMIT_ID');
           return Promise.resolve({tag: 'TAG'});
