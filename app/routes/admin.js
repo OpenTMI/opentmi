@@ -22,13 +22,15 @@ function Route(app) {
     .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.version.bind(controller))
     .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.update.bind(controller));
 
+  let restart;
   if (!cluster.isMaster && cluster.worker.isConnected()) {
-    router.route('/api/v0/restart')
-      .post(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, controller.restart.bind(controller));
+    restart = controller.restart.bind(controller);
   } else {
-    router.route('/api/v0/restart')
-      .post(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, notClustered);
+    restart = notClustered;
   }
+  router.route('/api/v0/restart')
+      .post(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, restart);
+
   app.use(router);
 }
 

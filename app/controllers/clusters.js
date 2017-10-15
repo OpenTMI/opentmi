@@ -34,6 +34,11 @@ class ClusterController {
     next();
   }
 
+  /**
+   * Resolve server statuses
+   * @return {Promise<object>} - resolves stats object
+   * if no response from master during timeout reject request
+   */
   static status() {
     let _resolve;
     return (new Promise((resolve) => {
@@ -44,7 +49,7 @@ class ClusterController {
     }))
       .timeout(5000)
       .catch(Promise.TimeoutError, (e) => {
-        eventBus.removeListener(_resolve);
+        eventBus.removeListener('masterStatus', _resolve);
         throw e;
       });
   }
@@ -59,8 +64,8 @@ class ClusterController {
           res.status(404);
         }
       })
-      .catch((err) => {
-        res.status(500).json({error: err});
+      .catch((error) => {
+        res.status(500).json({error});
       });
   }
 
@@ -69,8 +74,8 @@ class ClusterController {
       .then((data) => {
         res.json(data);
       })
-      .catch((err) => {
-        res.status(500).json(err);
+      .catch((error) => {
+        res.status(500).json({error});
       });
   }
 

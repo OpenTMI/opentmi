@@ -14,12 +14,10 @@ const {notClustered} = require('./../controllers/common');
 const TOKEN_SECRET = nconf.get('webtoken');
 
 function Route(app) {
+  const router = express.Router();
   if (!cluster.isMaster && cluster.worker.isConnected()) {
-    const router = express.Router();
     const controller = new ClusterController();
-
     router.param('Cluster', controller.idParam.bind(this));
-
     router.route('/api/v0/clusters.:format?')
       .get(controller.find.bind(controller))
       .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.create.bind(controller));
@@ -31,10 +29,10 @@ function Route(app) {
 
     app.use(router);
   } else {
-    const router = express.Router();
     router.route('/api/v0/clusters')
       .get(notClustered)
       .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, notClustered);
+
     app.use(router);
   }
 }
