@@ -6,6 +6,7 @@ const nconf = require('../../config');
 const moment = require('moment');
 const logger = require('winston');
 const IO = require('socket.io-client');
+const {expect} = require('chai');
 
 // Setup
 logger.level = 'error';
@@ -20,6 +21,7 @@ const ioConnect = token => new Promise((resolve) => {
   const io = IO(host, options);
   io.once('connect', () => resolve(io));
 });
+const ioDisconnect = client => Promise.resolve(client.disconnect());
 
 describe('Basic socketio tests', function () {
   const testUserId = '5825bb7afe7545132c88c761';
@@ -40,13 +42,21 @@ describe('Basic socketio tests', function () {
     return ioConnect(token);
   });
 
-  /* @todo
   describe('io queries', function () {
     let io;
     beforeEach(function () {
       return ioConnect(token)
-        .then((ser) => { io = ser; });
+        .then((client) => { io = client; });
+    });
+    afterEach(function () {
+      return ioDisconnect(io);
+    });
+    it('whoami', function (done) {
+      io.emit('whoami', (error, me) => {
+        expect(me).to.have.property('isAdmin');
+        expect(me).to.have.property('group');
+        done();
+      });
     });
   });
-  */
 });

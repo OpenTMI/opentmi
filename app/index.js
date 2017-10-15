@@ -49,7 +49,7 @@ DB.connect().catch((error) => {
   process.exit(-1);
 }).then(() => models.registerModels())
   .then(() => express(app))
-  .then(() => routes.registerRoutes(app))
+  .then(() => routes.registerRoutes(app, io))
   .then(() => AddonManager.init(app, server, io))
   .then(() => AddonManager.loadAddons())
   .then(() => AddonManager.registerAddons())
