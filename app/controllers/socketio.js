@@ -10,7 +10,7 @@ const User = mongoose.model('User');
 class SocketIOController {
   constructor(socket) {
     this._socket = socket;
-    logger.info(`New IO connection: ${this.id} ${this.isAdmin ? 'admin' : ''}`);
+    logger.info(`New ${this.isAdmin ? 'admin' : 'user'} (ip: ${this.ipAddress}, id: ${this.id}) connected to IO`);
     logger.silly(`Current clients: ${Object.keys(SocketIOController.clients).length}`);
     SocketIOController.clients[this.id] = this;
     this._lastActivity = new Date();
@@ -21,7 +21,7 @@ class SocketIOController {
    */
   disconnect() {
     delete SocketIOController.clients[this.id];
-    logger.info(`IO client disconnected: ${this.id}`);
+    logger.info(`IO ${this.isAdmin ? 'admin' : 'user'} (ip: ${this.ipAddress}, id: ${this.id}) disconnected`);
   }
 
   /**
@@ -52,6 +52,10 @@ class SocketIOController {
     const promise = Promise.resolve(this._lastActivity);
     this._lastActivity = new Date();
     return promise;
+  }
+
+  get ipAddress() {
+    return _.get(this._socket, 'request.connection.remoteAddress');
   }
   get lastActivity() {
     return this._lastActivity;
