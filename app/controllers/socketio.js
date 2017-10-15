@@ -7,7 +7,6 @@ const logger = require('../tools/logger');
 
 const User = mongoose.model('User');
 
-
 class SocketIOController {
   constructor(socket) {
     this._socket = socket;
