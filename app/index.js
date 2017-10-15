@@ -3,8 +3,8 @@ const cluster = require('cluster');
 // 3rd party modules
 const Express = require('express');
 const SocketIO = require('socket.io');
-const Promise = require('bluebird');
 const mongoAdapter = require('socket.io-adapter-mongo');
+const Promise = require('bluebird');
 
 // application modules
 const express = require('./express');
