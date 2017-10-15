@@ -163,26 +163,29 @@ describe('app/master.js', function () {
   });
 
   describe('getStats', function () {
-    it('should return object with valid fields', function (done) {
-      const stats = Master.getStats();
+    it('should return object with valid fields', function () {
+      Master.getStats()
+        .then((stats) => {
+          expect(stats).to.have.property('master');
+          expect(stats).to.have.property('os');
+          expect(stats).to.have.property('osStats');
+          expect(stats).to.have.property('workers');
+          expect(stats).to.have.property('hostname');
 
-      expect(stats).to.have.property('hostname');
-      expect(stats).to.have.property('os');
-      expect(stats).to.have.property('averageLoad');
-      expect(stats).to.have.property('coresUsed');
-      expect(stats).to.have.property('memoryUsageAtBoot');
-      expect(stats).to.have.property('totalMem');
-      expect(stats).to.have.property('currentMemoryUsage');
-      expect(stats).to.have.property('hostCpu');
-      expect(stats).to.have.property('workers');
+          expect(stats.master).to.have.property('coresUsed');
 
-      done();
+          expect(stats.osStats).to.have.property('averageLoad');
+          expect(stats.osStats).to.have.property('memoryUsageAtBoot');
+          expect(stats.osStats).to.have.property('totalMem');
+          expect(stats.osStats).to.have.property('currentMemoryUsage');
+          expect(stats.osStats).to.have.property('cpu');
+        });
     });
   });
 
   describe('statusHandler', function () {
     it('should emit event (data.id) with (Master.getStats()) data', function (done) {
-      Master.getStats = () => 'handler_testData';
+      Master.getStats = () => Promise.resolve('handler_testData');
 
       eventBus.on('handler_testEvent', (meta, data) => {
         expect(data).to.equal('handler_testData');

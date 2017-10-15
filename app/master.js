@@ -23,6 +23,7 @@ const numCPUs = process.env.CI ? 2 : os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
 let systemRestartNeeded = false;
+const memoryUsageAtBoot = os.freemem();
 
 /**
  * Provides a static interface to worker management
@@ -123,43 +124,87 @@ class Master {
 
   /**
    * Returns a packet of various data about cpu usage and worker processes
-   * @return {object} with master property that contains various machine data
+   * @return {Promise<object>} with master property that contains various machine data
+   * @example
+   * // example resolved object:
+   * {
+   *  master: {
+   *    title: 'opentmi',
+   *    requireRestart: false,
+   *    pid: 1234,
+   *    memoryUsage: {rss: 123, heapTotal: 123, heapUsed: 123},
+   *    uptime: 100000, // [seconds]
+   *    coresUsed: '1 of 4'
+   *  },
+   *  hostname: 'opentmi-host',
+   *  os: 'linux',
+   *  osStats: {
+   *    uptime: 1000, // [seconds]
+   *    averageLoad: [5, 4, 5], // 1, 5, and 15 minute load averages
+   *    memoryUsageAtBoot: 1234, // [bytes]
+   *    totalMem: 8000000, // [bytes]
+   *    currentMemoryUsage: 12345, // [bytes]
+   *    cpu: 12 // [%]
+   *  },
+   *  workers: [{
+   *    starting: false,
+   *    closing: false,
+   *    isDead: false,
+   *    isConnected: true,
+   *    pid: 1235,
+   *    id: 1
+   *  }]
    */
   static getStats() {
     const stats = {};
-
-    // General information
-    stats.hostname = os.hostname();
-    stats.os = `${os.type()} ${os.release()}`;
-
-    // Flags
-    stats.requireRestart = systemRestartNeeded;
+    logger.silly('Collecting service stats..');
+    // General information about master process
+    stats.master = {
+      title: process.title,
+      requireRestart: systemRestartNeeded,
+      pid: process.pid,
+      memoryUsage: process.memoryUsage(),
+      uptime: Math.floor(process.uptime()),
+      coresUsed: `${Object.keys(cluster.workers).length} of ${numCPUs}`
+    };
 
     // Machine resource stats
-    stats.averageLoad = os.loadavg().map(n => n.toFixed(2)).join(' ');
-    stats.coresUsed = `${Object.keys(cluster.workers).length} of ${numCPUs}`;
-    stats.memoryUsageAtBoot = os.freemem();
-    stats.totalMem = os.totalmem();
-    stats.currentMemoryUsage = (os.totalmem() - os.freemem());
-
+    stats.hostname = os.hostname();
+    stats.os = `${os.type()} ${os.release()}`;
+    stats.osStats = {
+      uptime: Math.floor(os.uptime()),
+      averageLoad: os.loadavg().map(n => n.toFixed(2)).join(' '),
+      memoryUsageAtBoot,
+      totalMem: os.totalmem(),
+      currentMemoryUsage: (os.totalmem() - os.freemem())
+    };
     // Calculates the fraction of time cpus spend on average in the user mode.
     function getUCTF(cpu) { // User Cpu Time Fraction
       return cpu.times.user / (cpu.times.user + cpu.times.nice + cpu.times.sys + cpu.times.idle + cpu.times.irq);
     }
     const avgCpuSum = (_.reduce(os.cpus(), (memo, cpu) => memo + getUCTF(cpu), 0) * 100) / numCPUs;
-    stats.hostCpu = avgCpuSum.toFixed(2);
+    stats.osStats.cpu = avgCpuSum.toFixed(2);
 
     // Collect information about workers
-    stats.workers = _.map(cluster.workers, (worker, id) => ({
-      starting: worker.__starting,
-      closing: worker.__closing,
-      isDead: worker.isDead(),
-      isConnected: worker.isConnected(),
-      pid: worker.process.pid,
-      id: id
-    }));
-
-    return stats;
+    const mapper = (worker, id) => {
+      try {
+        return {
+          starting: worker.__starting,
+          closing: worker.__closing,
+          isDead: worker.isDead(),
+          isConnected: worker.isConnected(),
+          pid: worker.process.pid,
+          id: id
+        };
+      } catch (error) {
+        return {
+          id: 'undefined',
+          error
+        };
+      }
+    };
+    stats.workers = _.map(cluster.workers, mapper);
+    return Promise.resolve(stats);
   }
 
   /**
@@ -168,7 +213,9 @@ class Master {
    */
   static statusHandler(meta, data) {
     if (data.id) {
-      eventBus.emit(data.id, Master.getStats());
+      Master.getStats().then((stats) => {
+        eventBus.emit(data.id, stats);
+      });
     } else {
       logger.warn('Cannot process masterStatus event that does not provide data with id property');
     }
@@ -266,14 +313,14 @@ class Master {
    */
   static logWorkerDeath(worker, code, signal) {
     if (signal) {
-      logger.warn(`Worker ${worker.id} process was killed by signal: ${signal}.`);
+      logger.warn(`Worker#${worker.id} process was killed by signal: ${signal}.`);
       return 2;
     } else if (code !== 0) {
-      logger.warn(`Worker ${worker.id} process exited with error code: ${code}.`);
+      logger.warn(`Worker#${worker.id} process exited with error code: ${code}.`);
       return 1;
     }
 
-    logger.info(`Worker ${worker.id} process successfully ended!`);
+    logger.info(`Worker#${worker.id} process successfully ended!`);
     return 0;
   }
 
@@ -311,9 +358,9 @@ class Master {
    */
   static handleWorkerExit(worker, code, signal) {
     if (signal) {
-      logger.warn(`Worker ${worker.process.pid} died with signal: ${signal}.`);
+      logger.warn(`Worker#${worker.id} died with signal: ${signal}.`);
     } else {
-      logger.warn(`Worker ${worker.process.pid} died.`);
+      logger.warn(`Worker#${worker.id} died.`);
     }
 
     if (!worker) {
