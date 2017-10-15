@@ -1,37 +1,80 @@
 // 3rd party modules
 const _ = require('lodash');
+const mongoose = require('mongoose');
 
 // Application modules
 const logger = require('../tools/logger');
 
+const User = mongoose.model('User');
 
 class SocketIOController {
   constructor(socket) {
     this._socket = socket;
-    logger.info(`New IO connection: ${this.decodedToken._id} ${this.isAdmin ? 'admin' : ''}`);
+    logger.info(`New IO connection: ${this.id} ${this.isAdmin ? 'admin' : ''}`);
+    logger.silly(`Current clients: ${Object.keys(SocketIOController.clients).length}`);
+    SocketIOController.clients[this.id] = this;
+    this._lastActivity = new Date();
+  }
+
+  /**
+   * Called when client disconnects
+   */
+  disconnect() {
+    delete SocketIOController.clients[this.id];
+    logger.info(`IO client disconnected: ${this.id}`);
+  }
+
+  /**
+   * Fetch user details from DB, including token data
+   * @param callback(error, userdata)
+   */
+  whoami(callback) {
+    logger.silly('whoami via IO called..');
+    this.user()
+      .then((user) => {
+        const data = {
+          isAdmin: this.isAdmin,
+          lastActivity: this.lastActivity
+        };
+        if (user) {
+          _.merge(data, user.toJSON());
+        } else {
+          _.merge(data, this.decodedToken);
+          logger.warn(`SocketIO client user (id: ${this.id}) is not in DB!`);
+        }
+        callback(null, data);
+      })
+      .catch(callback)
+      .finally(this.activity.bind(this));
+  }
+  //  helpers
+  activity() {
+    const promise = Promise.resolve(this._lastActivity);
+    this._lastActivity = new Date();
+    return promise;
+  }
+  get lastActivity() {
+    return this._lastActivity;
   }
   get decodedToken() {
     return this._socket.decoded_token;
   }
-  get _id() {
+  get id() {
     return this.decodedToken._id;
   }
-  /*
+  get groups() {
+    return _.get(this.decodedToken, 'groups', []);
+  }
+  belongToGroup(group) {
+    return _.find(this.groups, {name: group}) !== -1;
+  }
   user() {
-    // @todo need one more abstraction between controller and mongoose..
-    return User.findById(this._id).exec();
-  } */
+    return User.findById(this.id).exec();
+  }
   get isAdmin() {
-    const groups = _.get(this.decodedToken, 'groups', []);
-    return _.find(groups, {name: 'admins'}) !== -1;
-  }
-  disconnect() {
-    logger.info(`IO client disconnected: ${this.decodedToken._id}`);
-  }
-  whoami(callback) {
-    logger.silly('whoami via IO called..');
-    callback(null, _.defaults(this.decodedToken, {isAdmin: this.isAdmin}));
+    return this.belongToGroup('admins');
   }
 }
+SocketIOController.clients = {};
 
 module.exports = SocketIOController;
