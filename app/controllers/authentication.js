@@ -453,7 +453,7 @@ class AuthenticationController {
 
             // Save user and create token with groupname
             logger.verbose(addPrefix('user removed from group successfully.'));
-            return next(null, response, groupname);
+            return next(null, response);
           });
         } else if (!group && groupname === 'admins') {
           logger.info(addPrefix(`adding user: ${user._id} to admins.`));
@@ -468,7 +468,7 @@ class AuthenticationController {
 
             // Save result/user and create token with groupname
             logger.verbose(addPrefix('user added to group successfully.'));
-            return next(null, result, groupname);
+            return next(null, result);
           });
         } else {
           logger.verbose(addPrefix(`user is in the correct group: ${groupname}.`));
