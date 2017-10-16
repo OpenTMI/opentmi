@@ -1,3 +1,4 @@
-[submodule "default-gui"]
-	path = app/addons/default-gui
-	url = https://github.com/OpenTMI/opentmi-default-gui.git
+[submodule "app/addons/opentmi-adminui"]
+	path = app/addons/opentmi-adminui
+	url = https://github.com/opentmi/opentmi-adminui.git
+	branch = master

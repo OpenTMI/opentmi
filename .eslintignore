@@ -6,3 +6,4 @@ db/
 db.log/
 log/
 doc/
+app/static/admin/opentmi-client.js
