@@ -70,7 +70,7 @@ class DefaultController extends EventEmitter {
       })
       .catch(error => {
         logger.warn(error);
-        res.status(500).json({error: error.message});
+        res.status(300).json({error: error.message});
       });
   }
 
