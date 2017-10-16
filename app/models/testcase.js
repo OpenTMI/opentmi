@@ -139,14 +139,14 @@ const TestCaseSchema = new Schema({
       index: true,
       title: 'Status'
     },
-    verification: new Schema({ // verification details, if any
+    verification: { // verification details, if any
       value: {type: Boolean},
       user: {type: String},
       time: {type: Date},
       ss_resource: {type: String},
       dut_resource: {type: String},
       dut_build: {type: String}
-    })
+    }
   },
   history: {
     durationAvg: {type: Number, default: 60}
