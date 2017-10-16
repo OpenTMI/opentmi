@@ -64,11 +64,11 @@ class DefaultController extends EventEmitter {
 
   find(req, res) {
     this._model.leanQuery(req.query)
-      .then(list => {
+      .then((list) => {
         this.emit('find', list);
         res.json(list);
       })
-      .catch(error => {
+      .catch((error) => {
         logger.warn(error);
         res.status(300).json({error: error.message});
       });
@@ -91,7 +91,7 @@ class DefaultController extends EventEmitter {
   }
 
   update(req, res) {
-    const update = _.omit(req.body, ['_id', '__v']);
+    const update = _.omit(req.body, [this.docId, '__v']);
     // increment version number every time when updating document
     update.$inc = {__v: 1};
     logger.debug(update);
@@ -138,7 +138,7 @@ class DefaultController extends EventEmitter {
     if (req[this.modelName]) {
       const info = {
         collection: this.modelName,
-        _id: req[this.modelName]._id
+        _id: _.get(req[this.modelName], this.docId)
       };
       req[this.modelName].remove((error) => {
         if (error) {
