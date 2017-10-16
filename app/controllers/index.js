@@ -136,13 +136,16 @@ class DefaultController extends EventEmitter {
 
   remove(req, res) {
     if (req[this.modelName]) {
+      const info = {
+        collection: this.modelName,
+        _id: req[this.modelName]._id
+      };
       req[this.modelName].remove((error) => {
         if (error) {
           logger.warn(error.message);
           return res.status(400).json({error: error.message});
         }
-        const item = req.params[this.defaultModelName];
-        this.emit('remove', item.toObject());
+        this.emit('remove', info);
         return res.status(200).json({});
       });
     } else {
