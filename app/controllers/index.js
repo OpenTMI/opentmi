@@ -52,7 +52,7 @@ class DefaultController extends EventEmitter {
 
   get(req, res) {
     if (req[this.modelName]) {
-      const doc = req[this.modelName].toObject();
+      const doc = req[this.modelName].toJSON();
       this.emit('get', doc);
       res.json(doc);
     } else {
@@ -83,7 +83,7 @@ class DefaultController extends EventEmitter {
         if (res) res.status(400).json({error: error.message});
       } else {
         editedReq.query = req.body;
-        const jsonItem = item.toObject();
+        const jsonItem = item.toJSON();
         this.emit('create', jsonItem);
         res.json(jsonItem);
       }
@@ -113,8 +113,8 @@ class DefaultController extends EventEmitter {
         logger.warn(error);
         res.status(400).json({error: error.message});
       } else if (doc) {
-        this.emit('update', doc.toObject());
-        res.json(doc.toObject());
+        this.emit('update', doc.toJSON());
+        res.json(doc.toJSON());
       } else {
         // if we didn't get document it might be that version number was invalid,
         // double check if that is the case ->
@@ -123,7 +123,7 @@ class DefaultController extends EventEmitter {
             logger.warn(err);
             res.status(400).json({error: err.message});
           } else if (found) {
-            res.status(409).json(found.toObject()); // conflicting with another update request
+            res.status(409).json(found.toJSON()); // conflicting with another update request
           } else {
             res.status(404).json({message: 'document not found'});
           }
