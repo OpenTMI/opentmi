@@ -52,8 +52,9 @@ class DefaultController extends EventEmitter {
 
   get(req, res) {
     if (req[this.modelName]) {
-      this.emit('get', req[this.modelName].toObject());
-      res.json(req[this.modelName]);
+      const doc = req[this.modelName].toJSON();
+      this.emit('get', doc);
+      res.json(doc);
     } else {
       const errorMsg = `get failed: Cannot get model, request does not have a value linked to key: ${this.modelName}`;
       logger.warn(errorMsg);
@@ -62,15 +63,15 @@ class DefaultController extends EventEmitter {
   }
 
   find(req, res) {
-    this._model.query(req.query, (error, list) => {
-      if (error) {
-        logger.warn(error);
-        res.status(300).json({error: error.message});
-      } else {
+    this._model.leanQuery(req.query)
+      .then((list) => {
         this.emit('find', list);
         res.json(list);
-      }
-    });
+      })
+      .catch((error) => {
+        logger.warn(error);
+        res.status(300).json({error: error.message});
+      });
   }
 
   create(req, res) {
@@ -80,16 +81,17 @@ class DefaultController extends EventEmitter {
       if (error) {
         logger.warn(error);
         if (res) res.status(400).json({error: error.message});
-      } else { // if (res) {
+      } else {
         editedReq.query = req.body;
-        this.emit('create', item.toObject());
-        res.json(item);
+        const jsonItem = item.toJSON();
+        this.emit('create', jsonItem);
+        res.json(jsonItem);
       }
     });
   }
 
   update(req, res) {
-    const update = _.omit(req.body, ['_id', '__v']);
+    const update = _.omit(req.body, [this.docId, '__v']);
     // increment version number every time when updating document
     update.$inc = {__v: 1};
     logger.debug(update);
@@ -111,8 +113,8 @@ class DefaultController extends EventEmitter {
         logger.warn(error);
         res.status(400).json({error: error.message});
       } else if (doc) {
-        this.emit('update', doc.toObject());
-        res.json(doc);
+        this.emit('update', doc.toJSON());
+        res.json(doc.toJSON());
       } else {
         // if we didn't get document it might be that version number was invalid,
         // double check if that is the case ->
@@ -121,7 +123,7 @@ class DefaultController extends EventEmitter {
             logger.warn(err);
             res.status(400).json({error: err.message});
           } else if (found) {
-            res.status(409).json(found); // conflicting with another update request
+            res.status(409).json(found.toJSON()); // conflicting with another update request
           } else {
             res.status(404).json({message: 'document not found'});
           }
@@ -134,13 +136,16 @@ class DefaultController extends EventEmitter {
 
   remove(req, res) {
     if (req[this.modelName]) {
+      const info = {
+        collection: this.modelName,
+        _id: _.get(req[this.modelName], this.docId)
+      };
       req[this.modelName].remove((error) => {
         if (error) {
           logger.warn(error.message);
           return res.status(400).json({error: error.message});
         }
-
-        this.emit('remove', req.params[this.defaultModelName]);
+        this.emit('remove', info);
         return res.status(200).json({});
       });
     } else {

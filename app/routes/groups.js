@@ -31,6 +31,10 @@ function Route(app) {
   app.use(router);
 
   Group.count({}, (error, count) => {
+    if (error) {
+      logger.error(error);
+      return;
+    }
     if (count === 0) {
       (new Group({name: 'admins', users: []})).save();
       (new Group({name: 'users', users: []})).save();
@@ -38,6 +42,10 @@ function Route(app) {
   });
 
   Group.getUsers('admins', (error, users) => {
+    if (error) {
+      logger.error(error);
+      return;
+    }
     const admins = _.map(users, user => user.name || user.displayName || user.email);
     logger.info(`Admin Users: ${admins.join(',')}`);
   });

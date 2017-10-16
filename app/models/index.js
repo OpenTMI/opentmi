@@ -8,11 +8,8 @@ const logger = require('../tools/logger');
 
 const models = {};
 
-function ensureIndexes() { // eslint-disable-line no-unused-vars
-  /** @TODO create mechanism to call this in safe way
-   * so we do not close db connection before the process is completed
-   */
-  logger.info('Ensuring models indexes...');
+function ensureIndexes() {
+  logger.info(`Ensuring models (${Object.keys(models).length}) indexes...`);
   const pending = [];
   const ensureModelIndexes = (Model) => {
     const promise = new Promise((resolve, reject) => {
@@ -44,12 +41,20 @@ function registerModels() {
         const filename = `${__dirname}/${file}`;
         logger.silly(`Reading: ${filename}.`);
         const model = require(filename); // eslint-disable-line global-require, import/no-dynamic-require
+
         if (_.get(model, 'Collection') && _.isString(model.Collection)) {
           if (!_.has(models, model.Collection)) {
             models[model.Collection] = model.Model;
             logger.verbose(` * ${model.Collection}`);
           } else {
             logger.error('Two models registered to same collection!');
+          }
+          const Model = _.get(model, 'Model');
+          if (Model) {
+            Model.on('error', (error) => {
+              // gets an error whenever index build fails
+              logger.warn(error.message);
+            });
           }
         } else {
           logger.info(model);
@@ -59,7 +64,7 @@ function registerModels() {
       }
     }
   });
-  return Promise.resolve();
+  return ensureIndexes();
 }
 
-module.exports.registerModels = registerModels;
+module.exports = {registerModels, ensureIndexes};
