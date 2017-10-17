@@ -45,8 +45,7 @@ function Route(app) {
   User.count({}, (err, count) => {
     if (err) {
       logger.warn(err);
-    }
-    else if (count === 0) {
+    } else if (count === 0) {
       createDefaultAdmin();
     }
   });
