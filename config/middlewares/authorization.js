@@ -79,6 +79,11 @@ function createJWT(user) {
         iat: moment().unix(),
         exp: moment().add(TOKEN_EXPIRATION_HOURS, 'hours').unix()
       };
+
+      // these are just backward compatible reason
+      payload.sub = populatedUser._id;
+      payload.group = _.get(payload.groups, '0.name');
+
       return jwt.encode(payload, TOKEN_SECRET);
     });
 }

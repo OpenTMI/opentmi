@@ -7,6 +7,7 @@ const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
+const _ = require('lodash');
 
 // Setup
 logger.level = 'error';
@@ -14,7 +15,8 @@ logger.level = 'error';
 // Test variables
 const expect = chai.expect;
 const userWithLoanId = '5825bb7cfe7545132c88c773';
-const api = 'http://localhost:3000/api/v0';
+const host = 'http://localhost:3000';
+const api = `${host}/api/v0`;
 const testUserId = '5825bb7afe7545132c88c761';
 let authString;
 let newUserId;
@@ -27,22 +29,27 @@ const statusCannotBe300 = (status) => {
   }
 };
 
+function getToken(payload = {}) {
+  // Create token for requests
+  const defaultPayload = {
+    sub: testUserId,
+    group: 'admins',
+    groups: [{name: 'admins', _id: '123'}],
+    iat: moment().unix(),
+    exp: moment().add(2, 'h').unix()
+  };
+  const data = _.defaults(payload, defaultPayload);
+  data._id = data.sub;
+  return jwtSimple.encode(data, nconf.get('webtoken'));
+}
+
+const getAuthString = token => `Bearer ${token}`;
+
 
 describe('Users', function () {
   // Create fresh DB
   before(function (done) {
-    this.timeout(5000);
-
-    // Create token for requests
-    const payload = {
-      sub: testUserId,
-      group: 'admins',
-      iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
-    };
-
-    const token = jwtSimple.encode(payload, nconf.get('webtoken'));
-    authString = `Bearer ${token}`;
+    authString = getAuthString(getToken());
     done();
   });
 
@@ -50,6 +57,7 @@ describe('Users', function () {
     const body = {
       name: 'Test User',
       email: 'testuser@fakemail.se',
+      password: 'topsecret',
       displayName: 'Tester',
       apikeys: [],
       groups: []
@@ -79,6 +87,7 @@ describe('Users', function () {
       });
   });
 
+  let singleUserId;
   it('should return a SINGLE user on /users/<id> GET', function (done) {
     superagent.get(`${api}/users/${newUserId}`)
       .set('authorization', authString)
@@ -91,6 +100,7 @@ describe('Users', function () {
 
         // TODO: take properties straight from model
         expect(res.body).to.have.property('_id');
+        singleUserId = res.body._id;
         expect(res.body.name).to.eql('Test User');
         expect(res.body.email).to.eql('testuser@fakemail.se');
         expect(res.body.displayName).to.eql('Tester');
@@ -99,6 +109,40 @@ describe('Users', function () {
         expect(res.body).to.have.property('loggedIn');
         expect(res.body).to.have.property('lastVisited');
         expect(res.body).to.have.property('registered');
+        done();
+      });
+  });
+
+  it('should get user data on /auth/me', function (done) {
+    // Create token for requests
+    const customAuthString = getAuthString(getToken({sub: singleUserId}));
+    superagent.get(`${host}/auth/me`)
+      .set('authorization', customAuthString)
+      .type('json')
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        statusCannotBe300(res.status);
+        expect(res).to.have.property('status', 200);
+        expect(res.body).to.be.a('Object');
+        expect(res.body).to.have.property('_id');
+        expect(res.body).to.have.property('name');
+        expect(res.body).to.have.property('groups');
+        done();
+      });
+  });
+
+  it('should allow to login', function (done) {
+    superagent.post(`${host}/auth/login`)
+      .send({email: 'testuser@fakemail.se', password: 'topsecret'})
+      .type('json')
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        statusCannotBe300(res.status);
+        expect(res).to.have.property('status', 200);
+        expect(res.body).to.be.a('Object');
+        expect(res.body).to.have.property('token');
         done();
       });
   });

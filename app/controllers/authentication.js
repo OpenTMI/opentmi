@@ -37,8 +37,14 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   getme(req, res) { // eslint-disable-line class-methods-use-this
-    User.findById(req.user.sub, (error, user) => {
-      res.send(user);
+    User.findById(req.user._id, (error, user) => {
+      if (error) {
+        res.status(500).json({error: error.message});
+      } else if (user) {
+        res.json(user);
+      } else {
+        res.status(404).json({error: 'user not found!'});
+      }
     });
   }
 
