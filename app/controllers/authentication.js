@@ -54,7 +54,7 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   putme(req, res) { // eslint-disable-line class-methods-use-this
-    User.findById(req.user.sub, (error, user) => {
+    User.findById(req.user._id, (error, user) => {
       if (!user) {
         return res.status(400).send({message: 'User not found'});
       }
@@ -411,11 +411,11 @@ class AuthenticationController {
 
         // If we cannot find user linked to github but header contains authorization, link active account with github
         logger.info(addPrefix('linking existing user account with github.'));
-        User.findById(req.user.sub, (findError, foundUser) => {
+        User.findById(req.user._id, (findError, foundUser) => {
           logger.verbose(addPrefix('response received from database.'));
 
           if (!foundUser) {
-            logger.warn(addPrefix(`no user found with id: ${req.user.sub}`));
+            logger.warn(addPrefix(`no user found with id: ${req.user._id}`));
             return next({status: 400, msg: 'User already exists but could not be found.'});
           }
 

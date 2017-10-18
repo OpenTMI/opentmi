@@ -32,14 +32,13 @@ const statusCannotBe300 = (status) => {
 function getToken(payload = {}) {
   // Create token for requests
   const defaultPayload = {
-    sub: testUserId,
+    _id: testUserId,
     group: 'admins',
     groups: [{name: 'admins', _id: '123'}],
     iat: moment().unix(),
     exp: moment().add(2, 'h').unix()
   };
   const data = _.defaults(payload, defaultPayload);
-  data._id = data.sub;
   return jwtSimple.encode(data, nconf.get('webtoken'));
 }
 
@@ -115,7 +114,7 @@ describe('Users', function () {
 
   it('should get user data on /auth/me', function (done) {
     // Create token for requests
-    const customAuthString = getAuthString(getToken({sub: singleUserId}));
+    const customAuthString = getAuthString(getToken({_id: singleUserId}));
     superagent.get(`${host}/auth/me`)
       .set('authorization', customAuthString)
       .type('json')

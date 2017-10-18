@@ -25,7 +25,7 @@ function getUserGroups(req, res, next) {
     return res.status(401).send({message: 'not signed in'});
   }
 
-  Group.find({users: req.user.sub}, (error, groups) => {
+  Group.find({users: req.user._id}, (error, groups) => {
     if (error) {
       return res.status(500).send({message: error});
     }
@@ -81,8 +81,7 @@ function createJWT(user) {
       };
 
       // these are just backward compatible reason
-      payload.sub = populatedUser._id;
-      payload.group = _.get(payload.groups, '0.name');
+      //payload.sub = populatedUser._id;
 
       return jwt.encode(payload, TOKEN_SECRET);
     });
