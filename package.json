@@ -52,6 +52,7 @@
     "express-winston": "^2.4.0",
     "farmhash": "^2.0.4",
     "fs-extra": "^4.0.1",
+    "invariant": "^2.2.2",
     "jsonschema": "^1.2.0",
     "junit-xml-parser": "0.0.3",
     "jwt-simple": "^0.5.1",

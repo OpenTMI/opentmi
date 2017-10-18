@@ -37,8 +37,14 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   getme(req, res) { // eslint-disable-line class-methods-use-this
-    User.findById(req.user.sub, (error, user) => {
-      res.send(user);
+    User.findById(req.user._id, (error, user) => {
+      if (error) {
+        res.status(500).json({error: error.message});
+      } else if (user) {
+        res.json(user);
+      } else {
+        res.status(404).json({error: 'user not found!'});
+      }
     });
   }
 
@@ -48,7 +54,7 @@ class AuthenticationController {
   |--------------------------------------------------------------------------
   */
   putme(req, res) { // eslint-disable-line class-methods-use-this
-    User.findById(req.user.sub, (error, user) => {
+    User.findById(req.user._id, (error, user) => {
       if (!user) {
         return res.status(400).send({message: 'User not found'});
       }
@@ -105,8 +111,9 @@ class AuthenticationController {
   }
 
   logout(req, res) { // eslint-disable-line class-methods-use-this
-    req.logout();
-    res.json({logout: 'success'});
+    // rest authentication is stored only in token -
+    // not stored in backend side -> just return success.
+    res.status(200).end();
   }
 
   loginRequired(req, res, next) {
@@ -405,11 +412,11 @@ class AuthenticationController {
 
         // If we cannot find user linked to github but header contains authorization, link active account with github
         logger.info(addPrefix('linking existing user account with github.'));
-        User.findById(req.user.sub, (findError, foundUser) => {
+        User.findById(req.user._id, (findError, foundUser) => {
           logger.verbose(addPrefix('response received from database.'));
 
           if (!foundUser) {
-            logger.warn(addPrefix(`no user found with id: ${req.user.sub}`));
+            logger.warn(addPrefix(`no user found with id: ${req.user._id}`));
             return next({status: 400, msg: 'User already exists but could not be found.'});
           }
 

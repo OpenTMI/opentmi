@@ -29,7 +29,7 @@ function Route(app) {
     restart = notClustered;
   }
   router.route('/api/v0/restart')
-      .post(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, restart);
+    .post(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, restart);
 
   app.use(router);
 }
