@@ -25,6 +25,7 @@ class DefaultController extends EventEmitter {
     // Find from db
     const modelname = this.modelName;
     const docId = this.docId;
+    logger.silly(`Register model middleware for ${modelname}`);
 
     return (req, res, next) => {
       logger.debug(`find document by ${JSON.stringify(req.params)} (model: ${modelname})`);
@@ -32,6 +33,7 @@ class DefaultController extends EventEmitter {
       find[docId] = req.params[modelname];
       this.Model.findOne(find, (error, data) => {
         if (error) {
+          logger.warn(`${modelname}.findOne(${find}) error: ${error}`);
           res.status(500).json({error});
         } else if (data) {
           _.set(req, modelname, data);

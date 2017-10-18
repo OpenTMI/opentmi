@@ -29,7 +29,7 @@ const statusCannotBe300 = (status) => {
   }
 };
 
-function getToken(payload = {}) {
+function encodeToken(payload = {}) {
   // Create token for requests
   const defaultPayload = {
     _id: testUserId,
@@ -41,13 +41,13 @@ function getToken(payload = {}) {
   return jwtSimple.encode(data, nconf.get('webtoken'));
 }
 
-const getAuthString = token => `Bearer ${token}`;
-
+const createHeaderFromToken = token => `Bearer ${token}`;
+const createToken = (user) => createHeaderFromToken(encodeToken({_id: user._id}));
 
 describe('Users', function () {
   // Create fresh DB
   before(function (done) {
-    authString = getAuthString(getToken());
+    authString = createHeaderFromToken(encodeToken());
     done();
   });
 
@@ -110,41 +110,157 @@ describe('Users', function () {
         done();
       });
   });
+  describe('/auth', function () {
 
-  it('should get user data on /auth/me', function (done) {
-    // Create token for requests
-    const customAuthString = getAuthString(getToken({_id: singleUserId}));
-    superagent.get(`${host}/auth/me`)
-      .set('authorization', customAuthString)
-      .type('json')
-      .end(function (error, res) {
-        expect(error).to.equal(null);
-        expect(res).to.be.a('Object');
-        statusCannotBe300(res.status);
-        expect(res).to.have.property('status', 200);
-        expect(res.body).to.be.a('Object');
-        expect(res.body).to.have.property('_id');
-        expect(res.body).to.have.property('name');
-        expect(res.body).to.have.property('groups');
-        done();
-      });
-  });
+    const createUser = (data = {}) => new Promise((resolve) => {
+      const body = {
+        name: '/auth_testuser',
+        email: 'auth_testuser@fakemail.se',
+        password: 'topsecret',
+        displayName: 'Tester',
+        apikeys: [],
+        groups: []
+      };
+      _.merge(body, data);
+      superagent.post(`${api}/users`)
+        .set('authorization', authString)
+        .send(body)
+        .end(function (error, res) {
+          expect(error).to.equal(null);
+          expect(res).to.be.a('Object');
+          expect(res).to.have.property('status', 200);
+          resolve(res.body);
+        });
+    });
+    const removeUser = user => new Promise(resolve => {
+      const customAuthString = createToken(user);
+      superagent.delete(`${api}/users/${user._id}`)
+        .set('authorization', customAuthString)
+        .end(function (error, res) {
+          expect(error).to.equal(null);
+          expect(res).to.be.a('Object');
+          expect(res).to.have.property('status', 200);
+          resolve(res.body);
+        });
+    });
 
-  it('should allow to login', function (done) {
-    superagent.post(`${host}/auth/login`)
-      .send({email: 'testuser@fakemail.se', password: 'topsecret'})
-      .type('json')
-      .end(function (error, res) {
-        expect(error).to.equal(null);
-        expect(res).to.be.a('Object');
-        statusCannotBe300(res.status);
-        expect(res).to.have.property('status', 200);
-        expect(res.body).to.be.a('Object');
-        expect(res.body).to.have.property('token');
-        expect(res.body.token).to.be.a('string');
+    it('should get user data on /auth/me', function () {
+      return createUser()
+        .then((user) => {
+          const customAuthString = createToken(user);
+          return new Promise(resolve => {
+            superagent.get(`${host}/auth/me`)
+              .set('authorization', customAuthString)
+              .type('json')
+              .end(function (error, res) {
+                expect(error).to.equal(null);
+                expect(res).to.be.a('Object');
+                statusCannotBe300(res.status);
+                expect(res).to.have.property('status', 200);
+                expect(res.body).to.be.a('Object');
+                expect(res.body).to.have.property('_id');
+                expect(res.body).to.have.property('name');
+                expect(res.body).to.have.property('groups');
+                resolve(res.body);
+              });
+          });
+        })
+        .then(removeUser);
+    });
 
-        done();
-      });
+    it('should not get user data on /auth/me without token', function (done) {
+      superagent.get(`${host}/auth/me`)
+        .type('json')
+        .end(function (error, res) {
+          expect(res).to.be.a('Object');
+          expect(res).to.have.property('status', 401);
+          done();
+        });
+    });
+
+    it('should update user data on PUT:/auth/me', function () {
+      return createUser()
+        .then((user) => {
+          const customAuthString = createToken(user);
+          return new Promise(resolve => {
+            superagent.put(`${host}/auth/me`)
+              .set('authorization', customAuthString)
+              .type('json')
+              .send({displayName: 'Tester'})
+              .end(function (error, res) {
+                expect(error).to.equal(null);
+                expect(res).to.be.a('Object');
+                statusCannotBe300(res.status);
+                expect(res).to.have.property('status', 200);
+                resolve(user);
+              });
+          });
+        })
+        .then(removeUser);
+    });
+    it('should not allow to update user data on PUT:/auth/me without token', function (done) {
+      superagent.put(`${host}/auth/me`)
+        .type('json')
+        .send({displayName: 'unknown'})
+        .end(function (error, res) {
+          expect(res).to.be.a('Object');
+          expect(res).to.have.property('status', 401);
+          done();
+        });
+    });
+
+    it('should allow to login', function () {
+      return createUser({password: 'topsecret'})
+        .then((user) => {
+          return new Promise(resolve => {
+            superagent.post(`${host}/auth/login`)
+              .send({email: user.email, password: 'topsecret'})
+              .type('json')
+              .end(function (error, res) {
+                expect(error).to.equal(null);
+                expect(res).to.be.a('Object');
+                statusCannotBe300(res.status);
+                expect(res).to.have.property('status', 200);
+                expect(res.body).to.be.a('Object');
+                expect(res.body).to.have.property('token');
+                expect(res.body.token).to.be.a('string');
+                resolve(user);
+              });
+          });
+        })
+        .then(removeUser);
+    });
+    it('should not allow to login without existing account', function () {
+      return new Promise(resolve => {
+            superagent.post(`${host}/auth/login`)
+              .send({email: 'not-exists@mail.com', password: 'unknown'})
+              .type('json')
+              .end(function (error, res) {
+                expect(res).to.be.a('Object');
+                expect(res).to.have.property('status', 401);
+                resolve();
+              });
+          });
+    });
+    it('should allow to logout', function () {
+      return createUser({password: 'topsecret'})
+        .then((user) => {
+          const customAuthString = createToken(user);
+          return new Promise(resolve => {
+            superagent.post(`${host}/auth/logout`)
+              .set('authorization', customAuthString)
+              .type('json')
+              .end(function (error, res) {
+                expect(error).to.equal(null);
+                expect(res).to.be.a('Object');
+                statusCannotBe300(res.status);
+                expect(res).to.have.property('status', 200);
+                resolve(user);
+              });
+          });
+        })
+        .then(removeUser);
+    });
   });
 
   it('should update a SINGLE user on /users/<id> PUT', function (done) {

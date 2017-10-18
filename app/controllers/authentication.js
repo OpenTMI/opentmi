@@ -111,8 +111,9 @@ class AuthenticationController {
   }
 
   logout(req, res) { // eslint-disable-line class-methods-use-this
-    req.logout();
-    res.json({logout: 'success'});
+    // rest authentication is stored only in token -
+    // not stored in backend side -> just return success.
+    res.status(200).end();
   }
 
   loginRequired(req, res, next) {
