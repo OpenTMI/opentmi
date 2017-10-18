@@ -33,7 +33,7 @@ function getToken(payload = {}) {
   // Create token for requests
   const defaultPayload = {
     _id: testUserId,
-    groups: [{name: 'admins', _id: '123'}],
+    groups: ['123'],
     iat: moment().unix(),
     exp: moment().add(2, 'h').unix()
   };
@@ -141,6 +141,8 @@ describe('Users', function () {
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.a('Object');
         expect(res.body).to.have.property('token');
+        expect(res.body.token).to.be.a('string');
+
         done();
       });
   });

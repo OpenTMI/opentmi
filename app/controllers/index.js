@@ -3,6 +3,7 @@ const EventEmitter = require('events').EventEmitter;
 // 3rd party modules
 const mongoose = require('mongoose');
 const _ = require('lodash');
+const invariant = require('invariant');
 
 // application modules
 const logger = require('../tools/logger');
@@ -12,6 +13,7 @@ const logger = require('../tools/logger');
 */
 class DefaultController extends EventEmitter {
   constructor(modelName) {
+    invariant(_.isString(modelName), 'modelName should be a string');
     super();
     this._model = mongoose.model(modelName);
     this.modelName = modelName;
@@ -25,14 +27,14 @@ class DefaultController extends EventEmitter {
     const docId = this.docId;
 
     return (req, res, next) => {
-      logger.debug(`do param ${JSON.stringify(req.params)}`);
+      logger.debug(`find document by ${JSON.stringify(req.params)} (model: ${modelname})`);
       const find = {};
       find[docId] = req.params[modelname];
       this.Model.findOne(find, (error, data) => {
         if (error) {
           res.status(500).json({error});
         } else if (data) {
-          if (typeof modelname === 'string') req[modelname] = data; // eslint-disable-line no-param-reassign
+          _.set(req, modelname, data);
           next();
         } else {
           res.status(404).json({msg: 'not found'});
