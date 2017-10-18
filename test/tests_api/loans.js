@@ -82,8 +82,8 @@ describe('Loans', function () {
 
     // Create token for requests
     const payload = {
-      sub: testUserId,
-      group: 'admins',
+      _id: testUserId,
+      groups: [{name: 'admins', _id: '123'}],
       iat: moment().unix(),
       exp: moment().add(2, 'h').unix()
     };

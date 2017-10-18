@@ -33,7 +33,6 @@ function getToken(payload = {}) {
   // Create token for requests
   const defaultPayload = {
     _id: testUserId,
-    group: 'admins',
     groups: [{name: 'admins', _id: '123'}],
     iat: moment().unix(),
     exp: moment().add(2, 'h').unix()
