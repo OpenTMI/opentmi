@@ -42,7 +42,7 @@ function encodeToken(payload = {}) {
 }
 
 const createHeaderFromToken = token => `Bearer ${token}`;
-const createToken = (user) => createHeaderFromToken(encodeToken({_id: user._id}));
+const createToken = user => createHeaderFromToken(encodeToken({_id: user._id}));
 
 describe('Users', function () {
   // Create fresh DB
@@ -85,7 +85,6 @@ describe('Users', function () {
       });
   });
 
-  let singleUserId;
   it('should return a SINGLE user on /users/<id> GET', function (done) {
     superagent.get(`${api}/users/${newUserId}`)
       .set('authorization', authString)
@@ -98,7 +97,6 @@ describe('Users', function () {
 
         // TODO: take properties straight from model
         expect(res.body).to.have.property('_id');
-        singleUserId = res.body._id;
         expect(res.body.name).to.eql('Test User');
         expect(res.body.email).to.eql('testuser@fakemail.se');
         expect(res.body.displayName).to.eql('Tester');
@@ -111,7 +109,6 @@ describe('Users', function () {
       });
   });
   describe('/auth', function () {
-
     const createUser = (data = {}) => new Promise((resolve) => {
       const body = {
         name: '/auth_testuser',
@@ -132,7 +129,7 @@ describe('Users', function () {
           resolve(res.body);
         });
     });
-    const removeUser = user => new Promise(resolve => {
+    const removeUser = user => new Promise((resolve) => {
       const customAuthString = createToken(user);
       superagent.delete(`${api}/users/${user._id}`)
         .set('authorization', customAuthString)
@@ -148,14 +145,13 @@ describe('Users', function () {
       return createUser()
         .then((user) => {
           const customAuthString = createToken(user);
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             superagent.get(`${host}/auth/me`)
               .set('authorization', customAuthString)
               .type('json')
               .end(function (error, res) {
                 expect(error).to.equal(null);
                 expect(res).to.be.a('Object');
-                statusCannotBe300(res.status);
                 expect(res).to.have.property('status', 200);
                 expect(res.body).to.be.a('Object');
                 expect(res.body).to.have.property('_id');
@@ -182,7 +178,7 @@ describe('Users', function () {
       return createUser()
         .then((user) => {
           const customAuthString = createToken(user);
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             superagent.put(`${host}/auth/me`)
               .set('authorization', customAuthString)
               .type('json')
@@ -190,7 +186,6 @@ describe('Users', function () {
               .end(function (error, res) {
                 expect(error).to.equal(null);
                 expect(res).to.be.a('Object');
-                statusCannotBe300(res.status);
                 expect(res).to.have.property('status', 200);
                 resolve(user);
               });
@@ -211,49 +206,45 @@ describe('Users', function () {
 
     it('should allow to login', function () {
       return createUser({password: 'topsecret'})
-        .then((user) => {
-          return new Promise(resolve => {
-            superagent.post(`${host}/auth/login`)
-              .send({email: user.email, password: 'topsecret'})
-              .type('json')
-              .end(function (error, res) {
-                expect(error).to.equal(null);
-                expect(res).to.be.a('Object');
-                statusCannotBe300(res.status);
-                expect(res).to.have.property('status', 200);
-                expect(res.body).to.be.a('Object');
-                expect(res.body).to.have.property('token');
-                expect(res.body.token).to.be.a('string');
-                resolve(user);
-              });
-          });
-        })
+        .then(user => new Promise((resolve) => {
+          superagent.post(`${host}/auth/login`)
+            .send({email: user.email, password: 'topsecret'})
+            .type('json')
+            .end(function (error, res) {
+              expect(error).to.equal(null);
+              expect(res).to.be.a('Object');
+              expect(res).to.have.property('status', 200);
+              expect(res.body).to.be.a('Object');
+              expect(res.body).to.have.property('token');
+              expect(res.body.token).to.be.a('string');
+              resolve(user);
+            });
+        }))
         .then(removeUser);
     });
     it('should not allow to login without existing account', function () {
-      return new Promise(resolve => {
-            superagent.post(`${host}/auth/login`)
-              .send({email: 'not-exists@mail.com', password: 'unknown'})
-              .type('json')
-              .end(function (error, res) {
-                expect(res).to.be.a('Object');
-                expect(res).to.have.property('status', 401);
-                resolve();
-              });
+      return new Promise((resolve) => {
+        superagent.post(`${host}/auth/login`)
+          .send({email: 'not-exists@mail.com', password: 'unknown'})
+          .type('json')
+          .end(function (error, res) {
+            expect(res).to.be.a('Object');
+            expect(res).to.have.property('status', 401);
+            resolve();
           });
+      });
     });
     it('should allow to logout', function () {
       return createUser({password: 'topsecret'})
         .then((user) => {
           const customAuthString = createToken(user);
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             superagent.post(`${host}/auth/logout`)
               .set('authorization', customAuthString)
               .type('json')
               .end(function (error, res) {
                 expect(error).to.equal(null);
                 expect(res).to.be.a('Object');
-                statusCannotBe300(res.status);
                 expect(res).to.have.property('status', 200);
                 resolve(user);
               });
