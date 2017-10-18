@@ -45,6 +45,7 @@ const TestCaseSchema = new Schema({
     minlength: 4,
     required: true,
     index: true,
+    background: true,
     title: 'TC ID'
   },
   archive: {
@@ -111,7 +112,7 @@ const TestCaseSchema = new Schema({
   },
   execution: {
     skip: {
-      value: {type: Boolean, default: false, index: true},
+      value: {type: Boolean, default: false, index: true, background: true},
       reason: {type: String},
       time: {type: Date}
     },
@@ -137,6 +138,7 @@ const TestCaseSchema = new Schema({
       default: 'unknown',
       enum: ['unknown', 'released', 'development', 'maintenance', 'broken'],
       index: true,
+      background: true,
       title: 'Status'
     },
     verification: { // verification details, if any
@@ -162,7 +164,7 @@ const TestCaseSchema = new Schema({
       ]
     },
     automation: {
-      yes: {type: Boolean, default: false, index: true},
+      yes: {type: Boolean, default: false, index: true, background: true},
       system: {type: String}
     },
     field: {

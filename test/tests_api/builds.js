@@ -26,8 +26,8 @@ describe('Builds', function () {
 
     // Create token for requests
     const payload = {
-      sub: testUserId,
-      group: 'admins',
+      _id: testUserId,
+      groups: ['123'],
       iat: moment().unix(),
       exp: moment().add(2, 'h').unix()
     };

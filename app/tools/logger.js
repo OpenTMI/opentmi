@@ -1,6 +1,7 @@
 // Native components
 const cluster = require('cluster');
 const path = require('path');
+const fs = require('fs');
 
 // Third party components
 const Winston = require('winston');
@@ -14,6 +15,12 @@ const verbose = config.get('verbose');
 const silent = config.get('silent');
 const environment = config.get('env');
 
+
+const logDir = path.resolve(__dirname, '..', '..', 'log');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
+const logFile = path.join(logDir, 'app.log');
 
 function _parseError(error) {
   const jsonObj = {
@@ -44,7 +51,7 @@ class MasterLogger {
           level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
         }),
         new (Winston.transports.DailyRotateFile)({
-          filename: path.resolve(__dirname, '..', '..', 'log', 'app.log'),
+          filename: logFile,
           json: false,
           handleExceptions: false,
           level: fileLevel,

@@ -24,8 +24,8 @@ describe('Basic cluster tests', function () {
     this.timeout(5000);
     // Create token for requests
     const payload = {
-      sub: testUserId,
-      group: 'admins',
+      _id: testUserId,
+      groups: ['123'],
       iat: moment().unix(),
       exp: moment().add(2, 'h').unix()
     };

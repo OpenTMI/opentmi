@@ -69,7 +69,7 @@ class LoansController extends DefaultController {
   }
 
   findUsersLoans(req, res) {
-    this.Model.find({loaner: req.user.sub})
+    this.Model.find({loaner: req.user._id})
       .populate('items.item')
       .exec((err, loans) => {
         if (err) {
