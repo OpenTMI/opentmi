@@ -1,0 +1,22 @@
+# Place this file under `/etc/systemd/system/opentmi.service`
+# Enable service with `systemctl enable opentmi`
+# Start opentmi `sudo systemctl start opentmi`
+[Unit]
+Description=OpenTMI
+Requires=After=mongodb.service
+
+[Service]
+WorkingDirectory=/home/ubuntu/git/opentmi/app
+PIDFile=/var/lock/opentmi.pid
+ExecStart=/usr/bin/node /home/ubuntu/git/opentmi/index.js --cfg=development --port=3000 --https -vvv
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=opentmi
+User=ubuntu
+Group=ubuntu
+Environment=NODE_ENV=development
+
+[Install]
+WantedBy=multi-user.target
