@@ -167,9 +167,8 @@ ResultSchema.virtual('exec.sut.sha1');
 /**
  * Statics
  */
-/* 
+/*
 ResultSchema.static({
-
 });
 */
 
