@@ -54,7 +54,7 @@ FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
 
   if (this.encoding === 'base64') {
     logger.debug(`file[${i}] base64 encoding, storing data to a buffer.`);
-    this.data = new Buffer(this.data, 'base64');
+    this.data = Buffer.from(this.data, 'base64');
   }
 
   if (this.data) {
