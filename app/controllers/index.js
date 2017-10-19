@@ -71,8 +71,7 @@ class DefaultController extends EventEmitter {
       if (error) {
         logger.warn(error);
         res.status(300).json({error: error.message});
-      }
-      else {
+      } else {
         this.emit('find', list);
         res.json(list);
       }

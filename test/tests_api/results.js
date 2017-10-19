@@ -54,7 +54,7 @@ describe('Results', function () {
 
   it('should get count as a object', function (done) {
     superagent.get(`${api}/results?t=count`)
-      //.set('authorization', authString)
+      .set('authorization', authString)
       .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
