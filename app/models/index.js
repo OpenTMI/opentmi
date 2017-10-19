@@ -10,25 +10,27 @@ const models = {};
 
 function ensureIndexes() {
   logger.info(`Ensuring models (${Object.keys(models).length}) indexes...`);
-  const pending = [];
-  const ensureModelIndexes = (Model) => {
-    const promise = new Promise((resolve, reject) => {
-      Model.ensureIndexes((err) => {
-        if (err) reject(err);
-        else resolve();
-      });
+  const ensureModelIndexes = Model => new Promise((resolve) => {
+    Model.ensureIndexes((err) => {
+      if (err) {
+        logger.error(`Index error: ${err.message}`);
+        logger.info('Seems that your DB indexes causes conflicts, ');
+        logger.info('Please remove all of them manually and let opentmi create them again.');
+        logger.info('Otherwise OpenTMI might not work correctly');
+        // do not stop for now - let user to decide when to fix indexes from DB
+      }
+      resolve();
     });
-    return promise;
-  };
-  _.each(models, (Model) => {
-    pending.push(ensureModelIndexes(Model));
   });
-  return Promise.all(pending).then(() => {
-    logger.info('Ensuring indexes completed.');
-  }).catch((err) => {
-    logger.warn(`Ensuring indexes failed: ${err}.`);
-    throw err;
-  });
+  const pending = _.map(models, ensureModelIndexes);
+  return Promise.all(pending)
+    .then(() => {
+      logger.info('Ensuring indexes completed.');
+    })
+    .catch((err) => {
+      logger.error(`Ensuring indexes failed: ${err}.`);
+      throw err;
+    });
 }
 
 function registerModels() {
@@ -51,10 +53,11 @@ function registerModels() {
           }
           const Model = _.get(model, 'Model');
           if (Model) {
-            Model.on('error', (error) => {
-              // gets an error whenever index build fails
-              logger.warn(error.message);
-            });
+            Model
+              .on('error', (error) => {
+                // gets an error whenever index build fails
+                logger.warn('model error:', error.message);
+              });
           }
         } else {
           logger.info(model);

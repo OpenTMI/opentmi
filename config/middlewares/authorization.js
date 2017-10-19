@@ -25,7 +25,7 @@ function getUserGroups(req, res, next) {
     return res.status(401).send({message: 'not signed in'});
   }
 
-  Group.find({users: req.user.sub}, (error, groups) => {
+  Group.find({users: req.user._id}, (error, groups) => {
     if (error) {
       return res.status(500).send({message: error});
     }
@@ -75,10 +75,12 @@ function createJWT(user) {
     .then((populatedUser) => {
       const payload = {
         _id: populatedUser._id,
-        groups: _.map(populatedUser.groups, g => _.pick(g, ['_id', 'name'])),
+        groups: _.map(populatedUser.groups, g => g._id),
         iat: moment().unix(),
         exp: moment().add(TOKEN_EXPIRATION_HOURS, 'hours').unix()
       };
+      // @todo remove this when it is not needed anymore! - just backward compatible reason.
+      payload.sub = payload._id;
       return jwt.encode(payload, TOKEN_SECRET);
     });
 }

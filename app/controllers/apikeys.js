@@ -15,7 +15,7 @@ module.exports = {
     });
   },
   userKeys: (req, res) => {
-    User.getApiKeys(req.user.sub, (error, keys) => {
+    User.getApiKeys(req.user._id, (error, keys) => {
       if (error) {
         return res.status(401).send({message: error});
       }
@@ -24,7 +24,7 @@ module.exports = {
     });
   },
   createKey: (req, res) => {
-    User.createApiKey(req.user.sub, (error, key) => {
+    User.createApiKey(req.user._id, (error, key) => {
       if (error) {
         return res.status(401).send({message: error});
       }

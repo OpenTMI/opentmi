@@ -87,7 +87,7 @@ describe('tools/filedb.js', function () {
   describe('readFile', function () {
     it('readFile - valid file', function () {
       const sampleFile = new File({sha1: 'test_read_name'});
-      const compressedData = new Buffer('data received from file');
+      const compressedData = Buffer.from('data received from file');
       const uncompressedData = 'uncompressed_data';
 
       filedb._readFile = (filename) => {
@@ -227,7 +227,7 @@ describe('tools/filedb.js', function () {
       // Test read and unzip dummy files
       filedb._resolveFilePath = filename => path.join(filedbLocation, `${filename}.gz`);
       const readPromises = sampleDataToRead.map(obj => expect(filedb._readFile(obj.filename))
-        .to.eventually.deep.equal(new Buffer(obj.data)));
+        .to.eventually.deep.equal(Buffer.from(obj.data)));
 
       return Promise.all(readPromises);
     });
@@ -263,7 +263,7 @@ describe('tools/filedb.js', function () {
       const writePromises = sampleFilesToStore.map(obj => filedb._writeFile(obj.filename, obj.data).then(() => {
         const newFilePath = path.join(filedbLocation, `${obj.filename}.gz`);
         expect(fs.existsSync(newFilePath)).to.equal(true, `newly created file at path: ${newFilePath} does not exist.`);
-        expect(fs.readFileSync(newFilePath)).to.deep.equal(new Buffer(obj.data));
+        expect(fs.readFileSync(newFilePath)).to.deep.equal(Buffer.from(obj.data));
         return Promise.resolve;
       }));
 
