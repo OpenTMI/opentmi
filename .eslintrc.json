@@ -17,11 +17,6 @@
         "indent": [ "warn", 2,  { "SwitchCase": 1} ],
         "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
         "no-underscore-dangle": ["off"], // @†odo investigate should we activate this
-        "function-paren-newline": ["off"],
-        "prefer-destructuring": ["off"],
-        "prefer-promise-reject-errors": "warn",
-        "object-curly-newline": ["off"],
-        "no-restricted-globals": "warn",
         "no-console": "error",
         "no-constant-condition": "error",
         "no-control-regex": "off",
