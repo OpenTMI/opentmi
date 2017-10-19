@@ -52,6 +52,19 @@ describe('Results', function () {
     done();
   });
 
+  it('should get count as a object', function (done) {
+    superagent.get(`${api}/results?t=count`)
+      //.set('authorization', authString)
+      .type('json')
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res.body).to.be.an('object');
+        expect(res.body).to.have.property('count');
+        expect(res.body.count).to.be.an('number');
+        done();
+      });
+  });
+
   it('should return a single result on results/<id> GET', function (done) {
     const expectedBody = existingResultBody;
 

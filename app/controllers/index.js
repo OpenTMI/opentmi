@@ -67,15 +67,16 @@ class DefaultController extends EventEmitter {
   }
 
   find(req, res) {
-    this._model.leanQuery(req.query)
-      .then((list) => {
-        this.emit('find', list);
-        res.json(list);
-      })
-      .catch((error) => {
+    this._model.leanQuery(req.query, (error, list) => {
+      if (error) {
         logger.warn(error);
         res.status(300).json({error: error.message});
-      });
+      }
+      else {
+        this.emit('find', list);
+        res.json(list);
+      }
+    });
   }
 
   create(req, res) {
