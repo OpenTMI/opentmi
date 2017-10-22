@@ -15,7 +15,7 @@ OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.j
 
 ![screenshot](doc/screenshot.jpg)
 
-OpenTMI is extremely customizable through [addons](doc/addons).
+OpenTMI is extremely customizable through [addons](doc/addons.md).
 
 # Ideology
 
@@ -40,20 +40,22 @@ See [here](doc/docker.md) for more instructions.
 
 ## Prepare
 
-You need to install [mongodb](https://mongodb.com) and run it. File `mongod.sh` contains simple script to start single mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
+You need to install [mongodb][MongoDB] and run it. File `mongod.sh` contains simple script to start single mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
 
 ## Clone, install dependencies and start
 
 ```
-git clone --recursive https://github.com/OpenTMI/opentmi
-cd opentmi
-npm install
-npm start
+> git clone --recursive https://github.com/OpenTMI/opentmi
+> cd opentmi
+> npm install
+> npm start
 
-or start in clustered mode
+or start without clustered mode
 
-npm run cluster
+> node app
 ```
+
+**Note:** Installation install also all addons dependencies so you doesn't need to worry about it.
 
 # Command line
 
@@ -88,7 +90,6 @@ OpenTMI support [clustered mode](doc/cluster.md) which gives some benefits in pr
 ## API documentation
 Available [here](doc/APIs)
 
-
 ## Configuration
 
 By default it start server as development mode. You can configure environment using [env.json](`config/env/env.example.json`)
@@ -112,7 +113,7 @@ By default it start server as development mode. You can configure environment us
 # Architecture
 
 * **Backend** (this repository)
- * which provide [RESTFull json and websockets (through socketIO) -API](doc/), internal [load balancer](doc/cluster.md) and auto restart on failure etc...
+ * which provide [RESTFull json and websockets (through socketIO) -API](doc/APIs), internal [load balancer](doc/cluster.md) and auto restart on failure etc...
    Backend functionality can be extended with addons. This allows to use business -related secret stuff for example..
 * **Frontends**
  * OpenTMI provide [default web GUI](https://github.com/opentmi/opentmi-default-gui), which is single addon in backend actually.
@@ -124,28 +125,36 @@ By default it start server as development mode. You can configure environment us
 ### Addons
 Way to extend backend-service functionality. Addon registry (future plan) contains information about existing addons, which can easily to install via administrator API. More documentation can be found from [here](doc/addons.md)
 
-### How do I get set up? ###
+### Test
 
-* Summary of set up
-* Configuration
-`npm install`
-* Dependencies
-* Database configuration
-* How to run tests
 `npm test`
-* How to start service
-`npm start`
-* Deployment instructions
-`supervisor -wa . -n exit server.js`
 
-
-### Contribution guidelines ###
+### Contribution guidelines
 
 * Writing tests
 * Code review
 * Other guidelines
 
-### Who do I talk to? ###
+See [code-of-conduct](CODE_OF_CONDUCT.md)
+
+### Production usage
+
+Propose to use some service management tool which can restart service if it for some reason crashes.
+
+You can use for example:
+* [supervisor](https://github.com/petruisfan/node-supervisor)
+  `supervisor -wa . -n exit server.js`
+* [pm2](https://github.com/Unitech/pm2)
+  `pm2 start --name opentmi index.js -- -vvv`
+* linux [systemd](https://www.freedesktop.org/wiki/Software/systemd/)
+  see [example](scripts/opentmi.service)
+
+ **Note:** if your service management is storing `stdout` and `stderr` to log
+ files - be sure that it is rotated properly to ensure that disk space doesn't
+ cause trouble. By default OpenTMI store logs log/ -folder, configured as
+ daily rotate.
+
+### Who do I talk to?
 
 * Repo owner or admin
 * Other community or team contact
