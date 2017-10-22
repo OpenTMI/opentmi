@@ -123,10 +123,10 @@ By default it start server as development mode. You can configure environment us
 # Architecture
 
 * **Backend** (this repository)
-  * which provide [RESTFull json and websockets (through socketIO) -API](doc/APIs), internal [load balancer](doc/cluster.md) and auto restart on failure etc...
+    which provide [RESTFull json and websockets (through socketIO) -API](doc/APIs), internal [load balancer](doc/cluster.md) and auto restart on failure etc....
 * **Frontends**
-  * [default web GUI](https://github.com/opentmi/opentmi-default-gui)
-  * [admin gui](https://github.com/opentmi/opentmi-adminui)
+  * [default web GUI as addon](https://github.com/opentmi/opentmi-default-gui)
+  * [admin gui as addon](https://github.com/opentmi/opentmi-adminui)
 * **Client libraries**
   * [opentmi-client-python](https://github.com/opentmi/opentmi-client-python)
   * [opentmi-jsclient](https://github.com/opentmi/opentmi-jsclient) for nodejs / browser
