@@ -14,8 +14,8 @@ COPY . .
 
 # Use production as default node environment
 # to change this use '--build-arg NODE_ENV=development' when building docker
-ARG NODE=production
-ENV NODE_ENV ${NODE}
+# ARG NODE=development
+# ENV NODE_ENV ${NODE}
 
 EXPOSE 8000
 CMD [ "npm", "start", "--", "-v" ]
