@@ -1,0 +1,23 @@
+# /etc/systemd/system/opentmi.service
+[Unit]
+Description=OpenTMI service
+Documentation=https://github.com/opentmi/openti
+After=network.target
+# this can't start without mongo
+# Wants=mongodb.service
+
+[Service]
+Environment=NODE_ENV=production
+Type=simple
+User=ubuntu
+PIDFile=/var/run/opentmi/opentmi.pid
+WorkingDirectory=/home/ubuntu/opentmi
+ExecStart=/usr/bin/node /home/ubuntu/opentmi/index.js
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStartPost=/bin/sh -c 'while ! /usr/bin/mongo --eval "db.version()" > /dev/null 2>&1; do sleep 0.1; done'
+Restart=on-failure
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
