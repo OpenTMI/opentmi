@@ -22,19 +22,19 @@ Basic idea is to store **all** information related to test execution to database
 ## Challenges with SW testing in IoT HW
 * how to identify when test failed because of unstable HW
 * how to identify unique unstable HW in test lab
-* how to identify if certain test cause HW to become unstable/unusable
-* how to estimate when HW start to be unstable (e.g. flash memory start burning out)
+* how to identify if certain test causes that HW's become unstable/unusable
+* how to estimate when HW start to be unstable/unusable (e.g. memory start burning out)
 * how to direct testing to right HW when there is multiple HW configurations
-* how to identify if new test tool revision deployment causes more test failures
-* how to execute right tests for different purpose if cannot run all of them for every commit
+* how to identify if tools deployment (e.g. new test framework revision) causes more test failures
+* how to execute right tests for different purpose if cannot run all of them for every commit (eg because of too long execution time)
 * how to manage all of these automatically
 
 OpenTMI try to solve these kind of challenges using "big-data".
 
 # Pre-requirements
 
-* Node.js v6.1< (tested with 6.1, recommended to use latest LTS version)
-* mongodb v3.2< (recommented to use latest version)
+* [Node.js][Node.js] v6.1< (tested with 6.1, recommended to use latest LTS version)
+* [mongodb][MongoDB] v3.2< (recommented to use latest version)
 
 # Installation
 
@@ -48,11 +48,11 @@ docker run --name opentmi -p 3000:3000 --link mongo:mongo -d opentmi/opentmi
 
 See [here](doc/docker.md) for more instructions.
 
-## Prepare
+## Clone, install dependencies and start
+
+### Prepare
 
 You need to install [mongodb][MongoDB] and run it. File `mongod.sh` contains simple script to start single mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
-
-## Clone, install dependencies and start
 
 ```
 > git clone --recursive https://github.com/OpenTMI/opentmi
@@ -123,14 +123,13 @@ By default it start server as development mode. You can configure environment us
 # Architecture
 
 * **Backend** (this repository)
- * which provide [RESTFull json and websockets (through socketIO) -API](doc/APIs), internal [load balancer](doc/cluster.md) and auto restart on failure etc...
-   Backend functionality can be extended with addons. This allows to use business -related secret stuff for example..
+  * which provide [RESTFull json and websockets (through socketIO) -API](doc/APIs), internal [load balancer](doc/cluster.md) and auto restart on failure etc...
 * **Frontends**
- * OpenTMI provide [default web GUI](https://github.com/opentmi/opentmi-default-gui), which is single addon in backend actually.
-    webGUI is written with angularJS.
+  * [default web GUI](https://github.com/opentmi/opentmi-default-gui)
+  * [admin gui](https://github.com/opentmi/opentmi-adminui)
 * **Client libraries**
- * [opentmi-client-python](https://github.com/opentmi/opentmi-client-python) provide python API for test tools. E.g. for uploading test results to openTMI.
- * [opentmi-jsclient](https://github.com/opentmi/opentmi-jsclient) for nodejs / browser
+  * [opentmi-client-python](https://github.com/opentmi/opentmi-client-python)
+  * [opentmi-jsclient](https://github.com/opentmi/opentmi-jsclient) for nodejs / browser
 
 ### Addons
 Way to extend backend-service functionality. Addon registry (future plan) contains information about existing addons, which can easily to install via administrator API. More documentation can be found from [here](doc/addons.md)
@@ -153,11 +152,16 @@ Propose to use some service management tool which can restart service if it for 
 
 You can use for example:
 * [supervisor](https://github.com/petruisfan/node-supervisor)
-  `supervisor -wa . -n exit server.js`
+
+    `supervisor -wa . -n exit server.js`
+
 * [pm2](https://github.com/Unitech/pm2)
-  `pm2 start --name opentmi index.js -- -vvv`
+
+    `pm2 start --name opentmi index.js -- -vvv`
+
 * linux [systemd](https://www.freedesktop.org/wiki/Software/systemd/)
-  see [example](scripts/opentmi.service)
+
+    see [example](scripts/opentmi.service)
 
  **Note:** if your service management is storing `stdout` and `stderr` to log
  files - be sure that it is rotated properly to ensure that disk space doesn't
