@@ -1,4 +1,5 @@
-# OpenTMI - Open Source Test Management Infrastructure for IoT and embedded world.
+# OpenTMI
+Open Source Test Management Infrastructure for IoT and embedded world.
 
  [![Build Status][build-image]][build-url]
  [![Dependencies Status][depupdated-image]][depupdated-url]
