@@ -1,10 +1,9 @@
-# OpenTMI - Open Source Test Management Infrastructure
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/OpenTMI/opentmi.svg)](https://greenkeeper.io/)
+# OpenTMI - Open Source Test Management Infrastructure for IoT and embedded world.
 
  [![Build Status][build-image]][build-url]
  [![Dependencies Status][depupdated-image]][depupdated-url]
  [![devDependencies Status][devdepupdated-image]][devdepupdated-url]
+ [![Greenkeeper badge](https://badges.greenkeeper.io/OpenTMI/opentmi.svg)](https://greenkeeper.io/)
 
 
  <!--
@@ -12,14 +11,25 @@
 -->
 
 OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [GPLv3 license](LICENSE.md).
+OpenTMI is extremely customizable through [addons](doc/addons.md).
 
 ![screenshot](doc/screenshot.jpg)
 
-OpenTMI is extremely customizable through [addons](doc/addons.md).
-
 # Ideology
 
-Basic idea is to store **all** information related to test execution, like software under test (SUT/Build), test logs, test cases (TC), and test related resources, like DUT's to database which allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when users can directly see what is tested in individual Device with individual Build. All information is linked together and can be analyzed very deeply.
+Basic idea is to store **all** information related to test execution to database, like software under test (SUT/Build), test logs, test cases (TC), and test related resources, like DUT's. That allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when users can directly see what is tested in individual Device with individual Build. All information is linked together and can be analyzed very deeply.
+
+## Challenges with SW testing in IoT HW
+* how to identify when test failed because of unstable HW
+* how to identify unique unstable HW in test lab
+* how to identify if certain test cause HW to become unstable/unusable
+* how to estimate when HW start to be unstable (e.g. flash memory start burning out)
+* how to direct testing to right HW when there is multiple HW configurations
+* how to identify if new test tool revision deployment causes more test failures
+* how to execute right tests for different purpose if cannot run all of them for every commit
+* how to manage all of these automatically
+
+OpenTMI try to solve these kind of challenges using "big-data".
 
 # Pre-requirements
 
