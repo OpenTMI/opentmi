@@ -18,3 +18,4 @@ class LocalEventBus extends EventEmitter {
 }
 
 module.exports = new LocalEventBus();
+
