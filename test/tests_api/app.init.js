@@ -46,6 +46,36 @@ describe('Basic Get API', function () {
         done();
       });
   });
+  it('get server version', function (done) {
+    superagent.get(`${api}/version`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        expect(res).to.have.property('status', 200);
+        expect(res.body).to.have.a('Object');
+        expect(res.body).to.not.be.empty;
+        expect(res.body.commitId).to.have.a('string');
+        expect(res.body.OpenTMI).to.have.a('string');
+        expect(res.body.dependencies).to.not.exist;
+        done();
+      });
+  });
+  it('get server version deep', function (done) {
+    this.timeout(5000);
+    superagent.get(`${api}/version?deep=true`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res).to.be.a('Object');
+        expect(res).to.have.property('status', 200);
+        expect(res.body).to.have.a('Object');
+        expect(res.body).to.not.be.empty;
+        expect(res.body.commitId).to.have.a('string');
+        expect(res.body.dependencies).to.have.a('Object');
+        done();
+      });
+  });
 
   it('get testcases', function (done) {
     superagent.get(`${api}/testcases`)

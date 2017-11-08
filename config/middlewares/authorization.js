@@ -4,6 +4,7 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const logger = require('../../app/tools/logger');
 const async = require('async');
+const _ = require('lodash');
 
 // Local modules
 const nconf = require('../../config');
@@ -12,6 +13,7 @@ require('../../app/models/group');
 // Middleware variables
 const TOKEN_SECRET = nconf.get('webtoken');
 const Group = mongoose.model('Group');
+const TOKEN_EXPIRATION_HOURS = 2;
 
 /*
  |--------------------------------------------------------------------------
@@ -23,7 +25,7 @@ function getUserGroups(req, res, next) {
     return res.status(401).send({message: 'not signed in'});
   }
 
-  Group.find({users: req.user.sub}, (error, groups) => {
+  Group.find({users: req.user._id}, (error, groups) => {
     if (error) {
       return res.status(500).send({message: error});
     }
@@ -65,16 +67,22 @@ function ensureAdmin(error, req, res, next) {
  | Generate JSON Web Token
  |--------------------------------------------------------------------------
  */
-function createJWT(user, group) {
+function createJWT(user) {
   logger.info('Auth middleware: creating JWT token');
-  const payload = {
-    sub: user._id,
-    group,
-    iat: moment().unix(),
-    exp: moment().add(2, 'hours').unix()
-  };
-
-  return jwt.encode(payload, TOKEN_SECRET);
+  return user
+    .populate('groups')
+    .execPopulate()
+    .then((populatedUser) => {
+      const payload = {
+        _id: populatedUser._id,
+        groups: _.map(populatedUser.groups, g => g._id),
+        iat: moment().unix(),
+        exp: moment().add(TOKEN_EXPIRATION_HOURS, 'hours').unix()
+      };
+      // @todo remove this when it is not needed anymore! - just backward compatible reason.
+      payload.sub = payload._id;
+      return jwt.encode(payload, TOKEN_SECRET);
+    });
 }
 
 module.exports = {

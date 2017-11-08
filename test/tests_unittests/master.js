@@ -134,16 +134,22 @@ describe('app/master.js', function () {
     });
 
     it('should call fork os.cpus().length times', function (done) {
-      const cpus = os.cpus().length;
+      const cpus = process.env.CI ? 2 : os.cpus().length;
 
       // Overwrite fork so we do not actually fork a child process
       let forkCalled = 0;
+      let listenCalled = 0;
       Master.forkWorker = () => {
         forkCalled += 1;
+      };
+      Master.listen = () => {
+        listenCalled += 1;
+        return Promise.resolve();
       };
 
       Master.initialize().then(() => {
         expect(forkCalled).to.equal(cpus, 'Should fork worker for each cpu core.');
+        expect(listenCalled).to.equal(1, 'sould call listen once');
         done();
       }).catch(done);
     });
@@ -157,26 +163,29 @@ describe('app/master.js', function () {
   });
 
   describe('getStats', function () {
-    it('should return object with valid fields', function (done) {
-      const stats = Master.getStats();
+    it('should return object with valid fields', function () {
+      Master.getStats()
+        .then((stats) => {
+          expect(stats).to.have.property('master');
+          expect(stats).to.have.property('os');
+          expect(stats).to.have.property('osStats');
+          expect(stats).to.have.property('workers');
+          expect(stats).to.have.property('hostname');
 
-      expect(stats).to.have.property('hostname');
-      expect(stats).to.have.property('os');
-      expect(stats).to.have.property('averageLoad');
-      expect(stats).to.have.property('coresUsed');
-      expect(stats).to.have.property('memoryUsageAtBoot');
-      expect(stats).to.have.property('totalMem');
-      expect(stats).to.have.property('currentMemoryUsage');
-      expect(stats).to.have.property('hostCpu');
-      expect(stats).to.have.property('workers');
+          expect(stats.master).to.have.property('coresUsed');
 
-      done();
+          expect(stats.osStats).to.have.property('averageLoad');
+          expect(stats.osStats).to.have.property('memoryUsageAtBoot');
+          expect(stats.osStats).to.have.property('totalMem');
+          expect(stats.osStats).to.have.property('currentMemoryUsage');
+          expect(stats.osStats).to.have.property('cpu');
+        });
     });
   });
 
   describe('statusHandler', function () {
     it('should emit event (data.id) with (Master.getStats()) data', function (done) {
-      Master.getStats = () => 'handler_testData';
+      Master.getStats = () => Promise.resolve('handler_testData');
 
       eventBus.on('handler_testEvent', (meta, data) => {
         expect(data).to.equal('handler_testData');
@@ -201,7 +210,7 @@ describe('app/master.js', function () {
 
   describe('forkWorker', function () {
     let forkCalled = false;
-    const forkEmitter = new EventEmitter();
+    let forkEmitter;
 
     before(function () {
       cluster.fork = () => {
@@ -211,17 +220,20 @@ describe('app/master.js', function () {
     });
 
     beforeEach(function (done) {
+      forkEmitter = new EventEmitter();
       forkCalled = false;
-      forkEmitter.removeAllListeners();
       done();
     });
 
     it('should call fork', function () {
       const forkPromise = Master.forkWorker().then(() => {
         expect(forkCalled).to.equal(true);
-        expect(forkEmitter.listenerCount('exit')).to.equal(0, 'Should remove exit event listener before rejecting.');
-        expect(forkEmitter.listenerCount('listening')).to.equal(1, 'Should still listen to listening events');
-        expect(forkEmitter.listenerCount('message')).to.equal(1, 'Should listen to message events');
+        expect(forkEmitter.listenerCount('exit')).to
+          .equal(1, 'Should remove rejecting exit event listener before rejecting.');
+        expect(forkEmitter.listenerCount('listening')).to
+          .equal(1, 'Should still listen to listening events');
+        expect(forkEmitter.listenerCount('message')).to
+          .equal(1, 'Should listen to message events');
       });
 
       forkEmitter.emit('listening');
@@ -384,19 +396,102 @@ describe('app/master.js', function () {
   });
 
   describe('killWorker', function () {
-    it('should kill worker', function () {
-      const worker = new EventEmitter();
+    beforeEach(function () {
+      Master.SIGINT_TIMEOUT = 100;
+      Master.GIGTERM_TIMEOUT = 100;
+      Master.SIGKILL_TIMEOUT = 100;
+      return Promise.resolve();
+    });
 
+    const shouldReject = promise => new Promise((resolve, reject) => {
+      promise
+        .then(reject)
+        .catch(resolve);
+    });
+    it('should kill worker when SIGINT success', function () {
+      const worker = new EventEmitter();
       let killCalled = false;
       worker.kill = (signal) => {
         expect(signal).to.equal('SIGINT');
-
         killCalled = true;
         worker.emit('exit');
       };
-
       return Master.killWorker(worker)
         .then(() => { expect(killCalled).to.equal(true); });
+    });
+    it('should give second chance to kill worker with SIGTERM', function () {
+      const worker = new EventEmitter();
+      let killCalled = false;
+      let iteration = 0;
+      worker.kill = (signal) => {
+        iteration += 1;
+        if (iteration === 1) {
+          expect(signal).to.equal('SIGINT');
+        } else if (iteration === 2) {
+          expect(signal).to.equal('SIGTERM');
+          killCalled = true;
+          worker.emit('exit');
+        } else {
+          throw new Error('should no go here.');
+        }
+      };
+      return Master.killWorker(worker)
+        .then(() => { expect(killCalled).to.equal(true); });
+    });
+    it('should give third chance to kill worker with SIGKILL', function () {
+      const worker = new EventEmitter();
+      let killCalled = false;
+      let iteration = 0;
+      worker.kill = (signal) => {
+        iteration += 1;
+        if (iteration === 1) {
+          expect(signal).to.equal('SIGINT');
+        } else if (iteration === 2) {
+          expect(signal).to.equal('SIGTERM');
+        } else if (iteration === 3) {
+          expect(signal).to.equal('SIGKILL');
+          killCalled = true;
+          worker.emit('exit');
+        } else {
+          throw new Error('should no go here.');
+        }
+      };
+      return Master.killWorker(worker)
+        .then(() => { expect(killCalled).to.equal(true); });
+    });
+    it('should reject if cannot kill worker', function () {
+      const worker = new EventEmitter();
+      let killCalled = false;
+      let iteration = 0;
+      worker.kill = (signal) => {
+        iteration += 1;
+        if (iteration === 1) {
+          expect(signal).to.equal('SIGINT');
+        } else if (iteration === 2) {
+          expect(signal).to.equal('SIGTERM');
+        } else if (iteration === 3) {
+          expect(signal).to.equal('SIGKILL');
+          killCalled = true;
+        } else {
+          throw new Error('should no go here.');
+        }
+      };
+      return shouldReject(Master.killWorker(worker)
+        .catch((error) => {
+          expect(killCalled).to.equal(true);
+          throw error;
+        }));
+    });
+    it('should catch kill exception', function () {
+      const worker = new EventEmitter();
+      worker.kill = () => {
+        throw new Error('ohno');
+      };
+      return shouldReject(Master.killWorker(worker)
+        .catch((error) => {
+          expect(error.message).to.equal('ohno');
+          throw error;
+        }));
     });
   });
 

@@ -1,8 +1,12 @@
+// 3rd party modules
 const mongoose = require('mongoose');
-const logger = require('../tools/logger');
-const QueryPlugin = require('mongoose-query');
 const Request = require('request');
+const QueryPlugin = require('mongoose-query');
 
+// application modules
+const logger = require('../tools/logger');
+
+// Implementation
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
@@ -152,7 +156,6 @@ const ItemSchema = new Schema({
     }
   }
 });
-
 /**
  * Query plugin
  */
@@ -166,7 +169,6 @@ ItemSchema.pre('save', function preSave(next) {
   if (this.available > this.in_stock) {
     return next(new Error('availability cannot be higher than in_stock'));
   }
-
   return next();
 });
 

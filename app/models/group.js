@@ -24,7 +24,6 @@ const GroupSchema = new Schema({
   },
   description: {type: String}
 });
-
 /**
  * Group plugin
  */

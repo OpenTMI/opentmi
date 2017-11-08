@@ -19,6 +19,7 @@ const authController = new AuthController();
 
 
 function createDefaultAdmin() {
+  logger.info('Create default admin accounts');
   const admin = new User();
   admin.name = nconf.get('admin').user;
   admin.password = nconf.get('admin').pwd;
@@ -42,7 +43,11 @@ function createDefaultAdmin() {
 function Route(app) {
   // Create a default admin if there is no users in the database
   User.count({}, (err, count) => {
-    if (count === 0) { createDefaultAdmin(); }
+    if (err) {
+      logger.warn(err);
+    } else if (count === 0) {
+      createDefaultAdmin();
+    }
   });
 
   // Create user routes

@@ -41,7 +41,7 @@ function modifyItemAvailability(itemCountObj, next) {
 
     item.available += itemCountObj.count; // eslint-disable-line no-param-reassign
     return item.save((saveError) => {
-      if (saveError) next(new Error(`Could not save availability, item: ${item._id} is very likely now corrupted`));
+      if (saveError) next(new Error(`Could not save item: ${item._id} availability, error: ${saveError.message}`));
       else next();
     });
   });
@@ -104,23 +104,28 @@ LoanSchema.pre('save', function preSave(next) {
   });
 });
 
+// Make sure version number is incremented every time when saving document
+LoanSchema.pre('save', function preSave(next) {
+  this.increment();
+  next();
+});
+
 // Takes care of decreasing availability of items before loaning
 LoanSchema.pre('save', function preSave(next) {
   logger.info('Loan second pre-save hook started');
-  const self = this;
   if (!this.isNew) return next();
 
-  const itemCounts = self.extractItemIds();
-  if (itemCounts.length === 0) {
+  const itemIds = this.extractItemIds();
+  if (itemIds.length === 0) {
     return next(new Error('cannot process post without items field'));
   }
 
-  self.ensureAvailability(itemCounts, (error) => {
+  this.ensureAvailability(itemIds, (error) => {
     if (error) return next(error);
 
     // Errors after this point could corrupt item.available value
-    self.pushIdsToItemsArray();
-    self.modifyAvailability(itemCounts, next);
+    this.pushIdsToItemsArray();
+    this.modifyAvailability(itemIds, next);
 
     return undefined;
   });
@@ -133,10 +138,8 @@ LoanSchema.pre('save', function preSave(next) {
  */
 LoanSchema.pre('remove', function preRemove(next) {
   logger.info('Loan pre-remove hook started');
-  const self = this;
-
-  const unreturned = self.countUnreturnedItems();
-  self.modifyAvailability(unreturned, next);
+  const unreturned = this.countUnreturnedItems();
+  this.modifyAvailability(unreturned, next);
 });
 
 /**
@@ -178,9 +181,9 @@ LoanSchema.methods.pushIdsToItemsArray = function pushIds() {
   }
 };
 
-LoanSchema.methods.modifyAvailability = function modifyAvailability(itemCounts, next) {
+LoanSchema.methods.modifyAvailability = function modifyAvailability(itemIds, next) {
   logger.info('Preparing to modify availability...');
-  async.eachSeries(itemCounts, modifyItemAvailability, next);
+  async.eachSeries(itemIds, modifyItemAvailability, next);
 };
 
 LoanSchema.methods.countReturns = function countReturns(deltaItems) {

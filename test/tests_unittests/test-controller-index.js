@@ -2,6 +2,7 @@
 
 // Third party components
 require('colors');
+const _ = require('lodash');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
@@ -233,7 +234,11 @@ describe('controllers/index.js', () => {
       const req = {params: {DummyItem: mockItem1}, body: mockDataCopy};
       const res = new MockResponse((value) => {
         expect(value).to.not.have.property('error');
-        expect(value).to.containSubset(mockDummies[0]);
+        expect(value).to.containSubset(
+          _.assign(
+            {},
+            mockDummies[0],
+            _.pick(mockDataCopy, ['text_freeform'])));
         resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([400]);

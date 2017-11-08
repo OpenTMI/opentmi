@@ -10,7 +10,7 @@ const TAGS = {
           enum: [true, false, null]
         }
       },
-      minProperties: 1
+      minProperties: 0
     }
   },
   additionalProperties: false,
@@ -40,14 +40,16 @@ const APPS = {
   required: ['apps']
 };
 
-function wrapValidator(schema) {
+function wrapValidator(schema, key) {
   return (value) => {
     const validator = tv4.freshApi();
-    const result = validator.validateResult(value, schema);
+    const input = {};
+    input[key] = value;
+    const result = validator.validateResult(input, schema);
     return result.valid;
   };
 }
 
 
-module.exports.tagsValidator = wrapValidator(TAGS);
-module.exports.appsValidator = wrapValidator(APPS);
+module.exports.tagsValidator = wrapValidator(TAGS, 'tags');
+module.exports.appsValidator = wrapValidator(APPS, 'apps');

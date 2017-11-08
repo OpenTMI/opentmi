@@ -41,8 +41,8 @@ describe('Results', function () {
 
     // Create token for requests
     const payload = {
-      sub: testUserId,
-      group: 'admins',
+      _id: testUserId,
+      grous: [{name: 'admins', _id: '123'}],
       iat: moment().unix(),
       exp: moment().add(2, 'h').unix()
     };
@@ -50,6 +50,19 @@ describe('Results', function () {
     const token = jwtSimple.encode(payload, config.get('webtoken'));
     authString = `Bearer ${token}`;
     done();
+  });
+
+  it('should get count as a object', function (done) {
+    superagent.get(`${api}/results?t=count`)
+      .set('authorization', authString)
+      .type('json')
+      .end(function (error, res) {
+        expect(error).to.equal(null);
+        expect(res.body).to.be.an('object');
+        expect(res.body).to.have.property('count');
+        expect(res.body.count).to.be.an('number');
+        done();
+      });
   });
 
   it('should return a single result on results/<id> GET', function (done) {

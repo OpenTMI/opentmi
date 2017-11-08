@@ -207,7 +207,7 @@ describe('controllers/loans.js', function () {
   it('findUsersLoans', function () {
     // Get loans of existing user, should return 1
     const validUserWithLoans = new Promise((resolve) => {
-      const req = {user: {sub: mockUser1._id.toString()}};
+      const req = {user: {_id: mockUser1._id.toString()}};
       const res = new MockResponse((value) => {
         expect(value).to.exist;
         expect(value).to.not.have.property('error');
@@ -238,7 +238,7 @@ describe('controllers/loans.js', function () {
 
     // Get loans for invalid user, should return status 500
     const invalidUser = new Promise((resolve) => {
-      const req = {user: {sub: 42}};
+      const req = {user: {_id: 42}};
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
         resolve();

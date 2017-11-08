@@ -2,22 +2,28 @@
 const cluster = require('cluster');
 const os = require('os');
 const path = require('path');
+const net = require('net');
 
 // Third party modules
 const _ = require('lodash');
 const fileWatcher = require('chokidar');
 const Promise = require('bluebird');
+const farmhash = require('farmhash');
 
 // Local modules
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 const config = require('../config');
 
+
 // Module variables
-const numCPUs = os.cpus().length;
+const port = config.get('port');
+const listen = config.get('listen');
+const numCPUs = process.env.CI ? 2 : os.cpus().length;
 const defaultAutoReload = config.get('auto-reload');
 
 let systemRestartNeeded = false;
+const memoryUsageAtBoot = os.freemem();
 
 /**
  * Provides a static interface to worker management
@@ -49,11 +55,58 @@ class Master {
     }
 
     // Fork workers
+    logger.info(`Start forking ${numCPUs} workers..`);
     return Promise.each(_.times(numCPUs, String), Master.forkWorker)
       .then(() => { logger.info('All workers ready to serve.'); })
-      .catch((error) => { logger.error(error.message); });
+      .then(Master.listen)
+      .then(() => { logger.info(`Master listening on port ${port}`); })
+      .catch((error) => { logger.error(`System establish failed: ${error.message}`); });
   }
 
+  static listen() {
+    logger.debug(`Master start listening port ${port}`);
+    // Create the outside facing server listening on our port.
+    Master._server = net.createServer({pauseOnConnect: true});
+    Master._server.on('connection', (socket) => {
+      // We received a connection and need to pass it to the appropriate
+      // worker. Get the worker for this connection's source IP and pass
+      // it the connection.
+      const index = Master.getWorkerIndex(socket.remoteAddress);
+      const worker = _.get(Master.workers, index);
+      if (worker) {
+        if (worker.isConnected()) {
+          worker.send('sticky-session:connection', socket);
+        } else {
+          socket.end();
+          logger.warn('connection was dropped because worker was not valid anymore..');
+        }
+      } else {
+        logger.warn(`Worker doesn't found with index ${index}`);
+      }
+    });
+
+    let retryTimeout;
+    Master._server.on('error', (e) => {
+      logger.warn(`server error: ${e.message}`);
+      if (e.code === 'EADDRINUSE') {
+        logger.warn(`Port ${port} in use, retrying...`);
+        retryTimeout = setTimeout(() => {
+          Master._server.close();
+          Master._server.listen(port, listen);
+        }, 1000);
+      }
+    });
+    const pending = new Promise((resolve) => {
+      Master._server.once('listening', resolve);
+    }).timeout(10000) // try 10 times to open port
+      .catch(Promise.TimeoutError, (error) => {
+        clearTimeout(retryTimeout);
+        logger.warn('Listen timeouts - probably port was reserved already.');
+        throw error;
+      });
+    Master._server.listen(port, listen);
+    return pending;
+  }
   /**
    * Informs the client that workers need to be restarted and restarts workers
    * @param {object} meta - meta data linked to this event
@@ -71,43 +124,87 @@ class Master {
 
   /**
    * Returns a packet of various data about cpu usage and worker processes
-   * @return {object} with master property that contains various machine data
+   * @return {Promise<object>} with master property that contains various machine data
+   * @example
+   * // example resolved object:
+   * {
+   *  master: {
+   *    title: 'opentmi',
+   *    requireRestart: false,
+   *    pid: 1234,
+   *    memoryUsage: {rss: 123, heapTotal: 123, heapUsed: 123},
+   *    uptime: 100000, // [seconds]
+   *    coresUsed: '1 of 4'
+   *  },
+   *  hostname: 'opentmi-host',
+   *  os: 'linux',
+   *  osStats: {
+   *    uptime: 1000, // [seconds]
+   *    averageLoad: [5, 4, 5], // 1, 5, and 15 minute load averages
+   *    memoryUsageAtBoot: 1234, // [bytes]
+   *    totalMem: 8000000, // [bytes]
+   *    currentMemoryUsage: 12345, // [bytes]
+   *    cpu: 12 // [%]
+   *  },
+   *  workers: [{
+   *    starting: false,
+   *    closing: false,
+   *    isDead: false,
+   *    isConnected: true,
+   *    pid: 1235,
+   *    id: 1
+   *  }]
    */
   static getStats() {
     const stats = {};
-
-    // General information
-    stats.hostname = os.hostname();
-    stats.os = `${os.type()} ${os.release()}`;
-
-    // Flags
-    stats.requireRestart = systemRestartNeeded;
+    logger.silly('Collecting service stats..');
+    // General information about master process
+    stats.master = {
+      title: process.title,
+      requireRestart: systemRestartNeeded,
+      pid: process.pid,
+      memoryUsage: process.memoryUsage(),
+      uptime: Math.floor(process.uptime()),
+      coresUsed: `${Object.keys(cluster.workers).length} of ${numCPUs}`
+    };
 
     // Machine resource stats
-    stats.averageLoad = os.loadavg().map(n => n.toFixed(2)).join(' ');
-    stats.coresUsed = `${Object.keys(cluster.workers).length} of ${numCPUs}`;
-    stats.memoryUsageAtBoot = os.freemem();
-    stats.totalMem = os.totalmem();
-    stats.currentMemoryUsage = (os.totalmem() - os.freemem());
-
+    stats.hostname = os.hostname();
+    stats.os = `${os.type()} ${os.release()}`;
+    stats.osStats = {
+      uptime: Math.floor(os.uptime()),
+      averageLoad: os.loadavg().map(n => n.toFixed(2)).join(' '),
+      memoryUsageAtBoot,
+      totalMem: os.totalmem(),
+      currentMemoryUsage: (os.totalmem() - os.freemem())
+    };
     // Calculates the fraction of time cpus spend on average in the user mode.
     function getUCTF(cpu) { // User Cpu Time Fraction
       return cpu.times.user / (cpu.times.user + cpu.times.nice + cpu.times.sys + cpu.times.idle + cpu.times.irq);
     }
     const avgCpuSum = (_.reduce(os.cpus(), (memo, cpu) => memo + getUCTF(cpu), 0) * 100) / numCPUs;
-    stats.hostCpu = avgCpuSum.toFixed(2);
+    stats.osStats.cpu = avgCpuSum.toFixed(2);
 
     // Collect information about workers
-    stats.workers = _.map(cluster.workers, (worker, id) => ({
-      starting: worker.__starting,
-      closing: worker.__closing,
-      isDead: worker.isDead(),
-      isConnected: worker.isConnected(),
-      pid: worker.process.pid,
-      id: id
-    }));
-
-    return stats;
+    const mapper = (worker, id) => {
+      try {
+        return {
+          starting: worker.__starting,
+          closing: worker.__closing,
+          isDead: worker.isDead(),
+          isConnected: worker.isConnected(),
+          pid: worker.process.pid,
+          id: id
+        };
+      } catch (error) {
+        return {
+          id: 'undefined',
+          error
+        };
+      }
+    };
+    stats.workers = _.map(cluster.workers, mapper);
+    return Promise.resolve(stats);
   }
 
   /**
@@ -116,7 +213,9 @@ class Master {
    */
   static statusHandler(meta, data) {
     if (data.id) {
-      eventBus.emit(data.id, Master.getStats());
+      Master.getStats().then((stats) => {
+        eventBus.emit(data.id, stats);
+      });
     } else {
       logger.warn('Cannot process masterStatus event that does not provide data with id property');
     }
@@ -139,14 +238,17 @@ class Master {
   static forkWorker() {
     return new Promise((resolve, reject) => {
       const worker = cluster.fork();
+      Master.workers.push(worker);
       worker.__starting = true;
       worker.__closing = false;
 
       const onPrematureExit = (code, signal) => {
         Master.logWorkerDeath(worker, code, signal);
-
         worker.removeAllListeners();
         reject(new Error('Should not exit before listening event.'));
+      };
+      const onRemoveWorker = () => {
+        _.remove(Master.workers, w => w === worker);
       };
 
       const onListening = () => {
@@ -158,6 +260,7 @@ class Master {
 
       worker.on('listening', onListening);
       worker.on('message', Master.onWorkerMessage.bind(worker));
+      worker.once('exit', onRemoveWorker);
       worker.once('exit', onPrematureExit);
     });
   }
@@ -210,15 +313,22 @@ class Master {
    */
   static logWorkerDeath(worker, code, signal) {
     if (signal) {
-      logger.warn(`Worker ${worker.id} process was killed by signal: ${signal}.`);
+      logger.warn(`Worker#${worker.id} process was killed by signal: ${signal}.`);
       return 2;
     } else if (code !== 0) {
-      logger.warn(`Worker ${worker.id} process exited with error code: ${code}.`);
+      logger.warn(`Worker#${worker.id} process exited with error code: ${code}.`);
       return 1;
     }
 
-    logger.info(`Worker ${worker.id} process successfully ended!`);
+    logger.info(`Worker#${worker.id} process successfully ended!`);
     return 0;
+  }
+
+  static close() {
+    if (Master._server) {
+      Master._server.close();
+    }
+    return Promise.resolve();
   }
 
   /**
@@ -233,6 +343,7 @@ class Master {
     // This means that master tries to send signals to already interrupted workers which throw EPIPE errors, because
     // the workers already stopped receiving signals.
     return Master.killAllWorkers()
+      .then(Master.close)
       .then(() => {
         logger.info('All workers killed, exiting process.');
         process.exit();
@@ -247,9 +358,9 @@ class Master {
    */
   static handleWorkerExit(worker, code, signal) {
     if (signal) {
-      logger.warn(`Worker ${worker.process.pid} died with signal: ${signal}.`);
+      logger.warn(`Worker#${worker.id} died with signal: ${signal}.`);
     } else {
-      logger.warn(`Worker ${worker.process.pid} died.`);
+      logger.warn(`Worker#${worker.id} died.`);
     }
 
     if (!worker) {
@@ -260,6 +371,10 @@ class Master {
     }
   }
 
+  static getWorkerIndex(ip) {
+    return farmhash.fingerprint32(ip) % Master.workers.length; // Farmhash is the fastest and works with IPv6, too
+  }
+
   /**
    * Kill single worker, resolves when the worker is dead.
    * @param {object} worker - worker instance defined by cluster module.
@@ -268,15 +383,33 @@ class Master {
   static killWorker(worker) {
     logger.debug(`Killing Worker#${worker.id}.`);
     worker.__closing = true; // eslint-disable-line no-param-reassign
-    return new Promise((resolve) => {
-      worker.on('exit', resolve);
-
+    const tryTerminate = signal => new Promise((resolve, reject) => {
+      worker.once('exit', resolve);
+      logger.silly(`Killing worker#${worker.id} with ${signal}`);
       try {
-        worker.kill('SIGINT');
+        worker.kill(signal);
       } catch (error) {
-        logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);
+        reject(error);
       }
     });
+
+    return tryTerminate('SIGINT').timeout(Master.SIGINT_TIMEOUT)
+      .catch(Promise.TimeoutError, () => {
+        logger.warn(`Can't kill worker#${worker.id} kindly`);
+        return tryTerminate('SIGTERM').timeout(Master.GIGTERM_TIMEOUT);
+      })
+      .catch(Promise.TimeoutError, () => {
+        logger.warn(`Can't kill worker#${worker.id} less kindly`);
+        return tryTerminate('SIGKILL').timeout(Master.SIGKILL_TIMEOUT);
+      })
+      .catch(Promise.TimeoutError, (error) => {
+        logger.error(`Failed to kill Worker#${worker.id}: ${error.message}`);
+        throw error;
+      })
+      .catch((error) => {
+        logger.warn(`kill throws error: ${error.message}`);
+        throw error;
+      });
   }
 
   /**
@@ -286,7 +419,8 @@ class Master {
   static killAllWorkers() {
     logger.info('Killing all workers...');
     return Promise.all(_.map(cluster.workers, Master.killWorker))
-      .then(() => { logger.info('All workers killed.'); });
+      .then(() => { logger.info('All workers killed.'); })
+      .catch((error) => { logger.error(error); });
   }
 
   /**
@@ -300,7 +434,7 @@ class Master {
       .then(() => Master.forkWorker());
   }
 
-  /** 
+  /**
    * Reload all fork workers and return Promise.
    * @return {Promise} promise to reload all workers.
    */
@@ -337,7 +471,7 @@ class Master {
     return watcher;
   }
 
-  /** 
+  /**
    * Start reacting to file changes in the app directory.
    * Reloads all workers if changes are detected, which in turn
    * allows for zero server downtime updates.
@@ -383,5 +517,12 @@ class Master {
     watcher.close();
   }
 }
+
+Master.SIGINT_TIMEOUT = 3000;
+Master.GIGTERM_TIMEOUT = 2000;
+Master.SIGKILL_TIMEOUT = 1000;
+
+Master.workers = [];
+Master._server = undefined;
 
 module.exports = Master;
