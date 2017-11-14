@@ -21,11 +21,11 @@ const args = {
     default: 3000,
     nargs: 1
   },
-  cfg: {
-    alias: 'c',
+  env: {
+    alias: 'e',
     default: process.env.NODE_ENV || 'development',
     type: 'string',
-    describe: 'Select configuration (development,test,production)',
+    describe: 'Select environment (development,test,production)',
     nargs: 1
   },
   verbose: {

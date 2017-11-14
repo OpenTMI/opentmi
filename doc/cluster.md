@@ -1,6 +1,8 @@
 # Clustering
 OpenTMI uses Node's [Cluster](https://nodejs.org/dist/latest-v6.x/docs/api/cluster.html) module to manage multiple node worker processes. Distributing requests to multiple workers allows OpenTMI to use all the cores available on the host machine.
 
+There is [admin API](APIs/admin.md) to manage clusters and current states. 
+
 To start OpenTMI in cluster mode you need to run the npm script cluster
 
 `npm run cluster`
@@ -48,7 +50,7 @@ There are two ways to trigger the update procedure, either manually via the API 
 
 `npm run cluster --auto-reload`
 
-Changes to source files that the master process is using do not trigger an automatic restart as those changes will not become visible unless the whole server is restarted. 
+Changes to source files that the master process is using do not trigger an automatic restart as those changes will not become visible unless the whole server is restarted.
 
 The update is a rolling restart that kills and then restarts workers one by one, roughly in a similar manner as seen in the startup procedure.
 

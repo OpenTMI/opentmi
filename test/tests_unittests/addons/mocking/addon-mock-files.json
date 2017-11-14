@@ -1,12 +1,8 @@
 {
-  "app": {
-	"addons": {
-	  "mockAddon1": {
+	"mockAddon1": {
 		"index.js": "module.exports = {}"
-	  },
-	  "mockAddon2": {
+	},
+	"mockAddon2": {
 		"index.js": "module.exports = {}"
-	  }
 	}
-  }
 }

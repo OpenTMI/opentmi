@@ -2,19 +2,21 @@
 const path = require('path');
 
 // Third party modules
-const logger = require('../../tools/logger');
+const mime = require('mime');
 const mongoose = require('mongoose');
 
 // local module
+const logger = require('../../tools/logger');
 const nconf = require('../../../config');
 const checksum = require('../../tools/checksum.js');
 
 // Model variables
 const fileProvider = nconf.get('filedb');
 
+
 const FileSchema = new mongoose.Schema({
   // buffer limit 16MB when attached to document!
-  name: {type: String},
+  name: {type: String, default: 'no-name'},
   mime_type: {type: String},
   encoding: {type: String, enum: ['raw', 'base64'], default: 'raw'},
   data: {type: Buffer},
@@ -24,54 +26,73 @@ const FileSchema = new mongoose.Schema({
 });
 FileSchema.set('toObject', {virtuals: true});
 
+/**
+ * Virtual fields
+ */
 FileSchema.virtual('hrefs').get(function getHrefs() {
   const hasHref = fileProvider && (fileProvider !== 'mongodb') && this.sha1;
-  const pathToFile = path.join(fileProvider, this.sha1);
-  return hasHref ? pathToFile : undefined;
+  return hasHref ? path.join(fileProvider, this.sha1) : undefined;
 });
 
-FileSchema.methods.prepareDataForStorage = function prepareDataForStorage() {
+FileSchema.methods.prepareDataForStorage = function (i) { // eslint-disable-line
   logger.info(`Preparing file (name: ${this.name}) for storage.`);
 
+  if (this.name) {
+    this.mime_type = mime.getType(this.name);
+  }
+
+  if (!this.data) {
+    this.data = Buffer.alloc(0);
+  }
+
+  if (this.base64) {
+    logger.warn(`file[${i}] base64 field is deprecated! Please use encoding field to represent data encoding.`);
+    this.data = this.base64;
+    this.encoding = 'base64';
+    this.base64 = undefined;
+  }
+
   if (this.encoding === 'base64') {
-    logger.debug('Base64 file detected, storing data to a buffer.');
+    logger.debug(`file[${i}] base64 encoding, storing data to a buffer.`);
     this.data = new Buffer(this.data, 'base64');
   }
 
   if (this.data) {
     this.size = this.data.length;
-    // file.type = mimetype(file.name(
     this.sha1 = checksum(this.data, 'sha1');
     this.sha256 = checksum(this.data, 'sha256');
   }
 };
 
-FileSchema.methods.storeInFileDB = function storeInFileDB() {
-  // filedb is reuired here because it causes a circular dependency otherwise
-  const filedb = require('../tools/filedb.js'); // eslint-disable-line
-  return filedb.storeFile(this).catch((error) => {
-    logger.error(`Could not save file to filedb, reason: ${error.message}.`);
-    throw error;
-  });
+FileSchema.methods.keepInMongo = function (i) { // eslint-disable-line
+  logger.warn(`file[${i}] storing to mongodb`);
 };
 
-FileSchema.methods.retrieveFromFileDB = function retrieveFromFileDB() {
-  // filedb is reuired here because it causes a circular dependency otherwise
-  const filedb = require('../tools/filedb.js'); // eslint-disable-line
-  return filedb.readFile(this).then((data) => {
-    this.data = data;
-    return data;
-  }).catch((error) => {
-    logger.error(`Could not read file from filedb, reason: ${error.message}.`);
-    throw error;
-  });
+FileSchema.methods.storeInFiledb = function (filedb, i) { // eslint-disable-line
+  // Store to filesystem
+  return filedb.storeFile(this)
+    .then(() => {
+      // Unallocate from mongo document
+      this.data = undefined;
+
+      logger.silly(`file[${i}] ${this.name} stored`);
+    })
+    .catch((storeError) => {
+      logger.warn(`file[${i}] failed to store: ${storeError.message}`);
+      logger.debug(storeError.stack);
+    });
 };
 
-FileSchema.methods.checksum = function getChecksum() {
+FileSchema.methods.dumpData = function (i) { // eslint-disable-line
+  this.data = undefined;
+  logger.warn(`file[${i}] cannot store, filedb is not configured`);
+};
+
+FileSchema.methods.checksum = function () { // eslint-disable-line
   if (!this.sha1) {
-    logger.warn('File without sha1 checksum processed, prepareDataForStorage not called?');
+    logger.warn('File without sha1 checksum processed, prepareForStorage not called?');
 
-    if (this.data) {
+    if (this.data !== undefined) {
       this.sha1 = checksum(this.data, 'sha1');
     } else {
       logger.warn('Could not calculate checksum for file without data.');

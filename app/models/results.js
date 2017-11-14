@@ -4,7 +4,6 @@
 
 // Third party modules
 const mongoose = require('mongoose');
-// var userPlugin = require('mongoose-user');
 const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
 const _ = require('lodash');
@@ -13,12 +12,13 @@ const _ = require('lodash');
 const FileSchema = require('./extends/file');
 const tools = require('../tools');
 
+// Model variables
 const Schema = mongoose.Schema;
-const checksum = tools.checksum;
 const filedb = tools.filedb;
 const fileProvider = filedb.provider;
 const Build = mongoose.model('Build');
 
+// @Todo justify why file schema is extended here instead of adding to root model
 FileSchema.add({
   ref: {
     type: Schema.Types.ObjectId,
@@ -50,7 +50,7 @@ const ResultSchema = new Schema({
     verdict: {
       type: String,
       required: true,
-      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error'],
+      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error', 'skip'],
       index: true
     },
     note: {type: String, default: ''},
@@ -108,78 +108,70 @@ ResultSchema.plugin(QueryPlugin); // install QueryPlugin
 /**
  * Methods
  */
-ResultSchema.pre('validate', function preValidate(next) {
-  let error;
-  const buildSha1 = _.get(this, 'exec.sut.buildSha1');
-
-  const logs = _.get(this, 'exec.logs');
-  if (_.isArray(logs)) {
-    for (let i = 0; i < logs.length; i += 1) {
-      const file = logs[i];
-      if (!file.name) {
-        error = new Error(`file[${i}].name missing`);
-        break;
-      }
-      if (file.base64) {
-        file.data = new Buffer(file.base64, 'base64');
-        file.base64 = undefined;
-      }
-      if (file.data) {
-        file.size = file.data.length;
-        // file.type = mimetype(file.name(
-        file.sha1 = checksum(file.data, 'sha1');
-        file.sha256 = checksum(file.data, 'sha256');
-        if (fileProvider === 'mongodb') {
-          // use mongodb document
-          logger.warn('store file %s to mongodb', file.name);
-        } else if (fileProvider) {
-          // store to filesystem
-          filedb.storeFile(file);
-          file.data = undefined;
-        } else {
-          // do not store at all..
-          file.data = undefined;
-          logger.warn('filedb is not configured');
-        }
-      }
-    }
-  }
-  if (error) {
-    return next(error);
-  }
-
-  if (buildSha1) {
-    logger.debug('result build sha1: ', buildSha1);
-    Build.findOne({'files.sha1': buildSha1}, (findError, build) => {
-      if (build) {
-        this.exec.sut.ref = build._id;
-      }
-      next();
-    });
-  }
-
-  return next(error);
-});
-ResultSchema.virtual('exec.sut.sha1');
-/* .get()
-.set(function(v) {
-
-}); */
-ResultSchema.methods.setBuild = function setBuild() {
-
-};
-ResultSchema.methods.getBuild = function getBuild(next) {
+ResultSchema.methods.getBuildRef = function () { // eslint-disable-line func-names
   logger.debug('lookup build..');
-  Build.findOne({_id: _.get(this, 'exec.sut.ref')}, next);
+  return _.get(this, 'exec.sut.ref', undefined);
 };
+
+/**
+ * Validation
+ */
+function linkRelatedBuild(buildChecksum) {
+  if (!buildChecksum) {
+    return Promise.resolve();
+  }
+
+  logger.debug(`Processing result build sha1: ${buildChecksum}`);
+  return Build.findOne({'files.sha1': buildChecksum}).then((build) => {
+    if (build) {
+      logger.debug(`Build found, linking Result: ${this._id} with Build: ${build._id}`);
+      this.exec.sut.ref = build._id;
+    }
+  });
+}
+
+ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
+  const logs = _.get(this, 'exec.logs', []);
+  const mapFile = (file, i) => {
+    file.prepareDataForStorage(i);
+
+    // Decide what to do with file
+    if (fileProvider === 'mongodb') {
+      file.keepInMongo(i);
+      return Promise.resolve();
+    } else if (fileProvider) {
+      return file.storeInFiledb(filedb, i);
+    }
+
+    file.dumpData(i);
+    return Promise.resolve();
+  };
+
+  // Link related build to this result
+  return linkRelatedBuild(_.get(this, 'exec.sut.buildSha1'))
+    .then(() => Promise.all(logs.map(mapFile))) // Promise to store all files
+    .then(() => next())
+    .catch(next);
+});
+
+/**
+ * Virtuals
+ */
+/*
+ResultSchema.virtual('exec.sut.sha1');
+  .get()
+  .set(function(v) {
+});
+*/
 
 /**
  * Statics
  */
-
+/* 
 ResultSchema.static({
 
 });
+*/
 
 /**
  * Register

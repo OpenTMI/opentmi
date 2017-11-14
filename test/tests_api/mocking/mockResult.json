@@ -1,0 +1,15 @@
+{
+  "tcid": "IDforPASSINGmockTEST",
+  "exec": {
+    "verdict": "pass",
+    "sut": {
+      "ref": "59b64162e62a2a4818ec9c3d"
+    },
+    "logs": [
+      {
+        "name": "MockFile.txt",
+        "data": "This is mock file data that is to be stored in an apitest"
+      }
+    ]
+  }
+}

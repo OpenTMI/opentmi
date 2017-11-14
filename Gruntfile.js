@@ -1,111 +1,143 @@
-require('xunit-file');
+// Native components
 const fs = require('fs');
+const path = require('path');
+
+// Third party components
+require('xunit-file');
+
+// Grunt variables
+const dbPath = path.join('.', 'scripts', 'dbrestore.sh');
+const dumpPath = path.join('.', 'test', 'seeds', 'test_dump');
+
+const testFilesApi = ['test/tests_api/*.js'];
+const testFilesUnit = [
+  'test/tests_unittests/*.js',
+  'test/tests_unittests/tools/*.js',
+  'test/tests_unittests/tools/**/*.js',
+  'test/tests_unittests/addons/*.js',
+  'test/tests_unittests/controllers/*.js',
+  'test/tests_unittests/routes/*.js'
+];
+const testFilesCluster = ['test/tests_cluster/*.js', 'test/tests_api/socketio.js'];
+
+const gruntConfig = {
+  express: {
+    single_server: {
+      options: {
+        delay: 15000,
+        script: 'app/index.js',
+        node_env: 'test',
+        args: ['-s'] // to more traces set -vvv instead of -s (silent)
+      }
+    },
+    cluster_server: {
+      options: {
+        delay: 15000,
+        script: 'index.js',
+        node_env: 'test',
+        args: ['-s'] // to more traces set -vvv instead of -s (silent)
+      }
+    }
+  },
+  waitServer: {
+    server: {
+      options: {
+        timeout: 60000,
+        url: 'http://localhost:3000/api/v0'
+      }
+    }
+  },
+  exec: {
+    restore_db: {
+      cmd: `bash ${dbPath} local ${dumpPath}`,
+      stdout: false,
+      stderr: false
+    }
+  },
+  simplemocha: {
+    options: {
+      globals: ['should', 'check'],
+      timeout: 120000,
+      ignoreLeaks: false
+    },
+    cluster: {
+      src: testFilesCluster
+    },
+    api: {
+      src: testFilesApi
+    },
+    unit: {
+      src: testFilesUnit
+    }
+  }
+};
+
+function listAddons() {
+  const root = 'app/addons';
+
+  return fs.readdirSync(root)
+    .map(item => path.join(root, item)) // Map items to actual paths to those items
+    .filter(itemPath => fs.statSync(itemPath).isDirectory()); // Filter only directories
+}
+
+function findAddonUnitTests() {
+  listAddons().forEach((addonPath) => {
+    // Read addon items
+    fs.readdirSync(addonPath)
+      .filter(item => item === 'unitTests') // Filter only items that are named unitTests
+      .map(item => path.join(addonPath, item)) // Map items to actual paths to those items
+      .filter(itemPath => fs.statSync(itemPath).isDirectory()) // filter only those paths that are directories
+      .forEach((testPath) => {
+        testFilesUnit.push(path.join(testPath, '*.js'));
+      });
+  });
+}
+
+function findAddonApiTests() {
+  listAddons().forEach((addonPath) => {
+    // Read addon items
+    fs.readdirSync(addonPath)
+      .filter(item => item === 'apiTests') // Filter only items that are named apiTests
+      .map(item => path.join(addonPath, item)) // Map items to actual paths to those items
+      .filter(itemPath => fs.statSync(itemPath).isDirectory()) // filter only those paths that are directories
+      .forEach((testPath) => {
+        testFilesApi.push(path.join(testPath, '*.js'));
+      });
+  });
+}
 
 function gruntSetup(grunt) {
-  const testFilesApi = ['test/tests_api/*.js'];
-  const testFilesUnit = [
-    'test/tests_unittests/*.js',
-    'test/tests_unittests/tools/*.js',
-    'test/tests_unittests/tools/eventBus/*.js',
-    'test/tests_unittests/addons/*.js',
-    'test/tests_unittests/controllers/*.js',
-    'test/tests_unittests/routes/*.js'
-  ];
-
-  grunt.initConfig({
-    express: {
-      test: {
-        options: {
-          delay: 15000,
-          script: 'index.js',
-          args: ['-s'] // to more traces set -vvv instead of -s (silent)
-        }
-      }
-    },
-    waitServer: {
-      server: {
-        options: {
-          timeout: 30000,
-          url: 'http://localhost:3000/api/v0'
-        }
-      }
-    },
-    exec: {
-      restore_db_windows: {
-        cmd: 'bash .\\scripts\\dbrestore_windows.sh local .\\test\\seeds\\test_dump\\',
-        stdout: false,
-        stderr: false
-      },
-      restore_db_linux: {
-        cmd: './scripts/dbrestore_linux.sh local ./test/seeds/test_dump/',
-        stdout: false,
-        stderr: false,
-        options: {
-          shell: 'bash'
-        }
-      }
-    },
-    simplemocha: {
-      options: {
-        globals: ['should', 'check'],
-        timeout: 120000,
-        ignoreLeaks: false
-      },
-      api: {
-        src: testFilesApi
-      },
-      unit: {
-        src: testFilesUnit
-      }
-    }
-  });
-
-  grunt.registerTask('FindApiTests', 'Find all tests under the addons', () => {
-    const root = 'app/addons';
-    function walk(path) {
-      const items = fs.readdirSync(path);
-      items.forEach((item) => {
-        const dirName = `${path}/${item}`;
-        if (fs.statSync(dirName).isDirectory()) {
-          // find only directories that ends with /test
-          if (dirName.substr(dirName.length - 5) === '/test') {
-            // use only test directories that are in the root of the addon
-            if ((dirName.match(/\//g) || []).length === 3) {
-              // only add test js files that are in the root of the /test directory.
-              // if you need to include subdirs, modify this to: dirName + '/' + '**/*.js'
-              testFilesApi.push(`${dirName}/*.js`);
-            }
-          }
-          walk(dirName);
-        }
-      });
-    }
-    walk(root);
-  });
+  grunt.initConfig(gruntConfig);
 
   grunt.loadNpmTasks('grunt-wait-server');
   grunt.loadNpmTasks('grunt-express-server');
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-simple-mocha');
 
-  grunt.registerTask('default', [
-    'FindApiTests',
-    'simplemocha:unit',
-    'express:test',
-    'waitServer',
-    'exec:restore_db_linux',
-    'simplemocha:api'
-  ]);
+  grunt.registerTask('findAddonUnitTests', findAddonUnitTests);
+  grunt.registerTask('findAddonApiTests', findAddonApiTests);
 
+  grunt.registerTask('unittests', [
+    'findAddonUnitTests',
+    'simplemocha:unit'
+  ]);
   grunt.registerTask('apitests', [
-    'FindApiTests',
-    'express:test',
+    'findAddonApiTests',
+    'exec:restore_db',
+    'express:single_server',
     'waitServer',
-    'exec:restore_db_linux',
     'simplemocha:api'
   ]);
-
-  grunt.registerTask('unittests', ['simplemocha:unit']);
+  grunt.registerTask('clustertests', [
+    'express:cluster_server',
+    'waitServer',
+    'simplemocha:cluster'
+  ]);
+  grunt.registerTask('default', [
+    'unittests',
+    'apitests',
+    'clustertests'
+  ]);
 }
 
 
