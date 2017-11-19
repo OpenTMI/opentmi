@@ -62,7 +62,7 @@ const ResultSchema = new Schema({
       framework: {
         name: {type: String, default: ''},
         ver: {type: String, default: ''}
-      }
+      },
     },
     sut: { // software under test
       ref: {type: Schema.Types.ObjectId, ref: 'Build'},
@@ -85,7 +85,12 @@ const ResultSchema = new Schema({
       vendor: {type: String},
       model: {type: String},
       ver: {type: String},
-      sn: {type: String}
+      sn: {type: String},
+      provider: {
+        name: {type: String},
+        id: {type: String},
+        ver: {type: String}
+      }
     },
     logs: [FileSchema]
   }
