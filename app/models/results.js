@@ -62,7 +62,7 @@ const ResultSchema = new Schema({
       framework: {
         name: {type: String, default: ''},
         ver: {type: String, default: ''}
-      },
+      }
     },
     sut: { // software under test
       ref: {type: Schema.Types.ObjectId, ref: 'Build'},
