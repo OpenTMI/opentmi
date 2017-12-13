@@ -6,6 +6,7 @@ const _ = require('lodash');
 const nconf = require('../../config');
 const Controller = require('../controllers/socketio');
 const logger = require('../tools/logger');
+const eventBus = require('../tools/eventBus');
 
 // Route variables
 const TOKEN_SECRET = nconf.get('webtoken');
@@ -22,18 +23,25 @@ function Route(app, io) {
     return next();
   });
 
+
   // IO security
-  io.use(socketioJwt.authorize({
+  const authorize = socketioJwt.authorize({
     secret: TOKEN_SECRET,
     handshake: true,
     callback: false
-  }));
+  });
+  io.use(authorize);
 
   const ioEvents = ['disconnect', 'whoami'];
 
   io.on('connection', (socket) => {
     const controller = new Controller(socket);
     _.each(ioEvents, event => socket.on(event, controller[event].bind(controller)));
+  });
+  const resultNS = io.of('results');
+  resultNS.use(authorize);
+  eventBus.on('result.new', (bus, result) => {
+    resultNS.emit('new', result);
   });
 }
 
