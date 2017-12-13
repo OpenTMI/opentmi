@@ -41,6 +41,7 @@ function Route(app, io) {
   const resultNS = io.of('results');
   resultNS.use(authorize);
   eventBus.on('result.new', (bus, result) => {
+    logger.silly(`Broadcast new result: ${result._id}`);
     resultNS.emit('new', result);
   });
 }
