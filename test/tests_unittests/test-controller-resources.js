@@ -42,7 +42,7 @@ describe('controllers/resources.js', function () {
     return mockgoose.helper.reset();
   });
 
-  after((done) => {
+  after(function(done) {
     logger.debug('[After] Closing mongoose connection'.gray);
     mongoose.disconnect();
     done();
