@@ -18,7 +18,7 @@ const DummySchema = require('./mocking/DummySchema.js');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
 // Setup
-logger.level = 'error';
+logger.level = 'silly';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);

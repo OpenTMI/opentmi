@@ -60,7 +60,10 @@ class Master {
       .then(() => { logger.info('All workers ready to serve.'); })
       .then(Master.listen)
       .then(() => { logger.info(`Master listening on port ${port}`); })
-      .catch((error) => { logger.error(`System establish failed: ${error.message}`); });
+      .catch((error) => {
+        logger.error(`System establish failed: ${error.message}`);
+        throw error;
+      });
   }
 
   static listen() {
