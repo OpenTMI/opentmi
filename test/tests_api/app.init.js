@@ -165,7 +165,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
         done();
       });
   });
@@ -179,7 +178,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
         done();
       });
   });
