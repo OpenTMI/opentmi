@@ -23,7 +23,7 @@ chai.use(chaiSubset);
 const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 
-describe('controllers/resources.js', function () {
+describe.skip('controllers/resources.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
