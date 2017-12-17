@@ -105,7 +105,7 @@ class Master {
       .catch(Promise.TimeoutError, (error) => {
         clearTimeout(retryTimeout);
         logger.warn('Listen timeouts - probably port was reserved already.');
-        //throw error;
+        throw error;
       });
     Master._server.listen(port, listen);
     return pending;
