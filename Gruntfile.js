@@ -48,6 +48,9 @@ const gruntConfig = {
     }
   },
   exec: {
+    kill_node: {
+      cmd:  `bash killall node -9 || echo "Process was not running."`
+    },
     restore_db: {
       cmd: `bash ${dbPath} local ${dumpPath}`,
       stdout: false,
@@ -122,6 +125,7 @@ function gruntSetup(grunt) {
     'simplemocha:unit'
   ]);
   grunt.registerTask('apitests', [
+    'exec:kill_node',
     'findAddonApiTests',
     'exec:restore_db',
     'express:single_server',
