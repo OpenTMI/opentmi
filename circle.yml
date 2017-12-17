@@ -8,7 +8,6 @@ machine:
 
     node:
         version: 6.11.4
-        version: 8.2.0
 
 database:
     # Circle will execute the below commands
@@ -39,9 +38,6 @@ dependencies:
 test:
     override:
         - npm test
-        # - grunt unittests
-        # - grunt clustertests
-        # - grunt apitests
         - npm run lint
 
 general:
