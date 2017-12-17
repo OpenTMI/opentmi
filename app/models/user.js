@@ -40,10 +40,7 @@ const UserSchema = new Schema({
   groups: [{type: ObjectId, ref: 'Group'}],
   apikeys: [{type: ObjectId, ref: 'ApiKey'}],
   settings: {type: Types.Mixed}
-}, {usePushEach: true})
-  .post('save', () => {
-  // if (this.isNew) { }
-  });
+});
 
 /**
  * User plugin
