@@ -38,10 +38,10 @@ dependencies:
 
 test:
     override:
-        # - npm test
-        - grunt unittests
-        - grunt clustertests
-        - grunt apitests
+        - npm test
+        # - grunt unittests
+        # - grunt clustertests
+        # - grunt apitests
         - npm run lint
 
 general:
