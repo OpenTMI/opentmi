@@ -132,7 +132,7 @@ const BuildSchema = new Schema({
       meta: {type: String}
     }
   }
-}, {usePushEach: true});
+});
 BuildSchema.set('toObject', {virtuals: true});
 // BuildSchema.set('toJSON', { virtuals: true });
 

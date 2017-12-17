@@ -79,7 +79,7 @@ const LoanSchema = new Schema({
   loaner: {type: ObjectId, ref: 'User', required: true},
   notes: {type: String},
   items: [LoanItemSchema]
-}, {usePushEach: true});
+});
 
 /**
  * Query plugin
