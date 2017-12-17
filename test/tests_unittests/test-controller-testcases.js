@@ -14,7 +14,7 @@ require('./../../app/models/testcase.js');
 const TestcasesController = require('./../../app/controllers/testcases.js');
 
 // Setup
-logger.level = 'error';
+logger.level = 'silly';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
