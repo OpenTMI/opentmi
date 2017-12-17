@@ -101,11 +101,11 @@ class Master {
     });
     const pending = new Promise((resolve) => {
       Master._server.once('listening', resolve);
-    }).timeout(30000) // try 10 times to open port
+    }).timeout(30000, 'Did not received listening event before timeout') // try 10 times to open port
       .catch(Promise.TimeoutError, (error) => {
         clearTimeout(retryTimeout);
         logger.warn('Listen timeouts - probably port was reserved already.');
-        throw error;
+        //throw error;
       });
     Master._server.listen(port, listen);
     return pending;

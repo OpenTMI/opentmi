@@ -113,7 +113,6 @@ describe('Items', function () {
       .end(function (e, res) {
         expect(e).to.equal(null);
         expect(res.body).to.be.an('array');
-        expect(res.body).not.to.be.empty;
         expect(res.body).to.have.lengthOf(1);
         res.body = res.body[0];
         expectResult(res, 200, expectedBody);

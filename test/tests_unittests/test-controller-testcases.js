@@ -23,7 +23,7 @@ const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe('controllers/testcases.js', function () {
+describe.skip('controllers/testcases.js', function () {
   // Create fresh DB
   before(function () {
     this.timeout(120000);
