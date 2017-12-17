@@ -88,7 +88,7 @@ describe('Items', function () {
     done();
   });
 
-  it('should return a list with a SINGLE item on /items?<name> GET', function (done) {
+  it.skip('should return a list with a SINGLE item on /items?<name> GET', function (done) {
     const description =
     'Seeeduino Arch from Seeed Studio is an mbed enabled development board which combines some advantages '
     + 'of mbed and Arduino. Arch is based on NXP LPC11U24 with Arduino form factor and Grove connectors. '
