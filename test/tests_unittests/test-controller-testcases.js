@@ -26,7 +26,7 @@ let controller = null;
 describe.skip('controllers/testcases.js', function () {
   // Create fresh DB
   before(function () {
-    //this.timeout(120000);
+    // this.timeout(120000);
     mockgoose.helper.setDbVersion('3.2.1');
     logger.debug('[Before] Preparing storage'.gray);
     return mockgoose.prepareStorage().then(() => {
