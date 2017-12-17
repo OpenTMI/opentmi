@@ -177,7 +177,7 @@ const TestCaseSchema = new Schema({
     prev: {type: ObjectId, ref: 'Testcase'},
     next: {type: ObjectId, ref: 'Testcase'}
   }
-});
+}, {usePushEach: true});
 
 
 TestCaseSchema.set('toJSON', {

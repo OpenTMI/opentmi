@@ -94,7 +94,7 @@ const ResultSchema = new Schema({
     },
     logs: [FileSchema]
   }
-});
+}, {usePushEach: true});
 
 ResultSchema.set('toObject', {virtuals: true});
 

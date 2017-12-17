@@ -155,7 +155,7 @@ const ItemSchema = new Schema({
       next: {type: Date}
     }
   }
-});
+}, {usePushEach: true});
 /**
  * Query plugin
  */

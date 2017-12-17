@@ -211,7 +211,7 @@ const ResourceSchema = new Schema({
   childs: [{type: ObjectId, ref: 'Resource'}],
   // Parent Resource
   parent: {type: ObjectId, ref: 'Resource'}
-});
+}, {usePushEach: true});
 ResourceSchema.set('toJSON', {
   virtuals: true,
   getters: true,

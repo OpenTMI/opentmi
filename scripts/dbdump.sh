@@ -6,10 +6,11 @@
 # remote db:    $ ./dbdump.sh remote
 #
 #https://docs.mongodb.com/v3.2/reference/program/mongodump/
+#https://docs.pushAllmongodb.com/v3.2/reference/program/mongodump/
 
 
 ###########################################################
-#      
+#
 #   MODIFY THESE TO YOUR LIKING:
 #
 
@@ -70,7 +71,7 @@ if [ "$1" = "local" ]; then
 elif [ "$1" = "remote" ]; then
     MONGO_HOST="$REMOTE_MONGO_HOST"
     MONGO_PORT="$REMOTE_MONGO_PORT"
-    DB_NAME="$REMOTE_DB_NAME" 
+    DB_NAME="$REMOTE_DB_NAME"
     printDumpInfo
     echo "db username: $REMOTE_DB_USERNAME"
     if mongodump -h $MONGO_HOST:$MONGO_PORT -d $DB_NAME -u $REMOTE_DB_USERNAME -p $REMOTE_DB_PASSWORD -o $DEST; then

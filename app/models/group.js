@@ -23,7 +23,7 @@ const GroupSchema = new Schema({
     max: {type: Number, default: 3, min: 0, max: 5}
   },
   description: {type: String}
-});
+}, {usePushEach: true});
 /**
  * Group plugin
  */
