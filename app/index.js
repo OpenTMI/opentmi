@@ -44,10 +44,12 @@ const ioAdapter = mongoAdapter(dbUrl);
 io.adapter(ioAdapter);
 
 // Initialize database connection
-DB.connect().catch((error) => {
-  logger.error('mongoDB connection failed: ', error.stack);
-  process.exit(-1);
-}).then(() => models.registerModels())
+DB.connect()
+  .catch((error) => {
+    logger.error('mongoDB connection failed: ', error.stack);
+    process.exit(-1);
+  })
+  .then(() => models.registerModels())
   .then(() => express(app))
   .then(() => routes.registerRoutes(app, io))
   .then(() => AddonManager.init(app, server, io))
@@ -102,6 +104,10 @@ DB.connect().catch((error) => {
     // Close the Mongoose connection, when receiving SIGINT or SIGTERM
     process.on('SIGINT', () => termination('SIGINT'));
     process.on('SIGTERM', () => termination('SIGTERM'));
+  })
+  .catch((error) => {
+    logger.error('Exception during initialization: ', error);
+    process.exit(-1);
   });
 
 // This would be useful for testing

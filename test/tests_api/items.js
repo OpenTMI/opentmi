@@ -71,7 +71,7 @@ function expectResult(res, targetStatus, targetBody) {
   }
 }
 
-describe.skip('Items', function () {
+describe('Items', function () {
   // Create fresh DB
   before(function (done) {
     this.timeout(5000);
