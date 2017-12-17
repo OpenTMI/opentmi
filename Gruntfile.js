@@ -49,7 +49,7 @@ const gruntConfig = {
   },
   exec: {
     kill_node: {
-      cmd:  `bash killall node -9 || echo "Process was not running."`
+      cmd:  `killall node -9 || echo "Process was not running."`
     },
     restore_db: {
       cmd: `bash ${dbPath} local ${dumpPath}`,
