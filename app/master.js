@@ -66,7 +66,7 @@ class Master {
           Master._server.close();
         }
         throw error;
-      })
+      });
   }
 
   static listen() {

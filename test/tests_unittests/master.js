@@ -62,7 +62,7 @@ describe('app/master.js', function () {
         cluster.emit('exit');
       };
       let workerExitResolve;
-      let workerExit = new Promise(resolve => {workerExitResolve = resolve; });
+      const workerExit = new Promise((resolve) => { workerExitResolve = resolve; });
       Master.handleWorkerExit = () => {
         expect(sigintCalled).to.equal(true, 'handleSIGINT should be called before handleWorkerExit.');
         expect(exitCalled).to.equal(true, 'logMasterDeath should be called before handleWorkerExit.');
@@ -70,7 +70,7 @@ describe('app/master.js', function () {
       };
       Master.listen = () => Promise.resolve();
 
-      let pending = Master.initialize();
+      const pending = Master.initialize();
       process.emit('SIGINT');
       return Promise.all([pending, workerExit]);
     });
@@ -89,7 +89,7 @@ describe('app/master.js', function () {
         eventBus.emit('workerRestartNeeded', 'reasons');
       };
       let workerExitResolve;
-      let workerExit = new Promise(resolve => {workerExitResolve = resolve; });
+      const workerExit = new Promise((resolve) => { workerExitResolve = resolve; });
       Master.handleWorkerRestart = (meta, reason) => {
         expect(reason).to.equal('reasons');
         workerExitResolve();
