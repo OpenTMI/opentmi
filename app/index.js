@@ -62,6 +62,8 @@ DB.connect()
       if (error.code === 'EACCES' && port < 1024) {
         logger.error("You haven't access to open port below 1024");
         logger.error("Please use admin rights if you wan't to use port %d!", port);
+      } else if(error.code === 'EADDRINUSE') {
+        logger.error(`Port ${port} is alraedy in use`)
       } else {
         logger.error(error);
       }
