@@ -62,8 +62,11 @@ class Master {
       .then(() => { logger.info(`Master listening on port ${port}`); })
       .catch((error) => {
         logger.error(`System establish failed: ${error.message}`);
+        if (Master._server) {
+          Master._server.close();
+        }
         throw error;
-      });
+      })
   }
 
   static listen() {
