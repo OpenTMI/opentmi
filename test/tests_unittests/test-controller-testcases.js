@@ -23,11 +23,11 @@ const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe.skip('controllers/testcases.js', function () {
+describe('controllers/testcases.js', function () {
   // Create fresh DB
   before(function () {
+    this.timeout(120000);
     mockgoose.helper.setDbVersion('3.2.1');
-
     logger.debug('[Before] Preparing storage'.gray);
     return mockgoose.prepareStorage().then(() => {
       logger.debug('[Before] Connecting to mongo\n'.gray);
@@ -36,6 +36,7 @@ describe.skip('controllers/testcases.js', function () {
   });
 
   beforeEach(function () {
+    this.timeout(120000);
     return mockgoose.helper.reset();
   });
 
