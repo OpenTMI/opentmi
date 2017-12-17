@@ -31,7 +31,7 @@ const Dummy = mongoose.model('DummyItem');
 let mockItem1 = null;
 let defaultController = null;
 
-describe('controllers/index.js', function () {
+describe.skip('controllers/index.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
