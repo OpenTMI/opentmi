@@ -33,7 +33,7 @@ const gruntConfig = {
     cluster_server: {
       options: {
         delay: 15000,
-        script: '../index.js',
+        script: 'index.js',
         node_env: 'test',
         args: ['-s'] // to more traces set -vvv instead of -s (silent)
       }
