@@ -1,0 +1,73 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:6.11.4-browsers
+        environment:
+          CHROME_BIN: "/usr/bin/google-chrome"
+          NODE_ENV: test
+          XUNIT_FILE: shippable/testresults/result.xml
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: versions
+          command: |
+            node --version
+            npm --version
+      - run:
+          name: mongo
+          command: |
+            # Stop current MongoDB
+            sudo service mongod stop
+            # Download MongoDB 3.2.3
+            curl -Ol https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.3.tgz
+            # Untar it
+            tar -zxvf mongodb-linux-x86_64-ubuntu1404-3.2.3.tgz
+            # Create data directories
+            mkdir -p ./db
+            mkdir -p ./db.log
+            # Fork MongoDB and log to './db.log/mongo.log'.
+            ./mongodb-linux-x86_64-ubuntu1404-3.2.3/bin/mongod --dbpath ./db --logpath ./db.log/mongo.log --fork
+      - run:
+          name: prepare
+          command: |
+            npm install -g grunt-cli
+            mkdir -p shippable/testresults
+            mkdir -p shippable/codecoverage
+      - run:
+          name: install-npm
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: test
+          command: npm test
+          environment:
+            REPORTER: mocha-junit-reporter
+            MOCHA_FILE: junit/test-results.xml
+      - run:
+          name: lint
+          command: npm run lint
+          when: always
+      - store_test_results:
+          path: junit
+      - store_artifacts:
+          path: junit
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
+      - store_artifacts:
+          path: shippable/testresults
+          prefix: testresults
+      - store_artifacts:
+          path: db.log
+          prefix: mongolog
+      - store_artifacts:
+          path: log
+          prefix: logs
+      - store_test_results:
+          path: coverage/coverage.json
