@@ -7,6 +7,7 @@ jobs:
           CHROME_BIN: "/usr/bin/google-chrome"
           NODE_ENV: test
           XUNIT_FILE: shippable/testresults/result.xml
+      - image: mongo:3.2.3
     steps:
       - checkout
       - restore_cache:
@@ -16,20 +17,6 @@ jobs:
           command: |
             node --version
             npm --version
-      - run:
-          name: mongo
-          command: |
-            # Stop current MongoDB
-            sudo service mongod stop
-            # Download MongoDB 3.2.3
-            curl -Ol https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.3.tgz
-            # Untar it
-            tar -zxvf mongodb-linux-x86_64-ubuntu1404-3.2.3.tgz
-            # Create data directories
-            mkdir -p ./db
-            mkdir -p ./db.log
-            # Fork MongoDB and log to './db.log/mongo.log'.
-            ./mongodb-linux-x86_64-ubuntu1404-3.2.3/bin/mongod --dbpath ./db --logpath ./db.log/mongo.log --fork
       - run:
           name: prepare
           command: |
