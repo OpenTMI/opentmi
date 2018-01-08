@@ -1,6 +1,7 @@
 version: 2
 jobs:
   build:
+    working_directory: ~/opentmi
     docker:
       - image: circleci/node:6.11.4-browsers
         environment:
@@ -20,7 +21,7 @@ jobs:
       - run:
           name: prepare
           command: |
-            npm install -g grunt-cli
+            sudo npm install -g grunt-cli
             mkdir -p shippable/testresults
             mkdir -p shippable/codecoverage
       - run:
