@@ -63,7 +63,7 @@
     "mongoose": "^4.11.8",
     "mongoose-query": "^0.5.1",
     "mongoose-schema-jsonschema": "^1.1.13",
-    "nconf": "^0.9.0",
+    "nconf": "^0.10.0",
     "request": "^2.81.0",
     "satellizer": "^0.15.5",
     "socket.io": "^2.0.3",
