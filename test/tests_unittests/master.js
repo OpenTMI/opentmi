@@ -48,7 +48,7 @@ describe('app/master.js', function () {
       Master.activateFileListener = () => {};
     });
 
-    it('should listen for process and cluster events', function (done) {
+    it('should listen for process and cluster events', function () {
       let sigintCalled = false;
       let exitCalled = false;
 
@@ -61,17 +61,21 @@ describe('app/master.js', function () {
         exitCalled = true;
         cluster.emit('exit');
       };
+      let workerExitResolve;
+      const workerExit = new Promise((resolve) => { workerExitResolve = resolve; });
       Master.handleWorkerExit = () => {
         expect(sigintCalled).to.equal(true, 'handleSIGINT should be called before handleWorkerExit.');
         expect(exitCalled).to.equal(true, 'logMasterDeath should be called before handleWorkerExit.');
-        done();
+        workerExitResolve();
       };
+      Master.listen = () => Promise.resolve();
 
-      Master.initialize().catch(done);
+      const pending = Master.initialize();
       process.emit('SIGINT');
+      return Promise.all([pending, workerExit]);
     });
 
-    it('should listen for eventBus events', function (done) {
+    it('should listen for eventBus events', function () {
       Master.broadcastHandler = (event, meta, data) => {
         expect(event).to.equal('testEvent');
         expect(data).to.equal('testData');
@@ -84,17 +88,21 @@ describe('app/master.js', function () {
         expect(data).to.deep.equal({id: 'testId', data: 'testData'});
         eventBus.emit('workerRestartNeeded', 'reasons');
       };
-
+      let workerExitResolve;
+      const workerExit = new Promise((resolve) => { workerExitResolve = resolve; });
       Master.handleWorkerRestart = (meta, reason) => {
         expect(reason).to.equal('reasons');
-        done();
+        workerExitResolve();
       };
+      Master.listen = () => Promise.resolve();
 
-      Master.initialize().catch(done);
+
+      const pending = Master.initialize();
       eventBus.emit('testEvent', 'testData');
+      return Promise.all([pending, workerExit]);
     });
 
-    it('should call createFileListener and activateFileListener when auto-reload is true', function (done) {
+    it('should call createFileListener and activateFileListener when auto-reload is true', function () {
       let createCalled = false;
       Master.createFileListener = () => {
         createCalled = true;
@@ -107,15 +115,15 @@ describe('app/master.js', function () {
         expect(createCalled).to.equal(true, 'should call createFileListener before listener activation');
         activateCalled = true;
       };
+      Master.listen = () => Promise.resolve();
 
       Master.initialize(true);
 
       expect(createCalled).to.equal(true, 'listener should be created when auto-reload is true');
       expect(activateCalled).to.equal(true, 'listener should be activated when auto-reload is true');
-      done();
     });
 
-    it('should not call createFileListener and activateFileListener when auto-reload is false', function (done) {
+    it('should not call createFileListener and activateFileListener when auto-reload is false', function () {
       let createCalled = false;
       Master.createFileListener = () => {
         createCalled = true;
@@ -125,15 +133,15 @@ describe('app/master.js', function () {
       Master.activateFileListener = () => {
         activateCalled = true;
       };
+      Master.listen = () => Promise.resolve();
 
       Master.initialize();
 
       expect(createCalled).to.equal(false, 'should not create file listener when autoReload is false');
       expect(activateCalled).to.equal(false, 'should not activate file listener when autoReload is false');
-      done();
     });
 
-    it('should call fork os.cpus().length times', function (done) {
+    it('should call fork os.cpus().length times', function () {
       const cpus = process.env.CI ? 2 : os.cpus().length;
 
       // Overwrite fork so we do not actually fork a child process
@@ -147,11 +155,10 @@ describe('app/master.js', function () {
         return Promise.resolve();
       };
 
-      Master.initialize().then(() => {
+      return Master.initialize().then(() => {
         expect(forkCalled).to.equal(cpus, 'Should fork worker for each cpu core.');
         expect(listenCalled).to.equal(1, 'sould call listen once');
-        done();
-      }).catch(done);
+      });
     });
   });
 
