@@ -42,7 +42,7 @@ describe('Basic cluster tests', function () {
         done();
       });
   });
-  it('clusters api gives response', function (done) {
+  it.skip('clusters api gives response', function (done) {
     // this request goes worker->master->worker->client
     superagent.get(`${api}/clusters`)
       .set('authorization', authString)
