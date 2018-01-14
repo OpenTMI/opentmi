@@ -18,7 +18,7 @@ const DummySchema = require('./mocking/DummySchema.js');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
 // Setup
-logger.level = 'error';
+logger.level = 'silly';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
@@ -31,7 +31,7 @@ const Dummy = mongoose.model('DummyItem');
 let mockItem1 = null;
 let defaultController = null;
 
-describe('controllers/index.js', function() {
+describe.skip('controllers/index.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');

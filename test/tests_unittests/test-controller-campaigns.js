@@ -23,7 +23,7 @@ const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe('controllers/campaigns.js', function() {
+describe.skip('controllers/campaigns.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
@@ -39,13 +39,13 @@ describe('controllers/campaigns.js', function() {
     return mockgoose.helper.reset();
   });
 
-  after(function(done) {
+  after(function (done) {
     logger.debug('[After] Closing mongoose connection'.gray);
     mongoose.disconnect();
     done();
   });
 
-  it('constructor', function(done) {
+  it('constructor', function (done) {
     // Create controller to test
     controller = new CampaignController();
     expect(controller).to.exist; // eslint-disable-line no-unused-expressions

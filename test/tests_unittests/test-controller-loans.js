@@ -41,7 +41,7 @@ let controller = null;
 const User = mongoose.model('User');
 const Item = mongoose.model('Item');
 
-describe('controllers/loans.js', function () {
+describe.skip('controllers/loans.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');

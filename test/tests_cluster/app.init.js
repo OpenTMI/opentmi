@@ -20,7 +20,7 @@ describe('Basic cluster tests', function () {
   const testUserId = '5825bb7afe7545132c88c761';
   let authString;
   // Create fresh DB
-  before(function (done) {
+  before(function () {
     this.timeout(5000);
     // Create token for requests
     const payload = {
@@ -32,7 +32,6 @@ describe('Basic cluster tests', function () {
 
     const token = jwtSimple.encode(payload, nconf.get('webtoken'));
     authString = `Bearer ${token}`;
-    done();
   });
   it('basic rest call works', function (done) {
     superagent.get(api)
@@ -43,7 +42,7 @@ describe('Basic cluster tests', function () {
         done();
       });
   });
-  it('clusters api gives response', function (done) {
+  it.skip('clusters api gives response', function (done) {
     // this request goes worker->master->worker->client
     superagent.get(`${api}/clusters`)
       .set('authorization', authString)
