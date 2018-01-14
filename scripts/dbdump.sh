@@ -6,8 +6,6 @@
 # remote db:    $ ./dbdump.sh remote
 #
 #https://docs.mongodb.com/v3.2/reference/program/mongodump/
-#https://docs.pushAllmongodb.com/v3.2/reference/program/mongodump/
-
 
 ###########################################################
 #
