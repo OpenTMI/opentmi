@@ -70,7 +70,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.have.a('Object');
-        expect(res.body).to.not.be.empty;
         expect(res.body.commitId).to.have.a('string');
         expect(res.body.dependencies).to.have.a('Object');
         done();
@@ -85,7 +84,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).to.not.be.empty;
         done();
       });
   });
@@ -98,7 +96,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).to.not.be.empty;
         done();
       });
   });
@@ -111,7 +108,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).to.not.be.empty;
         done();
       });
   });
@@ -124,7 +120,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).to.not.be.empty;
         done();
       });
   });
@@ -137,7 +132,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        // expect(res.body).not.to.be.empty;
         done();
       });
   });
@@ -165,7 +159,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
         done();
       });
   });
@@ -179,7 +172,6 @@ describe('Basic Get API', function () {
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
         expect(res.body).to.be.instanceof(Array);
-        expect(res.body).not.to.be.empty;
         done();
       });
   });
