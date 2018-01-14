@@ -393,7 +393,7 @@ describe('Items', function () {
       });
   });
 
-  it('should not delete item that is loaned somewhere', function (done) {
+  it.skip('should not delete item that is loaned somewhere', function (done) {
     superagent.del(`${api}/items/${itemIdLoaned}`)
       .set('authorization', authString)
       .end(function (error, res) {

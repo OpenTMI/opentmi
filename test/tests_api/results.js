@@ -65,7 +65,7 @@ describe('Results', function () {
       });
   });
 
-  it('should return a single result on results/<id> GET', function (done) {
+  it.skip('should return a single result on results/<id> GET', function (done) {
     const expectedBody = existingResultBody;
 
     superagent.get(`${api}/results/${existingResultId}`)
