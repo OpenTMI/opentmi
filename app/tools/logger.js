@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Third party components
+const _ = require('lodash');
 const Winston = require('winston');
 require('winston-daily-rotate-file');
 require('winston-logstash');
@@ -43,11 +44,15 @@ class MasterLogger {
     this.logger = Winston;
 
     const fileLevel = 'silly';
-    const transports = [
-      new (Winston.transports.Console)({
+    const logging = config.get('logging');
+    const transports = [];
+    if (!silent) {
+      transports.push(new (Winston.transports.Console)({
         colorize: true,
-        level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
-      }),
+        level: ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+      }));
+    }
+    transports.push(
       // @todo File logging options should be fetched from config file
       // Add winston file logger, which rotates daily
       new (Winston.transports.DailyRotateFile)({
@@ -57,12 +62,13 @@ class MasterLogger {
         level: fileLevel,
         datePatter: '.yyyy-MM-dd_HH-mm.log'
       })
-    ];
-    if (config.get('logstash')) {
+    );
+    const logstash = _.get(logging, 'logstash');
+    if (logstash) {
       transports.push(new (Winston.transports.Logstash)({
-        port: 28777,
-        node_name: 'OpentTMI',
-        host: config.get('logstash') || '127.0.0.1'
+        port: _.get(logstash, 'port', 28777),
+        node_name: _.get(logstash, 'node_name', 'OpentTMI'),
+        host: _.get(logstash, 'host', '127.0.0.1')
       }));
     }
     this.logger.configure({transports});
