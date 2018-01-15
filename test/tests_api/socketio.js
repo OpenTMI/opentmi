@@ -20,7 +20,7 @@ logger.level = 'error';
 const host = 'http://localhost:3000';
 const api = `${host}/api/v0`;
 
-const ioConnect = (token, namespace='') => new Promise((resolve, reject) => {
+const ioConnect = (token, namespace = '') => new Promise((resolve, reject) => {
   const options = {
     query: `token=${token}`
   };
@@ -109,7 +109,7 @@ describe('Basic socketio tests', function () {
       superagent.post(`${api}/results`)
         .set('authorization', authString)
         .send(newResult)
-        .end((error, res) => {
+        .end((error) => {
           expect(error).to.not.exist;
         });
     });
