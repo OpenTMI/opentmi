@@ -14,7 +14,7 @@ require('./../../app/models/testcase.js');
 const TestcasesController = require('./../../app/controllers/testcases.js');
 
 // Setup
-logger.level = 'error';
+logger.level = 'silly';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
@@ -23,11 +23,11 @@ const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe('controllers/testcases.js', () => {
+describe.skip('controllers/testcases.js', function () {
   // Create fresh DB
   before(function () {
+    // this.timeout(120000);
     mockgoose.helper.setDbVersion('3.2.1');
-
     logger.debug('[Before] Preparing storage'.gray);
     return mockgoose.prepareStorage().then(() => {
       logger.debug('[Before] Connecting to mongo\n'.gray);
@@ -36,6 +36,7 @@ describe('controllers/testcases.js', () => {
   });
 
   beforeEach(function () {
+    this.timeout(120000);
     return mockgoose.helper.reset();
   });
 

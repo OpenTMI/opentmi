@@ -1,5 +1,9 @@
+// 3rd party modules
 const express = require('express');
+const _ = require('lodash');
+// application modules
 const ResultController = require('./../controllers/results');
+const eventBus = require('../tools/eventBus');
 
 function Route(app) {
   const router = express.Router();
@@ -23,6 +27,10 @@ function Route(app) {
   router.route('/api/v0/results/:Result/builds/:Index/download')
     .all(controller.all.bind(controller))
     .get(ResultController.buildDownload);
+
+  controller.on('create', (result) => {
+    eventBus.emit('result.new', _.omit(result, 'logs'));
+  });
 
   app.use(router);
 }
