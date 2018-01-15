@@ -95,6 +95,7 @@
     "grunt-wait-server": "^0.3.0",
     "istanbul": "^0.4.5",
     "mocha": "^4.0.0",
+    "mocha-junit-reporter": "^1.15.0",
     "mockgoose": "^7.3.3",
     "protractor": "^5.1.2",
     "should": "^13.2.1",
