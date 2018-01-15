@@ -24,6 +24,7 @@ jobs:
             sudo npm install -g grunt-cli
             mkdir -p shippable/testresults
             mkdir -p shippable/codecoverage
+            mkdir junit
       - run:
           name: install-npm
           command: npm install
