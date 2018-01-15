@@ -57,6 +57,7 @@ const gruntConfig = {
   simplemocha: {
     options: {
       globals: ['should', 'check'],
+      reporter: 'mocha-junit-reporter',
       timeout: 120000,
       ignoreLeaks: false
     },
