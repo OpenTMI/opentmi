@@ -60,7 +60,13 @@ class Master {
       .then(() => { logger.info('All workers ready to serve.'); })
       .then(Master.listen)
       .then(() => { logger.info(`Master listening on port ${port}`); })
-      .catch((error) => { logger.error(`System establish failed: ${error.message}`); });
+      .catch((error) => {
+        logger.error(`System establish failed: ${error.message}`);
+        if (Master._server) {
+          Master._server.close();
+        }
+        throw error;
+      });
   }
 
   static listen() {
@@ -98,7 +104,7 @@ class Master {
     });
     const pending = new Promise((resolve) => {
       Master._server.once('listening', resolve);
-    }).timeout(10000) // try 10 times to open port
+    }).timeout(30000, 'Did not received listening event before timeout') // try 10 times to open port
       .catch(Promise.TimeoutError, (error) => {
         clearTimeout(retryTimeout);
         logger.warn('Listen timeouts - probably port was reserved already.');

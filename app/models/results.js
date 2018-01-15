@@ -85,7 +85,12 @@ const ResultSchema = new Schema({
       vendor: {type: String},
       model: {type: String},
       ver: {type: String},
-      sn: {type: String}
+      sn: {type: String},
+      provider: {
+        name: {type: String},
+        id: {type: String},
+        ver: {type: String}
+      }
     },
     logs: [FileSchema]
   }
@@ -167,7 +172,7 @@ ResultSchema.virtual('exec.sut.sha1');
 /**
  * Statics
  */
-/* 
+/*
 ResultSchema.static({
 
 });

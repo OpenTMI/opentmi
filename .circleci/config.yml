@@ -1,0 +1,62 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/opentmi
+    docker:
+      - image: circleci/node:6.11.4-browsers
+        environment:
+          CHROME_BIN: "/usr/bin/google-chrome"
+          NODE_ENV: test
+          XUNIT_FILE: shippable/testresults/result.xml
+      - image: mongo:3.2.3
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: versions
+          command: |
+            node --version
+            npm --version
+      - run:
+          name: prepare
+          command: |
+            sudo npm install -g grunt-cli
+            mkdir -p shippable/testresults
+            mkdir -p shippable/codecoverage
+            mkdir junit
+      - run:
+          name: install-npm
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: test
+          command: |
+            MOCHA_FILE=junit/unittests.xml grunt unittests
+            MOCHA_FILE=junit/apitests.xml grunt apitests
+            MOCHA_FILE=junit/clustertests.xml grunt clustertests
+      - run:
+          name: lint
+          command: npm run lint
+          when: always
+      - store_test_results:
+          path: junit
+      - store_test_results:
+          path: coverage/coverage.json
+      - store_artifacts:
+          path: junit
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
+      - store_artifacts:
+          path: shippable/testresults
+          prefix: testresults
+      - store_artifacts:
+          path: db.log
+          prefix: mongolog
+      - store_artifacts:
+          path: log
+          prefix: logs

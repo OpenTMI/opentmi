@@ -24,7 +24,7 @@ const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe('controllers/users.js', function () {
+describe.skip('controllers/users.js', function () {
   // Create fresh DB
   before(function () {
     mockgoose.helper.setDbVersion('3.2.1');
