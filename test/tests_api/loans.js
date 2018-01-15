@@ -93,7 +93,7 @@ describe('Loans', function () {
     done();
   });
 
-  it.skip('should return a SINGLE loan on /loans/<id> GET', function (done) {
+  it('should return a SINGLE loan on /loans/<id> GET', function (done) {
     const expectedBody = {
       _id: '582d81d64306a86032e6bea1',
       loan_date: new Date('2016-11-14T13:37:00+02:00'),
