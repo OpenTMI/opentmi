@@ -24,7 +24,7 @@ jobs:
             sudo npm install -g grunt-cli
             mkdir -p shippable/testresults
             mkdir -p shippable/codecoverage
-            mkdir junit
+            mkdir ~/junit
       - run:
           name: install-npm
           command: npm install
@@ -36,7 +36,6 @@ jobs:
           name: test
           command: npm test
           environment:
-            REPORTER: mocha-junit-reporter
             MOCHA_FILE: junit/test-results.xml
       - run:
           name: lint
@@ -44,19 +43,19 @@ jobs:
           when: always
       - store_test_results:
           path: ~/junit
+      - store_test_results:
+          path: ~/coverage/coverage.json
       - store_artifacts:
           path: ~/junit
       - store_artifacts:
-          path: coverage
+          path: ~/coverage
           prefix: coverage
       - store_artifacts:
-          path: shippable/testresults
+          path: ~/shippable/testresults
           prefix: testresults
       - store_artifacts:
-          path: db.log
+          path: ~/db.log
           prefix: mongolog
       - store_artifacts:
-          path: log
+          path: ~/log
           prefix: logs
-      - store_test_results:
-          path: coverage/coverage.json
