@@ -34,9 +34,10 @@ jobs:
             - ./node_modules
       - run:
           name: test
-          command: npm test
-          environment:
-            MOCHA_FILE: junit/test-results.xml
+          command: |
+            MOCHA_FILE=junit/unittests.xml grunt unittests
+            MOCHA_FILE=junit/apitests.xml grunt apitests
+            MOCHA_FILE=junit/clustertests.xml grunt clustertests
       - run:
           name: lint
           command: npm run lint
