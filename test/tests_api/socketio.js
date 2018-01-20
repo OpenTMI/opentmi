@@ -7,6 +7,7 @@ const nconf = require('../../config');
 const moment = require('moment');
 const logger = require('winston');
 const IO = require('socket.io-client');
+const superagent = require('superagent');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 
@@ -17,12 +18,13 @@ logger.level = 'error';
 
 // Test variables
 const host = 'http://localhost:3000';
+const api = `${host}/api/v0`;
 
-const ioConnect = token => new Promise((resolve, reject) => {
+const ioConnect = (token, namespace = '') => new Promise((resolve, reject) => {
   const options = {
     query: `token=${token}`
   };
-  const client = IO(host, options);
+  const client = IO(`${host}${namespace}`, options);
 
   const _reject = (error) => {
     client.disconnect();
@@ -47,7 +49,7 @@ const ioDisconnect = (client) => {
 
 describe('Basic socketio tests', function () {
   const testUserId = '5825bb7afe7545132c88c761';
-  let token;
+  let token, authString;
   // Create fresh DB
   before(function () {
     // Create token for requests
@@ -58,6 +60,7 @@ describe('Basic socketio tests', function () {
       exp: moment().add(2, 'h').unix()
     };
     token = jwtSimple.encode(payload, nconf.get('webtoken'));
+    authString = `Bearer ${token}`;
   });
 
   it('connection works', function () {
@@ -83,6 +86,32 @@ describe('Basic socketio tests', function () {
         expect(me).to.have.property('groups');
         done();
       });
+    });
+  });
+  describe('results namespace', function () {
+    let io;
+    beforeEach(function () {
+      return ioConnect(token, '/results')
+        .then((client) => {
+          io = client;
+        });
+    });
+    afterEach(function () {
+      return ioDisconnect(io);
+    });
+    it('new result', function (done) {
+      const newResult = {tcid: '123', exec: {verdict: 'pass'}};
+      io.on('new', (result) => {
+        expect(result).to.have.property('_id');
+        expect(result.tcid).to.be.equal(newResult.tcid);
+        done();
+      });
+      superagent.post(`${api}/results`)
+        .set('authorization', authString)
+        .send(newResult)
+        .end((error) => {
+          expect(error).to.not.exist;
+        });
     });
   });
 });
