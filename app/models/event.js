@@ -4,16 +4,38 @@ const QueryPlugin = require('mongoose-query');
 const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
+
 const MSGIDS = [
-  'ALLOCATE',
+  'ALLOCATED',
   'RELEASED',
   'FLASHED',
-  'MAINTENANCE',
-  'UNMAINTENANCE',
+  'ENTER_MAINTENANCE',
+  'EXIT_MAINTENANCE',
   'CREATED',
   'DELETED'
 ];
 
+const PRIORITIES = [
+  'emerg',
+  'alert',
+  'crit',
+  'err',
+  'warning',
+  'notice',
+  'info',
+  'debug'
+];
+const FACILITY = [
+  'auth',
+  'cron',
+  'daemon',
+  'mail',
+  'news',
+  'syslog',
+  'user',
+  'resource',
+  'testcase'
+];
 
 const EventSchema = new Schema({
   cre: {
@@ -29,31 +51,12 @@ const EventSchema = new Schema({
     level: {
       type: String,
       required: true,
-      enum: [
-        'emerg',
-        'alert',
-        'crit',
-        'err',
-        'warning',
-        'notice',
-        'info',
-        'debug'
-      ]
+      enum: PRIORITIES
     },
     facility: {
       type: String,
       required: true,
-      enum: [
-        'auth',
-        'cron',
-        'daemon',
-        'mail',
-        'news',
-        'syslog',
-        'user',
-        'resource',
-        'testcase'
-      ]
+      enum: FACILITY
     }
   },
   id: {type: String}, // PID of the process
@@ -73,4 +76,4 @@ EventSchema.virtual('priorityStr')
 EventSchema.plugin(QueryPlugin); // install QueryPlugin
 
 const Event = mongoose.model('Event', EventSchema);
-module.exports = {Model: Event, Collection: 'Event'};
+module.exports = {Model: Event, Collection: 'Event', MSGIDS, PRIORITIES, FACILITY};

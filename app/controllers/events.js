@@ -9,15 +9,21 @@
 // own modules
 const eventBus = require('../tools/eventBus');
 const DefaultController = require('./');
+const {calcUtilization, calcStatistics} = require('../tools/utilization');
 
 class EventsController extends DefaultController {
   constructor() {
     super('Event');
     // create event based on internal events
-    eventBus.on('resultNew', this._resultNew.bind(this));
-    eventBus.on('resourceNew', this._resourceNew.bind(this));
-    eventBus.on('resourceUpdated', this._resourceUpdated.bind(this));
+    // this._linkEvents();
   }
+  /*
+  _linkEvents() {
+    eventBus.on('result.new', this._resultNew.bind(this));
+    eventBus.on('resource.new', this._resourceNew.bind(this));
+    eventBus.on('resource.updated', this._resourceUpdated.bind(this));
+  }
+  */
   statistics(req, res) {
     const find = {
       ref: {
@@ -28,26 +34,21 @@ class EventsController extends DefaultController {
           'ALLOCATED',
           'RELEASED',
           'FLASHED',
-          'MAINTENANCE',
-          'UNMAINTENANCE'
+          'ENTER_MAINTENANCE',
+          'EXIT_MAINTENANCE'
         ]
       },
       priority: {
         facility: 'resource'
       }
     };
-    /* @todo calculcate statistics: could be done even in DB side
-    - total alloc durations
-    - total amount of FLASHED
-    - total maintenance duration
-    */
-    const calcStatistics = data => Promise.resolve({count: data.length});
-    this.Event
+
+    this.Model
       .find(find)
-      .select('cre.date msgid')
+      .select('cre.date msgid priority.level')
       .exec()
       .then(calcStatistics)
-      .then(res.json)
+      .then(res.json.bind(res))
       .catch(error => res.status(500).json(error));
   }
   utilization(req, res) {
@@ -61,31 +62,28 @@ class EventsController extends DefaultController {
         facility: 'resource'
       }
     };
-    // @todo calculcate utilization - could be done even in DB side:
-    // how many seconds per day device has been allocated
-    // -> based on that information we can calculate percentual values
-    const calcUtilization = data => Promise.resolve({count: data.length});
-    this.Event
+    this.Model
       .find(find)
       .select('cre.date')
       .exec()
       .then(calcUtilization)
-      .then(res.json)
+      .then(res.json.bind(res))
       .catch(error => res.status(500).json(error));
   }
-  _resultNew(result) {
+  /*
+  _resultNew(bus, result) {
     // @todo
     // this.create()
   }
-  _resourceNew(resource) {
+  _resourceNew(bus, resource) {
     // @todo
     // this.create()
   }
-  _resourceUpdated(resource) {
+  _resourceUpdated(bus, resource) {
     // @todo
     // this.create()
   }
+  */
 }
-
 
 module.exports = EventsController;
