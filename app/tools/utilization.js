@@ -78,11 +78,15 @@ const calcStatistics = (data) => {
   return Promise.reduce(data, reducer, initialValue);
 };
 
-
-// @todo calculcate resource utilization - could be done even in DB side:
-// how many seconds per day device has been allocated
-// -> based on that information we can calculate percentual values
 const calcUtilization = (data) => {
+  /**
+   * calculcate resource utilization
+   * (could be done even in DB side)
+   * how many seconds per day device has been allocated - been in maintenance
+   * based on that information this calculate percentual values
+   * @param {List<Event>} data
+   * @return {Object}
+   */
   let duration = 0;
   if (data.length >= 2) {
     duration = toSeconds(data[data.length-1].cre.date - data[0].cre.date);
@@ -111,7 +115,6 @@ const calcUtilization = (data) => {
 };
 
 module.exports = {
-  spreadDays,
   calcStatistics,
   calcUtilization
 };
