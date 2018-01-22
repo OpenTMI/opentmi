@@ -117,13 +117,12 @@ class Addon {
    * @param {Object} socketIO - instance of socket.io
    * @return {Promise} promise to create an instance of the addon
    */
-  createInstance(app, server, socketIO) {
+  createInstance(app, server, socketIO, eventBus) {
     logger.debug(`[${this.name}] Creating addon instance.`);
-    return (new Promise((resolve) => {
-      this.instance = new this.Module(app, server, socketIO);
-      this._status.phase = PHASES.done;
-      resolve();
-    }))
+    return Promise.try(() => {
+        this.instance = new this.Module(app, server, socketIO, eventBus, logger);
+        this._status.phase = PHASES.done;
+      })
       .catch((error) => {
         this._status.phase = PHASES.failed;
 
@@ -156,8 +155,7 @@ class Addon {
     logger.debug(`[${this.name}] Registering addon.`);
     this._status = {state: STATES.register, phase: PHASES.inProgress};
 
-    return new Promise(resolve =>
-      resolve(this.instance.register()))
+    return Promise.try(() => this.instance.register())
       .then(() => {
         this._registerStaticPath(app);
         this._registerRouter(dynamicRouter);
