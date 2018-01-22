@@ -2,8 +2,7 @@ const {expect} = require('chai');
 
 const {
   calcStatistics,
-  calcUtilization,
-  spreadDays
+  calcUtilization
 } = require('../../../app/tools/utilization');
 
 describe('tools/utilization.js', function () {
@@ -41,6 +40,21 @@ describe('tools/utilization.js', function () {
           expect(stats.dates['1995-12-17'].allocations.time).to.be.equal(0);
           expect(stats.dates['1995-12-18'].allocations.count).to.be.equal(1);
           expect(stats.dates['1995-12-18'].allocations.time).to.be.equal(2);
+        });
+    });
+    it('allocations overday', function () {
+      /// @todo this is not handled properly!
+      // it calculate allocation time now for 18's day even it slips to 19's.
+      const events = [
+        {cre: {date: new Date('1995-12-18T23:59:00')}, msgid: 'ALLOCATED'},
+        {cre: {date: new Date('1995-12-19T00:01:00')}, msgid: 'RELEASED'},
+      ];
+      return calcStatistics(events)
+        .then((stats) => {
+          expect(stats.summary.allocations.count).to.be.equal(1);
+          expect(stats.summary.allocations.time).to.be.equal(120);
+          expect(stats.dates['1995-12-18'].allocations.count).to.be.equal(1);
+          expect(stats.dates['1995-12-18'].allocations.time).to.be.equal(120);
         });
     });
     it('maintenances', function () {

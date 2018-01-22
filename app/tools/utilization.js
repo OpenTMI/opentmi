@@ -1,26 +1,28 @@
+// 3rd party modules
 const Promise = require('bluebird');
 const _ = require('lodash');
 const moment = require('moment');
 
+
+// application modules
+const logger = require('./logger');
+
+const {MsgIds, Priorities} = require('../models/event');
+
 const toSeconds = milliseconds => milliseconds/1000;
+const DAY_IN_SECONDS = 60*60*24;
 
+const increase = (obj, path, count = 1) => {
+  const newValue = _.get(obj, path) + count;
+  _.set(obj, path, newValue);
+};
+const decrease = (obj, path, count = 1) => {
+  const newValue = _.get(obj, path) - count;
+  _.set(obj, path, newValue);
+};
+const roundDate = date => moment(date).utc().format('YYYY-MM-DD');
 
-const calcStatistics = (data) => {
-  /**
-   * Calculate statistics from events array
-   * - could be done even in DB side
-   * - total allocations count & duration
-   * - total flashed count & failCount (priority.level=err)
-   * - total maintenance count & duration
-   * - msgid: 'ALLOCATED', RELEASED', 'FLASHED', 'ENTER_MAINTENANCE', 'EXIT_MAINTENANCE'
-   *
-   * @param {List<Event>} data list of events objects
-   * @return {Object}
-   * {{allocations: {count: number, time: number},
-   * maintenance: {count: number, time: number},
-   * flashed: {count: number, failCount: number}}}
-   */
-  const initer = () => ({
+const newEvevent = () => ({
     allocations: {
       count: 0,
       time: 0
@@ -35,47 +37,98 @@ const calcStatistics = (data) => {
     }
   });
 
-  const startTimes = {};
+const spreadDates = (summary) => {
+  const reds = (accumulator, dateStr, index) => {
+    const MAX_DAYS = 5;
+    let i=0;
+    while (i < MAX_DAYS) {
+      i += 1;
+      const duration = _.get(summary.dates, `${dateStr}.allocations.time`);
+      if (duration > DAY_IN_SECONDS) {
+        const newEvent = newEvevent();
+        _.set(summary.dates, `${dateStr}.allocations.time`, DAY_IN_SECONDS);
+        accumulator.dates.push(newEvent);
+        decrease(summary.dates, `${dateStr}.allocations.time`, DAY_IN_SECONDS);
+      }
+    }
+    return accumulator;
+  };
+  return Promise.reduce(Object.keys(summary.dates), reds, summary);
+};
+
+const calcStatistics = (data) => {
+  /**
+   * Calculate statistics from events array
+   * - could be done even in DB side
+   * - total allocations count & duration
+   * - total flashed count & failCount (priority.level=err)
+   * - total maintenance count & duration
+   * - msgid: 'ALLOCATED', RELEASED', 'FLASHED', 'ENTER_MAINTENANCE', 'EXIT_MAINTENANCE'
+   *
+   * @todo this doesn't handle day-over durations
+   * e.g. allocated 23:00, release 01:00.
+   * @param {List<Event>} data list of events objects
+   * @return {Object}
+   * {{allocations: {count: number, time: number},
+   * maintenance: {count: number, time: number},
+   * flashed: {count: number, failCount: number}}}
+   */
+
+  const starts = {};
   const reducer = (accumulator, event) => {
     const date = _.get(event, 'cre.date');
-    const dateStr = moment(date).utc().format('YYYY-MM-DD');
+    const id = _.get(event, 'id');
+    const dateStr = roundDate(date);
     if (!_.has(accumulator.dates, dateStr)) {
-      accumulator.dates[dateStr] = initer();
+      _.set(accumulator, `dates.${dateStr}`, newEvevent());
     }
-    if (event.msgid === 'ALLOCATED') {
-      startTimes[event.msgid] = date;
-      accumulator.summary.allocations.count += 1;
-      accumulator.dates[dateStr].allocations.count += 1;
-    } else if (event.msgid === 'RELEASED' && startTimes['ALLOCATED']) {
-      const startTime = startTimes['ALLOCATED'];
-      const duration = toSeconds(date - startTime);
-      accumulator.summary.allocations.time += duration;
-      accumulator.dates[dateStr].allocations.time += duration;
-    } else if (event.msgid === 'ENTER_MAINTENANCE') {
-      startTimes[event.msgid] = date;
-      accumulator.summary.maintenance.count += 1;
-      accumulator.dates[dateStr].maintenance.count += 1;
-    } else if (event.msgid === 'EXIT_MAINTENANCE' && startTimes['ENTER_MAINTENANCE']) {
-      const startTime = startTimes['ENTER_MAINTENANCE'];
-      const duration = toSeconds(date - startTime);
-      accumulator.summary.maintenance.time += duration;
-      accumulator.dates[dateStr].maintenance.time += duration;
-    } else if (event.msgid === 'FLASHED') {
-      accumulator.summary.flashed.count += 1;
-      accumulator.dates[dateStr].flashed.count += 1;
-      if (_.get(event, 'priority.level') === 'err') {
-        accumulator.summary.flashed.failCount += 1;
-        accumulator.dates[dateStr].flashed.failCount += 1;
+    if (event.msgid === MsgIds.ALLOCATED) {
+      starts[event.msgid] = {date, id};
+      increase(accumulator, 'summary.allocations.count');
+      increase(accumulator, `dates.${dateStr}.allocations.count`);
+    } else if (event.msgid === MsgIds.RELEASED && starts[MsgIds.ALLOCATED]) {
+      const startTime = starts[MsgIds.ALLOCATED].date;
+      const startId = starts[MsgIds.ALLOCATED].id;
+      if (startId === id) {
+        const startTimeStr = roundDate(startTime);
+        const duration = toSeconds(date - startTime);
+        increase(accumulator, 'summary.allocations.time', duration);
+        increase(accumulator, `dates.${startTimeStr}.allocations.time`, duration);
+      } else {
+        logger.warn('released event without corresponding allocated event');
+      }
+    } else if (event.msgid === MsgIds.ENTER_MAINTENANCE) {
+      starts[event.msgid] = {date, id};
+      increase(accumulator, 'summary.maintenance.count');
+      increase(accumulator, `dates.${dateStr}.maintenance.count`);
+    } else if (event.msgid === MsgIds.EXIT_MAINTENANCE && starts[MsgIds.ENTER_MAINTENANCE]) {
+      const startTime = starts[MsgIds.ENTER_MAINTENANCE].date;
+      const startId = starts[MsgIds.ENTER_MAINTENANCE].id;
+      if (startId === id) {
+        const startTimeStr = roundDate(startTime);
+        const duration = toSeconds(date - startTime);
+        increase(accumulator, 'summary.maintenance.time', duration);
+        increase(accumulator, `dates.${startTimeStr}.maintenance.time`, duration);
+      } else {
+        logger.warn('exit_maintenance event without corresponding enter_maintenance event')
+      }
+    } else if (event.msgid === MsgIds.FLASHED) {
+      increase(accumulator, 'summary.flashed.count');
+      increase(accumulator, `dates.${dateStr}.flashed.count`);
+      if (_.get(event, 'priority.level') === Priorities.ERR) {
+        increase(accumulator, 'summary.flashed.failCount');
+        increase(accumulator, `dates.${dateStr}.flashed.failCount`);
       }
     }
     return new Promise(resolve => process.nextTick(resolve, accumulator));
   };
   const initialValue = {
     count: data.length,
-    summary: initer(),
+    summary: newEvevent(),
     dates: {}
   };
-  return Promise.reduce(data, reducer, initialValue);
+  return Promise.reduce(data, reducer, initialValue)
+    //.then(spreadDates);
 };
 
 const calcUtilization = (data) => {
