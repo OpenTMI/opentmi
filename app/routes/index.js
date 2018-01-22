@@ -3,22 +3,23 @@ const fs = require('fs');
 
 // Third party modules
 const Promise = require('bluebird');
-const readdir = Promise.promisify(fs.readdir);
 const _ = require('lodash');
 
 // application modules
 const logger = require('../tools/logger');
 const registerErrorRoute = require('./error');
 
+const readdir = Promise.promisify(fs.readdir);
+
 function register(app, io, file) {
   logger.verbose(` * ${file}`);
   return Promise.try(() => {
-      const router = require(`./${file}`); // eslint-disable-line global-require, import/no-dynamic-require
-      if (_.isFunction(router)) {
-        return router(app, io);
-      }
-      throw new Error(`${file} did not export an function!`);
-    })
+    const router = require(`./${file}`); // eslint-disable-line global-require, import/no-dynamic-require
+    if (_.isFunction(router)) {
+      return router(app, io);
+    }
+    throw new Error(`${file} did not export an function!`);
+  })
     .catch((error) => {
       logger.warn(error);
     });
