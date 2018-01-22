@@ -17,6 +17,7 @@ There is JSON REST and SocketIO API's. REST provide most of the current features
 |/api/v0/Builds|Manage Builds|
 |/api/v0/loans|Manage Loans|
 |/api/v0/items|Manage items|
+|/api/v0/events|Manage events|
 |/api/v0/cluster|Manage cluster|
 
 

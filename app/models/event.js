@@ -96,7 +96,7 @@ const EventSchema = new Schema({
       enum: Facilities.list()
     }
   },
-  id: {type: String}, // PID of the process
+  id: {type: String}, // e.g. PID of the process
   msgid: {type: String, enum: MsgIds.list()}, // pre-defined ID's
   tag: {type: String},
   msg: {type: String}
