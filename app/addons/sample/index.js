@@ -19,7 +19,7 @@ class AddonCore {
       res.json({ ok: 1 });
     });
 
-    this.io.on('connection', function (socket) {
+    this.io.on('connection', (socket) => {
       this.logger.info('Io connection made.');
       socket.emit('test', 'hello client');
       socket.on('hello', (data) => {
