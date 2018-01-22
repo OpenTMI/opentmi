@@ -80,11 +80,12 @@ describe('addons/index.js', function () {
 
   describe('init', function () {
     it('init - valid app, server, and io', function (done) {
-      AddonManager.init('appel', 'grunt', 'klapperino');
+      AddonManager.init('appel', 'grunt', 'klapperino', 'bussi');
 
       expect(AddonManager).to.have.property('app', 'appel');
       expect(AddonManager).to.have.property('server', 'grunt');
       expect(AddonManager).to.have.property('io', 'klapperino');
+      expect(AddonManager).to.have.property('eventBus', 'bussi');
 
       done();
     });
