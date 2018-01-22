@@ -28,9 +28,7 @@ class EventsController extends DefaultController {
   */
   statistics(req, res) {
     const find = {
-      ref: {
-        resource: req.params.Resource
-      },
+      'ref.resource': req.params.Resource,
       msgid: {
         $in: [
           MsgIds.ALLOCATED,
@@ -40,9 +38,7 @@ class EventsController extends DefaultController {
           MsgIds.EXIT_MAINTENANCE
         ]
       },
-      priority: {
-        facility: 'resource'
-      }
+      'priority.facility': 'resource'
     };
 
     this.Model
