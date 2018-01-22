@@ -10,7 +10,7 @@ to use to listen e.g. events when new result is arrived.
 const express = require('express');
 const logger = require('../../tools/logger');
 class AddonCore {
-  constructor(app, server, io) {
+  constructor(app, server, io, eventBus, logger) {
     // Defined variables
     this.router = express.Router();
     this.staticPath = { prefix: '/test', folder: '/public/' };
