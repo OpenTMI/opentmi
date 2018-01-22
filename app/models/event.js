@@ -15,7 +15,7 @@ class MsgIds {
       MsgIds.EXIT_MAINTENANCE,
       MsgIds.CREATED,
       MsgIds.DELETED,
-      MsgIds.FLASHED,
+      MsgIds.FLASHED
     ];
   }
   static get ALLOCATED() { return 'ALLOCATED'; }
@@ -61,7 +61,7 @@ class Facilities {
       Facilities.USER,
       Facilities.RESOURCE,
       Facilities.TESTCASE
-    ]
+    ];
   }
   static get AUTH() { return 'auth'; }
   static get CRON() { return 'cron'; }

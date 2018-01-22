@@ -5,16 +5,15 @@ const {
   calcUtilization
 } = require('../../../app/tools/utilization');
 
-describe('tools/utilization.js', function () {
-
+describe('tools/utilization.js', () => {
   // Run this before tests
-  describe('statistics', function () {
-    it('allocations', function () {
+  describe('statistics', () => {
+    it('allocations', () => {
       const events = [
         {cre: {date: new Date('1995-12-17T00:00:00')}, msgid: 'ALLOCATED'},
         {cre: {date: new Date('1995-12-17T00:00:01')}, msgid: 'RELEASED'},
         {cre: {date: new Date('1995-12-18T00:00:00')}, msgid: 'ALLOCATED'},
-        {cre: {date: new Date('1995-12-18T00:00:02')}, msgid: 'RELEASED'},
+        {cre: {date: new Date('1995-12-18T00:00:02')}, msgid: 'RELEASED'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -26,11 +25,11 @@ describe('tools/utilization.js', function () {
           expect(stats.dates['1995-12-18'].allocations.time).to.be.equal(2);
         });
     });
-    it('allocations middle', function () {
+    it('allocations middle', () => {
       const events = [
         {cre: {date: new Date('1995-12-17T00:00:01')}, msgid: 'RELEASED'},
         {cre: {date: new Date('1995-12-18T00:00:00')}, msgid: 'ALLOCATED'},
-        {cre: {date: new Date('1995-12-18T00:00:02')}, msgid: 'RELEASED'},
+        {cre: {date: new Date('1995-12-18T00:00:02')}, msgid: 'RELEASED'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -42,12 +41,12 @@ describe('tools/utilization.js', function () {
           expect(stats.dates['1995-12-18'].allocations.time).to.be.equal(2);
         });
     });
-    it('allocations overday', function () {
-      /// @todo this is not handled properly!
+    it('allocations overday', () => {
+      // / @todo this is not handled properly!
       // it calculate allocation time now for 18's day even it slips to 19's.
       const events = [
         {cre: {date: new Date('1995-12-18T23:59:00')}, msgid: 'ALLOCATED'},
-        {cre: {date: new Date('1995-12-19T00:01:00')}, msgid: 'RELEASED'},
+        {cre: {date: new Date('1995-12-19T00:01:00')}, msgid: 'RELEASED'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -57,12 +56,12 @@ describe('tools/utilization.js', function () {
           expect(stats.dates['1995-12-18'].allocations.time).to.be.equal(120);
         });
     });
-    it('maintenances', function () {
+    it('maintenances', () => {
       const events = [
         {cre: {date: new Date('1995-12-17T00:00:00')}, msgid: 'ENTER_MAINTENANCE'},
         {cre: {date: new Date('1995-12-17T00:00:01')}, msgid: 'EXIT_MAINTENANCE'},
         {cre: {date: new Date('1995-12-18T00:00:00')}, msgid: 'ENTER_MAINTENANCE'},
-        {cre: {date: new Date('1995-12-18T00:00:02')}, msgid: 'EXIT_MAINTENANCE'},
+        {cre: {date: new Date('1995-12-18T00:00:02')}, msgid: 'EXIT_MAINTENANCE'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -74,7 +73,7 @@ describe('tools/utilization.js', function () {
           expect(stats.dates['1995-12-18'].maintenance.time).to.be.equal(2);
         });
     });
-    it('flashes', function () {
+    it('flashes', () => {
       const events = [
         {cre: {date: new Date('1995-12-17T00:00:00')}, msgid: 'FLASHED'},
         {cre: {date: new Date('1995-12-18T00:00:00')}, msgid: 'FLASHED', priority: {level: 'err'}}
@@ -88,8 +87,8 @@ describe('tools/utilization.js', function () {
         });
     });
   });
-  describe('utilization', function () {
-    it('usage utilization', function () {
+  describe('utilization', () => {
+    it('usage utilization', () => {
       const events = [
         {cre: {date: new Date('1995-12-17T00:00:00')}, msgid: 'ALLOCATED'},
         {cre: {date: new Date('1995-12-17T23:00:00')}, msgid: 'RELEASED'},

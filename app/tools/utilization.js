@@ -6,11 +6,10 @@ const moment = require('moment');
 
 // application modules
 const logger = require('./logger');
-
 const {MsgIds, Priorities} = require('../models/event');
 
-const toSeconds = milliseconds => milliseconds/1000;
-const DAY_IN_SECONDS = 60*60*24;
+const toSeconds = milliseconds => milliseconds / 1000;
+const DAY_IN_SECONDS = 60 * 60 * 24;
 
 const increase = (obj, path, count = 1) => {
   const newValue = _.get(obj, path) + count;
@@ -23,24 +22,24 @@ const decrease = (obj, path, count = 1) => {
 const roundDate = date => moment(date).utc().format('YYYY-MM-DD');
 
 const newEvevent = () => ({
-    allocations: {
-      count: 0,
-      time: 0
-    },
-    maintenance: {
-      count: 0,
-      time: 0
-    },
-    flashed: {
-      count: 0,
-      failCount: 0
-    }
-  });
+  allocations: {
+    count: 0,
+    time: 0
+  },
+  maintenance: {
+    count: 0,
+    time: 0
+  },
+  flashed: {
+    count: 0,
+    failCount: 0
+  }
+});
 
 const spreadDates = (summary) => {
   const reds = (accumulator, dateStr, index) => {
     const MAX_DAYS = 5;
-    let i=0;
+    let i = 0;
     while (i < MAX_DAYS) {
       i += 1;
       const duration = _.get(summary.dates, `${dateStr}.allocations.time`);
@@ -110,7 +109,7 @@ const calcStatistics = (data) => {
         increase(accumulator, 'summary.maintenance.time', duration);
         increase(accumulator, `dates.${startTimeStr}.maintenance.time`, duration);
       } else {
-        logger.warn('exit_maintenance event without corresponding enter_maintenance event')
+        logger.warn('exit_maintenance event without corresponding enter_maintenance event');
       }
     } else if (event.msgid === MsgIds.FLASHED) {
       increase(accumulator, 'summary.flashed.count');
@@ -127,8 +126,8 @@ const calcStatistics = (data) => {
     summary: newEvevent(),
     dates: {}
   };
-  return Promise.reduce(data, reducer, initialValue)
-    //.then(spreadDates);
+  return Promise.reduce(data, reducer, initialValue);
+  // .then(spreadDates);
 };
 
 const calcUtilization = (data) => {
@@ -142,7 +141,7 @@ const calcUtilization = (data) => {
    */
   let duration = 0;
   if (data.length >= 2) {
-    duration = toSeconds(data[data.length-1].cre.date - data[0].cre.date);
+    duration = toSeconds(data[data.length - 1].cre.date - data[0].cre.date);
   } else {
     return Promise.reject(new Error('There is no enough events for selected period'));
   }

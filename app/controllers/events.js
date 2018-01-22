@@ -5,10 +5,9 @@
 // native modules
 
 // 3rd party modules
-const _ = require('lodash');
 
 // own modules
-const eventBus = require('../tools/eventBus');
+// const eventBus = require('../tools/eventBus');
 const DefaultController = require('./');
 const {calcUtilization, calcStatistics} = require('../tools/utilization');
 const {MsgIds} = require('../models/event');
