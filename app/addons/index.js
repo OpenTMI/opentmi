@@ -104,7 +104,8 @@ class AddonManager {
 
     // Function that returns whether a file is a directory or not
     function isAddon(file) {
-      return fs.lstatSync(path.resolve(relativeAddonPath, file)).isDirectory();
+      const lstat = fs.lstatSync(path.resolve(relativeAddonPath, file));
+      return lstat.isDirectory() || lstat.isSymbolicLink();
     }
 
     // Iterate through all directory files in the addons folder
