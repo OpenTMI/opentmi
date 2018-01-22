@@ -9,16 +9,18 @@ const logger = require('./logger');
 const {MsgIds, Priorities} = require('../models/event');
 
 const toSeconds = milliseconds => milliseconds / 1000;
-const DAY_IN_SECONDS = 60 * 60 * 24;
+// const DAY_IN_SECONDS = 60 * 60 * 24;
 
 const increase = (obj, path, count = 1) => {
   const newValue = _.get(obj, path) + count;
   _.set(obj, path, newValue);
 };
+/*
 const decrease = (obj, path, count = 1) => {
   const newValue = _.get(obj, path) - count;
   _.set(obj, path, newValue);
 };
+*/
 const roundDate = date => moment(date).utc().format('YYYY-MM-DD');
 
 const newEvevent = () => ({
