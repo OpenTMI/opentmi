@@ -25,15 +25,15 @@ function Route(app) {
     .post(controller.create.bind(controller));
 
   router.route('/api/v0/events/:Event.:format?')
-     .all(jwtMdl, ensureAuthenticated)
+    .all(jwtMdl, ensureAuthenticated)
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .delete(ensureAdmin, controller.remove.bind(controller));
   router.route('/api/v0/resources/:Resource/utilization')
-     //.all(jwtMdl, ensureAuthenticated)
+    .all(jwtMdl, ensureAuthenticated)
     .get(controller.utilization.bind(controller));
   router.route('/api/v0/resources/:Resource/statistics')
-     //.all(jwtMdl, ensureAuthenticated)
+    .all(jwtMdl, ensureAuthenticated)
     .get(controller.statistics.bind(controller));
   app.use(router);
 }

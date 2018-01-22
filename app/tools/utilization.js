@@ -36,6 +36,7 @@ const newEvevent = () => ({
   }
 });
 
+/*
 const spreadDates = (summary) => {
   const reds = (accumulator, dateStr, index) => {
     const MAX_DAYS = 5;
@@ -54,6 +55,7 @@ const spreadDates = (summary) => {
   };
   return Promise.reduce(Object.keys(summary.dates), reds, summary);
 };
+*/
 
 const calcStatistics = (data) => {
   /**
