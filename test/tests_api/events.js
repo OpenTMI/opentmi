@@ -42,7 +42,7 @@ describe('Events', function () {
       .reflect()
       .then((promise) => {
         expect(promise.isRejected()).to.be.true;
-      })
+      });
   });
 
   it('create events', function () {
@@ -58,9 +58,9 @@ describe('Events', function () {
       .then((event) => {
         expect(event.body).to.have.property('priority');
       })
-      .catch(error => {
+      .catch((error) => {
         throw new Error(error.response.body.error);
-      })
+      });
   });
   it('can calculate summary', function () {
     const resourceId = '5825bb7afe7545132c88c761';
@@ -84,7 +84,7 @@ describe('Events', function () {
         .then(response => response.body)
         .then((body) => {
           expect(body.msgid).to.be.equal(msgid);
-        })
+        });
     };
     const getStatistics = () =>
       superagent.get(`${apiV0}/resources/${resourceId}/statistics`)

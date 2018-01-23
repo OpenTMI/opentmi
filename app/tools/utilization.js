@@ -92,8 +92,8 @@ const calcStatistics = (data) => {
     } else if (event.msgid === MsgIds.RELEASED && starts[MsgIds.ALLOCATED]) {
       const startTime = starts[MsgIds.ALLOCATED].date;
       const startId = starts[MsgIds.ALLOCATED].id;
-      if( startTime > date) {
-        logger.warn('time axis is not constand')
+      if (startTime > date) {
+        logger.warn('time axis is not constand');
       } else if (startId === id) {
         const startTimeStr = roundDate(startTime);
         const duration = toSeconds(date - startTime);
