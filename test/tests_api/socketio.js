@@ -61,7 +61,7 @@ describe('Basic socketio tests', function () {
     };
     const tokenObj = createUserToken(tokenInput);
     token = tokenObj.token;
-    token.authString = tokenObj.authString;
+    authString = tokenObj.authString;
   });
 
   it('connection works', function () {
