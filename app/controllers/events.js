@@ -9,8 +9,10 @@
 // own modules
 // const eventBus = require('../tools/eventBus');
 const DefaultController = require('./');
-const {calcUtilization, calcStatistics} = require('../tools/utilization');
+const {Utilization} = require('../tools/utilization');
 const {MsgIds} = require('../models/event');
+const logger = require('../tools/logger');
+
 
 class EventsController extends DefaultController {
   constructor() {
@@ -40,33 +42,51 @@ class EventsController extends DefaultController {
       },
       'priority.facility': 'resource'
     };
-
+    const utilization = new Utilization();
     this.Model
       .find(find)
       .select('cre.date msgid priority.level')
-      .exec()
-      .then(calcStatistics)
-      .then(res.json.bind(res))
-      .catch(error => res.status(500).json(error));
+      .cursor()
+      .on('data', utilization.push.bind(utilization))
+      .on('error', (err) => { logger.error(err); })
+      .on('end', () => res.json(utilization.summary));
   }
   utilization(req, res) {
     const find = {
-      ref: {
-        resource: req.params.Resource
-      },
+      'ref.resource': req.params.Resource,
       msgid: {$in: [MsgIds.ALLOCATED, MsgIds.RELEASED]},
-      priority: {
-        level: 'info',
-        facility: 'resource'
-      }
+      'priority.level': 'info',
+      'priority.facility': 'resource'
     };
+    const utilization = new Utilization();
     this.Model
       .find(find)
       .select('cre.date')
+      .cursor()
+      .on('data', utilization.push.bind(utilization))
+      .on('error', err => logger.error(err))
+      .on('end', () => {
+        utilization.calculate()
+          .then(res.json.bind(res))
+          .catch((error) => {
+            res.status(404).json({message: error.message, error: error});
+          });
+      });
+  }
+  resourceEvents(req, res) {
+    const find = {
+      'ref.resource': req.params.Resource
+    };
+    this.Model
+      .find(find)
       .exec()
-      .then(calcUtilization)
-      .then(res.json.bind(res))
-      .catch(error => res.status(500).json(error));
+      .then((events) => { res.json(events); })
+      .catch((error) => {
+        logger.warn(error);
+        res
+          .status(500)
+          .json({message: error.message, error: error});
+      });
   }
   /*
   _resultNew(bus, result) {
