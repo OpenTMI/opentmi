@@ -21,11 +21,11 @@ const testUserId = '5825bb7afe7545132c88c761';
 describe('Events', function () {
   let authString;
   const api = `${apiV0}/events`;
-  const deleteEvent = (eventId) => {
-    return superagent.del(`${api}/${eventId}`)
+  const deleteEvent = eventId =>
+    superagent.del(`${api}/${eventId}`)
       .set('authorization', authString)
       .end();
-  };
+
   // Create fresh DB
   before(function () {
     const tokenInput = {
