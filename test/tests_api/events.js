@@ -106,9 +106,53 @@ describe('Events', function () {
       create('1995-12-17T00:00:01', 'RELEASED')
     ]).then(getStatistics)
       .then((stats) => {
-        expect(stats.count >= 2).to.be.true;
-        expect(stats.summary.allocations.count >= 1).to.be.true;
-        expect(stats.summary.allocations.time >= 1).to.be.true;
+        expect(stats.count).to.be.equal(2);
+        expect(stats.summary.allocations.count).to.be.equal(1);
+        expect(stats.summary.allocations.time).to.be.equal(1);
+      })
+      .finally(() => Promise.each(createdIds, deleteEvent));
+  });
+  it('can calculate utilization', function () {
+    const resourceId = '5825bb7afe7545132c88c761';
+    const createdIds = [];
+    const create = (timestamp, msgid) => {
+      const payload = {
+        priority: {
+          level: 'info',
+          facility: 'resource'
+        },
+        ref: {
+          resource: resourceId
+        },
+        cre: {
+          date: timestamp
+        },
+        msgid
+      };
+      return superagent.post(api, payload)
+        .set('authorization', authString)
+        .end()
+        .then(response => response.body)
+        .then((body) => {
+          createdIds.push(body._id);
+          expect(body.msgid).to.be.equal(msgid);
+        });
+    };
+    const getUtilization = () =>
+      superagent.get(`${apiV0}/resources/${resourceId}/utilization`)
+        .set('authorization', authString)
+        .end()
+        .then(response => response.body);
+    return Promise.all([
+      create('1995-12-17T00:00:00', 'ALLOCATED'),
+      create('1995-12-17T00:00:01', 'RELEASED')
+    ]).then(getUtilization)
+      .then((stats) => {
+        expect(stats.count).to.be.equal(2);
+        expect(stats.summary.allocations.count).to.be.equal(1);
+        expect(stats.summary.allocations.time).to.be.equal(1);
+        expect(stats.summary.allocations.utilization >= 0.1).to.be.true;
+        expect(stats.summary.allocations.utilization < 0.11).to.be.true;
       })
       .finally(() => Promise.each(createdIds, deleteEvent));
   });

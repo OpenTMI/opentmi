@@ -137,7 +137,7 @@ class Utilization {
      */
     let duration = 0;
     if (this._accumulator.count >= 2) {
-      duration = toSeconds(this.last.cre.date - this.first.cre.date);
+      duration = this.last.cre.date - this.first.cre.date;
     } else {
       return Promise.reject(new Error('There is no enough events for selected period'));
     }
@@ -149,7 +149,7 @@ class Utilization {
     statistics.summary.maintenance.utilization = utilization;
     // calculate day based utilizations..
     const reducer = (accumulator, date) => {
-      const obj = statistics.dates[date];
+      const obj = accumulator.dates[date];
       utilization = (obj.allocations.time / duration) * 100;
       obj.allocations.utilization = utilization;
       utilization = (obj.maintenance.time / duration) * 100;

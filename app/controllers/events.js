@@ -77,7 +77,7 @@ class EventsController extends DefaultController {
     const utilization = new Utilization();
     this.Model
       .find(find)
-      .select('cre.date')
+      .select('cre.date msgid priority.level')
       .cursor()
       .on('data', utilization.push.bind(utilization))
       .on('error', err => logger.error(err))
