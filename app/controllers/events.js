@@ -32,14 +32,14 @@ class EventsController extends DefaultController {
 
   static redirectRef(req, res) {
     const iteratee = (path) => {
-      let ref = _.get(req.Event, `ref.${path}`);
+      const ref = _.get(req.Event, `ref.${path}`);
       if (ref) {
         res.redirect(`/api/v0/${path}s/${ref}`);
         return true;
       }
       return false;
     };
-    const found =_.find(['resource', 'result', 'testcase'], iteratee);
+    const found = _.find(['resource', 'result', 'testcase'], iteratee);
     if (!found) {
       res.status(404).json({message: 'reference object not found'});
     }
