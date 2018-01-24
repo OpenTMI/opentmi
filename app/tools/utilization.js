@@ -137,7 +137,7 @@ class Utilization {
      */
     let duration = 0;
     if (this._accumulator.count >= 2) {
-      duration = this.last.cre.date - this.first.cre.date;
+      duration = toSeconds(this.last.cre.date - this.first.cre.date);
     } else {
       return Promise.reject(new Error('There is no enough events for selected period'));
     }
