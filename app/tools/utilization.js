@@ -141,21 +141,22 @@ class Utilization {
     } else {
       return Promise.reject(new Error('There is no enough events for selected period'));
     }
+    const statistics = _.cloneDeep(this._accumulator);
     // calculate utilizations
-    let utilization = (this._accumulator.summary.allocations.time / duration) * 100;
-    this._accumulator.summary.allocations.utilization = utilization;
-    utilization = (this.summary.summary.maintenance.time / duration) * 100;
-    this._accumulator.summary.maintenance.utilization = utilization;
+    let utilization = (statistics.summary.allocations.time / duration) * 100;
+    statistics.summary.allocations.utilization = utilization;
+    utilization = (statistics.summary.maintenance.time / duration) * 100;
+    statistics.summary.maintenance.utilization = utilization;
     // calculate day based utilizations..
     const reducer = (accumulator, date) => {
-      const obj = this._accumulator.dates[date];
+      const obj = statistics.dates[date];
       utilization = (obj.allocations.time / duration) * 100;
       obj.allocations.utilization = utilization;
       utilization = (obj.maintenance.time / duration) * 100;
       obj.maintenance.utilization = utilization;
-      return new Promise(resolve => process.nextTick(resolve, accumulator));
+      return new Promise(resolve => process.nextTick(() => resolve(accumulator)));
     };
-    return Promise.reduce(Object.keys(this._accumulator.dates), reducer, this._accumulator);
+    return Promise.reduce(Object.keys(statistics.dates), reducer, statistics);
   }
   /*
   static spreadDates(summary) {

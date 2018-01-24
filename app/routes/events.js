@@ -30,6 +30,10 @@ function Route(app) {
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .delete(ensureAdmin, controller.remove.bind(controller));
+  router.route('/api/v0/events/:Event/ref')
+    .all(...authentication)
+    .all(controller.all.bind(controller))
+    .get(EventsController.redirectRef);
   router.route('/api/v0/resources/:Resource/utilization')
     .all(...authentication)
     .get(controller.utilization.bind(controller));
