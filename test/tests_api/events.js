@@ -21,6 +21,11 @@ const testUserId = '5825bb7afe7545132c88c761';
 describe('Events', function () {
   let authString;
   const api = `${apiV0}/events`;
+  const deleteEvent = (eventId) => {
+    return superagent.del(`${api}/${eventId}`)
+      .set('authorization', authString)
+      .end();
+  };
   // Create fresh DB
   before(function () {
     const tokenInput = {
@@ -52,18 +57,22 @@ describe('Events', function () {
         facility: 'user'
       }
     };
+    let eventId;
     return superagent.post(api, payload)
       .set('authorization', authString)
       .end()
       .then((event) => {
+        eventId = event.body._id;
         expect(event.body).to.have.property('priority');
       })
       .catch((error) => {
         throw new Error(error.response.body.error);
-      });
+      })
+      .finally(() => deleteEvent(eventId));
   });
   it('can calculate summary', function () {
     const resourceId = '5825bb7afe7545132c88c761';
+    const createdIds = [];
     const create = (timestamp, msgid) => {
       const payload = {
         priority: {
@@ -83,6 +92,7 @@ describe('Events', function () {
         .end()
         .then(response => response.body)
         .then((body) => {
+          createdIds.push(body._id);
           expect(body.msgid).to.be.equal(msgid);
         });
     };
@@ -99,6 +109,7 @@ describe('Events', function () {
         expect(stats.count >= 2).to.be.true;
         expect(stats.summary.allocations.count >= 1).to.be.true;
         expect(stats.summary.allocations.time >= 1).to.be.true;
-      });
+      })
+      .finally(() => Promise.each(createdIds, deleteEvent));
   });
 });
