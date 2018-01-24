@@ -109,7 +109,7 @@ class Utilization {
     } else if (event.msgid === MsgIds.EXIT_MAINTENANCE && this._starts[MsgIds.ENTER_MAINTENANCE]) {
       const startTime = this._starts[MsgIds.ENTER_MAINTENANCE].date;
       const startId = this._starts[MsgIds.ENTER_MAINTENANCE].id;
-      _.unset(this._starts, MsgIds.ENTER_MAINTENANCE)
+      _.unset(this._starts, MsgIds.ENTER_MAINTENANCE);
       if (startId === id) {
         const startTimeStr = roundDate(startTime);
         const duration = toSeconds(date - startTime);
