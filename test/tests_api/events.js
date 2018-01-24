@@ -145,14 +145,15 @@ describe('Events', function () {
         .then(response => response.body);
     return Promise.all([
       create('1995-12-17T00:00:00', 'ALLOCATED'),
-      create('1995-12-17T00:00:01', 'RELEASED')
+      create('1995-12-17T01:00:00', 'RELEASED'),
+      create('1995-12-18T00:00:00', 'RELEASED')
     ]).then(getUtilization)
       .then((stats) => {
-        expect(stats.count).to.be.equal(2);
+        expect(stats.count).to.be.equal(3);
         expect(stats.summary.allocations.count).to.be.equal(1);
-        expect(stats.summary.allocations.time).to.be.equal(1);
-        expect(stats.summary.allocations.utilization >= 0.1).to.be.true;
-        expect(stats.summary.allocations.utilization < 0.11).to.be.true;
+        expect(stats.summary.allocations.time).to.be.equal(3600);
+        expect(stats.summary.allocations.utilization >= 4).to.be.true;
+        expect(stats.summary.allocations.utilization < 4.2).to.be.true;
       })
       .finally(() => Promise.each(createdIds, deleteEvent));
   });
