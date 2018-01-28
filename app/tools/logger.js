@@ -4,8 +4,10 @@ const path = require('path');
 const fs = require('fs');
 
 // Third party components
+const _ = require('lodash');
 const Winston = require('winston');
 require('winston-daily-rotate-file');
+require('winston-logstash');
 
 // Application components
 const config = require('../../config/index');
@@ -41,24 +43,35 @@ class MasterLogger {
   constructor() {
     this.logger = Winston;
 
-    // @todo File logging options should be fetched from config file
-    // Add winston file logger, which rotates daily
     const fileLevel = 'silly';
-    this.logger.configure({
-      transports: [
-        new (Winston.transports.Console)({
-          colorize: true,
-          level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
-        }),
-        new (Winston.transports.DailyRotateFile)({
-          filename: logFile,
-          json: false,
-          handleExceptions: false,
-          level: fileLevel,
-          datePatter: '.yyyy-MM-dd_HH-mm.log'
-        })
-      ]
-    });
+    const logging = config.get('logging');
+    const transports = [];
+    if (!silent) {
+      transports.push(new (Winston.transports.Console)({
+        colorize: true,
+        level: ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+      }));
+    }
+    transports.push(
+      // @todo File logging options should be fetched from config file
+      // Add winston file logger, which rotates daily
+      new (Winston.transports.DailyRotateFile)({
+        filename: logFile,
+        json: false,
+        handleExceptions: false,
+        level: fileLevel,
+        datePatter: '.yyyy-MM-dd_HH-mm.log'
+      })
+    );
+    const logstash = _.get(logging, 'logstash');
+    if (logstash) {
+      transports.push(new (Winston.transports.Logstash)({
+        port: _.get(logstash, 'port', 28777),
+        node_name: _.get(logstash, 'node_name', 'OpentTMI'),
+        host: _.get(logstash, 'host', '127.0.0.1')
+      }));
+    }
+    this.logger.configure({transports});
 
     // Print current config
     this.logger.debug(`Using cfg: ${environment}.`);
