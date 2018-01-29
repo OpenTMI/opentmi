@@ -8,6 +8,9 @@ const childProcess = require('child_process');
 const express = require('express');
 const logger = require('../tools/logger');
 const Promise = require('bluebird');
+const mongoose = require('mongoose');
+
+const nconf = require('../../config');
 
 const exec = Promise.promisify(childProcess.exec, {multiArgs: true});
 
@@ -120,12 +123,12 @@ class Addon {
   createInstance(app, server, socketIO, eventBus) {
     logger.debug(`[${this.name}] Creating addon instance.`);
     return Promise.try(() => {
-      this.instance = new this.Module(app, server, socketIO, eventBus, logger);
-      this._status.phase = PHASES.done;
-    })
+        const settings = nconf.get(this.name);
+        this.instance = new this.Module(app, server, socketIO, eventBus, logger, settings, mongoose);
+        this._status.phase = PHASES.done;
+      })
       .catch((error) => {
         this._status.phase = PHASES.failed;
-
         const errorMsg = `[${this.name}] Load failed.`;
         const meta = {message: error.message};
         const editedError = error;
