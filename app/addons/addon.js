@@ -123,10 +123,10 @@ class Addon {
   createInstance(app, server, socketIO, eventBus) {
     logger.debug(`[${this.name}] Creating addon instance.`);
     return Promise.try(() => {
-        const settings = nconf.get(this.name);
-        this.instance = new this.Module(app, server, socketIO, eventBus, logger, settings, mongoose);
-        this._status.phase = PHASES.done;
-      })
+      const settings = nconf.get(this.name);
+      this.instance = new this.Module(app, server, socketIO, eventBus, logger, settings, mongoose);
+      this._status.phase = PHASES.done;
+    })
       .catch((error) => {
         this._status.phase = PHASES.failed;
         const errorMsg = `[${this.name}] Load failed.`;
