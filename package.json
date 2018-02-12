@@ -1,7 +1,7 @@
 {
   "name": "OpenTMI",
   "description": "OpenTMI - Open Source Test Management Infrastructure",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "author": {
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
@@ -76,7 +76,6 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "dookie": "^0.2.0",
     "eslint": "^4.13.1",
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-chai-expect": "^1.1.1",
