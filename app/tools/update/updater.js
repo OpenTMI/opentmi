@@ -20,6 +20,7 @@ class Updater extends EventEmitter {
     };
 
     this._pending = Promise.resolve();
+    this.on('status', status => { logger.debug(status); });
     this.npm = new Npm();
   }
   update(revision) {
