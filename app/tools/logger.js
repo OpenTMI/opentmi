@@ -15,7 +15,6 @@ const verbose = config.get('verbose');
 const silent = config.get('silent');
 const environment = config.get('env');
 
-
 const logDir = path.resolve(__dirname, '..', '..', 'log');
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
@@ -44,21 +43,22 @@ class MasterLogger {
     // @todo File logging options should be fetched from config file
     // Add winston file logger, which rotates daily
     const fileLevel = 'silly';
-    this.logger.configure({
-      transports: [
-        new (Winston.transports.Console)({
+
+    const transports = [];
+    if(!silent) {
+      transports.push( new (Winston.transports.Console)({
           colorize: true,
-          level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
-        }),
-        new (Winston.transports.DailyRotateFile)({
+          level: ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+      }));
+    }
+    transports.push(new (Winston.transports.DailyRotateFile)({
           filename: logFile,
           json: false,
           handleExceptions: false,
           level: fileLevel,
           datePatter: '.yyyy-MM-dd_HH-mm.log'
-        })
-      ]
-    });
+        }));
+    this.logger.configure({transports});
 
     // Print current config
     this.logger.debug(`Using cfg: ${environment}.`);
