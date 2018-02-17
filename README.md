@@ -128,9 +128,10 @@ By default it start server as development mode. You can configure environment us
 * **Frontends**
   * [default web GUI as addon](https://github.com/opentmi/opentmi-default-gui)
   * [admin gui as addon](https://github.com/opentmi/opentmi-adminui)
-* **Client libraries**
-  * [opentmi-client-python](https://github.com/opentmi/opentmi-client-python)
+* **Client libraries/tools**
+  * [opentmi-pyclient](https://github.com/opentmi/opentmi-pyclient)
   * [opentmi-jsclient](https://github.com/opentmi/opentmi-jsclient) for nodejs / browser
+  * [opentmi-cli](https://github.com/opentmi/opentmi-cli)
 
 ### Addons
 Way to extend backend-service functionality. Addon registry (future plan) contains information about existing addons, which can easily to install via administrator API. More documentation can be found from [here](doc/addons.md)

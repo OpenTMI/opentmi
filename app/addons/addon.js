@@ -8,6 +8,9 @@ const childProcess = require('child_process');
 const express = require('express');
 const logger = require('../tools/logger');
 const Promise = require('bluebird');
+const mongoose = require('mongoose');
+
+const nconf = require('../../config');
 
 const exec = Promise.promisify(childProcess.exec, {multiArgs: true});
 
@@ -117,16 +120,15 @@ class Addon {
    * @param {Object} socketIO - instance of socket.io
    * @return {Promise} promise to create an instance of the addon
    */
-  createInstance(app, server, socketIO) {
+  createInstance(app, server, socketIO, eventBus) {
     logger.debug(`[${this.name}] Creating addon instance.`);
-    return (new Promise((resolve) => {
-      this.instance = new this.Module(app, server, socketIO);
+    return Promise.try(() => {
+      const settings = nconf.get(this.name);
+      this.instance = new this.Module(app, server, socketIO, eventBus, logger, settings, mongoose);
       this._status.phase = PHASES.done;
-      resolve();
-    }))
+    })
       .catch((error) => {
         this._status.phase = PHASES.failed;
-
         const errorMsg = `[${this.name}] Load failed.`;
         const meta = {message: error.message};
         const editedError = error;
@@ -156,8 +158,7 @@ class Addon {
     logger.debug(`[${this.name}] Registering addon.`);
     this._status = {state: STATES.register, phase: PHASES.inProgress};
 
-    return new Promise(resolve =>
-      resolve(this.instance.register()))
+    return Promise.try(() => this.instance.register())
       .then(() => {
         this._registerStaticPath(app);
         this._registerRouter(dynamicRouter);

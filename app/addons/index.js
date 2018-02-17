@@ -53,10 +53,11 @@ class AddonManager {
   /**
    * Sets various variables that AddonManager needs in order to work
    */
-  init(app, server, io) {
+  init(app, server, io, eventBus) {
     this.app = app;
     this.server = server;
     this.io = io;
+    this.eventBus = eventBus;
     return Promise.resolve();
   }
 
@@ -73,11 +74,11 @@ class AddonManager {
    * waterfall like synchronous manner one after another
    * @return {Promise} promise to try loading all addons
    */
-  static _recursiveLoad(addonArray, app, server, io) {
+  static _recursiveLoad(addonArray, app, server, io, eventBus) {
     logger.info('Loading addons...');
     return addonArray.reduce((acc, addon) => acc
       .then(() => addon.loadModule())
-      .then(() => addon.createInstance(app, server, io))
+      .then(() => addon.createInstance(app, server, io, eventBus))
       .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error)),
     Promise.resolve());
   }
@@ -86,11 +87,11 @@ class AddonManager {
    * Loads addons found in directory app/addons/ in an arbitary order
    * @return {Promise} promise to try loading all addons
    */
-  static _asyncLoad(addonArray, app, server, io) {
+  static _asyncLoad(addonArray, app, server, io, eventBus) {
     logger.info('Loading addons...');
     return Promise.all(addonArray.map(
       addon => addon.loadModule()
-        .then(() => addon.createInstance(app, server, io))
+        .then(() => addon.createInstance(app, server, io, eventBus))
         .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error))
     ));
   }
@@ -103,7 +104,8 @@ class AddonManager {
 
     // Function that returns whether a file is a directory or not
     function isAddon(file) {
-      return fs.lstatSync(path.resolve(relativeAddonPath, file)).isDirectory();
+      const lstat = fs.lstatSync(path.resolve(relativeAddonPath, file));
+      return lstat.isDirectory() || lstat.isSymbolicLink();
     }
 
     // Iterate through all directory files in the addons folder
@@ -111,7 +113,7 @@ class AddonManager {
     this.addons = addonNames.map(name => new Addon(name, true));
 
     const loadMethod = recursive ? AddonManager._recursiveLoad : AddonManager._asyncLoad;
-    return loadMethod(this.addons, this.app, this.server, this.io);
+    return loadMethod(this.addons, this.app, this.server, this.io, this.eventBus);
   }
 
   /**
