@@ -46,6 +46,7 @@ class GitUpdater extends Updater {
 
   _isClean() {
     const cmd = 'git diff --quiet HEAD';
+    this.emit('status', cmd);
     return this.exec(cmd, this._options).catch(() => {
       throw new Error('workspace is not clean');
     });
@@ -53,6 +54,7 @@ class GitUpdater extends Updater {
 
   _tag(commitId) {
     const cmd = `git describe --exact-match --tags ${commitId}`;
+    this.emit('status', cmd);
     return this.exec(cmd, this._options)
       .then(line => ({tag: line.trim()}))
       .catch(() => ({tag: undefined}));
@@ -60,6 +62,7 @@ class GitUpdater extends Updater {
 
   _commitId() {
     const cmd = 'git rev-parse --verify HEAD';
+    this.emit('status', cmd);
     return this.exec(cmd, this._options)
       .then(line => ({commitId: line.trim()}))
       .catch((error) => {
@@ -75,7 +78,7 @@ class GitUpdater extends Updater {
   }
 
   _fetch() {
-    const cmd = 'git -c core.askpass=true _fetch --all --tags --prune';
+    const cmd = 'git -c core.askpass=true fetch --all --tags --prune';
     return this.exec(cmd, this._options).catch((error) => {
       throw new Error(`git fetch failed: ${error.message}`);
     });
