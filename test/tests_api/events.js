@@ -19,6 +19,7 @@ const testUserId = '5825bb7afe7545132c88c761';
 
 describe('Events', function () {
   let authString;
+  let createdEvents = [];
   const api = `${apiV0}/events`;
   const deleteEvent = eventId =>
     superagent.del(`${api}/${eventId}`)
@@ -36,6 +37,12 @@ describe('Events', function () {
     authString = createUserToken(tokenInput).authString;
   });
 
+  afterEach(function () {
+    const toBeDeleted = createdEvents;
+    createdEvents = [];
+    return Promise.each(toBeDeleted, deleteEvent);
+  });
+
   it('can not create event without mandatory properties', function () {
     const payload = {
       priority: {}
@@ -49,6 +56,14 @@ describe('Events', function () {
       });
   });
 
+  const createEvent = payload => superagent.post(api, payload)
+      .set('authorization', authString)
+      .end()
+      .then(response => {
+        createdEvents.push(response.body._id);
+        return response.body;
+      });
+
   it('create events', function () {
     const payload = {
       priority: {
@@ -56,22 +71,39 @@ describe('Events', function () {
         facility: 'user'
       }
     };
-    let eventId;
-    return superagent.post(api, payload)
-      .set('authorization', authString)
-      .end()
-      .then((event) => {
-        eventId = event.body._id;
-        expect(event.body).to.have.property('priority');
+    return createEvent(payload)
+      .then((body) => {
+        expect(body).to.have.property('priority');
       })
       .catch((error) => {
         throw new Error(error.response.body.error);
-      })
-      .finally(() => deleteEvent(eventId));
+      });
+  });
+  it('find events', function () {
+    const payload = {
+      priority: {
+        level: 'info',
+        facility: 'user'
+      }
+    };
+    function findEvents() {
+      return superagent.get(`${apiV0}/events?priority.level=info`)
+        .set('authorization', authString)
+        .end()
+        .then(response => response.body)
+        .then(body => {
+          expect(body.length).to.be.equal(1);
+          return body[0]
+        })
+        .then((body) => {
+          expect(body.priority.level).to.be.equal('info');
+        });
+    }
+    return createEvent(payload)
+      .then(findEvents);
   });
   it('can calculate summary', function () {
     const resourceId = '5825bb7afe7545132c88c761';
-    const createdIds = [];
     const create = (timestamp, msgid) => {
       const payload = {
         priority: {
@@ -86,12 +118,8 @@ describe('Events', function () {
         },
         msgid
       };
-      return superagent.post(api, payload)
-        .set('authorization', authString)
-        .end()
-        .then(response => response.body)
+      return createEvent(payload)
         .then((body) => {
-          createdIds.push(body._id);
           expect(body.msgid).to.be.equal(msgid);
         });
     };
@@ -103,17 +131,16 @@ describe('Events', function () {
     return Promise.all([
       create('1995-12-17T00:00:00', 'ALLOCATED'),
       create('1995-12-17T00:00:01', 'RELEASED')
-    ]).then(getStatistics)
+    ])
+      .then(getStatistics)
       .then((stats) => {
         expect(stats.count).to.be.equal(2);
         expect(stats.summary.allocations.count).to.be.equal(1);
         expect(stats.summary.allocations.time).to.be.equal(1);
-      })
-      .finally(() => Promise.each(createdIds, deleteEvent));
+      });
   });
   it('can calculate utilization', function () {
     const resourceId = '5825bb7afe7545132c88c761';
-    const createdIds = [];
     const create = (timestamp, msgid) => {
       const payload = {
         priority: {
@@ -128,12 +155,8 @@ describe('Events', function () {
         },
         msgid
       };
-      return superagent.post(api, payload)
-        .set('authorization', authString)
-        .end()
-        .then(response => response.body)
+      return createEvent(payload)
         .then((body) => {
-          createdIds.push(body._id);
           expect(body.msgid).to.be.equal(msgid);
         });
     };
@@ -146,14 +169,14 @@ describe('Events', function () {
       create('1995-12-17T00:00:00', 'ALLOCATED'),
       create('1995-12-17T01:00:00', 'RELEASED'),
       create('1995-12-18T00:00:00', 'RELEASED')
-    ]).then(getUtilization)
+    ])
+      .then(getUtilization)
       .then((stats) => {
         expect(stats.count).to.be.equal(3);
         expect(stats.summary.allocations.count).to.be.equal(1);
         expect(stats.summary.allocations.time).to.be.equal(3600);
         expect(stats.summary.allocations.utilization >= 4).to.be.true;
         expect(stats.summary.allocations.utilization < 4.2).to.be.true;
-      })
-      .finally(() => Promise.each(createdIds, deleteEvent));
+      });
   });
 });
