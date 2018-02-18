@@ -11,7 +11,6 @@ let tearingDown = false;
 
 const connect = function () {
   const options = {
-    useMongoClient: true,
     logger: logger.info.bind(logger),
     loggerLevel: 'info' // @todo fetch from config file
   };
