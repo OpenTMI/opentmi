@@ -15,7 +15,6 @@ const {createUserToken, apiV0} = require('./tools/helpers');
 logger.level = 'error';
 
 // Test variables
-// const expect = chai.expect;
 const testUserId = '5825bb7afe7545132c88c761';
 
 describe('Events', function () {

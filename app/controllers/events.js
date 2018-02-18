@@ -18,17 +18,7 @@ const logger = require('../tools/logger');
 class EventsController extends DefaultController {
   constructor() {
     super('Event');
-    // create event based on internal events
-    // this._linkEvents();
   }
-  /*
-  _linkEvents() {
-    // @todo
-    eventBus.on('result.new', this._resultNew.bind(this));
-    // eventBus.on('resource.new', this._resourceNew.bind(this));
-    // eventBus.on('resource.updated', this._resourceUpdated.bind(this));
-  }
-  */
 
   static redirectRef(req, res) {
     const iteratee = (path) => {
@@ -90,12 +80,10 @@ class EventsController extends DefaultController {
       });
   }
   resourceEvents(req, res) {
-    const find = {
-      'ref.resource': req.params.Resource
-    };
-    this.Model
-      .find(find)
-      .exec()
+    const filter = {'ref.resource': req.params.Resource};
+    const query = _.defaults(filter, req.query);
+
+    Promise.fromCallback((cb) => this.Model.leanQuery(query, cb))
       .then((events) => { res.json(events); })
       .catch((error) => {
         logger.warn(error);
@@ -105,6 +93,13 @@ class EventsController extends DefaultController {
       });
   }
   /*
+  // @todo these could be moved to own plugin
+  linkEvents() {
+    // when new result appears
+    eventBus.on('result.new', this._resultNew.bind(this));
+    eventBus.on('resource.new', this._resourceNew.bind(this));
+    eventBus.on('resource.updated', this._resourceUpdated.bind(this));
+  }
   _resultNew(bus, result) {
     const interestedVerdicts = ['inconclusive'];
     if (interestedVerdicts.indexOf(_.get(result, 'exec.verdict.final'))) {
