@@ -83,7 +83,7 @@ class EventsController extends DefaultController {
     const filter = {'ref.resource': req.params.Resource};
     const query = _.defaults(filter, req.query);
 
-    Promise.fromCallback((cb) => this.Model.leanQuery(query, cb))
+    Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
       .then((events) => { res.json(events); })
       .catch((error) => {
         logger.warn(error);

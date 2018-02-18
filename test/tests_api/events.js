@@ -57,12 +57,12 @@ describe('Events', function () {
   });
 
   const createEvent = payload => superagent.post(api, payload)
-      .set('authorization', authString)
-      .end()
-      .then(response => {
-        createdEvents.push(response.body._id);
-        return response.body;
-      });
+    .set('authorization', authString)
+    .end()
+    .then((response) => {
+      createdEvents.push(response.body._id);
+      return response.body;
+    });
 
   it('create events', function () {
     const payload = {
@@ -91,9 +91,9 @@ describe('Events', function () {
         .set('authorization', authString)
         .end()
         .then(response => response.body)
-        .then(body => {
+        .then((body) => {
           expect(body.length).to.be.equal(1);
-          return body[0]
+          return body[0];
         })
         .then((body) => {
           expect(body.priority.level).to.be.equal('info');
