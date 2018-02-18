@@ -20,7 +20,7 @@ Find Events. Data schema available [here](../app/models/event.js)
   **Content:**
     ```json
     [{
-        "_id" : "5a89c4121a6d6e068a08c60e"),
+        "_id" : "5a89c4121a6d6e068a08c60e",
         "cre" : {
             "date" : "2018-02-18T18:21:06.865Z"
         },
