@@ -93,7 +93,7 @@ class Utilization {
       _.unset(this._starts, MsgIds.ALLOCATED);
 
       if (startTime > date) {
-        logger.warn('time axis is not constand');
+        logger.warn('time axis is not coherent');
       } else if (startId === id) {
         const startTimeStr = roundDate(startTime);
         const duration = toSeconds(date - startTime);
@@ -110,7 +110,9 @@ class Utilization {
       const startTime = this._starts[MsgIds.ENTER_MAINTENANCE].date;
       const startId = this._starts[MsgIds.ENTER_MAINTENANCE].id;
       _.unset(this._starts, MsgIds.ENTER_MAINTENANCE);
-      if (startId === id) {
+      if (startTime > date) {
+        logger.warn('time axis is not coherent');
+      } else if (startId === id) {
         const startTimeStr = roundDate(startTime);
         const duration = toSeconds(date - startTime);
         increase(this._accumulator, 'summary.maintenance.time', duration);
