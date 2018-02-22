@@ -60,7 +60,7 @@
     "moment": "^2.20.1",
     "mongoose": "^5.0.6",
     "mongoose-query": "^0.5.1",
-    "mongoose-schema-jsonschema": "git+https://github.com/jupe/mongoose-schema-jsonschema.git#98abbe42f9c5a396020f4e036b29ce5c50aebcd5",
+    "mongoose-schema-jsonschema": "1.1.15",
     "nconf": "^0.10.0",
     "request": "^2.81.0",
     "satellizer": "^0.15.5",
