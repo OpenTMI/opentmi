@@ -5,15 +5,13 @@ const path = require('path');
 const fs = require('fs');
 
 // Third party components
-const jwtSimple = require('jwt-simple');
-const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 
 // Local components
 const config = require('../../config');
-
+const {createUserToken} = require('./tools/helpers');
 // Setup
 logger.level = 'error';
 
@@ -36,20 +34,15 @@ let authString;
 
 describe('Results', function () {
   // Create fresh DB
-  before(function (done) {
+  before(function () {
     this.timeout(5000);
-
-    // Create token for requests
-    const payload = {
-      _id: testUserId,
-      grous: [{name: 'admins', _id: '123'}],
-      iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
+    const tokenInput = {
+      userId: testUserId,
+      group: 'admins',
+      groupId: '123',
+      webtoken: config.get('webtoken')
     };
-
-    const token = jwtSimple.encode(payload, config.get('webtoken'));
-    authString = `Bearer ${token}`;
-    done();
+    authString = createUserToken(tokenInput).authString;
   });
 
   it('should get count as a object', function (done) {

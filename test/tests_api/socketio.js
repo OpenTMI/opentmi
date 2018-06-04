@@ -2,18 +2,19 @@
 
 // Third party components
 const _ = require('lodash');
-const jwtSimple = require('jwt-simple');
-const nconf = require('../../config');
-const moment = require('moment');
+const config = require('../../config');
 const logger = require('winston');
 const IO = require('socket.io-client');
 const superagent = require('superagent');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 
+// application modules
+const {createUserToken} = require('./tools/helpers');
+
+// Setup
 chai.use(chaiAsPromised);
 const {expect, assert} = chai;
-// Setup
 logger.level = 'error';
 
 // Test variables
@@ -52,15 +53,15 @@ describe('Basic socketio tests', function () {
   let token, authString;
   // Create fresh DB
   before(function () {
-    // Create token for requests
-    const payload = {
-      _id: testUserId,
-      groups: ['admins'],
-      iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
+    const tokenInput = {
+      userId: testUserId,
+      group: 'admins',
+      groupId: '123',
+      webtoken: config.get('webtoken')
     };
-    token = jwtSimple.encode(payload, nconf.get('webtoken'));
-    authString = `Bearer ${token}`;
+    const tokenObj = createUserToken(tokenInput);
+    token = tokenObj.token;
+    authString = tokenObj.authString;
   });
 
   it('connection works', function () {
