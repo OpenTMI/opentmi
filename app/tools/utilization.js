@@ -9,13 +9,14 @@ const logger = require('./logger');
 const {MsgIds, Priorities} = require('../models/event');
 
 const toSeconds = milliseconds => milliseconds / 1000;
-// const DAY_IN_SECONDS = 60 * 60 * 24;
 
 const increase = (obj, path, count = 1) => {
   const newValue = _.get(obj, path) + count;
   _.set(obj, path, newValue);
 };
 /*
+@todo would be needed in spreadDates()
+// const SECONDS_IN_DAY = 60 * 60 * 24;
 const decrease = (obj, path, count = 1) => {
   const newValue = _.get(obj, path) - count;
   _.set(obj, path, newValue);
@@ -164,6 +165,7 @@ class Utilization {
     return Promise.reduce(Object.keys(statistics.dates), reducer, statistics);
   }
   /*
+  @todo handle day-over durations
   static spreadDates(summary) {
     const reds = (accumulator, dateStr, index) => {
       const MAX_DAYS = 5;
@@ -171,11 +173,11 @@ class Utilization {
       while (i < MAX_DAYS) {
         i += 1;
         const duration = _.get(summary.dates, `${dateStr}.allocations.time`);
-        if (duration > DAY_IN_SECONDS) {
+        if (duration > SECONDS_IN_DAY) {
           const newEvent = newEvevent();
-          _.set(summary.dates, `${dateStr}.allocations.time`, DAY_IN_SECONDS);
+          _.set(summary.dates, `${dateStr}.allocations.time`, SECONDS_IN_DAY);
           accumulator.dates.push(newEvent);
-          decrease(summary.dates, `${dateStr}.allocations.time`, DAY_IN_SECONDS);
+          decrease(summary.dates, `${dateStr}.allocations.time`, SECONDS_IN_DAY);
         }
       }
       return accumulator;
