@@ -3,7 +3,7 @@
 **NOTE** Following API's require authentication token to work.
 
 ## Find Events
-Find Events. Data schema available [here](../app/models/event.js)
+Find Events. Data schema available [here](../../app/models/event.js)
 
 *  **URL**
 
