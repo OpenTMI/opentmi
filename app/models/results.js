@@ -153,7 +153,7 @@ ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
   };
 
   // Link related build to this result
-  return linkRelatedBuild(_.get(this, 'exec.sut.buildSha1'))
+  return linkRelatedBuild.bind(this)(_.get(this, 'exec.sut.buildSha1'))
     .then(() => Promise.all(logs.map(mapFile))) // Promise to store all files
     .then(() => next())
     .catch(next);

@@ -331,7 +331,7 @@ describe('update/gitUpdater', function () {
     describe('_fetch', function () {
       it('should call exec with correct command', function () {
         const exec = (cmd, options) => {
-          expect(cmd).to.equal('git -c core.askpass=true _fetch --all --tags --prune');
+          expect(cmd).to.equal('git -c core.askpass=true fetch --all --tags --prune');
           expect(options).to.have.keys(['cwd', 'env']);
           return Promise.resolve('FetchResolved');
         };
@@ -343,7 +343,7 @@ describe('update/gitUpdater', function () {
 
       it('should throw error when exec fails', function () {
         const exec = (cmd, options) => {
-          expect(cmd).to.equal('git -c core.askpass=true _fetch --all --tags --prune');
+          expect(cmd).to.equal('git -c core.askpass=true fetch --all --tags --prune');
           expect(options).to.have.keys(['cwd', 'env']);
           return Promise.reject(new Error('FetchFailed'));
         };

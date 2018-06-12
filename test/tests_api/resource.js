@@ -6,12 +6,15 @@ const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 
+// application modules
+const {apiV0} = require('./tools/helpers');
+
 // Setup
 logger.level = 'error';
+const api = apiV0;
 
 // Test variables
 const expect = chai.expect;
-const api = 'http://localhost:3000/api/v0';
 
 const getResource = resourceId => superagent.get(`${api}/resources/${resourceId}`)
   .type('json')
