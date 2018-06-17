@@ -52,7 +52,7 @@ DB.connect()
   .then(() => models.registerModels())
   .then(() => express(app))
   .then(() => routes.registerRoutes(app, io))
-  .then(() => AddonManager.init(app, server, io))
+  .then(() => AddonManager.init(app, server, io, eventBus))
   .then(() => AddonManager.loadAddons())
   .then(() => AddonManager.registerAddons())
   // Error route should be initialized after addonmanager has served all static routes
