@@ -13,6 +13,7 @@
  * Rooms
 * Builds
 * Test Results
+* Events
 * Reports
  * Report template's
 * Addons
@@ -62,6 +63,8 @@ Builds provide API to collect all CI artifacts to one common place. Also it prov
 ### Test Results
 Test Result contains all information related Test Execution phase, like final verdict, traces/logs, Build Under test, Device Under Test, etc. These information can be use to reply test execution phase easily.
 
+### Events
+[This API](APIs/events.md) contains system related events.
 
 ### Reports (not yet implemented)
 Report is like snapshot of database state in certain time period. Reports cannot be change afterward. Reports can be use any (some exceptions) other API's to fetch actual data to report. For example we could create Test Report from Test Results, or Test Case Report from Test Cases.
