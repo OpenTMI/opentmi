@@ -77,21 +77,25 @@ class DefaultController extends EventEmitter {
       }
     });
   }
-
   create(req, res) {
     const editedReq = req;
-    const item = new this._model(editedReq.body);
-    item.save((error) => {
-      if (error) {
-        logger.warn(error);
-        if (res) res.status(400).json({error: error.message});
-      } else {
+    this._create(editedReq.body)
+      .then((item) => {
         editedReq.query = req.body;
         const jsonItem = item.toJSON();
         this.emit('create', jsonItem);
         res.json(jsonItem);
-      }
-    });
+      })
+      .catch((error) => {
+        logger.warn(error);
+        if (res) {
+          res.status(400).json({error: error.message});
+        }
+      });
+  }
+  _create(data) {
+    const item = new this._model(data);
+    return item.save();
   }
 
   update(req, res) {

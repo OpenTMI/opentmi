@@ -1,14 +1,11 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const jwtSimple = require('jwt-simple');
-const moment = require('moment');
-// const superagent = require('superagent');
-// const chai = require('chai');
 const logger = require('winston');
 
 // Local components
-const nconf = require('nconf');
+const config = require('../../config');
+const {createUserToken} = require('./tools/helpers');
 
 // Setup
 logger.level = 'error';
@@ -21,19 +18,15 @@ let authString; // eslint-disable-line no-unused-vars
 
 describe('Builds', function () {
   // Create fresh DB
-  before(function (done) {
+  before(function () {
     this.timeout(5000);
 
-    // Create token for requests
-    const payload = {
-      _id: testUserId,
-      groups: ['123'],
-      iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
+    const tokenInput = {
+      userId: testUserId,
+      group: 'admins',
+      groupId: '123',
+      webtoken: config.get('webtoken')
     };
-
-    const token = jwtSimple.encode(payload, nconf.get('webtoken'));
-    authString = `Bearer ${token}`;
-    done();
+    authString = createUserToken(tokenInput).authString;
   });
 });
