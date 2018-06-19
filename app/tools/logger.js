@@ -4,8 +4,8 @@ const path = require('path');
 const fs = require('fs');
 
 // Third party components
-const Winston = require('winston');
-require('winston-daily-rotate-file');
+const {createLogger, format, transports} = require('winston');
+const DailyRotateFile = require('winston-daily-rotate-file');
 
 // Application components
 const config = require('../../config/index');
@@ -14,7 +14,6 @@ const config = require('../../config/index');
 const verbose = config.get('verbose');
 const silent = config.get('silent');
 const environment = config.get('env');
-
 
 const logDir = path.resolve(__dirname, '..', '..', 'log');
 if (!fs.existsSync(logDir)) {
@@ -39,29 +38,34 @@ function _parseError(error) {
 
 class MasterLogger {
   constructor() {
-    this.logger = Winston;
-
     // @todo File logging options should be fetched from config file
+    const options = {
+      format: format.combine(
+        format.colorize(),
+        format.splat(),
+        format.simple()
+      )
+    };
+    this.logger = createLogger(options);
+    // add console transport
+    this.logger.add(new transports.Console({
+      colorize: true,
+      level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+    }));
     // Add winston file logger, which rotates daily
     const fileLevel = 'silly';
-    this.logger.configure({
-      transports: [
-        new (Winston.transports.Console)({
-          colorize: true,
-          level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
-        }),
-        new (Winston.transports.DailyRotateFile)({
-          filename: logFile,
-          json: false,
-          handleExceptions: false,
-          level: fileLevel,
-          datePatter: '.yyyy-MM-dd_HH-mm.log'
-        })
-      ]
-    });
+    this.logger.add(
+      new DailyRotateFile({
+        filename: logFile,
+        json: false,
+        handleExceptions: false,
+        level: fileLevel,
+        datePatter: '.yyyy-MM-dd_HH-mm.log'
+      }));
+
 
     // Print current config
-    this.logger.debug(`Using cfg: ${environment}.`);
+    this.logger.info(`Using cfg: ${environment}.`);
   }
   set level(level) {
     this.logger.level = level;
@@ -69,8 +73,8 @@ class MasterLogger {
 
   handleWorkerLog(worker, data) {
     const level = data['level'] || 'debug';
-    const args = data['args'] || [];
-    args.unshift(`<Worker#${worker.id}>`);
+    const args = data['args'] || [''];
+    args[0] = `<Worker#${worker.id}> ${args[0]}`;
     try {
       this.logger.log(level, ...args);
     } catch (error) {
@@ -79,7 +83,8 @@ class MasterLogger {
     }
   }
   log(level, ...args) {
-    args.unshift('<Master>');
+    args = args || [''];
+    args[0] = `<Master> ${args[0]}`;
     this.logger.log(level, ...args);
   }
   error(...args) {
