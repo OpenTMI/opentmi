@@ -235,7 +235,7 @@ TestCaseSchema.method({
 
 TestCaseSchema.static({
   findByTcid(testcaseId, next) {
-    return this.findOne({tcid: new RegExp(testcaseId, 'i')}, next);
+    return this.findOne({tcid: testcaseId}, next);
   },
   updateTcDuration(testcaseId, duration) {
     this.findByTcid(testcaseId, (error, testcase) => {
