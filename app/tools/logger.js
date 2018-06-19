@@ -83,9 +83,9 @@ class MasterLogger {
     }
   }
   log(level, ...args) {
-    args = args || [''];
-    args[0] = `<Master> ${args[0]}`;
-    this.logger.log(level, ...args);
+    const data = args || [''];
+    data[0] = `<Master> ${data[0]}`;
+    this.logger.log(level, ...data);
   }
   error(...args) {
     this.log('error', ...args);
