@@ -109,6 +109,23 @@ describe('Results', function () {
         done();
       });
   });
+  it('should accept POST with "++" in tcid', function (done) {
+    const requestBody = {
+      tcid: 'C++ heap',
+      exec: {
+        verdict: 'pass',
+        duration: 1
+      }
+    };
+    superagent.post(`${api}/results`)
+      .set('authorization', authString)
+      .send(requestBody)
+      .end((error, res) => {
+        expect(error).to.not.exist;
+        expect(res).to.have.property('status', 200);
+        done();
+      });
+  });
 
   it('should accept POST with log file that has no data', function (done) {
     const requestBody = JSON.parse(JSON.stringify(validResultBody));
