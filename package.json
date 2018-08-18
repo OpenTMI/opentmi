@@ -54,7 +54,7 @@
     "jsonschema": "^1.2.0",
     "junit-xml-parser": "0.0.3",
     "jwt-simple": "^0.5.1",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.10",
     "method-override": "^3.0.0",
     "mime": "^2.0.3",
     "moment": "^2.20.1",
