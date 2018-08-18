@@ -3,12 +3,12 @@ jobs:
   build:
     working_directory: ~/opentmi
     docker:
-      - image: circleci/node:6.11.4-browsers
+      - image: circleci/node:8.11.4-browsers
         environment:
           CHROME_BIN: "/usr/bin/google-chrome"
           NODE_ENV: test
           XUNIT_FILE: shippable/testresults/result.xml
-      - image: mongo:3.2.3
+      - image: mongo:3.6.6
     steps:
       - checkout
       - restore_cache:
