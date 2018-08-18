@@ -58,7 +58,7 @@
     "method-override": "^3.0.0",
     "mime": "^2.0.3",
     "moment": "^2.20.1",
-    "mongoose": "^5.1.5",
+    "mongoose": "^5.2.9",
     "mongoose-query": "^0.5.2",
     "mongoose-schema-jsonschema": "1.1.15",
     "nconf": "^0.10.0",
