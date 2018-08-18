@@ -30,7 +30,7 @@ function Route(app) {
 
   app.use(router);
 
-  Group.count({}, (error, count) => {
+  Group.countDocuments({}, (error, count) => {
     if (error) {
       logger.error(error);
       return;

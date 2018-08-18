@@ -10,7 +10,7 @@ const logger = require('../../tools/logger');
 function IsEmpty(schema, options) { // eslint-disable-line no-unused-vars
   const editedSchema = schema;
   editedSchema.statics.isEmpty = function isEmpty(next) {
-    this.count({}, (error, count) => {
+    this.countDocuments({}, (error, count) => {
       next(error, count === 0);
     });
   };

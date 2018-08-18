@@ -165,7 +165,7 @@ class DefaultController extends EventEmitter {
 
   // extra functions
   isEmpty(next) {
-    this._model.count({}, (error, count) => {
+    this._model.countDocuments({}, (error, count) => {
       if (error) next(error);
       else if (count === 0) next(true);
       else next(false);

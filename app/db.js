@@ -12,6 +12,9 @@ let tearingDown = false;
 const connect = function () {
   const options = {
     logger: logger.info.bind(logger),
+    appname: 'opentmi',
+    validateOptions: true,
+    promiseLibrary: Promise,
     loggerLevel: 'info' // @todo fetch from config file
   };
 
