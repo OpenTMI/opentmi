@@ -5,7 +5,6 @@ const path = require('path');
 const fs = require('fs');
 
 // Third party components
-const _ = require('lodash');
 const superagent = require('superagent');
 const {expect} = require('chai');
 const logger = require('winston');
