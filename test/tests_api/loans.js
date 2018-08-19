@@ -75,8 +75,8 @@ function expectResult(res, targetStatus, targetBody) {
   }
 }
 
-describe('Loans', function () {
 
+describe('Loans', function () {
   before(dbRestore);
   // Create fresh DB
   before(function () {

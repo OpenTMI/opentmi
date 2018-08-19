@@ -23,6 +23,6 @@ module.exports = {
         }).timeout(2000, 'cannot kill mongoBin process');
         mockgoose.mongodHelper.mongoBin.childProcess.kill('SIGTERM');
         return retval;
-    });
+      });
   }
 };
