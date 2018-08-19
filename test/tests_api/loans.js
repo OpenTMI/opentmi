@@ -1,21 +1,22 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const jwtSimple = require('jwt-simple');
-const moment = require('moment');
+
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 
 // Local components
-const nconf = require('../../config');
+const config = require('../../config');
+const {createUserToken, apiV0} = require('./tools/helpers');
+
 
 // Setup
 logger.level = 'error';
 
 // Test variables
 const expect = chai.expect;
-const api = 'http://localhost:3000/api/v0';
+const api = apiV0;
 const testUserId = '5825bb7afe7545132c88c761';
 const testItemId = '582c7948850f298a5acff991';
 const errorBody = {error: undefined};
@@ -77,20 +78,14 @@ function expectResult(res, targetStatus, targetBody) {
 
 describe('Loans', function () {
   // Create fresh DB
-  before(function (done) {
-    this.timeout(5000);
-
-    // Create token for requests
-    const payload = {
-      _id: testUserId,
-      groups: ['123'],
-      iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
+  before(function () {
+    const tokenInput = {
+      userId: testUserId,
+      group: 'admins',
+      groupId: '123',
+      webtoken: config.get('webtoken')
     };
-
-    const token = jwtSimple.encode(payload, nconf.get('webtoken'));
-    authString = `Bearer ${token}`;
-    done();
+    authString = createUserToken(tokenInput).authString;
   });
 
   it.skip('should return a SINGLE loan on /loans/<id> GET', function (done) {

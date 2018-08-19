@@ -5,20 +5,17 @@ const path = require('path');
 const fs = require('fs');
 
 // Third party components
-const jwtSimple = require('jwt-simple');
-const moment = require('moment');
 const superagent = require('superagent');
-const chai = require('chai');
+const {expect} = require('chai');
 const logger = require('winston');
 
 // Local components
 const config = require('../../config');
-
+const {createUserToken} = require('./tools/helpers');
 // Setup
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
 const api = 'http://localhost:3000/api/v0';
 
 const testUserId = '5825bb7afe7545132c88c761';
@@ -36,20 +33,15 @@ let authString;
 
 describe('Results', function () {
   // Create fresh DB
-  before(function (done) {
+  before(function () {
     this.timeout(5000);
-
-    // Create token for requests
-    const payload = {
-      _id: testUserId,
-      grous: [{name: 'admins', _id: '123'}],
-      iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
+    const tokenInput = {
+      userId: testUserId,
+      group: 'admins',
+      groupId: '123',
+      webtoken: config.get('webtoken')
     };
-
-    const token = jwtSimple.encode(payload, config.get('webtoken'));
-    authString = `Bearer ${token}`;
-    done();
+    authString = createUserToken(tokenInput).authString;
   });
 
   it('should get count as a object', function (done) {
@@ -99,6 +91,8 @@ describe('Results', function () {
         // Check special cases, eg. logs
         expect(res.body.exec).to.have.property('logs').which.is.an('array');
         expect(res.body.exec.logs).to.have.lengthOf(1);
+        expect(res.body.exec).to.have.property('duts').which.is.an('array');
+        expect(res.body.exec.duts).to.have.lengthOf(1);
 
         // Check log sanity
         expect(res.body.exec.logs[0]).to.not.have.property('data');
@@ -113,6 +107,23 @@ describe('Results', function () {
 
         expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
 
+        done();
+      });
+  });
+  it('should accept POST with "++" in tcid', function (done) {
+    const requestBody = {
+      tcid: 'C++ heap',
+      exec: {
+        verdict: 'pass',
+        duration: 1
+      }
+    };
+    superagent.post(`${api}/results`)
+      .set('authorization', authString)
+      .send(requestBody)
+      .end((error, res) => {
+        expect(error).to.not.exist;
+        expect(res).to.have.property('status', 200);
         done();
       });
   });

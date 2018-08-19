@@ -30,6 +30,20 @@ FileSchema.add({
   }
 });
 
+const DutSchemaObj = { // Device(s) Under Test
+  type: {type: String, enum: ['hw', 'simulator', 'process']},
+  ref: {type: Schema.Types.ObjectId, ref: 'Resource'},
+  vendor: {type: String},
+  model: {type: String},
+  ver: {type: String},
+  sn: {type: String},
+  provider: {
+    name: {type: String},
+    id: {type: String},
+    ver: {type: String}
+  }
+};
+const DutSchema = new Schema(DutSchemaObj);
 /**
  * User schema
  */
@@ -56,6 +70,8 @@ const ResultSchema = new Schema({
     note: {type: String, default: ''},
     duration: {type: Number}, // seconds
     profiling: {type: Schema.Types.Mixed},
+    metadata: {type: Schema.Types.Mixed},
+    metrics: {type: Schema.Types.Mixed},
     env: { // environment information
       ref: {type: Schema.Types.ObjectId, ref: 'Resource'},
       rackId: {type: String},
@@ -78,20 +94,8 @@ const ResultSchema = new Schema({
       cut: [{type: String}], // Component Under Test
       fut: [{type: String}] // Feature Under Test
     },
-    dut: { // Device(s) Under Test
-      count: {type: Number},
-      type: {type: String, enum: ['hw', 'simulator', 'process']},
-      ref: {type: Schema.Types.ObjectId, ref: 'Resource'},
-      vendor: {type: String},
-      model: {type: String},
-      ver: {type: String},
-      sn: {type: String},
-      provider: {
-        name: {type: String},
-        id: {type: String},
-        ver: {type: String}
-      }
-    },
+    dut: _.merge({}, DutSchemaObj, {count: {type: Number}}), // Device(s) Under Test
+    duts: [DutSchema],
     logs: [FileSchema]
   }
 });
@@ -153,7 +157,7 @@ ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
   };
 
   // Link related build to this result
-  return linkRelatedBuild(_.get(this, 'exec.sut.buildSha1'))
+  return linkRelatedBuild.bind(this)(_.get(this, 'exec.sut.buildSha1'))
     .then(() => Promise.all(logs.map(mapFile))) // Promise to store all files
     .then(() => next())
     .catch(next);

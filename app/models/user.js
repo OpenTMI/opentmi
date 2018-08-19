@@ -1,12 +1,13 @@
-
-/*!
+/**
  * Module dependencies
  */
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const bcrypt = require('bcryptjs');
 const _ = require('lodash');
+// application modules
 const logger = require('../tools/logger');
+const {IsEmpty} = require('./plugins/isempty');
 
 /* Implementation */
 const Schema = mongoose.Schema;
@@ -42,15 +43,12 @@ const UserSchema = new Schema({
   settings: {type: Types.Mixed}
 });
 
-/**
- * User plugin
- */
-// UserSchema.plugin(userPlugin, {});
 
 /**
- * Query Plugin
+ * Plugin
  */
 UserSchema.plugin(QueryPlugin); // install QueryPlugin
+UserSchema.plugin(IsEmpty); // install isEmpty
 
 /**
  * Add your

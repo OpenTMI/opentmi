@@ -42,13 +42,11 @@ function createDefaultAdmin() {
  */
 function Route(app) {
   // Create a default admin if there is no users in the database
-  User.count({}, (err, count) => {
-    if (err) {
-      logger.warn(err);
-    } else if (count === 0) {
-      createDefaultAdmin();
-    }
-  });
+  User.isEmpty()
+    .then((empty) => {
+      if (empty) { createDefaultAdmin(); }
+    })
+    .catch(error => logger.warn(error));
 
   // Create user routes
   const userRouter = express.Router();

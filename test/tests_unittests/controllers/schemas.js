@@ -17,20 +17,18 @@ const controller = new SchemaController();
 
 describe('controllers/schemas.js', function () {
   describe('paramCollection', function () {
-    beforeEach(function (done) {
+    beforeEach(function () {
       controller.schemas = {
         collection1: 'data1',
         collection2: 'data2',
         collection3: 'data3',
         collection4: 'data4'
       };
-      done();
     });
 
     // Param collection is supposed to define Schema key for request
     it('paramCollection - should set Schema of req', function (done) {
       const req = {};
-
       controller.paramCollection(req, undefined, () => {
         expect(req).to.have.property('Schema', 'data2');
         done();
@@ -56,9 +54,8 @@ describe('controllers/schemas.js', function () {
   describe('get', function () {
     const schemaNames = ['name1', 'name2', 'name3', 'name4'];
 
-    beforeEach(function (done) {
+    beforeEach(function () {
       controller.schemaNames = schemaNames;
-      done();
     });
 
     it('get - should return the schemaNames defined in the controller', function (done) {
@@ -109,14 +106,10 @@ describe('controllers/schemas.js', function () {
     });
 
     // Should throw error when no Schema defined, trying to access properties from undefined object
-    it('find - no Schema', function (done) {
-      const req = {
-        params: {Collection: collection}
-      };
+    it('find - no Schema', function () {
+      const req = {params: {Collection: collection}};
       const res = new MockResponse();
-
       expect(SchemaController.find.bind(this, req, res)).to.throw(Error);
-      done();
     });
   });
 });

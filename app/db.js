@@ -11,8 +11,11 @@ let tearingDown = false;
 
 const connect = function () {
   const options = {
-    useMongoClient: true,
     logger: logger.info.bind(logger),
+    appname: 'opentmi',
+    validateOptions: true,
+    promiseLibrary: Promise,
+    useNewUrlParser: true,
     loggerLevel: 'info' // @todo fetch from config file
   };
 
