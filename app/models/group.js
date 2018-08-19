@@ -1,14 +1,15 @@
-
-/*!
+/**
  * Module dependencies
  */
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
+// application modules
 const logger = require('../tools/logger');
+const {IsEmpty} = require('./plugins/isempty');
 
-const Schema = mongoose.Schema;
 
 /* Implementation */
+const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const ObjectId = Types.ObjectId;
 
@@ -25,9 +26,10 @@ const GroupSchema = new Schema({
   description: {type: String}
 });
 /**
- * Group plugin
+ * plugins
  */
 GroupSchema.plugin(QueryPlugin); // install QueryPlugin
+GroupSchema.plugin(IsEmpty); // install IsEmpty
 
 /**
  * Add your
