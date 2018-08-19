@@ -7,7 +7,7 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
+const {Mockgoose} = require('mockgoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
