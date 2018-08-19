@@ -10,6 +10,7 @@ const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
+const {setup, beforeEach, teardown} = require('./mongomock');
 require('./../../app/models/group.js');
 const GroupsController = require('./../../app/controllers/groups.js');
 
@@ -19,30 +20,22 @@ mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe.skip('controllers/groups.js', function () {
+describe('controllers/groups.js', function () {
   // Create fresh DB
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB');
-    });
+    return setup();
   });
 
   beforeEach(function () {
-    return mockgoose.helper.reset();
+    return beforeEach();
   });
 
-  after(function (done) {
+  after(function () {
     logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
+    return teardown();
   });
 
   it('constructor', function (done) {

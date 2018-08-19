@@ -3,13 +3,13 @@
 // Third party components
 require('colors');
 const chai = require('chai');
-const chaiSubset = require('chai-subset');
+const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
+const {setup, beforeEach, teardown} = require('./mongomock');
 require('./../../app/models/resource.js');
 const ResourceController = require('./../../app/controllers/resources.js');
 const MockResponse = require('./mocking/MockResponse.js');
@@ -17,35 +17,29 @@ const MockResponse = require('./mocking/MockResponse.js');
 // Setup
 logger.level = 'error';
 mongoose.Promise = Promise;
-chai.use(chaiSubset);
+chai.use(chaiAsPromised);
+
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 
-describe.skip('controllers/resources.js', function () {
+describe('controllers/resources.js', function () {
   // Create fresh DB
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
     logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
-        // Check controller constructor to test
-        const controller = new ResourceController(); // eslint-disable-line no-unused-vars
-      });
+    return setup().then(() => {
+      // Check controller constructor to test
+      const controller = new ResourceController(); // eslint-disable-line no-unused-vars
     });
   });
 
   beforeEach(function () {
-    return mockgoose.helper.reset();
+    return beforeEach();
   });
 
-  after(function (done) {
+  after(function () {
     logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
+    return teardown();
   });
 
   it('setDeviceBuild', function (done) {

@@ -6,9 +6,11 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
 const Promise = require('bluebird');
+
+const {setup, beforeEach, teardown} = require('./mongomock');
+
 
 // Local components
 require('./../../app/models/group.js');
@@ -34,30 +36,23 @@ let mockUser1 = null;
 let mockLoan1 = null;
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
 const User = mongoose.model('User');
 const Item = mongoose.model('Item');
 
-describe.skip('controllers/loans.js', function () {
+describe('controllers/loans.js', function () {
   // Create fresh DB
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
-        // Create controller to test
-        controller = new LoanController();
-      });
+    return setup().then(() => {
+      // Create controller to test
+      controller = new LoanController();
     });
   });
 
   beforeEach(function () {
-    return mockgoose.helper.reset().then(() => {
+    return beforeEach().then(() => {
       // Load mock item
       mockItem1 = new Item(mockItems[0]);
       mockUser1 = new User(mockUsers[0]);
@@ -70,10 +65,9 @@ describe.skip('controllers/loans.js', function () {
     });
   });
 
-  after(function (done) {
+  after(function () {
     logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
+    return teardown();
   });
 
   it('update', function () {

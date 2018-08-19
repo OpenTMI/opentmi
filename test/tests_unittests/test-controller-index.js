@@ -7,7 +7,6 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const {Mockgoose} = require('mockgoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
@@ -17,6 +16,8 @@ const MockResponse = require('./mocking/MockResponse.js');
 const DummySchema = require('./mocking/DummySchema.js');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
+const {setup, beforeEach, teardown} = require('./mongomock');
+
 // Setup
 logger.level = 'silly';
 mongoose.Promise = Promise;
@@ -25,7 +26,6 @@ chai.use(chaiAsPromised);
 mongoose.model('DummyItem', DummySchema);
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 const Dummy = mongoose.model('DummyItem');
 let mockItem1 = null;
@@ -34,29 +34,22 @@ let defaultController = null;
 describe.skip('controllers/index.js', function () {
   // Create fresh DB
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
+    return setup();
 
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
-        // create controller to test
-        defaultController = new DefaultController('DummyItem');
-      });
-    });
   });
-
+  before(function () {
+    defaultController = new DefaultController('DummyItem');
+  });
   beforeEach(function () {
-    return mockgoose.helper.reset().then(() => {
+    return beforeEach().then(() => {
       mockItem1 = new Dummy(mockDummies[0]);
       return mockItem1.save();
     });
   });
 
-  after(function (done) {
+  after(function () {
     logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
+    return teardown();
   });
 
   it('defaultModelParam', function (done) {

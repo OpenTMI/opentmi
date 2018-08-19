@@ -10,6 +10,7 @@ const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
+const {setup, beforeEach, teardown} = require('./mongomock');
 require('./../../app/models/campaign.js');
 const CampaignController = require('./../../app/controllers/campaigns.js');
 
@@ -23,32 +24,23 @@ const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe.skip('controllers/campaigns.js', function () {
+describe('controllers/campaigns.js', function () {
   // Create fresh DB
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB');
-    });
+    return setup();
   });
 
   beforeEach(function () {
-    return mockgoose.helper.reset();
+    return beforeEach();
   });
 
-  after(function (done) {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
+  after(function () {
+    return teardown();
   });
 
-  it('constructor', function (done) {
+  it('constructor', function () {
     // Create controller to test
     controller = new CampaignController();
     expect(controller).to.exist; // eslint-disable-line no-unused-expressions
-    done();
   });
 });

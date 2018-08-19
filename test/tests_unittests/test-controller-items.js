@@ -6,7 +6,6 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
 const Promise = require('bluebird');
 
@@ -22,24 +21,20 @@ mongoose.Promise = Promise;
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
+const {setup, beforeEach, teardown} = require('./mongomock');
+
+
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let mockInstances = [];
 let controller = null;
 
-describe.skip('controllers/items.js', function () {
+describe('controllers/items.js', function () {
   // Create fresh DB
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
-        // Create controller to test
-        controller = new ItemController();
-      });
+    return setup().then(() => {
+      // Create controller to test
+      controller = new ItemController();
     });
   });
 
@@ -52,16 +47,15 @@ describe.skip('controllers/items.js', function () {
       saves.push(mockInstances[i].save());
     }
 
-    return mockgoose.helper.reset().then(Promise.all(saves));
+    return beforeEach().then(Promise.all(saves));
   });
 
-  after(function (done) {
+  after(function () {
     logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
+    return teardown();
   });
 
-  it('update', function () {
+  it.skip('update', function () {
     // Valid case, remove 7 items from stock, should be left with 3 available
     const validStockDecrease = new Promise((resolve) => {
       const req = {body: {in_stock: mockInstances[0].in_stock - 7}, Item: mockInstances[0]};
