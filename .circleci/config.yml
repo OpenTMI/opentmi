@@ -8,7 +8,7 @@ jobs:
           CHROME_BIN: "/usr/bin/google-chrome"
           NODE_ENV: test
           XUNIT_FILE: shippable/testresults/result.xml
-      - image: mongo:3.6.6
+      - image: mongo:4.1.2
     steps:
       - checkout
       - restore_cache:

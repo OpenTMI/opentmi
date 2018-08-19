@@ -35,7 +35,7 @@ OpenTMI try to solve these kind of challenges using "big-data".
 # Pre-requirements
 
 * [Node.js][Node.js] v8.11< (tested with 8.11.4, recommended to use latest LTS version)
-* [mongodb][MongoDB] v3.6< (tested with 3.6.6, recommented to use latest version)
+* [mongodb][MongoDB] v3.6< (tested with 4.1.2, recommented to use latest version)
 
 # Installation
 
