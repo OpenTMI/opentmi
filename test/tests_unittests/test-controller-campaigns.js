@@ -6,7 +6,7 @@ const chaiSubset = require('chai-subset');
 const logger = require('winston');
 
 // Local components
-const {setup, beforeEach, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./mongomock');
 require('./../../app/models/campaign.js');
 const CampaignController = require('./../../app/controllers/campaigns.js');
 
@@ -20,17 +20,11 @@ let controller = null;
 
 describe('controllers/campaigns.js', function () {
   // Create fresh DB
-  before(function () {
-    return setup();
-  });
+  before(setup);
 
-  beforeEach(function () {
-    return beforeEach();
-  });
+  beforeEach(reset);
 
-  after(function () {
-    return teardown();
-  });
+  after(teardown);
 
   it('constructor', function () {
     // Create controller to test

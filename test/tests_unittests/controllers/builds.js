@@ -12,7 +12,7 @@ logger.level = 'error';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
-const {setup, beforeEach, teardown} = require('../mongomock');
+const {setup, reset, teardown} = require('../mongomock');
 
 // Test variables
 const expect = chai.expect;
@@ -20,23 +20,15 @@ const expect = chai.expect;
 describe('controllers/builds.js', function () {
   let BuildsController;
   // Create fresh DB
-  before(function () {
-    return setup();
-  });
+  before(setup);
   before(function () {
     // Local components
     require('../../../app/models/build.js'); // eslint-disable-line global-require
     BuildsController = require('../../../app/controllers/builds.js'); // eslint-disable-line global-require
   });
+  beforeEach(reset);
 
-  beforeEach(function () {
-    return beforeEach();
-  });
-
-  after(function () {
-    logger.debug('[After] Closing mongoose connection');
-    return teardown();
-  });
+  after(teardown);
 
   describe('exports', function () {
     it('should export a class named BuildsController', function (done) {

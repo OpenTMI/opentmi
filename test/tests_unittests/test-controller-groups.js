@@ -7,7 +7,7 @@ const chaiSubset = require('chai-subset');
 const logger = require('winston');
 
 // Local components
-const {setup, beforeEach, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./mongomock');
 require('./../../app/models/group.js');
 const GroupsController = require('./../../app/controllers/groups.js');
 
@@ -21,18 +21,9 @@ let controller = null;
 
 describe('controllers/groups.js', function () {
   // Create fresh DB
-  before(function () {
-    return setup();
-  });
-
-  beforeEach(function () {
-    return beforeEach();
-  });
-
-  after(function () {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    return teardown();
-  });
+  before(setup);
+  beforeEach(reset);
+  after(teardown);
 
   it('constructor', function (done) {
     controller = new GroupsController();
