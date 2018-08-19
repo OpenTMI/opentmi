@@ -48,7 +48,7 @@ class MasterLogger {
     };
     this.logger = createLogger(options);
     // add console transport
-    if(!silent) {
+    if (!silent) {
       this.logger.add(new transports.Console({
         colorize: true,
         level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
