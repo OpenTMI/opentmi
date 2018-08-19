@@ -6,8 +6,6 @@ const stream = require('stream');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
-const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const Promise = require('bluebird');
 const logger = require('winston');
 
@@ -18,42 +16,27 @@ require('../../../app/models/results.js');
 const ResultsController = require('../../../app/controllers/results.js');
 const MockResponse = require('../mocking/MockResponse.js');
 const mockJunitXml = require('../mocking/MockJunitXmlTests.js');
+const {setup, reset, teardown} = require('../mongomock');
+
 
 // Setup
 logger.level = 'error';
-mongoose.Promise = Promise;
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 let controller = null;
 
-describe.skip('controllers/results.js', function () {
+describe('controllers/results.js', function () {
   // Create fresh DB
+  before(setup);
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
-        // Test that controller can be initialized before other tests
-        controller = new ResultsController();
-      });
-    });
+    // Test that controller can be initialized before other tests
+    controller = new ResultsController();
   });
-
-  beforeEach(function () {
-    return mockgoose.helper.reset();
-  });
-
-  after(function (done) {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
-  });
+  beforeEach(reset);
+  after(teardown);
 
   describe('streamToString', function () {
     it('should concat streamed data correctly', function () {

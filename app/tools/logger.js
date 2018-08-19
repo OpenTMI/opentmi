@@ -48,10 +48,12 @@ class MasterLogger {
     };
     this.logger = createLogger(options);
     // add console transport
-    this.logger.add(new transports.Console({
-      colorize: true,
-      level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
-    }));
+    if (!silent) {
+      this.logger.add(new transports.Console({
+        colorize: true,
+        level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+      }));
+    }
     // Add winston file logger, which rotates daily
     const fileLevel = 'silly';
     this.logger.add(
@@ -62,8 +64,6 @@ class MasterLogger {
         level: fileLevel,
         datePatter: '.yyyy-MM-dd_HH-mm.log'
       }));
-
-
     // Print current config
     this.logger.info(`Using cfg: ${environment}.`);
   }

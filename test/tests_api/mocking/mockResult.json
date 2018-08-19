@@ -5,6 +5,13 @@
     "sut": {
       "ref": "59b64162e62a2a4818ec9c3d"
     },
+    "dut": {
+      "count": 1,
+      "type": "hw"
+    },
+    "duts": [{"type": "hw"}],
+    "metadata": {"mymeta": 0},
+    "metrics": {"heapmax": 0},
     "logs": [
       {
         "name": "MockFile.txt",
