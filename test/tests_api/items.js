@@ -9,6 +9,7 @@ const logger = require('winston');
 
 // Local components
 const nconf = require('../../config');
+const {dbRestore} = require('./tools/helpers');
 
 // Setup
 logger.level = 'error';
@@ -73,6 +74,7 @@ function expectResult(res, targetStatus, targetBody) {
 
 describe('Items', function () {
   // Create fresh DB
+  before(dbRestore);
   before(function (done) {
     this.timeout(5000);
 

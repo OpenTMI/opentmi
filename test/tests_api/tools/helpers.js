@@ -1,3 +1,6 @@
+// native modules
+const {spawnSync} = require('child_process');
+const path = require('path');
 // 3rd party modules
 const jwtSimple = require('jwt-simple');
 const moment = require('moment');
@@ -26,10 +29,18 @@ function createUserToken({userId, group, groupId, webtoken, expHours = 2}) {
 const api = 'http://localhost:3000';
 const apiV0 = `${api}/api/v0`;
 
+function dbRestore() {
+  const root = path.join(__dirname, '../..');
+  const dbrestore = path.join(root, 'scripts/dbrestore.sh');
+  const args = ['local', path.join(root, 'test/seeds/test_dump')];
+  spawnSync(dbrestore, args);
+}
+
 
 module.exports = {
   createToken,
   createUserToken,
+  dbRestore,
   api,
   apiV0
 };

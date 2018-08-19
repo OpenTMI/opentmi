@@ -1,14 +1,13 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 
 // Local components
 const config = require('../../config');
-const {createUserToken, apiV0} = require('./tools/helpers');
+const {createUserToken, dbRestore, apiV0} = require('./tools/helpers');
 
 
 // Setup
@@ -77,6 +76,8 @@ function expectResult(res, targetStatus, targetBody) {
 }
 
 describe('Loans', function () {
+
+  before(dbRestore);
   // Create fresh DB
   before(function () {
     const tokenInput = {
