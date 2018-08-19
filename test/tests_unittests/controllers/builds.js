@@ -4,7 +4,6 @@
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const mongoose = require('mongoose');
-const {Mockgoose} = require('mockgoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
@@ -26,8 +25,8 @@ describe('controllers/builds.js', function () {
   });
   before(function () {
     // Local components
-    require('../../../app/models/build.js');
-    BuildsController = require('../../../app/controllers/builds.js');
+    require('../../../app/models/build.js'); // eslint-disable-line global-require
+    BuildsController = require('../../../app/controllers/builds.js'); // eslint-disable-line global-require
   });
 
   beforeEach(function () {
