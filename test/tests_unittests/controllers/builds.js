@@ -13,25 +13,16 @@ logger.level = 'error';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
-const mockgooseClose = require('../mockgooseClose');
+const {setup, beforeEach, teardown} = require('../mongomock');
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 
 describe('controllers/builds.js', function () {
   let BuildsController;
   // Create fresh DB
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage');
-    return mockgoose
-      .prepareStorage()
-      .then(() => {
-        logger.debug('[Before] Connecting to mongo');
-        return mongoose.connect('mongodb://testmock.com/TestingDB');
-      });
+    return setup();
   });
   before(function () {
     // Local components
@@ -40,12 +31,12 @@ describe('controllers/builds.js', function () {
   });
 
   beforeEach(function () {
-    return mockgoose.helper.reset();
+    return beforeEach();
   });
 
   after(function () {
     logger.debug('[After] Closing mongoose connection');
-    return mockgooseClose(mockgoose, mongoose);
+    return teardown();
   });
 
   describe('exports', function () {
