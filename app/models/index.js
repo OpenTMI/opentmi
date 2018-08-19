@@ -10,25 +10,21 @@ const models = {};
 
 function ensureIndexes() {
   logger.info(`Ensuring models (${Object.keys(models).length}) indexes...`);
-  const ensureModelIndexes = Model => new Promise((resolve) => {
-    Model.ensureIndexes((err) => {
-      if (err) {
+  const ensureModelIndexes = Model => Model.createIndexes()
+    .catch((err) => {
         logger.error(`Index error: ${err.message}`);
         logger.info('Seems that your DB indexes causes conflicts, ');
         logger.info('Please remove all of them manually and let opentmi create them again.');
         logger.info('Otherwise OpenTMI might not work correctly');
         // do not stop for now - let user to decide when to fix indexes from DB
-      }
-      resolve();
     });
-  });
   const pending = _.map(models, ensureModelIndexes);
   return Promise.all(pending)
     .then(() => {
-      logger.info('Ensuring indexes completed.');
+      logger.info('Create indexes completed.');
     })
     .catch((err) => {
-      logger.error(`Ensuring indexes failed: ${err}.`);
+      logger.error(`Create indexes failed: ${err}.`);
       throw err;
     });
 }
