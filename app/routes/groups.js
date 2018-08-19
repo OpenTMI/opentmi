@@ -30,16 +30,14 @@ function Route(app) {
 
   app.use(router);
 
-  Group.countDocuments({}, (error, count) => {
-    if (error) {
-      logger.error(error);
-      return;
-    }
-    if (count === 0) {
-      (new Group({name: 'admins', users: []})).save();
-      (new Group({name: 'users', users: []})).save();
-    }
-  });
+  Group.isEmpty()
+    .then((empty) => {
+      if (empty) {
+        (new Group({name: 'admins', users: []})).save();
+        (new Group({name: 'users', users: []})).save();
+      }
+    })
+    .catch(error => logger.error(error));
 
   Group.getUsers('admins', (error, users) => {
     if (error) {
