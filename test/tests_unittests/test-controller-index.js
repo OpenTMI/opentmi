@@ -7,7 +7,6 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const {Mockgoose} = require('mockgoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
@@ -17,6 +16,8 @@ const MockResponse = require('./mocking/MockResponse.js');
 const DummySchema = require('./mocking/DummySchema.js');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
+const {setup, reset, teardown} = require('./mongomock');
+
 // Setup
 logger.level = 'silly';
 mongoose.Promise = Promise;
@@ -25,39 +26,23 @@ chai.use(chaiAsPromised);
 mongoose.model('DummyItem', DummySchema);
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 const Dummy = mongoose.model('DummyItem');
 let mockItem1 = null;
 let defaultController = null;
 
-describe.skip('controllers/index.js', function () {
+describe('controllers/index.js', function () {
   // Create fresh DB
+  before(setup);
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
-        // create controller to test
-        defaultController = new DefaultController('DummyItem');
-      });
-    });
+    defaultController = new DefaultController('DummyItem');
   });
-
+  beforeEach(reset);
   beforeEach(function () {
-    return mockgoose.helper.reset().then(() => {
-      mockItem1 = new Dummy(mockDummies[0]);
-      return mockItem1.save();
-    });
+    mockItem1 = new Dummy(mockDummies[0]);
+    return mockItem1.save();
   });
-
-  after(function (done) {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
-  });
+  after(teardown);
 
   it('defaultModelParam', function (done) {
     // Generate defaultModelParam function
@@ -310,7 +295,22 @@ describe.skip('controllers/index.js', function () {
     ]);
   });
 
-  it('isEmpty', function (done) {
+  it('isEmpty promise', function () {
+    return defaultController.isEmpty()
+      .then((firstResult) => {
+        // There should be one element in the database so result should be false
+        expect(firstResult).to.equal(false);
+        // Remove the one dummy element from the database
+        return Dummy.findOneAndRemove({_id: mockDummies[0]._id});
+      })
+      .then(() =>
+        // Result should now be true
+        defaultController.isEmpty())
+      .then((empty) => {
+        expect(empty).to.equal(true);
+      });
+  });
+  it('isEmpty cb', function (done) {
     defaultController.isEmpty((firstResult) => {
       // There should be one element in the database so result should be false
       expect(firstResult).to.equal(false);
