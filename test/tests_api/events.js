@@ -165,11 +165,11 @@ describe('Events', function () {
         .set('authorization', authString)
         .end()
         .then(response => response.body);
-    return Promise.all([
+    return Promise.mapSeries([
       create('1995-12-17T00:00:00', 'ALLOCATED'),
       create('1995-12-17T01:00:00', 'RELEASED'),
       create('1995-12-18T00:00:00', 'RELEASED')
-    ])
+    ], () => {})
       .then(getUtilization)
       .then((stats) => {
         expect(stats.count).to.be.equal(3);

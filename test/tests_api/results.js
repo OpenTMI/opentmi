@@ -6,7 +6,7 @@ const fs = require('fs');
 
 // Third party components
 const superagent = require('superagent');
-const chai = require('chai');
+const {expect} = require('chai');
 const logger = require('winston');
 
 // Local components
@@ -16,7 +16,6 @@ const {createUserToken} = require('./tools/helpers');
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
 const api = 'http://localhost:3000/api/v0';
 
 const testUserId = '5825bb7afe7545132c88c761';
@@ -92,6 +91,8 @@ describe('Results', function () {
         // Check special cases, eg. logs
         expect(res.body.exec).to.have.property('logs').which.is.an('array');
         expect(res.body.exec.logs).to.have.lengthOf(1);
+        expect(res.body.exec).to.have.property('duts').which.is.an('array');
+        expect(res.body.exec.duts).to.have.lengthOf(1);
 
         // Check log sanity
         expect(res.body.exec.logs[0]).to.not.have.property('data');
@@ -106,6 +107,23 @@ describe('Results', function () {
 
         expect(fileExists).to.equal(true, `Expected file: ${filename} to exist, it did not`);
 
+        done();
+      });
+  });
+  it('should accept POST with "++" in tcid', function (done) {
+    const requestBody = {
+      tcid: 'C++ heap',
+      exec: {
+        verdict: 'pass',
+        duration: 1
+      }
+    };
+    superagent.post(`${api}/results`)
+      .set('authorization', authString)
+      .send(requestBody)
+      .end((error, res) => {
+        expect(error).to.not.exist;
+        expect(res).to.have.property('status', 200);
         done();
       });
   });
