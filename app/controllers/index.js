@@ -1,11 +1,12 @@
 // native modules
-const EventEmitter = require('events').EventEmitter;
+const {EventEmitter} = require('events');
 // 3rd party modules
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const invariant = require('invariant');
 
 // application modules
+const {isEmpty} = require('../models/plugins/isempty');
 const logger = require('../tools/logger');
 
 /*
@@ -165,11 +166,7 @@ class DefaultController extends EventEmitter {
 
   // extra functions
   isEmpty(next) {
-    this._model.count({}, (error, count) => {
-      if (error) next(error);
-      else if (count === 0) next(true);
-      else next(false);
-    });
+    return isEmpty(this._model, next);
   }
 }
 
