@@ -4,10 +4,7 @@
 require('colors');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
-const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
-const Promise = require('bluebird');
 
 // Local components
 const {setup, beforeEach, teardown} = require('./mongomock');
@@ -16,7 +13,6 @@ const GroupsController = require('./../../app/controllers/groups.js');
 
 // Setup
 logger.level = 'error';
-mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
 // Test variables

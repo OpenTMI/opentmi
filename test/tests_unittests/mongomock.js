@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const {Mockgoose} = require('mockgoose');
 
+mongoose.Promise = Promise;
 const mockgoose = new Mockgoose(mongoose);
 
 
@@ -11,9 +12,6 @@ module.exports = {
       .then(() => mongoose.connect('mongodb://test'));
   },
   reset: function () {
-    return mockgoose.helper.reset();
-  },
-  beforeEach: function () {
     return mockgoose.helper.reset();
   },
   teardown: function teardown() {

@@ -303,10 +303,9 @@ describe('controllers/index.js', function () {
         // Remove the one dummy element from the database
         return Dummy.findOneAndRemove({_id: mockDummies[0]._id});
       })
-      .then(() => {
+      .then(() =>
         // Result should now be true
-        return defaultController.isEmpty();
-      })
+        defaultController.isEmpty())
       .then((empty) => {
         expect(empty).to.equal(true);
       });

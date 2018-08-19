@@ -9,10 +9,9 @@ const mongoose = require('mongoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
+// Local components
 const {setup, reset, teardown} = require('./mongomock');
 
-
-// Local components
 require('./../../app/models/group.js');
 require('./../../app/models/user.js');
 require('./../../app/models/item.js');
