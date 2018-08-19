@@ -4,7 +4,7 @@
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
+const {Mockgoose} = require('mockgoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
@@ -12,6 +12,8 @@ const Promise = require('bluebird');
 logger.level = 'error';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
+
+const mockgooseClose = require('../mockgoose_close');
 
 // Test variables
 const mockgoose = new Mockgoose(mongoose);
@@ -41,10 +43,9 @@ describe('controllers/builds.js', function () {
     return mockgoose.helper.reset();
   });
 
-  after(function (done) {
+  after(function () {
     logger.debug('[After] Closing mongoose connection');
-    mongoose.disconnect();
-    done();
+    return mockgooseClose(mockgoose, mongoose);
   });
 
   describe('exports', function () {
