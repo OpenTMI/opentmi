@@ -15,6 +15,7 @@ const connect = function () {
     appname: 'opentmi',
     validateOptions: true,
     promiseLibrary: Promise,
+    useNewUrlParser: true,
     loggerLevel: 'info' // @todo fetch from config file
   };
 
