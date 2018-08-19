@@ -13,7 +13,7 @@ logger.level = 'error';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
-const mockgooseClose = require('../mockgoose_close');
+const mockgooseClose = require('../mockgooseClose');
 
 // Test variables
 const mockgoose = new Mockgoose(mongoose);
