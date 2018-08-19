@@ -21,7 +21,7 @@ mongoose.Promise = Promise;
 chai.use(chaiSubset);
 chai.use(chaiAsPromised);
 
-const {setup, beforeEach, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./mongomock');
 
 
 // Test variables
@@ -31,13 +31,13 @@ let controller = null;
 
 describe('controllers/items.js', function () {
   // Create fresh DB
+  before(setup);
   before(function () {
-    return setup().then(() => {
-      // Create controller to test
-      controller = new ItemController();
-    });
+    // Create controller to test
+    controller = new ItemController();
   });
 
+  beforeEach(reset);
   beforeEach(function () {
     // Load mock items
     const saves = [];
@@ -46,16 +46,11 @@ describe('controllers/items.js', function () {
       mockInstances.push(new controller.Model(mockItems[i]));
       saves.push(mockInstances[i].save());
     }
-
-    return beforeEach().then(Promise.all(saves));
+    return Promise.all(saves);
   });
+  after(teardown);
 
-  after(function () {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    return teardown();
-  });
-
-  it.skip('update', function () {
+  it('update', function () {
     // Valid case, remove 7 items from stock, should be left with 3 available
     const validStockDecrease = new Promise((resolve) => {
       const req = {body: {in_stock: mockInstances[0].in_stock - 7}, Item: mockInstances[0]};

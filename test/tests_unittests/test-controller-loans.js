@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
-const {setup, beforeEach, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./mongomock');
 
 
 // Local components
@@ -44,35 +44,27 @@ const Item = mongoose.model('Item');
 
 describe('controllers/loans.js', function () {
   // Create fresh DB
+  before(setup);
   before(function () {
-    return setup().then(() => {
-      // Create controller to test
-      controller = new LoanController();
-    });
+    // Create controller to test
+    controller = new LoanController();
   });
+  afterEach(reset);
+  after(teardown);
 
   beforeEach(function () {
-    return beforeEach().then(() => {
-      // Load mock item
-      mockItem1 = new Item(mockItems[0]);
-      mockUser1 = new User(mockUsers[0]);
-      mockLoan1 = new controller.Model(mockLoans[0]);
-      return Promise.all([
-        mockItem1.save(),
-        mockUser1.save(),
-        mockLoan1.save()
-      ]);
-    });
+    mockItem1 = new Item(mockItems[0]);
+    mockUser1 = new User(mockUsers[0]);
+    mockLoan1 = new controller.Model(mockLoans[0]);
+    return Promise.all([
+      mockItem1.save(),
+      mockUser1.save(),
+      mockLoan1.save()
+    ]);
   });
-
-  after(function () {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    return teardown();
-  });
-
   it('update', function () {
     // Valid case, return 1 item from loan
-    const validReturn = new Promise((resolve) => {
+    const validReturn = () => new Promise((resolve) => {
       const body = {
         items: [
           {_id: mockLoan1.items[1]._id, return_date: new Date()}
@@ -95,7 +87,7 @@ describe('controllers/loans.js', function () {
     });
 
     // Invalid case, return 1 item that is not in the loan
-    const invalidReturnMissingId = new Promise((resolve) => {
+    const invalidReturnMissingId = () => new Promise((resolve) => {
       const body = {
         items: [
           {_id: mockUser1._id, return_date: new Date()}
@@ -116,7 +108,7 @@ describe('controllers/loans.js', function () {
     });
 
     // Invalid case, attempt to update with invalid loan_date
-    const invalidUpdate = new Promise((resolve) => {
+    const invalidUpdate = () => new Promise((resolve) => {
       const body = {loan_date: 'fake_date'};
       const Loan = mockLoan1;
       const params = {Loan: mockLoan1._id};
@@ -133,7 +125,9 @@ describe('controllers/loans.js', function () {
     });
 
     // Chain and test all promises
-    return validReturn.then(() => invalidReturnMissingId).then(() => invalidUpdate);
+    return validReturn()
+      .then(invalidReturnMissingId)
+      .then(invalidUpdate);
   });
 
   it('_handleItemsInUpdate', function () {

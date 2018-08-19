@@ -4,19 +4,17 @@
 require('colors');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
-const mongoose = require('mongoose');
 const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
-const {setup, beforeEach, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./mongomock');
 require('./../../app/models/resource.js');
 const ResourceController = require('./../../app/controllers/resources.js');
 const MockResponse = require('./mocking/MockResponse.js');
 
 // Setup
 logger.level = 'error';
-mongoose.Promise = Promise;
 chai.use(chaiAsPromised);
 
 
@@ -25,22 +23,12 @@ const expect = chai.expect;
 
 describe('controllers/resources.js', function () {
   // Create fresh DB
+  before(setup);
   before(function () {
-    logger.debug('[Before] Preparing storage'.gray);
-    return setup().then(() => {
-      // Check controller constructor to test
-      const controller = new ResourceController(); // eslint-disable-line no-unused-vars
-    });
+    const controller = new ResourceController(); // eslint-disable-line no-unused-vars
   });
-
-  beforeEach(function () {
-    return beforeEach();
-  });
-
-  after(function () {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    return teardown();
-  });
+  beforeEach(reset);
+  after(teardown);
 
   it('setDeviceBuild', function (done) {
     let deviceBuildSet = false;

@@ -16,7 +16,7 @@ const MockResponse = require('./mocking/MockResponse.js');
 const DummySchema = require('./mocking/DummySchema.js');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
-const {setup, beforeEach, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./mongomock');
 
 // Setup
 logger.level = 'silly';
@@ -31,26 +31,18 @@ const Dummy = mongoose.model('DummyItem');
 let mockItem1 = null;
 let defaultController = null;
 
-describe.skip('controllers/index.js', function () {
+describe('controllers/index.js', function () {
   // Create fresh DB
-  before(function () {
-    return setup();
-
-  });
+  before(setup);
   before(function () {
     defaultController = new DefaultController('DummyItem');
   });
+  beforeEach(reset);
   beforeEach(function () {
-    return beforeEach().then(() => {
-      mockItem1 = new Dummy(mockDummies[0]);
-      return mockItem1.save();
-    });
+    mockItem1 = new Dummy(mockDummies[0]);
+    return mockItem1.save();
   });
-
-  after(function () {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    return teardown();
-  });
+  after(teardown);
 
   it('defaultModelParam', function (done) {
     // Generate defaultModelParam function
@@ -303,7 +295,23 @@ describe.skip('controllers/index.js', function () {
     ]);
   });
 
-  it('isEmpty', function (done) {
+  it('isEmpty promise', function () {
+    return defaultController.isEmpty()
+      .then((firstResult) => {
+        // There should be one element in the database so result should be false
+        expect(firstResult).to.equal(false);
+        // Remove the one dummy element from the database
+        return Dummy.findOneAndRemove({_id: mockDummies[0]._id});
+      })
+      .then(() => {
+        // Result should now be true
+        return defaultController.isEmpty();
+      })
+      .then((empty) => {
+        expect(empty).to.equal(true);
+      });
+  });
+  it('isEmpty cb', function (done) {
     defaultController.isEmpty((firstResult) => {
       // There should be one element in the database so result should be false
       expect(firstResult).to.equal(false);

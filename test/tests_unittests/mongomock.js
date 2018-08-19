@@ -10,6 +10,9 @@ module.exports = {
     return mockgoose.prepareStorage()
       .then(() => mongoose.connect('mongodb://test'));
   },
+  reset: function () {
+    return mockgoose.helper.reset();
+  },
   beforeEach: function () {
     return mockgoose.helper.reset();
   },

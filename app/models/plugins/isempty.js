@@ -2,8 +2,8 @@ function isEmpty(model, next) {
   const pending = model.estimatedDocumentCount({})
     .then(count => count === 0);
   return next ? pending
-    .then(empty => next(undefined, empty)).catch(next)
-    : pending;
+    .then(next)
+    .catch(() => next(false)) : pending;
 }
 
 /**
