@@ -47,7 +47,7 @@
     "express": "^4.15.4",
     "express-jwt": "^5.3.0",
     "express-session": "^1.15.5",
-    "express-winston": "^2.6.0",
+    "express-winston": "^3.0.0",
     "farmhash": "^2.0.4",
     "fs-extra": "^7.0.0",
     "invariant": "^2.2.2",
