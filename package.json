@@ -59,7 +59,7 @@
     "mime": "^2.0.3",
     "moment": "^2.20.1",
     "mongoose": "^5.2.9",
-    "mongoose-query": "^0.5.2",
+    "mongoose-query": "^0.5.3",
     "mongoose-schema-jsonschema": "1.1.15",
     "nconf": "^0.10.0",
     "request": "^2.88.0",
