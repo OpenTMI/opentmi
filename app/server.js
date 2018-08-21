@@ -7,8 +7,8 @@ const https = require('https');
 const logger = require('./tools/logger');
 const nconf = require('../config');
 
-const sslcertKey = '../config/sslcert/server.key';
-const sslcertCrt = '../config/sslcert/server.crt';
+const sslcertKey = './config/sslcert/server.key';
+const sslcertCrt = './config/sslcert/server.crt';
 
 function createServer(app) {
   if (nconf.get('https')) {
