@@ -15,7 +15,7 @@ const connect = function () {
   const must = {
     logger: logger.info.bind(logger),
     promiseLibrary: Promise,
-    useNewUrlParser: true,
+    useNewUrlParser: true
   };
   const overwritable = {
     appname: 'opentmi',
