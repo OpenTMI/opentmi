@@ -103,23 +103,26 @@ Available [here](doc/APIs)
 
 ## Configuration
 
-By default it start server as development mode. You can configure environment using [env.json](`config/env/env.example.json`)
+By default opentmi is started as development mode. You can configure environment using [`--config <file>`](`config.example.json`) -option.
 ```
 {
-  "OPENTMI_BIND": "0.0.0.0",
-  "OPENTMI_PORT": 80,
-  "WEBTOKEN": "token",
-  "MONGODB": "mongodb://localhost/opentmi",
-  "FILE_DB": "./data",
-  "OPENTMI_ADMIN_USERNAME": "admin",
-  "OPENTMI_ADMIN_PASSWORD": "admin",
-  "GITHUB_CLIENTID": "ID",
-  "GITHUB_SECRET": "SECRET",
-  "GITHUB_ORG": "ORGANIZATION",
-  "GITHUB_CBURL": "GITHUB_CBURL",
-  "GITHUB_ADMINTEAM": "ADMIN-TEAM"
+  "name": "opentmi",
+  "host": "0.0.0.0",
+  "port": 3000,
+  "webtoken": "OpenTMI-toP-SeCRet-tOKEn",
+  "db": "mongodb://localhost/opentmi",
+  "filedb": "./data",
+  "admin": {
+    "user": "admin",
+    "pwd": "admin"
+  },
+  "mongo": {
+    "sslValidate": true
+  }
 }
 ```
+
+note: `"mongo"` options overwrites defaults and is pypassed to [MongoClient](http://mongodb.github.io/node-mongodb-native/3.0/api/MongoClient.html).
 
 # Architecture
 

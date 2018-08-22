@@ -1,23 +1,28 @@
-const logger = require('./tools/logger');
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
+const _ = require('lodash');
 
+const logger = require('./tools/logger');
 const nconf = require('../config');
 
 const dbUrl = nconf.get('db');
+const dbOptions = nconf.get('mongo') || {};
 mongoose.Promise = Promise;
 
 let tearingDown = false;
 
 const connect = function () {
-  const options = {
+  const must = {
     logger: logger.info.bind(logger),
-    appname: 'opentmi',
-    validateOptions: true,
     promiseLibrary: Promise,
     useNewUrlParser: true,
-    loggerLevel: 'info' // @todo fetch from config file
   };
+  const overwritable = {
+    appname: 'opentmi',
+    validateOptions: true,
+    loggerLevel: 'info'
+  };
+  const options = _.merge(overwritable, dbOptions, must);
 
   logger.info(`Connecting to MongoDB: ${dbUrl}`);
   return mongoose

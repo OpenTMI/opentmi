@@ -1,3 +1,4 @@
+const path = require('path');
 const nconf = require('nconf');
 
 // read configurations
@@ -40,6 +41,12 @@ const args = {
     type: 'bool',
     describe: 'Silent mode'
   },
+  config: {
+    alias: 'c',
+    default: 'config.json',
+    type: 'string',
+    describe: 'config file'
+  },
   'auto-reload': {
     alias: 'r',
     default: false,
@@ -48,9 +55,10 @@ const args = {
   }
 };
 
-nconf.argv(args, 'Usage: npm start -- (options)')
+nconf
+  .argv(args, 'Usage: npm start -- (options)')
   .env()
-  .file({file: './settings.json'})
+  .file(path.resolve(process.cwd(), nconf.get('config')))
   .defaults(require('./config.js'));
 
 module.exports = nconf;
