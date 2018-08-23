@@ -1,18 +1,20 @@
 require('colors');
 
 const qs = require('querystring');
-const nconf = require('../tools/config');
+
 const mongoose = require('mongoose');
 const request = require('request');
-const auth = require('./../../config/middlewares/authorization');
 const jwt = require('jwt-simple');
 const async = require('async');
 const _ = require('lodash');
 
+const logger = require('../tools/logger');
+const nconf = require('../tools/config');
+const auth = require('../routes/middlewares/authorization');
+
+
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
-
-const logger = require('../tools/logger');
 // const googleSecret = nconf.get('google_secret');
 const tokenSecret = nconf.get('webtoken');
 const githubAdminTeam = nconf.get('github').adminTeam;
