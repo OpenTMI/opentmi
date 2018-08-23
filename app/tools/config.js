@@ -74,7 +74,7 @@ nconf
   .defaults(defaults);
 
 const cfgFileName = path.resolve(process.cwd(), nconf.get('config'));
-if( !fs.existsSync(cfgFileName)) {
+if (!fs.existsSync(cfgFileName)) {
   fs.copyFileSync(sampleFile, cfgFileName);
 }
 
