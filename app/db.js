@@ -3,10 +3,10 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 
 const logger = require('./tools/logger');
-const nconf = require('../config');
+const config = require('./tools/config');
 
-const dbUrl = nconf.get('db');
-const dbOptions = nconf.get('mongo') || {};
+const dbUrl = config.get('db');
+const dbOptions = config.get('mongo') || {};
 mongoose.Promise = Promise;
 
 let tearingDown = false;

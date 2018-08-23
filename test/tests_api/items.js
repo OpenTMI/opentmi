@@ -8,7 +8,7 @@ const chai = require('chai');
 const logger = require('winston');
 
 // Local components
-const nconf = require('../../config');
+const nconf = require('../../app/tools/config');
 
 // Setup
 logger.level = 'error';

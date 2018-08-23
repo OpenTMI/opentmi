@@ -9,25 +9,25 @@ const Promise = require('bluebird');
 // application modules
 const express = require('./express');
 const Server = require('./server');
-const nconf = require('../config');
-const eventBus = require('./tools/eventBus');
 const models = require('./models');
 const routes = require('./routes');
 const AddonManager = require('./addons');
-const DB = require('./db');
 const logger = require('./tools/logger');
+const config = require('./tools/config');
+const eventBus = require('./tools/eventBus');
+const DB = require('./db');
 
-if (nconf.get('help') || nconf.get('h')) {
-  nconf.stores.argv.showHelp();
+
+if (config.get('help') || config.get('h')) {
+  config.stores.argv.showHelp();
   process.exit(0);
 }
 
 // Defines
-const https = nconf.get('https');
-const listen = cluster.isMaster ? nconf.get('listen') : 'localhost';
-const port = cluster.isMaster ? nconf.get('port') : 0;
-const environment = nconf.get('env');
-const dbUrl = nconf.get('db');
+const https = config.get('https');
+const listen = cluster.isMaster ? config.get('listen') : 'localhost';
+const port = cluster.isMaster ? config.get('port') : 0;
+const dbUrl = config.get('db');
 
 
 // Create express instance
@@ -72,7 +72,7 @@ DB.connect()
 
     function onListening() {
       const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
-      logger.info(`OpenTMI started on ${listenurl} in ${environment} mode`);
+      logger.info(`OpenTMI started on ${listenurl}`);
       eventBus.emit('start_listening', {url: listenurl});
     }
     server.on('error', onError);

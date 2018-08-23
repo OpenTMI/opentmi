@@ -8,12 +8,11 @@ const {createLogger, format, transports} = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
 
 // Application components
-const config = require('../../config/index');
+const config = require('./config');
 
 // Setup
 const verbose = config.get('verbose');
 const silent = config.get('silent');
-const environment = config.get('env');
 
 const logDir = path.resolve(__dirname, '..', '..', 'log');
 if (!fs.existsSync(logDir)) {
@@ -64,8 +63,6 @@ class MasterLogger {
         level: fileLevel,
         datePatter: '.yyyy-MM-dd_HH-mm.log'
       }));
-    // Print current config
-    this.logger.info(`Using cfg: ${environment}.`);
   }
   set level(level) {
     this.logger.level = level;

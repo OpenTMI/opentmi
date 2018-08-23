@@ -1,5 +1,10 @@
+// native modules
 const path = require('path');
+// 3rd party modules
+const _ = require('lodash');
+const fs = require('fs-extra');
 const nconf = require('nconf');
+
 
 // read configurations
 const args = {
@@ -55,10 +60,22 @@ const args = {
   }
 };
 
+const sampleFile = path.resolve(__dirname, '../../config.example.json');
+const defaults = JSON.parse(fs.readFileSync(sampleFile));
+if (process.env.MONGO_PORT_27017_TCP_ADDR) {
+  const db = `mongodb://${process.env.MONGO_PORT_27017_TCP_ADDR}:${process.env.MONGO_PORT_27017_TCP_PORT}/opentmi_dev`;
+  _.merge(defaults, {db});
+}
+
 nconf
   .argv(args, 'Usage: npm start -- (options)')
   .env()
   .file(path.resolve(process.cwd(), nconf.get('config')))
-  .defaults(require('./config.js'));
+  .defaults(defaults);
+
+const cfgFileName = path.resolve(process.cwd(), nconf.get('config'));
+if( !fs.existsSync(cfgFileName)) {
+  fs.copyFileSync(sampleFile, cfgFileName);
+}
 
 module.exports = nconf;

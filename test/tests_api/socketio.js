@@ -2,7 +2,6 @@
 
 // Third party components
 const _ = require('lodash');
-const config = require('../../config');
 const logger = require('winston');
 const IO = require('socket.io-client');
 const superagent = require('superagent');
@@ -10,6 +9,7 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 
 // application modules
+const config = require('../../app/tools/config');
 const {createUserToken} = require('./tools/helpers');
 
 // Setup

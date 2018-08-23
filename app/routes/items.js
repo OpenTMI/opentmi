@@ -3,8 +3,8 @@ const express = require('express');
 const jwt = require('express-jwt');
 
 // Local modules
-const nconf = require('../../config');
-const auth = require('./../../config/middlewares/authorization');
+const nconf = require('../tools/config');
+const auth = require('./middlewares/authorization');
 const ItemController = require('./../controllers/items');
 
 const TOKEN_SECRET = nconf.get('webtoken');

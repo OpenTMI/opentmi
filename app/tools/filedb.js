@@ -4,12 +4,13 @@ const zlib = require('zlib');
 
 // Third party components
 const _ = require('lodash');
-const nconf = require('../../config');
-const logger = require('../tools/logger');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
 
 // Local components
+const nconf = require('./config');
+const logger = require('./logger');
+
 const usedEncoding = 'utf8';
 const filedb = nconf.get('filedb');
 const fileEnding = 'gz';

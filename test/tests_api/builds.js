@@ -4,7 +4,7 @@
 const logger = require('winston');
 
 // Local components
-const config = require('../../config');
+const config = require('../../app/tools/config');
 const {createUserToken} = require('./tools/helpers');
 
 // Setup

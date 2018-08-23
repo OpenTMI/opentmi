@@ -18,4 +18,4 @@ COPY . .
 # ENV NODE_ENV ${NODE}
 
 EXPOSE 8000
-CMD [ "npm", "start", "--", "-v" ]
+CMD [ "npm", "start", "--", "-v", "--listen", "0.0.0.0", "--port", "8000"]

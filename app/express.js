@@ -23,7 +23,7 @@ const logger = require('./tools/logger');
 const expressWinston = require('express-winston');
 
 /* Project libraries */
-const nconf = require('../config');
+const config = require('./tools/config');
 const pkg = require('../package.json');
 
 const env = process.env.NODE_ENV || 'development';
@@ -37,7 +37,7 @@ module.exports = (app) => {
     threshold: 512
   }));
 
-  app.use(express.static(`${nconf.get('root')}/public`));
+  app.use(express.static(`${config.get('root')}/public`));
 
   // Logging middleware
   app.use(expressWinston.logger({
@@ -97,7 +97,7 @@ module.exports = (app) => {
     saveUninitialized: true,
     secret: pkg.name,
     store: new MongoStore({
-      url: nconf.get('db'),
+      url: config.get('db'),
       collection: 'sessions'
     })
   }));

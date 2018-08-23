@@ -10,7 +10,7 @@ const logger = require('../tools/logger');
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 
-const nconf = require('../../config');
+const nconf = require('../tools/config');
 
 const exec = Promise.promisify(childProcess.exec, {multiArgs: true});
 
