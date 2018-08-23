@@ -63,7 +63,7 @@ describe('Basic Get API', function () {
       });
   });
   it('get server version deep', function (done) {
-    this.timeout(5000);
+    this.timeout(10000);
     superagent.get(`${api}/version?deep=true`)
       .set('authorization', authString)
       .end(function (error, res) {
