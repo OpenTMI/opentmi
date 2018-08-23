@@ -46,7 +46,7 @@ io.adapter(ioAdapter);
 // Initialize database connection
 DB.connect()
   .catch((error) => {
-    logger.error('mongoDB connection failed: ', error.stack);
+    console.error('mongoDB connection failed: ', error.stack); // eslint-disable-line no-console
     process.exit(-1);
   })
   .then(() => models.registerModels())
@@ -96,10 +96,10 @@ DB.connect()
         .then(() => logger.debug('Closing DB connection'))
         .then(() => DB.disconnect().timeout(2000))
         .catch((error) => {
-          logger.error(`shutdown Error: ${error}`);
+          console.error(`shutdown Error: ${error}`); // eslint-disable-line no-console
         })
         .finally(() => {
-          logger.info('Exit OpenTMI');
+          console.info('Exit OpenTMI'); // eslint-disable-line no-console
           process.exit(0);
         });
     };
