@@ -2,11 +2,12 @@
 
 // Third party components
 const jwtSimple = require('jwt-simple');
-const nconf = require('../../config');
 const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
+
+const nconf = require('../../app/tools/config');
 
 // Setup
 logger.level = 'error';
@@ -62,7 +63,7 @@ describe('Basic Get API', function () {
       });
   });
   it('get server version deep', function (done) {
-    this.timeout(5000);
+    this.timeout(10000);
     superagent.get(`${api}/version?deep=true`)
       .set('authorization', authString)
       .end(function (error, res) {

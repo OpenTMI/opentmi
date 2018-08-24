@@ -2,11 +2,12 @@
 
 // Third party components
 const jwtSimple = require('jwt-simple');
-const nconf = require('../../config');
 const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
+
+const nconf = require('../../app/tools/config');
 
 // Setup
 logger.level = 'error';

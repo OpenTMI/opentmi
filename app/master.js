@@ -13,7 +13,7 @@ const farmhash = require('farmhash');
 // Local modules
 const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
-const config = require('../config');
+const config = require('./tools/config');
 
 
 // Module variables

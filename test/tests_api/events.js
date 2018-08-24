@@ -8,7 +8,7 @@ const {expect} = require('chai');
 const logger = require('winston');
 
 // Local components
-const config = require('../../config');
+const config = require('../../app/tools/config');
 const {createUserToken, apiV0} = require('./tools/helpers');
 
 // Setup

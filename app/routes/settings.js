@@ -1,5 +1,5 @@
 const express = require('express');
-const nconf = require('../../config');
+const nconf = require('../tools/config');
 
 const admin = nconf.get('admin');
 

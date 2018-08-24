@@ -10,4 +10,4 @@ sslcert
 .idea/
 *.log
 env.json
-settings.json
+config.json
