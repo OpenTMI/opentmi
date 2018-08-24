@@ -1,7 +1,6 @@
 // native modules
 const path = require('path');
 // 3rd party modules
-const _ = require('lodash');
 const fs = require('fs-extra');
 const nconf = require('nconf');
 

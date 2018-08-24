@@ -105,7 +105,7 @@ DB.connect()
     };
     // Close the Mongoose connection, when receiving SIGINT or SIGTERM
     process.on('SIGINT', () => termination('SIGINT'));
-    process.on('SIGTERM', () => {}); //termination('SIGTERM'));
+    process.on('SIGTERM', () => termination('SIGTERM'));
   })
   .catch((error) => {
     console.error('Exception during initialization: ', error); // eslint-disable-line no-console
