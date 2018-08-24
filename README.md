@@ -118,7 +118,14 @@ By default opentmi is started as development mode. You can configure environment
   },
   "mongo": {
     "sslValidate": true
-  }
+  },
+   "github": {
+     "clientID": "<client-id>",
+     "clientSecret": "<client-secret>",
+     "callbackURL": "http://localhost:3000/auth/github/callback",
+     "organization": "<github-org>",
+     "adminTeam": "<admin-team>"
+   }
 }
 ```
 
