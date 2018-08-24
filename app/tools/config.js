@@ -5,6 +5,12 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const nconf = require('nconf');
 
+const getDefaultDb = () => {
+  const url = process.env.MONGO_PORT_27017_TCP_ADDR || '127.0.0.1';
+  const port = process.env.MONGO_PORT_27017_TCP_PORT || 27017;
+  const collection = process.env.MONGO_PORT_27017_TCP_ADDR ? 'opentmi_dev' : 'opentmi_test';
+  return `mongodb://${url}:${port}/${collection}`;
+};
 
 // read configurations
 const args = {
@@ -27,13 +33,6 @@ const args = {
     default: 3000,
     nargs: 1
   },
-  env: {
-    alias: 'e',
-    default: process.env.NODE_ENV || 'development',
-    type: 'string',
-    describe: 'Select environment (development,test,production)',
-    nargs: 1
-  },
   verbose: {
     alias: 'v',
     type: 'number',
@@ -52,6 +51,11 @@ const args = {
     type: 'string',
     describe: 'config file'
   },
+  db: {
+    default: getDefaultDb(),
+    type: 'string',
+    describe: 'mongodb connection string'
+  },
   'auto-reload': {
     alias: 'r',
     default: false,
@@ -62,10 +66,6 @@ const args = {
 
 const sampleFile = path.resolve(__dirname, '../../config.example.json');
 const defaults = JSON.parse(fs.readFileSync(sampleFile));
-if (process.env.MONGO_PORT_27017_TCP_ADDR) {
-  const db = `mongodb://${process.env.MONGO_PORT_27017_TCP_ADDR}:${process.env.MONGO_PORT_27017_TCP_PORT}/opentmi_dev`;
-  _.merge(defaults, {db});
-}
 
 nconf
   .argv(args, 'Usage: npm start -- (options)')
