@@ -67,7 +67,7 @@ nconf
 
 const cfgFileName = path.resolve(process.cwd(), nconf.get('config'));
 if (!fs.existsSync(cfgFileName)) {
-  fs.copyFileSync(sampleFile, cfgFileName);
+  fs.copySync(sampleFile, cfgFileName);
 }
 
 module.exports = nconf;
