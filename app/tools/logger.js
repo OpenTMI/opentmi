@@ -80,6 +80,10 @@ class MasterLogger {
     }
   }
   log(level, ...args) {
+    if (typeof level === 'object') {
+      this.log(level.level, level.message, level.meta);
+      return;
+    }
     const data = args || [''];
     data[0] = `<Master> ${data[0]}`;
     this.logger.log(level, ...data);
@@ -127,6 +131,10 @@ class WorkerLogger {
   }
 
   log(level, ...args) {
+    if (typeof level === 'object') {
+      this.log(level.level, level.message, level.meta);
+      return;
+    }
     this._proxy(level, ...args);
   }
   error(...args) {
