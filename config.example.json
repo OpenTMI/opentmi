@@ -7,6 +7,9 @@
   "filedb": "./data",
   "auto-reload": false,
   "silent": false,
+  "verbose": 1,
+  "sslcertKey": "./sslcert/server.key",
+  "sslcertCrt": "./sslcert/server.crt",
   "admin": {
     "user": "admin",
     "pwd": "admin"
