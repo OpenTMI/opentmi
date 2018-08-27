@@ -80,7 +80,7 @@ class MasterLogger {
     }
   }
   log(level, ...args) {
-    if(typeof level == 'object') {
+    if (typeof level === 'object') {
       this.log(level.level, level.message, level.meta);
       return;
     }
@@ -131,7 +131,7 @@ class WorkerLogger {
   }
 
   log(level, ...args) {
-    if(typeof level == 'object') {
+    if (typeof level === 'object') {
       this.log(level.level, level.message, level.meta);
       return;
     }
