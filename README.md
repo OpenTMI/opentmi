@@ -104,30 +104,6 @@ Available [here](doc/APIs)
 ## Configuration
 
 By default opentmi is started as development mode. You can configure environment using [`--config <file>`](`config.example.json`) -option.
-```
-{
-  "name": "opentmi",
-  "host": "0.0.0.0",
-  "port": 3000,
-  "webtoken": "OpenTMI-toP-SeCRet-tOKEn",
-  "db": "mongodb://localhost/opentmi",
-  "filedb": "./data",
-  "admin": {
-    "user": "admin",
-    "pwd": "admin"
-  },
-  "mongo": {
-    "sslValidate": true
-  },
-   "github": {
-     "clientID": "<client-id>",
-     "clientSecret": "<client-secret>",
-     "callbackURL": "http://localhost:3000/auth/github/callback",
-     "organization": "<github-org>",
-     "adminTeam": "<admin-team>"
-   }
-}
-```
 
 note: `"mongo"` options overwrites defaults and is pypassed to [MongoClient](http://mongodb.github.io/node-mongodb-native/3.0/api/MongoClient.html).
 

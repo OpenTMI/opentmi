@@ -1,10 +1,15 @@
 {
   "name": "opentmi",
-  "host": "127.0.0.1",
-  "port": 3000,
+  "listen": "127.0.0.1",
+  "port": 80,
   "webtoken": "OpenTMI-toP-SeCRet-tOKEn",
   "db": "mongodb://localhost/opentmi",
   "filedb": "./data",
+  "auto-reload": false,
+  "silent": false,
+  "verbose": 1,
+  "sslcertKey": "./sslcert/server.key",
+  "sslcertCrt": "./sslcert/server.crt",
   "admin": {
     "user": "admin",
     "pwd": "admin"
@@ -15,7 +20,7 @@
   "github": {
     "clientID": "<client-id>",
     "clientSecret": "<client-secret>",
-    "callbackURL": "http://localhost:3000/auth/github/callback",
+    "callbackURL": "http://localhost/auth/github/callback",
     "organization": "<github-org>",
     "adminTeam": "<admin-team>"
   }
