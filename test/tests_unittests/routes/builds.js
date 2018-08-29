@@ -1,7 +1,7 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('chai');
 const logger = require('winston');
 
 // Local components
@@ -11,8 +11,6 @@ const SchemaRoute = require('../../../app/routes/builds');
 // Setup
 logger.level = 'error';
 
-// Test variables
-const expect = chai.expect;
 
 describe('routes/builds.js', function () {
   describe('Route', function () {

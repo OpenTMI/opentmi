@@ -16,7 +16,7 @@ logger.level = 'silly';
 chai.use(chaiSubset);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 let controller = null;
 
 describe('controllers/testcases.js', function () {

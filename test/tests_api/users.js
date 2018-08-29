@@ -14,7 +14,7 @@ const nconf = require('../../app/tools/config');
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const userWithLoanId = '5825bb7cfe7545132c88c773';
 const host = 'http://localhost:3000';
 const api = `${host}/api/v0`;

@@ -4,7 +4,7 @@
 const jwtSimple = require('jwt-simple');
 const moment = require('moment');
 const superagent = require('superagent');
-const chai = require('chai');
+const {expect} = require('chai');
 const logger = require('winston');
 
 const nconf = require('../../app/tools/config');
@@ -13,7 +13,6 @@ const nconf = require('../../app/tools/config');
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
 const api = 'http://localhost:3000/api/v0';
 
 

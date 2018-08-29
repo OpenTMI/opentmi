@@ -85,7 +85,6 @@ class Updater extends EventEmitter {
     if (this._pending.isPending()) {
       return Promise.reject('Updating in progress.');
     }
-
     eventBus.emit('workerRestartNeeded', 'Request from updater tool.');
     return Promise.resolve('Server will be restarted.');
   }
