@@ -18,7 +18,6 @@ const logDir = path.resolve(__dirname, '..', '..', 'log');
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
-const logFile = path.join(logDir, 'app.log');
 
 function _parseError(error) {
   const jsonObj = {
@@ -41,8 +40,9 @@ class MasterLogger {
     const options = {
       format: format.combine(
         format.colorize(),
+        format.timestamp(),
         format.splat(),
-        format.simple()
+        format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
       )
     };
     this.logger = createLogger(options);
@@ -57,11 +57,12 @@ class MasterLogger {
     const fileLevel = 'silly';
     this.logger.add(
       new DailyRotateFile({
-        filename: logFile,
-        json: false,
-        handleExceptions: false,
+        filename: `opentmi_%DATE%_${process.pid}.log`,
+        dirname: logDir,
         level: fileLevel,
-        datePatter: '.yyyy-MM-dd_HH-mm.log'
+        datePatter: 'yyyy-MM-dd_HH-mm',
+        maxSize: '100m',
+        maxFiles: '10d'
       }));
   }
   set level(level) {
@@ -134,6 +135,10 @@ class WorkerLogger {
     if (typeof level === 'object') {
       this.log(level.level, level.message, level.meta);
       return;
+    }
+    if (typeof level !== 'string') {
+      args = [`Unknown level: ${level}, args: ${args}`]; // eslint-disable-line
+      level = 'error'; // eslint-disable-line
     }
     this._proxy(level, ...args);
   }

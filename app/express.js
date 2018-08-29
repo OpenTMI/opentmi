@@ -39,6 +39,9 @@ module.exports = (app) => {
 
   app.use(express.static(`${config.get('root')}/public`));
 
+  const ignoreRoute = undefined;
+  // const ignoreRoute = req => req.url.match(/^\/api/) == null;
+
   // Logging middleware
   app.use(expressWinston.logger({
     winstonInstance: logger,
@@ -54,7 +57,7 @@ module.exports = (app) => {
     // uses the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red).
     // Will not be recognized if expressFormat is true
     colorize: true,
-    ignoreRoute: req => (req.url.match(/^\/api/) !== null && req.method === 'GET')
+    ignoreRoute
   }));
 
   // set views path, template engine and default layout
