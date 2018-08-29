@@ -25,7 +25,7 @@ const {setup, reset, teardown} = require('./mongomock');
 
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 let mockInstances = [];
 let controller = null;
 

@@ -10,9 +10,9 @@ const logger = require('../tools/logger');
 const {IsEmpty} = require('./plugins/isempty');
 
 /* Implementation */
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId} = Types;
 const Group = mongoose.model('Group');
 
 function validateEmail(email) { // eslint-disable-line no-unused-vars

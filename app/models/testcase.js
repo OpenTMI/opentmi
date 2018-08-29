@@ -11,10 +11,9 @@ const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
 
 /* Implementation */
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
-const Mixed = Types.Mixed;
+const {Schema} = mongoose;
+const {Types} = Schema.Types;
+const {ObjectId, Mixed} = Types;
 
 
 const FileSchema = new Schema({

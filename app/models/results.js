@@ -13,8 +13,8 @@ const FileSchema = require('./extends/file');
 const tools = require('../tools');
 
 // Model variables
-const Schema = mongoose.Schema;
-const filedb = tools.filedb;
+const {Schema} = mongoose;
+const {filedb} = tools;
 const fileProvider = filedb.provider;
 const Build = mongoose.model('Build');
 

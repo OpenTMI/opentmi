@@ -21,7 +21,7 @@ logger.level = 'error';
 chai.use(chaiAsPromised);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const File = mongoose.model('File');
 const filedbPath = path.resolve('app/tools/filedb.js');
 let filedb;

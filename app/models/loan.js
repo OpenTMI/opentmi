@@ -3,9 +3,9 @@ const async = require('async');
 const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
 
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId} = Types;
 const Item = mongoose.model('Item');
 
 /**

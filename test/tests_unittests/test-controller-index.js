@@ -26,7 +26,7 @@ chai.use(chaiAsPromised);
 mongoose.model('DummyItem', DummySchema);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const Dummy = mongoose.model('DummyItem');
 let mockItem1 = null;
 let defaultController = null;

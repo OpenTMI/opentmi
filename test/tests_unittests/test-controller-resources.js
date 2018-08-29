@@ -19,7 +19,7 @@ chai.use(chaiAsPromised);
 
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 
 describe('controllers/resources.js', function () {
   // Create fresh DB

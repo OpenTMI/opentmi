@@ -35,7 +35,7 @@ let mockUser1 = null;
 let mockLoan1 = null;
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 let controller = null;
 
 const User = mongoose.model('User');

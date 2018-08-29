@@ -17,7 +17,7 @@ logger.level = 'error';
 chai.use(chaiSubset);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 let controller = null;
 
 describe('controllers/users.js', function () {

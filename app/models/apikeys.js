@@ -6,7 +6,7 @@ const QueryPlugin = require('mongoose-query');
 const uuidv4 = require('uuid/v4');
 
 /* Implementation */
-const Schema = mongoose.Schema;
+const {Schema} = mongoose;
 
 /**
  * Group schema
