@@ -4,7 +4,7 @@
  */
 const mongoose = require('mongoose');
 // var userPlugin = require('mongoose-user');
-const Schema = mongoose.Schema;
+const {Schema} = mongoose;
 const QueryPlugin = require('mongoose-query');
 const _ = require('lodash');
 

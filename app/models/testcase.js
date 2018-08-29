@@ -12,7 +12,7 @@ const logger = require('../tools/logger');
 
 /* Implementation */
 const {Schema} = mongoose;
-const {Types} = Schema.Types;
+const {Types} = Schema;
 const {ObjectId, Mixed} = Types;
 
 

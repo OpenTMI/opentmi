@@ -12,7 +12,7 @@ const {IsEmpty} = require('./plugins/isempty');
 /* Implementation */
 const {Schema} = mongoose;
 const {Types} = Schema;
-const {ObjectId} = Types;
+const {ObjectId, Mixed} = Types;
 const Group = mongoose.model('Group');
 
 function validateEmail(email) { // eslint-disable-line no-unused-vars
@@ -40,7 +40,7 @@ const UserSchema = new Schema({
   loggedIn: {type: Boolean, default: false},
   groups: [{type: ObjectId, ref: 'Group'}],
   apikeys: [{type: ObjectId, ref: 'ApiKey'}],
-  settings: {type: Types.Mixed}
+  settings: {type: Mixed}
 });
 
 

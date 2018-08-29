@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
+const {Schema} = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 
-const {Schema} = mongoose;
 const {Types} = Schema;
 const {ObjectId} = Types;
 
