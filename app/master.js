@@ -276,18 +276,22 @@ class Master {
    * @param {*} data - data received from worker
    */
   static onWorkerMessage(data) {
-    switch (data.type) {
-      case 'log': {
-        logger.handleWorkerLog(this, data);
-        break;
+    try {
+      switch (data.type) {
+        case 'log': {
+          logger.handleWorkerLog(this, data);
+          break;
+        }
+        case 'event': {
+          eventBus.clusterEventHandler(this, data);
+          break;
+        }
+        default: {
+          logger.error(`Message without type from worker, data: ${JSON.stringify(data)}.`);
+        }
       }
-      case 'event': {
-        eventBus.clusterEventHandler(this, data);
-        break;
-      }
-      default: {
-        logger.error(`Message without type from worker, data: ${JSON.stringify(data)}.`);
-      }
+    } catch (error) {
+      logger.error(`worker message handler throws an error: ${error}, data: ${JSON.stringify(data)}`);
     }
   }
 
