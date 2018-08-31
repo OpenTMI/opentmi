@@ -291,7 +291,7 @@ class Master {
         }
       }
     } catch (error) {
-      logger.error(`worker message throws errro: ${error}`, error);
+      logger.error(`worker message handler throws an error: ${error}, data: ${JSON.stringify(data)}`);
     }
   }
 
