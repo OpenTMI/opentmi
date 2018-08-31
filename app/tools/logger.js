@@ -85,6 +85,7 @@ class MasterLogger {
       this.log(level.level, level.message, level.meta);
       return;
     }
+    level = level || 'error'; // eslint-disable-line no-param-reassign
     const data = args || [''];
     data[0] = `<Master> ${data[0]}`;
     this.logger.log(level, ...data);
