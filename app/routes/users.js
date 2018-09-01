@@ -1,8 +1,9 @@
 // Third party modules
 const express = require('express');
 const mongoose = require('mongoose');
+const passport = require('passport');
+
 const nconf = require('../tools/config');
-const jwt = require('express-jwt');
 const logger = require('../tools/logger');
 
 // Local modules
@@ -12,7 +13,6 @@ const UserController = require('./../controllers/users');
 const AuthController = require('./../controllers/authentication');
 
 // Route variables
-const TOKEN_SECRET = nconf.get('webtoken');
 const User = mongoose.model('User');
 const userController = new UserController();
 const authController = new AuthController();
@@ -52,35 +52,37 @@ function Route(app) {
   const userRouter = express.Router();
   userRouter.param('User', userController.modelParam.bind(userController));
 
+  const jwtMiddle = passport.authenticate('jwt', {session: false});
+
   // Route for operations that target all users
   userRouter.route('/')
-    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.find.bind(userController))
-    .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.create.bind(userController));
+    .get(jwtMiddle, auth.ensureAdmin, userController.find.bind(userController))
+    .post(jwtMiddle, auth.ensureAdmin, userController.create.bind(userController));
 
   // Route for operations that target individual users
   const singleUserRouter = express.Router({mergeParams: true});
   singleUserRouter.route('/')
-    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.get.bind(userController))
-    .put(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.update.bind(userController))
-    .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.remove.bind(userController));
+    .get(jwtMiddle, auth.ensureAdmin, userController.get.bind(userController))
+    .put(jwtMiddle, auth.ensureAdmin, userController.update.bind(userController))
+    .delete(jwtMiddle, auth.ensureAdmin, userController.remove.bind(userController));
 
   // Create User settings routes
   singleUserRouter.route('/settings/:Namespace')
-    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.getSettings.bind(userController))
-    .put(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.updateSettings.bind(userController))
-    .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.deleteSettings.bind(userController));
+    .get(jwtMiddle, auth.ensureAuthenticated, userController.getSettings.bind(userController))
+    .put(jwtMiddle, auth.ensureAuthenticated, userController.updateSettings.bind(userController))
+    .delete(jwtMiddle, auth.ensureAuthenticated, userController.deleteSettings.bind(userController));
 
   // allows to use /client-settings instead of /settings
   userRouter.use('/client-settings/', express.Router().all((req) => { req.redirect('../settings'); }));
 
   // Create authentication routes:
-  app.get('/api/v0/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, apiKeys.keys);
+  app.get('/api/v0/apikeys', jwtMiddle, auth.ensureAdmin, apiKeys.keys);
   const apikeysRouter = express.Router();
 
   apikeysRouter
-    .get('/', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.userKeys)
-    .get('/new', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.createKey)
-    .delete('/:Key', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.deleteKey);
+    .get('/', jwtMiddle, auth.ensureAuthenticated, apiKeys.userKeys)
+    .get('/new', jwtMiddle, auth.ensureAuthenticated, apiKeys.createKey)
+    .delete('/:Key', jwtMiddle, auth.ensureAuthenticated, apiKeys.deleteKey);
   singleUserRouter.use('/apikeys', apikeysRouter);
 
 
@@ -90,14 +92,15 @@ function Route(app) {
 
   const authRoute = express.Router();
   authRoute
-    .post('/login', authController.login.bind(authController))
-    .get('/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, authController.getme.bind(authController))
-    .put('/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, authController.putme.bind(authController))
+    .post('/login', passport.authenticate('local'), AuthController.sendToken)
+    .get('/me', jwtMiddle, auth.ensureAuthenticated, authController.getme.bind(authController))
+    .put('/me', jwtMiddle, auth.ensureAuthenticated, authController.putme.bind(authController))
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
-    .post('/google', authController.google.bind(authController))
-    .post('/github', jwt({secret: TOKEN_SECRET, credentialsRequired: false}), AuthController.github)
-    .get('/github/id', AuthController.getGithubClientId);
+    // .post('/google', passport.authenticate('google'), AuthController.google)
+    .post('/github', passport.authenticate('github'), AuthController.sendToken)
+    .post('/github/token', passport.authenticate('github-token'), AuthController.sendToken)
+    .get('/github/id', AuthController.GetGithubClientId);
   app.use('/auth', authRoute);
 
   /**
