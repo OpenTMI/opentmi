@@ -75,8 +75,8 @@ class MasterLogger {
     try {
       this.logger.log(level, ...args);
     } catch (error) {
-      console.error(error); // eslint-disable-line no-print
-      console.error(data); // eslint-disable-line no-print
+      console.error(error); // eslint-disable-line no-console
+      console.error(data); // eslint-disable-line no-console
     }
   }
   log(level, ...args) {
