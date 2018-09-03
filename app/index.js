@@ -60,8 +60,8 @@ DB.connect()
   .then(() => {
     function onError(error) {
       if (error.code === 'EACCES' && port < 1024) {
-        console.error("You haven't access to open port below 1024"); // eslint-disable-line no-console
-        console.error("Please use admin rights if you wan't to use port %d!", port); // eslint-disable-line no-console
+        console.error('You haven not access to open port below 1024'); // eslint-disable-line no-console
+        console.error(`Please use admin rights if you wan't to use port ${port}!`); // eslint-disable-line no-console
       } else if (error.code === 'EADDRINUSE') {
         console.error(`Port ${port} is already in use`); // eslint-disable-line no-console
       } else {

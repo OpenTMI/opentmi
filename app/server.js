@@ -13,11 +13,11 @@ const sslcertCrt = config.get('sslcertCrt');
 function createServer(app) {
   if (config.get('https')) {
     if (!fs.existsSync(sslcertKey)) {
-      logger.error('ssl cert key is missing: %s', sslcertKey);
+      logger.error(`ssl cert key is missing: ${sslcertKey}`);
       process.exit(1);
     }
     if (!fs.existsSync(sslcertCrt)) {
-      logger.error('ssl cert crt is missing: %s', sslcertCrt);
+      logger.error(`ssl cert crt is missing: ${sslcertCrt}`);
       process.exit(1);
     }
     const key = fs.readFileSync(sslcertKey);
