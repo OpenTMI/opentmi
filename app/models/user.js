@@ -1,17 +1,18 @@
-
-/*!
+/**
  * Module dependencies
  */
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const bcrypt = require('bcryptjs');
 const _ = require('lodash');
+// application modules
 const logger = require('../tools/logger');
+const {IsEmpty} = require('./plugins/isempty');
 
 /* Implementation */
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId, Mixed} = Types;
 const Group = mongoose.model('Group');
 
 function validateEmail(email) { // eslint-disable-line no-unused-vars
@@ -39,18 +40,15 @@ const UserSchema = new Schema({
   loggedIn: {type: Boolean, default: false},
   groups: [{type: ObjectId, ref: 'Group'}],
   apikeys: [{type: ObjectId, ref: 'ApiKey'}],
-  settings: {type: Types.Mixed}
+  settings: {type: Mixed}
 });
 
-/**
- * User plugin
- */
-// UserSchema.plugin(userPlugin, {});
 
 /**
- * Query Plugin
+ * Plugin
  */
 UserSchema.plugin(QueryPlugin); // install QueryPlugin
+UserSchema.plugin(IsEmpty); // install isEmpty
 
 /**
  * Add your

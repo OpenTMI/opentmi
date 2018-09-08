@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId} = Types;
 
 
 class MsgIds {

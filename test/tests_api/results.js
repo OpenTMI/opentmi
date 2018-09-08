@@ -6,17 +6,16 @@ const fs = require('fs');
 
 // Third party components
 const superagent = require('superagent');
-const chai = require('chai');
+const {expect} = require('chai');
 const logger = require('winston');
 
 // Local components
-const config = require('../../config');
+const config = require('../../app/tools/config');
 const {createUserToken} = require('./tools/helpers');
 // Setup
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
 const api = 'http://localhost:3000/api/v0';
 
 const testUserId = '5825bb7afe7545132c88c761';
@@ -92,6 +91,8 @@ describe('Results', function () {
         // Check special cases, eg. logs
         expect(res.body.exec).to.have.property('logs').which.is.an('array');
         expect(res.body.exec.logs).to.have.lengthOf(1);
+        expect(res.body.exec).to.have.property('duts').which.is.an('array');
+        expect(res.body.exec.duts).to.have.lengthOf(1);
 
         // Check log sanity
         expect(res.body.exec.logs[0]).to.not.have.property('data');

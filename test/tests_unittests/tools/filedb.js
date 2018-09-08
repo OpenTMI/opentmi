@@ -2,7 +2,6 @@
 
 // Third party modules
 require('colors');
-const nconf = require('../../../config');
 const path = require('path');
 const zlib = require('zlib');
 const fs = require('fs');
@@ -13,6 +12,7 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 
 // Local modules
+const nconf = require('../../../app/tools/config');
 require('../../../app/models/extends/file.js');
 const checksum = require('../../../app/tools/checksum.js');
 
@@ -21,7 +21,7 @@ logger.level = 'error';
 chai.use(chaiAsPromised);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const File = mongoose.model('File');
 const filedbPath = path.resolve('app/tools/filedb.js');
 let filedb;

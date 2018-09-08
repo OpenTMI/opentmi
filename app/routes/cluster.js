@@ -6,8 +6,8 @@ const express = require('express');
 const jwt = require('express-jwt');
 
 // Local modules
-const nconf = require('../../config');
-const auth = require('./../../config/middlewares/authorization');
+const nconf = require('../tools/config');
+const auth = require('./middlewares/authorization');
 const ClusterController = require('./../controllers/clusters');
 const {notClustered} = require('./../controllers/common');
 

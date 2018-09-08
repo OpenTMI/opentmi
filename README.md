@@ -34,8 +34,8 @@ OpenTMI try to solve these kind of challenges using "big-data".
 
 # Pre-requirements
 
-* [Node.js][Node.js] v6.1< (tested with 6.1, recommended to use latest LTS version)
-* [mongodb][MongoDB] v3.2< (recommented to use latest version)
+* [Node.js][Node.js] v8.11< (tested with 8.11.4, recommended to use latest LTS version)
+* [mongodb][MongoDB] v3.6< (tested with 4.1.2, recommented to use latest version)
 
 # Installation
 
@@ -103,23 +103,9 @@ Available [here](doc/APIs)
 
 ## Configuration
 
-By default it start server as development mode. You can configure environment using [env.json](`config/env/env.example.json`)
-```
-{
-  "OPENTMI_BIND": "0.0.0.0",
-  "OPENTMI_PORT": 80,
-  "WEBTOKEN": "token",
-  "MONGODB": "mongodb://localhost/opentmi",
-  "FILE_DB": "./data",
-  "OPENTMI_ADMIN_USERNAME": "admin",
-  "OPENTMI_ADMIN_PASSWORD": "admin",
-  "GITHUB_CLIENTID": "ID",
-  "GITHUB_SECRET": "SECRET",
-  "GITHUB_ORG": "ORGANIZATION",
-  "GITHUB_CBURL": "GITHUB_CBURL",
-  "GITHUB_ADMINTEAM": "ADMIN-TEAM"
-}
-```
+By default opentmi is started as development mode. You can configure environment using [`--config <file>`](`config.example.json`) -option.
+
+note: `"mongo"` options overwrites defaults and is pypassed to [MongoClient](http://mongodb.github.io/node-mongodb-native/3.0/api/MongoClient.html).
 
 # Architecture
 

@@ -2,17 +2,18 @@
 
 // Third party components
 const jwtSimple = require('jwt-simple');
-const nconf = require('../../config');
 const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 
+const nconf = require('../../app/tools/config');
+
 // Setup
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const api = 'http://localhost:3000/api/v0';
 const testUserId = '5825bb7afe7545132c88c761';
 let authString;
@@ -62,7 +63,7 @@ describe('Basic Get API', function () {
       });
   });
   it('get server version deep', function (done) {
-    this.timeout(5000);
+    this.timeout(10000);
     superagent.get(`${api}/version?deep=true`)
       .set('authorization', authString)
       .end(function (error, res) {

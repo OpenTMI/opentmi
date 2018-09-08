@@ -3,8 +3,8 @@ const express = require('express');
 const jwt = require('express-jwt');
 
 // application modules
-const nconf = require('../../config');
-const {ensureAdmin, ensureAuthenticated} = require('./../../config/middlewares/authorization');
+const nconf = require('../tools/config');
+const {ensureAdmin, ensureAuthenticated} = require('./middlewares/authorization');
 const EventsController = require('./../controllers/events');
 
 // Route variables

@@ -7,9 +7,9 @@ const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
 
 // Implementation
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId} = Types;
 const request = Request.defaults({encoding: null});
 
 

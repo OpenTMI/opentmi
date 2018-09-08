@@ -13,7 +13,7 @@ logger.level = 'error';
 chai.use(chaiAsPromised);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const cachePath = path.resolve('./app/addons/addon.js');
 
 let Addon;

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Helper script that restores database collections from a db dump taken with mongodump (=dbdump.sh).
 # USAGE
 # local: $ ./dbrestore.sh local <pathOfDumpDirToRestore>
@@ -7,7 +8,7 @@
 
 
 ###########################################################
-#      
+#
 #   MODIFY THESE TO YOUR LIKING:
 #
 
@@ -64,7 +65,7 @@ if [ "$1" = "local" ] && [ -d "$2" ]; then
 elif [ "$1" = "remote" ] && [ -d "$2" ]; then
     MONGO_HOST="$REMOTE_MONGO_HOST"
     MONGO_PORT="$REMOTE_MONGO_PORT"
-    DB_NAME="$REMOTE_DB_NAME" 
+    DB_NAME="$REMOTE_DB_NAME"
     printDumpInfo
     echo "db username: $REMOTE_DB_USERNAME"
     if mongorestore -h $MONGO_HOST:$MONGO_PORT -d $DB_NAME -u $REMOTE_DB_USERNAME -p $REMOTE_DB_PASSWORD $DB_DIR --drop; then

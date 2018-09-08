@@ -2,18 +2,19 @@
 
 // Third party components
 const jwtSimple = require('jwt-simple');
-const nconf = require('../../config');
 const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 const _ = require('lodash');
 
+const nconf = require('../../app/tools/config');
+
 // Setup
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const userWithLoanId = '5825bb7cfe7545132c88c773';
 const host = 'http://localhost:3000';
 const api = `${host}/api/v0`;
