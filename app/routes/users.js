@@ -1,12 +1,12 @@
 // Third party modules
 const express = require('express');
 const mongoose = require('mongoose');
-const nconf = require('../../config');
+const nconf = require('../tools/config');
 const jwt = require('express-jwt');
 const logger = require('../tools/logger');
 
 // Local modules
-const auth = require('./../../config/middlewares/authorization');
+const auth = require('./middlewares/authorization');
 const apiKeys = require('./../controllers/apikeys');
 const UserController = require('./../controllers/users');
 const AuthController = require('./../controllers/authentication');

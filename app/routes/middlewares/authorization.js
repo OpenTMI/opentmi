@@ -2,13 +2,13 @@
 const jwt = require('jwt-simple');
 const moment = require('moment');
 const mongoose = require('mongoose');
-const logger = require('../../app/tools/logger');
 const async = require('async');
 const _ = require('lodash');
 
 // Local modules
-const nconf = require('../../config');
-require('../../app/models/group');
+const logger = require('../../tools/logger');
+const nconf = require('../../tools/config');
+require('../../models/group');
 
 // Middleware variables
 const TOKEN_SECRET = nconf.get('webtoken');

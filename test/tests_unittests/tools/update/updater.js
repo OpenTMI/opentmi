@@ -1,14 +1,13 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('chai');
 
 // Application components
 const Npm = require('../../../../app/tools/update/npm');
 const Updater = require('../../../../app/tools/update/updater');
 
 // Variables
-const expect = chai.expect;
 let updater;
 
 describe('update/updater.js', function () {

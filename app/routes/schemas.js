@@ -4,8 +4,8 @@ const jwt = require('express-jwt');
 
 // Application modules
 const SchemaController = require('./../controllers/schemas');
-const auth = require('./../../config/middlewares/authorization');
-const nconf = require('../../config');
+const auth = require('./middlewares/authorization');
+const nconf = require('../tools/config');
 
 // Route variables
 const TOKEN_SECRET = nconf.get('webtoken');

@@ -8,13 +8,13 @@ const chai = require('chai');
 const logger = require('winston');
 
 // Local components
-const nconf = require('../../config');
+const nconf = require('../../app/tools/config');
 
 // Setup
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const api = 'http://localhost:3000/api/v0';
 const testUserId = '5825bb7afe7545132c88c761';
 const errorBody = {error: undefined};

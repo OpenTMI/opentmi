@@ -1,13 +1,12 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('chai');
 
 // Native components
 const path = require('path');
 
 // Test variables
-const expect = chai.expect;
 const pathToFile = path.resolve('app/tools/eventBus/local-event-bus.js');
 let localEventBus = require('../../../../app/tools/eventBus/local-event-bus');
 

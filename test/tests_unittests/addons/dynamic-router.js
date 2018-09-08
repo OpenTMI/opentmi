@@ -13,7 +13,7 @@ chai.use(chaiAsPromised);
 const DynamicRouter = require('../../../app/addons/dynamic-router');
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 let dynamicRouter;
 
 describe('dynamic-router.js', function () {

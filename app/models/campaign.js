@@ -4,13 +4,13 @@
  */
 const mongoose = require('mongoose');
 // var userPlugin = require('mongoose-user');
-const Schema = mongoose.Schema;
+const {Schema} = mongoose;
 const QueryPlugin = require('mongoose-query');
 const _ = require('lodash');
 
 // implementation
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {Types} = Schema;
+const {ObjectId} = Types;
 /**
  * User schema
  */

@@ -17,7 +17,7 @@ logger.level = 'error';
 chai.use(chaiAsPromised);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const cachePath = path.resolve('./app/addons/index.js');
 const rootPath = path.resolve(__dirname, '..', '..', '..', 'app', 'addons');
 let AddonManager;

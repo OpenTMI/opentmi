@@ -8,18 +8,16 @@ const {createLogger, format, transports} = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
 
 // Application components
-const config = require('../../config/index');
+const config = require('./config');
 
 // Setup
 const verbose = config.get('verbose');
 const silent = config.get('silent');
-const environment = config.get('env');
 
 const logDir = path.resolve(__dirname, '..', '..', 'log');
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
-const logFile = path.join(logDir, 'app.log');
 
 function _parseError(error) {
   const jsonObj = {
@@ -42,30 +40,29 @@ class MasterLogger {
     const options = {
       format: format.combine(
         format.colorize(),
-        format.splat(),
-        format.simple()
+        format.timestamp(),
+        format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
       )
     };
     this.logger = createLogger(options);
     // add console transport
-    this.logger.add(new transports.Console({
-      colorize: true,
-      level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
-    }));
+    if (!silent) {
+      this.logger.add(new transports.Console({
+        colorize: true,
+        level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+      }));
+    }
     // Add winston file logger, which rotates daily
     const fileLevel = 'silly';
     this.logger.add(
       new DailyRotateFile({
-        filename: logFile,
-        json: false,
-        handleExceptions: false,
+        filename: `opentmi_%DATE%_${process.pid}.log`,
+        dirname: logDir,
         level: fileLevel,
-        datePatter: '.yyyy-MM-dd_HH-mm.log'
+        datePatter: 'yyyy-MM-dd_HH-mm',
+        maxSize: '100m',
+        maxFiles: '10d'
       }));
-
-
-    // Print current config
-    this.logger.info(`Using cfg: ${environment}.`);
   }
   set level(level) {
     this.logger.level = level;
@@ -78,11 +75,16 @@ class MasterLogger {
     try {
       this.logger.log(level, ...args);
     } catch (error) {
-      this.logger.error(data);
-      this.logger.error(error);
+      console.error(error); // eslint-disable-line no-console
+      console.error(data); // eslint-disable-line no-console
     }
   }
   log(level, ...args) {
+    if (typeof level === 'object') {
+      this.log(level.level, level.message, level.meta);
+      return;
+    }
+    level = level || 'error'; // eslint-disable-line no-param-reassign
     const data = args || [''];
     data[0] = `<Master> ${data[0]}`;
     this.logger.log(level, ...data);
@@ -130,6 +132,14 @@ class WorkerLogger {
   }
 
   log(level, ...args) {
+    if (typeof level === 'object') {
+      this.log(level.level, level.message, level.meta);
+      return;
+    }
+    if (typeof level !== 'string') {
+      args = [`Unknown level: ${level}, args: ${args}`]; // eslint-disable-line
+      level = 'error'; // eslint-disable-line
+    }
     this._proxy(level, ...args);
   }
   error(...args) {

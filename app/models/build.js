@@ -15,9 +15,9 @@ const logger = require('../tools/logger');
 const FileSchema = require('./extends/file');
 const tools = require('../tools');
 
-const filedb = tools.filedb;
+const {filedb} = tools;
 const fileProvider = filedb.provider;
-const Schema = mongoose.Schema;
+const {Schema} = mongoose;
 
 /**
  * Location schema
