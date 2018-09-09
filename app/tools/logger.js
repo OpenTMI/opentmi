@@ -41,7 +41,6 @@ class MasterLogger {
       format: format.combine(
         format.colorize(),
         format.timestamp(),
-        format.splat(),
         format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
       )
     };
@@ -76,8 +75,8 @@ class MasterLogger {
     try {
       this.logger.log(level, ...args);
     } catch (error) {
-      this.logger.error(data);
-      this.logger.error(error);
+      console.error(error); // eslint-disable-line no-console
+      console.error(data); // eslint-disable-line no-console
     }
   }
   log(level, ...args) {
