@@ -11,6 +11,8 @@ const GitHubTokenStrategy = require('passport-github-token');
 
 const logger = require('../../tools/logger');
 const nconf = require('../../tools/config');
+const Google = require('./github');
+
 
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
@@ -20,12 +22,24 @@ const ExtractJWT = passportJWT.ExtractJwt;
 const githubAdminTeam = nconf.get('github').adminTeam;
 const githubOrganization = nconf.get('github').organization;
 
+// To support persistent login sessions, Passport needs to be able to
+// serialize users into and deserialize users out of the session.  Typically,
+// this will be as simple as storing the user ID when serializing, and finding
+// the user by ID when deserializing.
 passport.serializeUser((user, done) => {
-  done(null, user._id);
+   user.increment();
+   user.loggedIn = true;
+   user.lastVisited = new Date();
+   user.save()
+       .then(() => done(null, user._id))
+       .catch(done);
 });
 
 passport.deserializeUser((id, done) => {
-  User.findById(id, done);
+  User.findById(id)
+      .then(user => user.update({loggedIn: false}))
+      .then(user => done(null, user));
+      .catch(done);
 });
 
 class PassportStrategies {
@@ -98,6 +112,20 @@ class PassportStrategies {
     newUser.email = profile._json.email;
     return newUser.save();
   }
+  static _GithubStrategyHelper(accessToken, profile, bext) {
+    const emails = _.map(profile.emails, obj => ({email: obj.value}));
+    logger.silly(`Profile: ${JSON.stringify(profile)}`);
+    User.findOne({})
+      .or(emails)
+      .exec()
+      .then(user => (user || AuthenticationController.createUserFromGithubProfile(profile)))
+      .then((user) => {
+        invariant(user, 'github token usage failed');
+        return user;
+      })
+      .then(user => next(null, user))
+      .catch(next);
+  }
   static GitHubStrategy() {
     logger.info("Create github strategy");
     passport.use(new GitHubStrategy({
@@ -106,7 +134,7 @@ class PassportStrategies {
       callbackURL: nconf.get('github').callbackURL
     },
     ((accessToken, refreshToken, profile, next) => {
-      User.findOrCreate({githubId: profile.id}, (err, user) => done(err, next));
+      PassportStrategies._GithubStrategyHelper(accessToken, profile, next);
     })));
   }
   static GitHubTokenStrategy() {
@@ -116,18 +144,7 @@ class PassportStrategies {
       clientSecret: nconf.get('github').clientSecret,
       passReqToCallback: true
     }, ((req, accessToken, refreshToken, profile, next) => {
-      const emails = _.map(profile.emails, obj => ({email: obj.value}));
-      logger.verbose(`Profile: ${JSON.stringify(profile)}`);
-      User.findOne({})
-        .or(emails)
-        .exec()
-        .then(user => (user || AuthenticationController.createUserFromGithubProfile(profile)))
-        .then((user) => {
-          invariant(user, 'github token usage failed');
-          return user;
-        })
-        .then(user => next(null, user))
-        .catch(next);
+      PassportStrategies._GithubStrategyHelper(accessToken, profile, next);
     })));
   }
   static GoogleStrategy() {
