@@ -32,8 +32,12 @@ class PassportStrategies {
   static createStrategies() {
     AuthenticationController.JWTStrategy();
     AuthenticationController.LocalStrategy();
-    AuthenticationController.GitHubStrategy();
-  // AuthenticationController.GoogleStrategy();
+    // github access token
+    if (nconf.get('github')) {
+      AuthenticationController.GitHubStrategy();
+      AuthenticationController.GitHubTokenStrategy();
+    }
+    // AuthenticationController.GoogleStrategy();
   }
   static JWTStrategy() {
   // JWT
@@ -48,7 +52,7 @@ class PassportStrategies {
     ));
   }
   static LocalStrategy() {
-  // LocalStrategy
+    logger.info("Create local strategy");
     passport.use(new LocalStrategy(
       {usernameField: 'email'},
       (email, password, done) => {
@@ -84,28 +88,29 @@ class PassportStrategies {
       })
     );
   }
+  static createUserFromGithubProfile(profile) {
+    logger.silly(`create new user from github profile: ${profile.login}`);
+    const newUser = new User();
+    newUser.name = profile.displayName;
+    newUser.github = profile._json.username;
+    newUser.picture = profile._json.avatar_url;
+    newUser.displayName = profile.displayName;
+    newUser.email = profile._json.email;
+    return newUser.save();
+  }
   static GitHubStrategy() {
-    const createUserFromGithubProfile = (profile) => {
-      logger.silly(`create new user from github profile: ${profile.login}`);
-      const newUser = new User();
-      newUser.name = profile.displayName;
-      newUser.github = profile._json.username;
-      newUser.picture = profile._json.avatar_url;
-      newUser.displayName = profile.displayName;
-      newUser.email = profile._json.email;
-      return newUser.save();
-    };
-
-    // Github
+    logger.info("Create github strategy");
     passport.use(new GitHubStrategy({
       clientID: nconf.get('github').clientID,
       clientSecret: nconf.get('github').clientSecret,
       callbackURL: nconf.get('github').callbackURL
     },
-    ((accessToken, refreshToken, profile, done) => {
-      User.findOrCreate({githubId: profile.id}, (err, user) => done(err, user));
+    ((accessToken, refreshToken, profile, next) => {
+      User.findOrCreate({githubId: profile.id}, (err, user) => done(err, next));
     })));
-    // github access token
+  }
+  static GitHubTokenStrategy() {
+    logger.info("Create github token strategy");
     passport.use(new GitHubTokenStrategy({
       clientID: nconf.get('github').clientID,
       clientSecret: nconf.get('github').clientSecret,
@@ -116,7 +121,7 @@ class PassportStrategies {
       User.findOne({})
         .or(emails)
         .exec()
-        .then(user => (user || createUserFromGithubProfile(profile)))
+        .then(user => (user || AuthenticationController.createUserFromGithubProfile(profile)))
         .then((user) => {
           invariant(user, 'github token usage failed');
           return user;
