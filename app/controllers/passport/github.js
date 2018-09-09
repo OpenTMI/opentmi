@@ -1,8 +1,10 @@
 // 3rd party modules
 const request = require('request-promise');
+const mongoose = require('mongoose');
+
 // application modules
-const logger = require('../tools/logger');
-const nconf = require('../tools/config');
+const logger = require('../../tools/logger');
+const nconf = require('../../tools/config');
 
 // implementation
 const User = mongoose.model('User');
@@ -12,13 +14,18 @@ const githubOrganization = nconf.get('github').organization;
 
 const userApiUrl = 'https://api.github.com/user';
 
-static checkOrganization(accessToken, headers)
-static checkAdmin(accessToken, headers)
-static updateUser(req, profile)
-static updateUsersGroup(user, groupname)
 
-
-class Google {
+class Github {
+    static createUserFromGithubProfile(profile) {
+        logger.silly(`create new user from github profile: ${profile.login}`);
+        const newUser = new User();
+        newUser.name = profile.displayName;
+        newUser.github = profile._json.username;
+        newUser.picture = profile._json.avatar_url;
+        newUser.displayName = profile.displayName;
+        newUser.email = profile._json.email;
+        return newUser.save();
+      }
     // Ensure the user belongs to the required organization.
     static checkOrganization(accessToken, headers) {
       logger.debug(addPrefix('fetching list of organizations user belongs to.'));
@@ -164,4 +171,4 @@ class Google {
     }
 }
 
-module.exports = Google;
+module.exports = Github;

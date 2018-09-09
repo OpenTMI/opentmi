@@ -1,3 +1,4 @@
+// 3rd party modules
 const _ = require('lodash');
 const mongoose = require('mongoose');
 const invariant = require('invariant');
@@ -7,20 +8,17 @@ const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const GitHubTokenStrategy = require('passport-github-token');
-
-
+// application modules
 const logger = require('../../tools/logger');
 const nconf = require('../../tools/config');
-const Google = require('./github');
+const Github = require('./github');
 
-
+// implementation
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
 
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
-const githubAdminTeam = nconf.get('github').adminTeam;
-const githubOrganization = nconf.get('github').organization;
 
 // To support persistent login sessions, Passport needs to be able to
 // serialize users into and deserialize users out of the session.  Typically,
@@ -38,20 +36,20 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((id, done) => {
   User.findById(id)
       .then(user => user.update({loggedIn: false}))
-      .then(user => done(null, user));
+      .then(user => done(null, user))
       .catch(done);
 });
 
 class PassportStrategies {
   static createStrategies() {
-    AuthenticationController.JWTStrategy();
-    AuthenticationController.LocalStrategy();
+    PassportStrategies.JWTStrategy();
+    PassportStrategies.LocalStrategy();
     // github access token
     if (nconf.get('github')) {
-      AuthenticationController.GitHubStrategy();
-      AuthenticationController.GitHubTokenStrategy();
+      PassportStrategies.GitHubStrategy();
+      PassportStrategies.GitHubTokenStrategy();
     }
-    // AuthenticationController.GoogleStrategy();
+    // PassportStrategies.GoogleStrategy();
   }
   static JWTStrategy() {
   // JWT
@@ -102,23 +100,27 @@ class PassportStrategies {
       })
     );
   }
-  static createUserFromGithubProfile(profile) {
-    logger.silly(`create new user from github profile: ${profile.login}`);
-    const newUser = new User();
-    newUser.name = profile.displayName;
-    newUser.github = profile._json.username;
-    newUser.picture = profile._json.avatar_url;
-    newUser.displayName = profile.displayName;
-    newUser.email = profile._json.email;
-    return newUser.save();
-  }
+
   static _GithubStrategyHelper(accessToken, profile, bext) {
     const emails = _.map(profile.emails, obj => ({email: obj.value}));
     logger.silly(`Profile: ${JSON.stringify(profile)}`);
+
+    const headers = {};
+    Github.checkOrganization(accessToken, headers)
+        .then((org) => {
+          console.log(arguments)
+        })
+    Github.checkAdmin(accessToken, headers)
+        .then((isAdmin) => {
+          console.log(arguments)
+        })
+    // Github.updateUser(req, profile)
+    // Github.updateUsersGroup(user, groupname)
+
     User.findOne({})
       .or(emails)
       .exec()
-      .then(user => (user || AuthenticationController.createUserFromGithubProfile(profile)))
+      .then(user => (user || Github.createUserFromGithubProfile(profile)))
       .then((user) => {
         invariant(user, 'github token usage failed');
         return user;
