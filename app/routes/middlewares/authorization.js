@@ -3,7 +3,6 @@ const jwt = require('jwt-simple');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const async = require('async');
-const _ = require('lodash');
 
 // Local modules
 const logger = require('../../tools/logger');
@@ -75,7 +74,8 @@ function createJWT(user) {
     .then((populatedUser) => {
       const payload = {
         _id: populatedUser._id,
-        groups: _.map(populatedUser.groups, g => g._id),
+        groups: populatedUser.groups.map(g => g.name),
+        group: populatedUser.groups.find(g => g.name === 'admins') ? 'admins' : 'users',
         iat: moment().unix(),
         exp: moment().add(TOKEN_EXPIRATION_HOURS, 'hours').unix()
       };

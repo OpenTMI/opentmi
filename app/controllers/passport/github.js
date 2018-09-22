@@ -1,5 +1,4 @@
 // 3rd party modules
-const request = require('request-promise');
 const mongoose = require('mongoose');
 const _ = require('lodash');
 

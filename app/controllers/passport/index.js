@@ -1,4 +1,5 @@
 // 3rd party modules
+const Promise = require('bluebird');
 const _ = require('lodash');
 const mongoose = require('mongoose');
 const invariant = require('invariant');
@@ -15,7 +16,6 @@ const Github = require('./github');
 
 // implementation
 const User = mongoose.model('User');
-const Group = mongoose.model('Group');
 
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
@@ -24,20 +24,21 @@ const ExtractJWT = passportJWT.ExtractJwt;
 // serialize users into and deserialize users out of the session.  Typically,
 // this will be as simple as storing the user ID when serializing, and finding
 // the user by ID when deserializing.
-passport.serializeUser((user, done) => {
+passport.serializeUser((userDoc, done) => {
+   const user = userDoc;
    user.increment();
    user.loggedIn = true;
    user.lastVisited = new Date();
    user.save()
-       .then(() => done(null, user._id))
-       .catch(done);
+     .then((user) => done(null, user))
+     .catch(done);
 });
 
 passport.deserializeUser((id, done) => {
   User.findById(id)
-      .then(user => user.update({loggedIn: false}))
-      .then(user => done(null, user))
-      .catch(done);
+    .then(user => user.update({loggedIn: false}))
+    .then(() => done(null, id))
+    .catch(done);
 });
 
 class PassportStrategies {
@@ -85,9 +86,9 @@ class PassportStrategies {
             logger.silly(`User exists: ${user}`);
             user.comparePassword(password, (compareError, isMatch) => {
               if (!isMatch) {
-              // return reject(new Error('Invalid email and/or password'));
+                return reject(new Error('Invalid email and/or password'));
               }
-              resolve(user);
+              return resolve(user);
             });
           }))
           .then((user) => {
@@ -138,19 +139,20 @@ class PassportStrategies {
     ((accessToken, refreshToken, profile, next) => {
       const oauth2 = strategy._oauth2;
       PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
-    }))
+    }));
     passport.use(strategy);
   }
   static GitHubTokenStrategy() {
     logger.info("Create github token strategy");
-    passport.use(new GitHubTokenStrategy({
+    const strategy = new GitHubTokenStrategy({
       clientID: nconf.get('github').clientID,
       clientSecret: nconf.get('github').clientSecret,
       passReqToCallback: true
     }, ((req, accessToken, refreshToken, profile, next) => {
       const oauth2 = strategy._oauth2;
       PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
-    })));
+    }));
+    passport.use(strategy);
   }
   static GoogleStrategy() {
     passport.use(new GoogleStrategy({

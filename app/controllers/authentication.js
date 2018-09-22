@@ -1,12 +1,12 @@
+// 3rd party modules
 const mongoose = require('mongoose');
-
+// application modules
 const logger = require('../tools/logger');
 const nconf = require('../tools/config');
 const {createJWT} = require('../routes/middlewares/authorization');
 const PassportStrategies = require('./passport');
 
 const User = mongoose.model('User');
-const Group = mongoose.model('Group');
 
 
 class AuthenticationController {
