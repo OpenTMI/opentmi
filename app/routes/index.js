@@ -21,8 +21,7 @@ function register(app, io, file) {
     throw new Error(`${file} did not export an function!`);
   })
     .catch((error) => {
-      console.log(error); // eslint-disable-line console
-      logger.error(error, error);
+      logger.error(error);
     });
 }
 

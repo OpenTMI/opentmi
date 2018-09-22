@@ -23,17 +23,9 @@ function createDefaultAdmin() {
   const admin = new User();
   admin.name = nconf.get('admin').user;
   admin.password = nconf.get('admin').pwd;
-  admin.save((error, user) => {
-    if (error) {
-      return logger.error(error);
-    }
-
-    user.addToGroup('admins')
-      .then(user => logger.debug(user))
-      .catch(error => logger.error(error));
-
-    return undefined;
-  });
+  return admin.save()
+    .then(user => user.addToGroup('admins'))
+    .then(user => logger.debug(user));
 }
 
 /**
@@ -43,7 +35,8 @@ function Route(app) {
   // Create a default admin if there is no users in the database
   User.isEmpty()
     .then((empty) => {
-      if (empty) { createDefaultAdmin(); }
+      if (empty) { return createDefaultAdmin(); }
+      return Promise.resolve();
     })
     .catch(error => logger.warn(error));
 
@@ -91,8 +84,7 @@ function Route(app) {
 
   const loginPostFix = (req, res, next) => {
     req.query.code = req.body.code;
-    console.log(req.body, req.headers)
-    next()
+    next();
   };
   const authRoute = express.Router();
   authRoute
@@ -102,8 +94,8 @@ function Route(app) {
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
     // .post('/google', passport.authenticate('google'), AuthController.google)
-    .get('/github', passport.authenticate('github', { scope: [ 'user:email' ] }), AuthController.sendToken)
-    .post('/github', loginPostFix, passport.authenticate('github', { scope: [ 'user:email' ] }), AuthController.sendToken)
+    .get('/github', passport.authenticate('github', {scope: ['user:email']}), AuthController.sendToken)
+    .post('/github', loginPostFix, passport.authenticate('github', {scope: ['user:email']}), AuthController.sendToken)
     .post('/github/token', passport.authenticate('github-token'), AuthController.sendToken)
     .get('/github/id', AuthController.GetGithubClientId);
   app.use('/auth', authRoute);

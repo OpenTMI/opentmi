@@ -25,13 +25,13 @@ const ExtractJWT = passportJWT.ExtractJwt;
 // this will be as simple as storing the user ID when serializing, and finding
 // the user by ID when deserializing.
 passport.serializeUser((userDoc, done) => {
-   const user = userDoc;
-   user.increment();
-   user.loggedIn = true;
-   user.lastVisited = new Date();
-   user.save()
-     .then((user) => done(null, user))
-     .catch(done);
+  const doc = userDoc;
+  doc.increment();
+  doc.loggedIn = true;
+  doc.lastVisited = new Date();
+  doc.save()
+    .then(user => done(null, user))
+    .catch(done);
 });
 
 passport.deserializeUser((id, done) => {
@@ -65,7 +65,7 @@ class PassportStrategies {
     ));
   }
   static LocalStrategy() {
-    logger.info("Create local strategy");
+    logger.info('Create local strategy');
     passport.use(new LocalStrategy(
       {usernameField: 'email'},
       (email, password, done) => {
@@ -110,27 +110,27 @@ class PassportStrategies {
       .then((isAdmin) => {
         const group = isAdmin ? 'admins' : 'users';
         return User.findOne({})
-            .or(emails)
-            .exec()
-            .then((user) => {
-              if(!user) {
-                return Github.createUserFromGithubProfile(profile)
-              }
-              user.github = profile.login; // eslint-disable-line no-param-reassign
-              user.picture = user.picture || _.get(profile, 'photos.0.value'); // eslint-disable-line no-param-reassign
-              user.displayName = user.displayName || profile.name; // eslint-disable-line no-param-reassign
-              user.name = user.displayName; // eslint-disable-line no-param-reassign
-              user.email = _.get(profile, 'emails.0.value'); // eslint-disable-line no-param-reassign
-              return Github.updateUsersGroup(user, group)
-                .return(user);
-            })
-            .then(user => next(null, user))
-        }
+          .or(emails)
+          .exec()
+          .then((user) => {
+            if (!user) {
+              return Github.createUserFromGithubProfile(profile);
+            }
+            user.github = profile.login; // eslint-disable-line no-param-reassign
+            user.picture = user.picture || _.get(profile, 'photos.0.value'); // eslint-disable-line no-param-reassign
+            user.displayName = user.displayName || profile.name; // eslint-disable-line no-param-reassign
+            user.name = user.displayName; // eslint-disable-line no-param-reassign
+            user.email = _.get(profile, 'emails.0.value'); // eslint-disable-line no-param-reassign
+            return Github.updateUsersGroup(user, group)
+              .return(user);
+          })
+          .then(user => next(null, user));
+      }
       )
       .catch(next);
   }
   static GitHubStrategy() {
-    logger.info("Create github strategy");
+    logger.info('Create github strategy');
     const strategy = new GitHubStrategy({
       clientID: nconf.get('github').clientID,
       clientSecret: nconf.get('github').clientSecret,
@@ -143,7 +143,7 @@ class PassportStrategies {
     passport.use(strategy);
   }
   static GitHubTokenStrategy() {
-    logger.info("Create github token strategy");
+    logger.info('Create github token strategy');
     const strategy = new GitHubTokenStrategy({
       clientID: nconf.get('github').clientID,
       clientSecret: nconf.get('github').clientSecret,

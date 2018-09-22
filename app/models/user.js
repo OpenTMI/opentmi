@@ -157,21 +157,21 @@ UserSchema.methods.addToGroup = function addToGroup(groupName) {
       group.users.push(this._id);
       return group.save()
         .then(() => this.save());
-  });
+    });
 };
 
 UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
   return Group.findOne({name: groupName})
     .then((group) => {
-        if (!group) {
-          return Promise.reject(new Error('group not found'));
-        }
-        logger.silly(`remove group ${group._id} from user ${this._id}`);
-        this.groups = _.without(this.groups, group._id);
-        const editedGroup = group;
-        editedGroup.users = _.without(group.users, this._id);
-        return editedGroup.save()
-          .then(() => this.save());
+      if (!group) {
+        return Promise.reject(new Error('group not found'));
+      }
+      logger.silly(`remove group ${group._id} from user ${this._id}`);
+      this.groups = _.without(this.groups, group._id);
+      const editedGroup = group;
+      editedGroup.users = _.without(group.users, this._id);
+      return editedGroup.save()
+        .then(() => this.save());
     });
 };
 
