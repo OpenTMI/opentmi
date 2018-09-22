@@ -139,15 +139,22 @@ UserSchema.pre('remove', function preRemove(next) {
   return undefined;
 });
 
+const requireGroup = (groupName) => {
+  return group => Promise.try(() => {
+    if (!group) {
+      throw new Error(`group ${groupName} not found`);
+    }
+    return group;
+  });
+};
+
 /**
  * Methods
  */
 UserSchema.methods.addToGroup = function addToGroup(groupName) {
   return Group.findOne({name: groupName})
+    .then(group => requireGroup(groupName))
     .then((group) => {
-      if (!group) {
-        return Promise.reject(new Error('group not found'));
-      }
       if (_.find(group.users, user => user === this._id)) {
         logger.silly(`user ${this._id} belongs to group ${groupName} already`);
         return Promise.resolve(this);
@@ -162,10 +169,8 @@ UserSchema.methods.addToGroup = function addToGroup(groupName) {
 
 UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
   return Group.findOne({name: groupName})
+    .then(group => requireGroup(groupName))
     .then((group) => {
-      if (!group) {
-        return Promise.reject(new Error('group not found'));
-      }
       logger.silly(`remove group ${group._id} from user ${this._id}`);
       this.groups = _.without(this.groups, group._id);
       const editedGroup = group;

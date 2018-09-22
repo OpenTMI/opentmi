@@ -147,8 +147,7 @@ class PassportStrategies {
     const strategy = new GitHubTokenStrategy({
       clientID: nconf.get('github').clientID,
       clientSecret: nconf.get('github').clientSecret,
-      passReqToCallback: true
-    }, ((req, accessToken, refreshToken, profile, next) => {
+    }, ((accessToken, refreshToken, profile, next) => {
       const oauth2 = strategy._oauth2;
       PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
     }));
