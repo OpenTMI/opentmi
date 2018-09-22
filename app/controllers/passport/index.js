@@ -101,43 +101,45 @@ class PassportStrategies {
     );
   }
 
-  static _GithubStrategyHelper(accessToken, profile, bext) {
+  static _GithubStrategyHelper(oauth2, accessToken, profile, next) {
     const emails = _.map(profile.emails, obj => ({email: obj.value}));
     logger.silly(`Profile: ${JSON.stringify(profile)}`);
-
-    const headers = {};
-    Github.checkOrganization(accessToken, headers)
-        .then((org) => {
-          console.log(arguments)
-        })
-    Github.checkAdmin(accessToken, headers)
-        .then((isAdmin) => {
-          console.log(arguments)
-        })
-    // Github.updateUser(req, profile)
-    // Github.updateUsersGroup(user, groupname)
-
-    User.findOne({})
-      .or(emails)
-      .exec()
-      .then(user => (user || Github.createUserFromGithubProfile(profile)))
-      .then((user) => {
-        invariant(user, 'github token usage failed');
-        return user;
-      })
-      .then(user => next(null, user))
+    Github.checkOrganization(oauth2, accessToken)
+      .then(() => Github.checkAdmin(oauth2, accessToken))
+      .then((isAdmin) => {
+        const group = isAdmin ? 'admins' : 'users';
+        return User.findOne({})
+            .or(emails)
+            .exec()
+            .then((user) => {
+              if(!user) {
+                return Github.createUserFromGithubProfile(profile)
+              }
+              user.github = profile.login; // eslint-disable-line no-param-reassign
+              user.picture = user.picture || _.get(profile, 'photos.0.value'); // eslint-disable-line no-param-reassign
+              user.displayName = user.displayName || profile.name; // eslint-disable-line no-param-reassign
+              user.name = user.displayName; // eslint-disable-line no-param-reassign
+              user.email = _.get(profile, 'emails.0.value'); // eslint-disable-line no-param-reassign
+              return Github.updateUsersGroup(user, group)
+                .return(user);
+            })
+            .then(user => next(null, user))
+        }
+      )
       .catch(next);
   }
   static GitHubStrategy() {
     logger.info("Create github strategy");
-    passport.use(new GitHubStrategy({
+    const strategy = new GitHubStrategy({
       clientID: nconf.get('github').clientID,
       clientSecret: nconf.get('github').clientSecret,
       callbackURL: nconf.get('github').callbackURL
     },
     ((accessToken, refreshToken, profile, next) => {
-      PassportStrategies._GithubStrategyHelper(accessToken, profile, next);
-    })));
+      const oauth2 = strategy._oauth2;
+      PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
+    }))
+    passport.use(strategy);
   }
   static GitHubTokenStrategy() {
     logger.info("Create github token strategy");
@@ -146,7 +148,8 @@ class PassportStrategies {
       clientSecret: nconf.get('github').clientSecret,
       passReqToCallback: true
     }, ((req, accessToken, refreshToken, profile, next) => {
-      PassportStrategies._GithubStrategyHelper(accessToken, profile, next);
+      const oauth2 = strategy._oauth2;
+      PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
     })));
   }
   static GoogleStrategy() {

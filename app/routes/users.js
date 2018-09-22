@@ -28,10 +28,9 @@ function createDefaultAdmin() {
       return logger.error(error);
     }
 
-    user.addToGroup('admins', (addError, addedUser) => {
-      if (addError) logger.error(addError);
-      else logger.debug(addedUser);
-    });
+    user.addToGroup('admins')
+      .then(user => logger.debug(user))
+      .catch(error => logger.error(error));
 
     return undefined;
   });
@@ -90,6 +89,11 @@ function Route(app) {
   userRouter.use('/:User', singleUserRouter);
   app.use('/api/v0/users', userRouter);
 
+  const loginPostFix = (req, res, next) => {
+    req.query.code = req.body.code;
+    console.log(req.body, req.headers)
+    next()
+  };
   const authRoute = express.Router();
   authRoute
     .post('/login', passport.authenticate('local'), AuthController.sendToken)
@@ -98,7 +102,8 @@ function Route(app) {
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
     // .post('/google', passport.authenticate('google'), AuthController.google)
-    .post('/github', passport.authenticate('github'), AuthController.sendToken)
+    .get('/github', passport.authenticate('github', { scope: [ 'user:email' ] }), AuthController.sendToken)
+    .post('/github', loginPostFix, passport.authenticate('github', { scope: [ 'user:email' ] }), AuthController.sendToken)
     .post('/github/token', passport.authenticate('github-token'), AuthController.sendToken)
     .get('/github/id', AuthController.GetGithubClientId);
   app.use('/auth', authRoute);

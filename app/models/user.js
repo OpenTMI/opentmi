@@ -142,60 +142,37 @@ UserSchema.pre('remove', function preRemove(next) {
 /**
  * Methods
  */
-UserSchema.methods.addToGroup = function addToGroup(groupName, next) {
-  const self = this;
-  Group.findOne({name: groupName}, (error, group) => {
-    if (error) {
-      return next(error);
-    }
-    if (!group) {
-      return next({message: 'group not found'});
-    }
-    if (_.find(group.users, user => user === self._id)) {
-      return next({message: 'user belongs to the group already'});
-    }
-
-    self.groups.push(group._id);
-    group.users.push(self._id);
-    group.save();
-    self.save((saveError, user) => {
-      if (saveError) {
-        return next(saveError);
+UserSchema.methods.addToGroup = function addToGroup(groupName) {
+  return Group.findOne({name: groupName})
+    .then((group) => {
+      if (!group) {
+        return Promise.reject(new Error('group not found'));
       }
-
-      return next(user);
-    });
-
-    return undefined;
+      if (_.find(group.users, user => user === this._id)) {
+        logger.silly(`user ${this._id} belongs to group ${groupName} already`);
+        return Promise.resolve(this);
+      }
+      logger.silly(`adding user ${this._id} to group ${group._id}`);
+      this.groups.push(group._id);
+      group.users.push(this._id);
+      return group.save()
+        .then(() => this.save());
   });
 };
 
-UserSchema.methods.removeFromGroup = function removeFromGroup(groupName, next) {
-  const self = this;
-  Group.findOne({name: groupName}, (error, group) => {
-    if (error) {
-      return next(error);
-    }
-    if (!group) {
-      return next({message: 'group not found'});
-    }
-
-    self.groups = _.without(self.groups, group._id);
-
-    const editedGroup = group;
-    editedGroup.users = _.without(group.users, self._id);
-    editedGroup.save();
-    self.save((saveError, user) => {
-      if (saveError) {
-        logger.error(error);
-        return next(saveError);
-      }
-
-      return next(user);
+UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
+  return Group.findOne({name: groupName})
+    .then((group) => {
+        if (!group) {
+          return Promise.reject(new Error('group not found'));
+        }
+        logger.silly(`remove group ${group._id} from user ${this._id}`);
+        this.groups = _.without(this.groups, group._id);
+        const editedGroup = group;
+        editedGroup.users = _.without(group.users, this._id);
+        return editedGroup.save()
+          .then(() => this.save());
     });
-
-    return undefined;
-  });
 };
 
 /**

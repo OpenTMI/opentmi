@@ -124,12 +124,12 @@ class AuthenticationController {
 
   static GetGithubClientId(req, res) {
     logger.info('Github auth: returning github clientID');
-    const {clientId} = nconf.get('github');
-    if (clientId === undefined) {
+    const {clientID} = nconf.get('github');
+    if (!clientID) {
       logger.warn('Github auth: clientId was undefined, perhaps it is not defined in the config.');
       res.status(400).json({error: 'found client id is undefined'});
     } else {
-      res.status(200).json({clientID: clientId});
+      res.status(200).json({clientID});
     }
   }
 }
