@@ -7,7 +7,7 @@ const nconf = require('../tools/config');
 const logger = require('../tools/logger');
 
 // Local modules
-const auth = require('./middlewares/authorization');
+const {jwt, ensureAuthenticated, ensureAdmin} = require('./middlewares/authorization');
 const apiKeys = require('./../controllers/apikeys');
 const UserController = require('./../controllers/users');
 const AuthController = require('./../controllers/authentication');
@@ -44,37 +44,36 @@ function Route(app) {
   const userRouter = express.Router();
   userRouter.param('User', userController.modelParam.bind(userController));
 
-  const jwtMiddle = passport.authenticate('jwt', {session: false});
 
   // Route for operations that target all users
   userRouter.route('/')
-    .get(jwtMiddle, auth.ensureAdmin, userController.find.bind(userController))
-    .post(jwtMiddle, auth.ensureAdmin, userController.create.bind(userController));
+    .get(jwt, ensureAdmin, userController.find.bind(userController))
+    .post(jwt, ensureAdmin, userController.create.bind(userController));
 
   // Route for operations that target individual users
   const singleUserRouter = express.Router({mergeParams: true});
   singleUserRouter.route('/')
-    .get(jwtMiddle, auth.ensureAdmin, userController.get.bind(userController))
-    .put(jwtMiddle, auth.ensureAdmin, userController.update.bind(userController))
-    .delete(jwtMiddle, auth.ensureAdmin, userController.remove.bind(userController));
+    .get(jwt, ensureAdmin, userController.get.bind(userController))
+    .put(jwt, ensureAdmin, userController.update.bind(userController))
+    .delete(jwt, ensureAdmin, userController.remove.bind(userController));
 
   // Create User settings routes
   singleUserRouter.route('/settings/:Namespace')
-    .get(jwtMiddle, auth.ensureAuthenticated, userController.getSettings.bind(userController))
-    .put(jwtMiddle, auth.ensureAuthenticated, userController.updateSettings.bind(userController))
-    .delete(jwtMiddle, auth.ensureAuthenticated, userController.deleteSettings.bind(userController));
+    .get(jwt, ensureAuthenticated, userController.getSettings.bind(userController))
+    .put(jwt, ensureAuthenticated, userController.updateSettings.bind(userController))
+    .delete(jwt, ensureAuthenticated, userController.deleteSettings.bind(userController));
 
   // allows to use /client-settings instead of /settings
   userRouter.use('/client-settings/', express.Router().all((req) => { req.redirect('../settings'); }));
 
   // Create authentication routes:
-  app.get('/api/v0/apikeys', jwtMiddle, auth.ensureAdmin, apiKeys.keys);
+  app.get('/api/v0/apikeys', jwt, ensureAdmin, apiKeys.keys);
   const apikeysRouter = express.Router();
 
   apikeysRouter
-    .get('/', jwtMiddle, auth.ensureAuthenticated, apiKeys.userKeys)
-    .get('/new', jwtMiddle, auth.ensureAuthenticated, apiKeys.createKey)
-    .delete('/:Key', jwtMiddle, auth.ensureAuthenticated, apiKeys.deleteKey);
+    .get('/', jwt, ensureAuthenticated, apiKeys.userKeys)
+    .get('/new', jwt, ensureAuthenticated, apiKeys.createKey)
+    .delete('/:Key', jwt, ensureAuthenticated, apiKeys.deleteKey);
   singleUserRouter.use('/apikeys', apikeysRouter);
 
 
@@ -89,8 +88,8 @@ function Route(app) {
   const authRoute = express.Router();
   authRoute
     .post('/login', passport.authenticate('local'), AuthController.sendToken)
-    .get('/me', jwtMiddle, auth.ensureAuthenticated, authController.getme.bind(authController))
-    .put('/me', jwtMiddle, auth.ensureAuthenticated, authController.putme.bind(authController))
+    .get('/me', jwt, ensureAuthenticated, authController.getme.bind(authController))
+    .put('/me', jwt, ensureAuthenticated, authController.putme.bind(authController))
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
     // .post('/google', passport.authenticate('google'), AuthController.google)

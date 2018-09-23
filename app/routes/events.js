@@ -1,14 +1,9 @@
 // 3rd party modules
 const express = require('express');
-const jwt = require('express-jwt');
 
 // application modules
-const nconf = require('../tools/config');
-const {ensureAdmin, ensureAuthenticated} = require('./middlewares/authorization');
+const {jwt, ensureAdmin, ensureAuthenticated} = require('./middlewares/authorization');
 const EventsController = require('./../controllers/events');
-
-// Route variables
-const TOKEN_SECRET = nconf.get('webtoken');
 
 function Route(app) {
   const router = express.Router();
@@ -16,8 +11,7 @@ function Route(app) {
 
   router.param('Event', controller.modelParam.bind(controller));
 
-  const jwtMdl = jwt({secret: TOKEN_SECRET});
-  const authentication = [jwtMdl, ensureAuthenticated];
+  const authentication = [jwt, ensureAuthenticated];
 
   router.route('/api/v0/events.:format?')
     .all(...authentication)

@@ -4,6 +4,7 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const async = require('async');
 const uuid = require('uuid');
+const passport = require('passport');
 
 // Local modules
 const logger = require('../../tools/logger');
@@ -87,9 +88,12 @@ function createJWT(user) {
     });
 }
 
+const jwtMiddle = passport.authenticate('jwt', {session: false});
+
 module.exports = {
   getUserGroups,
   ensureAuthenticated,
   ensureAdmin,
-  createJWT
+  createJWT,
+  jwt: jwtMiddle
 };
