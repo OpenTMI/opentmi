@@ -98,7 +98,6 @@ UserSchema.pre('save', function preSave() {
 });
 
 
-
 /**
  * Pre-remove hook
  */
@@ -133,7 +132,7 @@ UserSchema.methods.saltPassword = function saltPassword(password) {
       if (saltError) {
         return reject(saltError);
       }
-      return bcrypt.hash(this.password, salt, (hashError, hash) => {
+      return bcrypt.hash(password, salt, (hashError, hash) => {
         if (saltError) {
           return reject(hashError);
         }

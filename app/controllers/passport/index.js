@@ -61,9 +61,9 @@ class PassportStrategies {
     },
     (jwtPayload, cb) =>
       User.findById(jwtPayload._id)
-        .then(user => {
+        .then((user) => {
           if (!user) {
-           throw new Error(`invalid token, user not found`);
+            throw new Error('invalid token, user not found');
           }
           cb(null, user);
         })
