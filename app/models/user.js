@@ -1,6 +1,7 @@
 /**
  * Module dependencies
  */
+
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const bcrypt = require('bcryptjs');
@@ -141,6 +142,15 @@ UserSchema.methods.saltPassword = function saltPassword(password) {
       });
     });
   });
+};
+UserSchema.methods.isAdmin = function isAdmin() {
+  return this
+    .populate('groups')
+    .execPopulate()
+    .then((populatedUser) => {
+      const admins = populatedUser.groups.find(g => g.name === 'admins');
+      return !!admins;
+    });
 };
 UserSchema.methods.addToGroup = function addToGroup(groupName) {
   return Group.findOne({name: groupName})

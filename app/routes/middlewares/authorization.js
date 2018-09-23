@@ -1,10 +1,9 @@
 // Third party modules
 const jwt = require('jwt-simple');
 const moment = require('moment');
-const mongoose = require('mongoose');
-const async = require('async');
 const uuid = require('uuid');
 const passport = require('passport');
+const _ = require('lodash');
 
 // Local modules
 const logger = require('../../tools/logger');
@@ -13,54 +12,25 @@ require('../../models/group');
 
 // Middleware variables
 const TOKEN_SECRET = nconf.get('webtoken');
-const Group = mongoose.model('Group');
 const TOKEN_EXPIRATION_DAYS = 5;
 
-/*
- |--------------------------------------------------------------------------
- | Login Required Middleware
- |--------------------------------------------------------------------------
- */
-function getUserGroups(req, res, next) {
-  if (!req.user) {
-    return res.status(401).send({message: 'not signed in'});
+
+function requireAdmin(req, res, next) {
+  if (_.get(req, 'decoded_token.group') === 'admin') {
+    next();
   }
-
-  Group.find({users: req.user._id}, (error, groups) => {
-    if (error) {
-      return res.status(500).send({message: error});
-    }
-    res.groups = groups;
-    return next();
-  });
-
-  return undefined;
-}
-
-function ensureAuthenticated(err, req, res, next) {
-  if (err) {
-    logger.info(err);
-    if (err.message) {
-      return res.status(401).send({message: err.message});
-    }
-    return res.sendStatus(401);
+  if (_.get(req, 'decoded_token.groups.0') === 'admin') {
+    next();
   }
-  return next();
-}
-
-function ensureAdmin(error, req, res, next) {
-  async.waterfall([
-    ensureAuthenticated.bind(this, error, req, res),
-    getUserGroups.bind(this, req, res)
-  ], () => {
-    const isAdmin = req.groups.find(group => group.name === 'admins');
-
-    if (isAdmin) {
-      next();
-    } else {
-      res.status.send({message: 'Admin access required!'});
-    }
-  });
+  req.user.isAdmin()
+    .then((yes) => {
+      if (yes) {
+        next();
+      } else {
+        res.status(401).json({message: 'Admin access required!'});
+      }
+    })
+    .catch(next);
 }
 
 /*
@@ -90,10 +60,12 @@ function createJWT(user) {
 
 const jwtMiddle = passport.authenticate('jwt', {session: false});
 
+const requireAuth = jwtMiddle;
+const ensureAdmin = [requireAuth, requireAdmin];
+
 module.exports = {
-  getUserGroups,
-  ensureAuthenticated,
+  requireAuth,
+  requireAdmin,
   ensureAdmin,
-  createJWT,
-  jwt: jwtMiddle
+  createJWT
 };

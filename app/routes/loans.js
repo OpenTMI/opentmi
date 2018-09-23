@@ -2,7 +2,7 @@
 const express = require('express');
 
 // Application modules
-const {jwt, ensureAuthenticated, ensureAdmin} = require('./middlewares/authorization');
+const {requireAuth, ensureAdmin} = require('./middlewares/authorization');
 const LoanController = require('./../controllers/loans');
 
 
@@ -13,16 +13,16 @@ function Route(app) {
   router.param('Loan', controller.modelParam.bind(controller));
 
   router.route('/api/v0/loans.:format?')
-    .all(jwt, ensureAdmin)
+    .all(...ensureAdmin)
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
 
   router.route('/api/v0/loans/me')
-    .all(jwt, ensureAuthenticated)
+    .all(requireAuth)
     .get(controller.findUsersLoans.bind(controller));
 
   router.route('/api/v0/loans/:Loan.:format?')
-    .all(jwt, ensureAdmin)
+    .all(...ensureAdmin)
     .get(controller.get.bind(controller))
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));

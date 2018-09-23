@@ -57,9 +57,11 @@ class PassportStrategies {
   // JWT
     passport.use(new JWTStrategy({
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-      secretOrKey: TOKEN_SECRET
+      secretOrKey: TOKEN_SECRET,
+      passReqToCallback: true
     },
-    (jwtPayload, cb) =>
+    (req, jwtPayload, cb) => {
+      req.decode_token = jwtPayload;
       User.findById(jwtPayload._id)
         .then((user) => {
           if (!user) {
@@ -67,8 +69,8 @@ class PassportStrategies {
           }
           cb(null, user);
         })
-        .catch(err => cb(err))
-    ));
+        .catch(err => cb(err));
+    }));
   }
   static LocalStrategy() {
     logger.info('Create local strategy');

@@ -2,7 +2,7 @@
 const express = require('express');
 
 // application modules
-const {jwt, ensureAdmin, ensureAuthenticated} = require('./middlewares/authorization');
+const {requireAuth, requireAdmin} = require('./middlewares/authorization');
 const EventsController = require('./../controllers/events');
 
 function Route(app) {
@@ -11,7 +11,7 @@ function Route(app) {
 
   router.param('Event', controller.modelParam.bind(controller));
 
-  const authentication = [jwt, ensureAuthenticated];
+  const authentication = [requireAuth];
 
   router.route('/api/v0/events.:format?')
     .all(...authentication)
@@ -23,7 +23,7 @@ function Route(app) {
     .all(...authentication)
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
-    .delete(ensureAdmin, controller.remove.bind(controller));
+    .delete(requireAdmin, controller.remove.bind(controller));
   router.route('/api/v0/events/:Event/ref')
     .all(...authentication)
     .all(controller.all.bind(controller))

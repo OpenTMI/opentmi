@@ -2,7 +2,7 @@
 const express = require('express');
 const nconf = require('nconf');
 // application
-const {jwt, ensureAdmin} = require('./middlewares/authorization');
+const {ensureAdmin} = require('./middlewares/authorization');
 
 
 function get(req, res) {
@@ -17,7 +17,7 @@ function Route(app) {
   const router = express.Router();
 
   router.route('/api/v0/settings')
-    .all(jwt, ensureAdmin)
+    .all(...ensureAdmin)
     .get(get)
     .put(put);
 
