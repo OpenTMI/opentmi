@@ -17,6 +17,7 @@ const Github = require('./github');
 // implementation
 const User = mongoose.model('User');
 
+const TOKEN_SECRET = nconf.get('webtoken');
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 
@@ -56,11 +57,14 @@ class PassportStrategies {
   // JWT
     passport.use(new JWTStrategy({
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-      secretOrKey: nconf.get('webtoken')
+      secretOrKey: TOKEN_SECRET
     },
     (jwtPayload, cb) =>
       User.findById(jwtPayload._id)
-        .then(user => cb(null, user))
+        .then(user => {
+          if (user) cb(null, user);
+          else cb(new Error(`User with id ${jwtPayload._id} not found - invalid token`));
+        })
         .catch(err => cb(err))
     ));
   }

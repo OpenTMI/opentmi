@@ -25,7 +25,7 @@ describe('Basic Get API', function () {
 
     // Create token for requests
     const payload = {
-      sub: testUserId,
+      _id: testUserId,
       group: 'admins',
       iat: moment().unix(),
       exp: moment().add(2, 'h').unix()

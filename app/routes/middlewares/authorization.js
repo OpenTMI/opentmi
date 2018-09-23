@@ -3,6 +3,7 @@ const jwt = require('jwt-simple');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const async = require('async');
+const uuid = require('uuid');
 
 // Local modules
 const logger = require('../../tools/logger');
@@ -12,7 +13,7 @@ require('../../models/group');
 // Middleware variables
 const TOKEN_SECRET = nconf.get('webtoken');
 const Group = mongoose.model('Group');
-const TOKEN_EXPIRATION_HOURS = 2;
+const TOKEN_EXPIRATION_DAYS = 5;
 
 /*
  |--------------------------------------------------------------------------
@@ -77,11 +78,12 @@ function createJWT(user) {
         groups: populatedUser.groups.map(g => g.name),
         group: populatedUser.groups.find(g => g.name === 'admins') ? 'admins' : 'users',
         iat: moment().unix(),
-        exp: moment().add(TOKEN_EXPIRATION_HOURS, 'hours').unix()
+        exp: moment().add(TOKEN_EXPIRATION_DAYS, 'days').unix()
       };
-      // @todo remove this when it is not needed anymore! - just backward compatible reason.
-      payload.sub = payload._id;
-      return jwt.encode(payload, TOKEN_SECRET);
+      const options = {
+        jwtid: uuid.v1()
+      };
+      return jwt.encode(payload, TOKEN_SECRET, null, options);
     });
 }
 
