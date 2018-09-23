@@ -62,8 +62,10 @@ class PassportStrategies {
     (jwtPayload, cb) =>
       User.findById(jwtPayload._id)
         .then(user => {
-          if (user) cb(null, user);
-          else cb(new Error(`User with id ${jwtPayload._id} not found - invalid token`));
+          if (!user) {
+           throw new Error(`invalid token, user not found`);
+          }
+          cb(null, user);
         })
         .catch(err => cb(err))
     ));
@@ -82,6 +84,8 @@ class PassportStrategies {
         }
         logger.silly(`term: ${JSON.stringify(req)}`);
         User.findOne(req)
+          .select('_id name email groups apikeys +password')
+          .exec()
           .then((user) => {
             invariant(user, 'Invalid email and/or password');
             return user;
@@ -89,6 +93,9 @@ class PassportStrategies {
           .then(user => new Promise((resolve, reject) => {
             logger.silly(`User exists: ${user}`);
             user.comparePassword(password, (compareError, isMatch) => {
+              if (compareError) {
+                return reject(compareError);
+              }
               if (!isMatch) {
                 return reject(new Error('Invalid email and/or password'));
               }

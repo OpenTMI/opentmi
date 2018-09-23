@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const bcrypt = require('bcryptjs');
 const _ = require('lodash');
+const invariant = require('invariant');
 // application modules
 const logger = require('../tools/logger');
 const {IsEmpty} = require('./plugins/isempty');
@@ -89,50 +90,24 @@ UserSchema.path('username').validate(function (username) {
 /**
  * Pre-save hook
  */
-UserSchema.pre('save', function preSave(next) {
-  const self = this;
-  if (!self.isModified('password')) {
-    return next();
+UserSchema.pre('save', function preSave() {
+  if (!this.isModified('password')) {
+    return Promise.resolve();
   }
-
-  bcrypt.genSalt(10, (saltError, salt) => {
-    bcrypt.hash(self.password, salt, (hashError, hash) => {
-      self.password = hash;
-      next();
-    });
-  });
-
-  return undefined;
+  return this.saltPassword(this.password);
 });
-/*
-UserSchema.pre('save', function(next){
-  console.log('save-pre-hook')
-  if( this.isNew ){
-    var self=this,
-        groups = this.groups;
-    this.groups = [];
-    if( groups ){
-      var self = this;
-      groups.forEach( function(group){
-        self.addToGroup(group);
-      });
-      next();
-    }
-  }
-}) */
+
+
 
 /**
  * Pre-remove hook
  */
 UserSchema.pre('remove', function preRemove(next) {
-  const self = this;
   const Loan = mongoose.model('Loan');
-
-  Loan.find({loaner: self._id}, (error, loans) => {
+  Loan.find({loaner: this._id}, (error, loans) => {
     if (loans.length > 0) {
       return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
     }
-
     return next();
   });
 
@@ -151,6 +126,23 @@ function requireGroup(groupName) {
 /**
  * Methods
  */
+UserSchema.methods.saltPassword = function saltPassword(password) {
+  return new Promise((resolve, reject) => {
+    logger.verbose('Salting password..');
+    bcrypt.genSalt(10, (saltError, salt) => {
+      if (saltError) {
+        return reject(saltError);
+      }
+      return bcrypt.hash(this.password, salt, (hashError, hash) => {
+        if (saltError) {
+          return reject(hashError);
+        }
+        this.password = hash;
+        return resolve();
+      });
+    });
+  });
+};
 UserSchema.methods.addToGroup = function addToGroup(groupName) {
   return Group.findOne({name: groupName})
     .then(requireGroup(groupName))
@@ -188,21 +180,19 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
  * @api public
  */
 UserSchema.methods.comparePassword = function comparePassword(password, next) {
-  bcrypt.compare(password, this.password, (error, isMatch) => {
-    next(error, isMatch);
-  });
+  invariant(this.password, 'User does not have local password');
+  bcrypt.compare(password, this.password, next);
 };
 
 /**
  * Validation is not required if using OAuth
  */
 UserSchema.methods.createApiKey = function createApiKey(cb) {
-  const self = this;
   const ApiKey = mongoose.model('ApiKey');
   const apikey = new ApiKey();
   apikey.save((doc) => {
-    self.apikeys.push(doc._id);
-    self.save(cb);
+    this.apikeys.push(doc._id);
+    this.save(cb);
     cb(null, doc.key); // Callback gets called twice, usually not intended
   });
 };
