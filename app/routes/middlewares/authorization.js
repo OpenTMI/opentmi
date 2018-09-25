@@ -11,8 +11,7 @@ const nconf = require('../../tools/config');
 require('../../models/group');
 
 // Middleware variables
-const TOKEN_SECRET = nconf.get('webtoken');
-const TOKEN_EXPIRATION_DAYS = 5;
+const TOKEN_SECRET = nconf.get('webtoken') || uuid.v1();
 
 
 function requireAdmin(req, res, next) {
@@ -51,7 +50,7 @@ function createJWT(user) {
         groups: populatedUser.groups.map(g => g.name),
         group: populatedUser.groups.find(g => g.name === 'admins') ? 'admins' : 'users',
         iat: moment().unix(),
-        exp: moment().add(TOKEN_EXPIRATION_DAYS, 'days').unix()
+        exp: moment().add(nconf.get('webtoken_expiration_days'), 'days').unix()
       };
       const options = {
         jwtid: uuid.v1()

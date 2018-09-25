@@ -16,17 +16,20 @@ function Route(app) {
     const controller = new ClusterController();
     router.param('Cluster', controller.idParam.bind(this));
     router.route('/api/v0/clusters.:format?')
-      .get(requireAuth, controller.find.bind(controller))
+      .all(requireAuth)
+      .get(controller.find.bind(controller))
       .post(requireAdmin, controller.create.bind(controller));
 
     router.route('/api/v0/clusters/:Cluster.:format?')
-      .get(requireAuth, controller.get.bind(controller))
-      .put(requireAuth, requireAdmin, controller.update.bind(controller))
-      .delete(requireAuth, requireAdmin, controller.remove.bind(controller));
+      .all(requireAuth)
+      .get(controller.get.bind(controller))
+      .put(requireAdmin, controller.update.bind(controller))
+      .delete(requireAdmin, controller.remove.bind(controller));
   } else {
     router.route('/api/v0/clusters')
-      .get(requireAuth, notClustered)
-      .post(requireAuth, requireAdmin, notClustered);
+      .all(requireAuth)
+      .get(notClustered)
+      .post(requireAdmin, notClustered);
   }
   app.use(router);
 }

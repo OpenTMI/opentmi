@@ -9,7 +9,6 @@ const nconf = require('../../tools/config');
 // implementation
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
-const {adminTeam, organization} = nconf.get('github');
 
 const userApiUrl = 'https://api.github.com/user';
 
@@ -28,6 +27,7 @@ class Github {
   // Ensure the user belongs to the required organization.
   static checkOrganization(oauth2, accessToken) {
     logger.debug('fetching list of organizations user belongs to.');
+    const {organization} = nconf.get('github');
     if (!organization) {
       logger.warn('github organization is not configured - assuming anybody can login');
       return Promise.resolve();
@@ -81,6 +81,8 @@ class Github {
     })
       .then((teams) => {
         logger.verbose(`response from: ${teamUrl} received`);
+        const {adminTeam, organization} = nconf.get('github');
+
         // Attempt to find the correct admin team from list of teams the user belongs to
         const isAdmin = _.find(teams, team =>
           (team.name === adminTeam && team.organization.login === organization));

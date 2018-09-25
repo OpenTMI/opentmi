@@ -3,6 +3,7 @@
   "listen": "127.0.0.1",
   "port": 80,
   "webtoken": "OpenTMI-toP-SeCRet-tOKEn",
+  "webtoken_expiration_days": 5,
   "db": "mongodb://localhost/opentmi",
   "filedb": "./data",
   "auto-reload": false,
