@@ -1,4 +1,5 @@
 FROM node:boron
+MAINTAINER Jussi Vatjus-Anttila "jussiva@gmail.com"
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -17,7 +18,10 @@ COPY . .
 
 # Use production as default node environment
 # to change this use '--build-arg NODE_ENV=development' when building docker
-ENV NODE_ENV production
+ARG PORT=8000
 
-EXPOSE 8000
-CMD [ "npm", "start", "--", "-v", "--listen", "0.0.0.0", "--port", "8000"]
+ARG NODE_ENV=production
+ENV NODE_ENV $NODE_ENV
+
+EXPOSE $PORT
+CMD [ "npm", "start", "--", "-v", "--listen", "0.0.0.0", "--port", "$PORT"]
