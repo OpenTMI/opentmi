@@ -1,7 +1,7 @@
 /**
  * Module dependencies
  */
-
+const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const bcrypt = require('bcryptjs');
