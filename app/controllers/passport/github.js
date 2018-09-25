@@ -9,8 +9,7 @@ const nconf = require('../../tools/config');
 // implementation
 const User = mongoose.model('User');
 const Group = mongoose.model('Group');
-const githubAdminTeam = nconf.get('github').adminTeam;
-const githubOrganization = nconf.get('github').organization;
+const {adminTeam, organization} = nconf.get('github');
 
 const userApiUrl = 'https://api.github.com/user';
 
@@ -40,20 +39,20 @@ class Github {
         try {
           logger.silly(`${orgUrl} - statusCode: ${res.statusCode}`);
           return resolve(JSON.parse(body));
-        } catch (ex) {
-          return reject(new Error('Failed to parse user profile'));
+        } catch (parseError) {
+          return reject(new Error(`Failed to parse user profile: ${parseError}`));
         }
       });
     })
       .then((org) => {
         // Attempt to find the defined organization from a list of the users organizations
-        const belongsOrg = _.find(org, {login: githubOrganization});
+        const belongsOrg = _.find(org, {login: organization});
         if (!belongsOrg) {
-          logger.warn(`user not in ${githubOrganization} organization.`);
-          throw new Error({status: 401, msg: `You do not have required access to ${githubOrganization}.`});
+          logger.warn(`user not in ${organization} organization.`);
+          throw new Error(`You do not have required access to ${organization}.`);
         }
         logger.verbose('user belongs to '
-            + `organization: ${githubOrganization}, which has access to this server.`);
+            + `organization: ${organization}, which has access to this server.`);
         return belongsOrg;
       });
   }
@@ -67,7 +66,7 @@ class Github {
     return new Promise((resolve, reject) => {
       oauth2.get(teamUrl, accessToken, (err, body, res) => {
         if (err) {
-          return reject(new Error('Failed to fetch user profile', err));
+          return reject(new Error(`Failed to fetch user profile: ${err}`));
         }
         try {
           logger.silly(`${teamUrl} - statusCode: ${res.statusCode}`);
@@ -81,8 +80,8 @@ class Github {
         logger.verbose(`response from: ${teamUrl} received`);
         // Attempt to find the correct admin team from list of teams the user belongs to
         const isAdmin = _.find(teams, team =>
-          (team.name === githubAdminTeam && team.organization.login === githubOrganization));
-        logger.verbose(`user belongs to group ${githubOrganization}`);
+          (team.name === adminTeam && team.organization.login === organization));
+        logger.verbose(`user belongs to group ${organization}`);
         return isAdmin;
       });
   }
@@ -92,7 +91,7 @@ class Github {
     logger.debug('updating user\'s group to match current status.');
     return Group.findOne({users: user, name: 'admins'})
       .catch((error) => {
-        logger.error(error);
+        logger.error(`findOne throws: ${error}`);
         throw error;
       })
       .then((group) => {

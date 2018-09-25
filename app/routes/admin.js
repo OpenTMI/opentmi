@@ -5,7 +5,7 @@ const cluster = require('cluster');
 const express = require('express');
 
 // Application modules
-const {ensureAdmin} = require('./middlewares/authorization');
+const {ensureAdmin, requireAuth, requireAdmin} = require('./middlewares/authorization');
 const AdminController = require('./../controllers/admin');
 const {notClustered} = require('./../controllers/common');
 
@@ -15,9 +15,9 @@ function Route(app) {
   const controller = new AdminController();
 
   router.route('/api/v0/version.:format?')
-    .all(...ensureAdmin)
+    .all(requireAuth)
     .get(controller.version.bind(controller))
-    .post(controller.update.bind(controller));
+    .post(requireAdmin, controller.update.bind(controller));
 
   let restart;
   if (!cluster.isMaster && cluster.worker.isConnected()) {
