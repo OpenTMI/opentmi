@@ -28,7 +28,10 @@ class Github {
   // Ensure the user belongs to the required organization.
   static checkOrganization(oauth2, accessToken) {
     logger.debug('fetching list of organizations user belongs to.');
-
+    if (!organization) {
+      logger.warn('github organization is not configured - assuming anybody can login');
+      return Promise.resolve();
+    }
     logger.verbose('requesting organization information.');
     const orgUrl = `${userApiUrl}/orgs`;
     return new Promise((resolve, reject) => {

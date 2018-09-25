@@ -23,5 +23,10 @@
     "callbackURL": "http://localhost/auth/github/callback",
     "organization": "<github-org>",
     "adminTeam": "<admin-team>"
+  },
+  "google": {
+    "clientID": "<client-id>",
+    "clientSecret": "<client-secret>",
+    "callbackURL": "http://localhost/auth/github/callback"
   }
 }

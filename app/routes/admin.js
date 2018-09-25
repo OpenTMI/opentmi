@@ -14,7 +14,7 @@ function Route(app) {
   const router = express.Router();
   const controller = new AdminController();
 
-  router.route('/api/v0/version.:format?')
+  router.route('/api/v0/version')
     .all(requireAuth)
     .get(controller.version.bind(controller))
     .post(requireAdmin, controller.update.bind(controller));
