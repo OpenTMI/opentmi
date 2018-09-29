@@ -110,6 +110,7 @@ describe('Users', function () {
       });
   });
   describe('/auth', function () {
+    let createdUser;
     const createUser = (data = {}) => new Promise((resolve) => {
       const body = {
         name: '/auth_testuser',
@@ -127,6 +128,7 @@ describe('Users', function () {
           expect(error).to.equal(null);
           expect(res).to.be.a('Object');
           expect(res).to.have.property('status', 200);
+          expect(res.body.password).to.be.undefined;
           resolve(res.body);
         });
     });
@@ -142,9 +144,17 @@ describe('Users', function () {
         });
     });
 
+    afterEach('cleanup user', function () {
+      if (createdUser) {
+        return removeUser(createdUser);
+      }
+      return Promise.resolve();
+    });
+
     it('should get user data on /auth/me', function () {
       return createUser()
         .then((user) => {
+          createdUser = user;
           const customAuthString = createToken(user);
           return new Promise((resolve) => {
             superagent.get(`${host}/auth/me`)
@@ -161,8 +171,7 @@ describe('Users', function () {
                 resolve(res.body);
               });
           });
-        })
-        .then(removeUser);
+        });
     });
 
     it('should not get user data on /auth/me without token', function (done) {
@@ -178,6 +187,7 @@ describe('Users', function () {
     it('should update user data on PUT:/auth/me', function () {
       return createUser()
         .then((user) => {
+          createdUser = user;
           const customAuthString = createToken(user);
           return new Promise((resolve) => {
             superagent.put(`${host}/auth/me`)
@@ -191,8 +201,7 @@ describe('Users', function () {
                 resolve(user);
               });
           });
-        })
-        .then(removeUser);
+        });
     });
     it('should not allow to update user data on PUT:/auth/me without token', function (done) {
       superagent.put(`${host}/auth/me`)
@@ -208,6 +217,7 @@ describe('Users', function () {
     it('should allow to login', function () {
       return createUser({password: 'topsecret'})
         .then(user => new Promise((resolve) => {
+          createdUser = user;
           superagent.post(`${host}/auth/login`)
             .send({email: user.email, password: 'topsecret'})
             .type('json')
@@ -220,8 +230,7 @@ describe('Users', function () {
               expect(res.body.token).to.be.a('string');
               resolve(user);
             });
-        }))
-        .then(removeUser);
+        }));
     });
     it('should not allow to login without existing account', function () {
       return new Promise((resolve) => {
@@ -238,6 +247,7 @@ describe('Users', function () {
     it('should allow to logout', function () {
       return createUser({password: 'topsecret'})
         .then((user) => {
+          createdUser = user;
           const customAuthString = createToken(user);
           return new Promise((resolve) => {
             superagent.post(`${host}/auth/logout`)
@@ -250,8 +260,7 @@ describe('Users', function () {
                 resolve(user);
               });
           });
-        })
-        .then(removeUser);
+        });
     });
   });
 

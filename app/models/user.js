@@ -100,7 +100,6 @@ UserSchema.pre('save', function preSave() {
   return this.saltPassword(this.password);
 });
 
-
 /**
  * Pre-remove hook
  */
@@ -185,10 +184,10 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
         logger.warn('User did not have link to group even it should..');
       }
       if (notBelong) {
-        logger.warn('User had link to group even group does not include user')
+        logger.warn('User had link to group even group does not include user');
       }
       this.groups = _.filter(this.groups, g => g._id === group._id);
-      group.users = _.filter(group.users, g => g._i  === this._id); // eslint-disable-line no-param-reassign
+      group.users = _.filter(group.users, g => g._i === this._id); // eslint-disable-line no-param-reassign
       return group.save()
         .then(() => this.save());
     });
@@ -222,8 +221,6 @@ UserSchema.methods.comparePassword = function comparePassword(password) {
     .select('+password')
     .exec()
     .then(compare);
-
-
 };
 
 /**

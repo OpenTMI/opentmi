@@ -100,14 +100,14 @@ class AuthenticationController {
     logger.info('Logging in');
     User.findOne({email: req.body.email}, '+password', (error, user) => {
       if (!user) {
-        return res.status(401).send({message: 'Invalid email and/or password'});
+        return res.status(401).json({message: 'Invalid email and/or password'});
       }
       user.comparePassword(req.body.password)
         .then(() => createJWT(user))
         .then(token => res.json({token}))
         .catch((errorComp) => {
           logger.silly(`password compare fails: ${errorComp}`);
-          res.status(401).send({message: 'Invalid email and/or password'});
+          res.status(401).json({message: 'Invalid email and/or password'});
         });
       return undefined;
     });
