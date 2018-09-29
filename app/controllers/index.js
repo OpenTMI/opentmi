@@ -40,7 +40,7 @@ class DefaultController extends EventEmitter {
           _.set(req, modelname, data);
           next();
         } else {
-          res.status(404).json({msg: 'not found'});
+          res.status(404).json({message: `Document with id ${docId} not found`});
         }
       });
     };

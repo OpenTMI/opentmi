@@ -13,6 +13,16 @@ class UsersController extends DefaultController {
   constructor() {
     super('User');
   }
+  create(req, res) {
+    this._create(req.body)
+      .then((item) => {
+        const jsonItem = _.omit(item.toJSON(), ['password']);
+        res.json(jsonItem);
+      })
+      .catch((error) => {
+        res.status(400).json({error: error.message});
+      });
+  }
   deleteSettings(req, res) { // eslint-disable-line class-methods-use-this
     const namespace = req.params.Namespace;
     const doc = {$unset: {}};

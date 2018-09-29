@@ -21,7 +21,7 @@ function register(app, io, file) {
     throw new Error(`${file} did not export an function!`);
   })
     .catch((error) => {
-      logger.error(error);
+      logger.error(`${error.stack}`);
     });
 }
 

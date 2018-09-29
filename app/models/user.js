@@ -22,6 +22,8 @@ function validateEmail(email) { // eslint-disable-line no-unused-vars
   return regExp.test(email);
 }
 
+let User;
+
 /**
  * User schema
  */
@@ -98,7 +100,6 @@ UserSchema.pre('save', function preSave() {
   return this.saltPassword(this.password);
 });
 
-
 /**
  * Pre-remove hook
  */
@@ -138,7 +139,7 @@ UserSchema.methods.saltPassword = function saltPassword(password) {
           return reject(hashError);
         }
         this.password = hash;
-        return resolve();
+        return resolve(this);
       });
     });
   });
@@ -173,10 +174,21 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
     .then(requireGroup(groupName))
     .then((group) => {
       logger.silly(`remove group ${group._id} from user ${this._id}`);
-      this.groups = _.without(this.groups, group._id);
-      const editedGroup = group;
-      editedGroup.users = _.without(group.users, this._id);
-      return editedGroup.save()
+      const linkMissing = !_.find(this.groups, group._id);
+      const notBelong = !_.find(group.users, this._id);
+      if (linkMissing && notBelong) {
+        logger.debug('User does not belong to group');
+        throw new Error(`User ${this.name} does not belong to group ${group.name}`);
+      }
+      if (linkMissing) {
+        logger.warn('User did not have link to group even it should..');
+      }
+      if (notBelong) {
+        logger.warn('User had link to group even group does not include user');
+      }
+      this.groups = _.filter(this.groups, g => g._id === group._id);
+      group.users = _.filter(group.users, g => g._i === this._id); // eslint-disable-line no-param-reassign
+      return group.save()
         .then(() => this.save());
     });
 };
@@ -185,12 +197,30 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
  * Authenticate - check if the passwords are the same
  *
  * @param {String} plainText
- * @return {Boolean}
+ * @return {Promise}
  * @api public
  */
-UserSchema.methods.comparePassword = function comparePassword(password, next) {
-  invariant(this.password, 'User does not have local password');
-  bcrypt.compare(password, this.password, next);
+UserSchema.methods.comparePassword = function comparePassword(password) {
+  const compare = (user) => {
+    invariant(user.password, 'User does not have local password');
+    return new Promise((resolve, reject) =>
+      bcrypt.compare(password, user.password, (error, match) => {
+        if (error) {
+          reject(error);
+        } else if (match) {
+          resolve(match);
+        } else {
+          reject(new Error('Password does not match'));
+        }
+      }));
+  };
+  if (this.password) {
+    return compare(this);
+  }
+  return User.findById(this._id)
+    .select('+password')
+    .exec()
+    .then(compare);
 };
 
 /**
@@ -272,5 +302,5 @@ UserSchema.static({
 /**
  * Register
  */
-const User = mongoose.model('User', UserSchema);
+User = mongoose.model('User', UserSchema);
 module.exports = {Model: User, Collection: 'User'};

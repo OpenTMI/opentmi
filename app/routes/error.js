@@ -17,6 +17,7 @@ function Route(app) {
     // error page
     const status = error.status || 500;
     res.status(status).json({
+      method: req.method,
       url: req.originalUrl,
       error: error.stack
     });
@@ -27,6 +28,7 @@ function Route(app) {
   // assume 404 since no middleware responded
   app.use((req, res) => {
     res.status(404).json({
+      method: req.method,
       url: req.originalUrl,
       error: 'Not found'
     });
