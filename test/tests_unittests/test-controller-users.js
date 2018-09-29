@@ -90,14 +90,12 @@ describe('controllers/users.js', function () {
           .then((yes) => {
             expect(yes).to.be.false;
           })
-          .then(() => user.addToGroup('admins'))
-        )
+          .then(() => user.addToGroup('admins')))
         .then(user => user.isAdmin()
           .then((yes) => {
             expect(yes).to.be.true;
           })
-          .then(() => user.removeFromGroup('admins'))
-        )
+          .then(() => user.removeFromGroup('admins')))
         .then(user => user.isAdmin()
           .then((yes) => {
             expect(yes).to.be.false;
