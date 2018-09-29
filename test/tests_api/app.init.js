@@ -18,7 +18,7 @@ const api = 'http://localhost:3000/api/v0';
 const testUserId = '5825bb7afe7545132c88c761';
 let authString;
 
-describe.skip('Basic Get API', function () {
+describe('Basic Get API', function () {
   // Create fresh DB
   before(function () {
     // Create token for requests

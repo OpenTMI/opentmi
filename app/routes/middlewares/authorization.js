@@ -46,12 +46,14 @@ function createJWT(user) {
     .populate('groups')
     .execPopulate()
     .then((populatedUser) => {
+      const expDays = nconf.get('webtoken_expiration_days');
+      logger.debug(`webtoken_expiration_days = ${expDays}`);
       const payload = {
         _id: populatedUser._id,
         groups: populatedUser.groups.map(g => g.name),
         group: populatedUser.groups.find(g => g.name === 'admins') ? 'admins' : 'users',
         iat: moment().unix(),
-        exp: moment().add(nconf.get('webtoken_expiration_days'), 'days').unix()
+        exp: moment().add(expDays, 'days').unix()
       };
       const options = {
         jwtid: uuid.v1()
