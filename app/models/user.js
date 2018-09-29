@@ -22,6 +22,8 @@ function validateEmail(email) { // eslint-disable-line no-unused-vars
   return regExp.test(email);
 }
 
+let User;
+
 /**
  * User schema
  */
@@ -303,5 +305,5 @@ UserSchema.static({
 /**
  * Register
  */
-const User = mongoose.model('User', UserSchema);
+User = mongoose.model('User', UserSchema);
 module.exports = {Model: User, Collection: 'User'};

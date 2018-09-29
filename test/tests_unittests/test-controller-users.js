@@ -31,7 +31,6 @@ describe('controllers/users.js', function () {
     expect(controller).to.exist;
   });
   describe('user model', function () {
-
     describe('password', function () {
       it('salt password by default', function () {
         const user = new User({password: 'ohhoh'});
@@ -42,7 +41,7 @@ describe('controllers/users.js', function () {
           .reflect()
           .then((promise) => {
             expect(promise.isRejected()).to.be.true;
-          })
+          });
       });
       it('can change password', function () {
         const user = new User({password: 'ohhoh'});
@@ -53,7 +52,7 @@ describe('controllers/users.js', function () {
           .reflect()
           .then((promise) => {
             expect(promise.isRejected()).to.be.true;
-          })
+          });
       });
     });
 
@@ -62,19 +61,19 @@ describe('controllers/users.js', function () {
       return admins.save()
         .then(() => {
           const user = new User();
-          return user.save()
+          return user.save();
         })
-        .then((user) => user.addToGroup('admins'))
-        .then((user) => user.removeFromGroup('admins'));
+        .then(user => user.addToGroup('admins'))
+        .then(user => user.removeFromGroup('admins'));
     });
     it('reject to remove from group if not included', function () {
       const admins = new Group({name: 'admins'});
       return admins.save()
         .then(() => {
           const user = new User();
-          return user.save()
+          return user.save();
         })
-        .then((user) => user.removeFromGroup('admins'))
+        .then(user => user.removeFromGroup('admins'))
         .reflect()
         .then((promise) => {
           expect(promise.isRejected()).to.be.true;
@@ -85,24 +84,24 @@ describe('controllers/users.js', function () {
       return admins.save()
         .then(() => {
           const user = new User();
-          return user.save()
+          return user.save();
         })
         .then(user => user.isAdmin()
-            .then((yes) => {
-              expect(yes).to.be.false;
-            })
-            .then(() => user.addToGroup('admins'))
+          .then((yes) => {
+            expect(yes).to.be.false;
+          })
+          .then(() => user.addToGroup('admins'))
         )
         .then(user => user.isAdmin()
-            .then((yes) => {
-              expect(yes).to.be.true;
-            })
-            .then(() => user.removeFromGroup('admins'))
+          .then((yes) => {
+            expect(yes).to.be.true;
+          })
+          .then(() => user.removeFromGroup('admins'))
         )
         .then(user => user.isAdmin()
-            .then((yes) => {
-              expect(yes).to.be.false;
-            }));
-    })
+          .then((yes) => {
+            expect(yes).to.be.false;
+          }));
+    });
   });
 });

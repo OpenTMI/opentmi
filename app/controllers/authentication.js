@@ -102,13 +102,13 @@ class AuthenticationController {
       if (!user) {
         return res.status(401).send({message: 'Invalid email and/or password'});
       }
-      user.comparePassword(req.body.password, (compareError, isMatch) => {
-        if (!isMatch) {
-          return res.status(401).send({message: 'Invalid email and/or password'});
-        }
-        return createJWT(user)
-          .then(token => res.json({token}));
-      });
+      user.comparePassword(req.body.password)
+        .then(() => createJWT(user))
+        .then(token => res.json({token}))
+        .catch((errorComp) => {
+          logger.silly(`password compare fails: ${errorComp}`);
+          res.status(401).send({message: 'Invalid email and/or password'});
+        });
       return undefined;
     });
   }
