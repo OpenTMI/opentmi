@@ -38,12 +38,6 @@ class AuthenticationController {
     res.status(404).json({error: 'apikey required'});
   }
 
-  static sendToken(req, res) {
-    // If this function gets called, authentication was successful.
-    // req.user` contains the authenticated user.
-    createJWT(req.user)
-      .then(token => res.json({token}));
-  }
   // GET /api/me
   getme(req, res) { // eslint-disable-line class-methods-use-this
     User.findById(req.user._id, (error, user) => {
