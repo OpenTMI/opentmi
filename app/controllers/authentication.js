@@ -1,16 +1,15 @@
+// 3rd party modules
 require('colors');
-
 const qs = require('querystring');
-
 const mongoose = require('mongoose');
 const request = require('request');
 const jwt = require('jwt-simple');
 const async = require('async');
 const _ = require('lodash');
-
+// application modules
 const logger = require('../tools/logger');
 const nconf = require('../tools/config');
-const auth = require('../routes/middlewares/authorization');
+const {createJWT} = require('../routes/middlewares/authorization');
 
 
 const User = mongoose.model('User');
@@ -19,7 +18,6 @@ const Group = mongoose.model('Group');
 const tokenSecret = nconf.get('webtoken');
 const githubAdminTeam = nconf.get('github').adminTeam;
 const githubOrganization = nconf.get('github').organization;
-const clientId = nconf.get('github').clientID;
 const clientSecret = nconf.get('github').clientSecret;
 
 let loginCount = 0;
@@ -148,19 +146,14 @@ class AuthenticationController {
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Login with GitHub
-  |--------------------------------------------------------------------------
-  */
-  static getGithubClientId(req, res) {
+  static GetGithubClientId(req, res) {
     logger.info('Github auth: returning github clientID');
-    const id = clientId;
-    if (id === undefined) {
+    const {clientID} = nconf.get('github');
+    if (!clientID) {
       logger.warn('Github auth: clientId was undefined, perhaps it is not defined in the config.');
       res.status(400).json({error: 'found client id is undefined'});
     } else {
-      res.status(200).json({clientID: id});
+      res.status(200).json({clientID});
     }
   }
 

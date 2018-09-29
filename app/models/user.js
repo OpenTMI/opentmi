@@ -215,12 +215,11 @@ UserSchema.methods.comparePassword = function comparePassword(password, next) {
  * Validation is not required if using OAuth
  */
 UserSchema.methods.createApiKey = function createApiKey(cb) {
-  const self = this;
   const ApiKey = mongoose.model('ApiKey');
   const apikey = new ApiKey();
   apikey.save((doc) => {
-    self.apikeys.push(doc._id);
-    self.save(cb);
+    this.apikeys.push(doc._id);
+    this.save(cb);
     cb(null, doc.key); // Callback gets called twice, usually not intended
   });
 };
