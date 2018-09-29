@@ -134,7 +134,6 @@ describe('Users', function () {
         });
     });
     const removeUser = user => new Promise((resolve) => {
-      const customAuthString = createToken(user);
       superagent.delete(`${api}/users/${user._id}`)
         .set('authorization', adminAuthString)
         .end(function (error, res) {

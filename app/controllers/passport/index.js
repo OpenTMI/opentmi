@@ -1,5 +1,4 @@
 // 3rd party modules
-const Promise = require('bluebird');
 const _ = require('lodash');
 const mongoose = require('mongoose');
 const invariant = require('invariant');
