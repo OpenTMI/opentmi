@@ -2,7 +2,7 @@
 const express = require('express');
 
 // application modules
-const {requireAuth, requireAdmin} = require('./middlewares/authorization');
+const {requireAuth} = require('./middlewares/authorization');
 const EventsController = require('./../controllers/events');
 
 function Route(app) {

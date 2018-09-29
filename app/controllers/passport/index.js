@@ -162,7 +162,7 @@ class PassportStrategies {
       ((accessToken, refreshToken, profile, next) => {
         const oauth2 = strategy._oauth2;
         PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
-    }));
+      }));
     passport.use(strategy);
   }
   static GoogleStrategy() {
