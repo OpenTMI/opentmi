@@ -23,18 +23,9 @@ function createDefaultAdmin() {
   const admin = new User();
   admin.name = nconf.get('admin').user;
   admin.password = nconf.get('admin').pwd;
-  admin.save((error, user) => {
-    if (error) {
-      return logger.error(error);
-    }
-
-    user.addToGroup('admins', (addError, addedUser) => {
-      if (addError) logger.error(addError);
-      else logger.debug(addedUser);
-    });
-
-    return undefined;
-  });
+  admin.save()
+    .then(() => admin.addToGroup('admins'))
+    .catch(error => logger.error(error));
 }
 
 /**
@@ -97,7 +88,7 @@ function Route(app) {
     .post('/logout', authController.logout.bind(authController))
     .post('/google', authController.google.bind(authController))
     .post('/github', jwt({secret: TOKEN_SECRET, credentialsRequired: false}), AuthController.github)
-    .get('/github/id', AuthController.getGithubClientId);
+    .get('/github/id', AuthController.GetGithubClientId);
   app.use('/auth', authRoute);
 
   /**

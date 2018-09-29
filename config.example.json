@@ -3,6 +3,7 @@
   "listen": "127.0.0.1",
   "port": 80,
   "webtoken": "OpenTMI-toP-SeCRet-tOKEn",
+  "webtoken_expiration_days": 5,
   "db": "mongodb://localhost/opentmi",
   "filedb": "./data",
   "auto-reload": false,
@@ -23,5 +24,10 @@
     "callbackURL": "http://localhost/auth/github/callback",
     "organization": "<github-org>",
     "adminTeam": "<admin-team>"
+  },
+  "google": {
+    "clientID": "<client-id>",
+    "clientSecret": "<client-secret>",
+    "callbackURL": "http://localhost/auth/github/callback"
   }
 }
