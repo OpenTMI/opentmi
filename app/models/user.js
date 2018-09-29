@@ -1,10 +1,12 @@
 /**
  * Module dependencies
  */
+const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const bcrypt = require('bcryptjs');
 const _ = require('lodash');
+const invariant = require('invariant');
 // application modules
 const logger = require('../tools/logger');
 const {IsEmpty} = require('./plugins/isempty');
@@ -89,126 +91,137 @@ UserSchema.path('username').validate(function (username) {
 /**
  * Pre-save hook
  */
-UserSchema.pre('save', function preSave(next) {
-  const self = this;
-  if (!self.isModified('password')) {
-    return next();
+UserSchema.pre('save', function preSave() {
+  if (!this.isModified('password')) {
+    return Promise.resolve();
   }
-
-  bcrypt.genSalt(10, (saltError, salt) => {
-    bcrypt.hash(self.password, salt, (hashError, hash) => {
-      self.password = hash;
-      next();
-    });
-  });
-
-  return undefined;
+  return this.saltPassword(this.password);
 });
-/*
-UserSchema.pre('save', function(next){
-  console.log('save-pre-hook')
-  if( this.isNew ){
-    var self=this,
-        groups = this.groups;
-    this.groups = [];
-    if( groups ){
-      var self = this;
-      groups.forEach( function(group){
-        self.addToGroup(group);
-      });
-      next();
-    }
-  }
-}) */
+
 
 /**
  * Pre-remove hook
  */
 UserSchema.pre('remove', function preRemove(next) {
-  const self = this;
   const Loan = mongoose.model('Loan');
-
-  Loan.find({loaner: self._id}, (error, loans) => {
+  Loan.find({loaner: this._id}, (error, loans) => {
     if (loans.length > 0) {
       return next(new Error('cannot remove user because a loan with this user as the loaner exists'));
     }
-
     return next();
   });
 
   return undefined;
 });
 
+function requireGroup(groupName) {
+  return group => Promise.try(() => {
+    if (!group) {
+      throw new Error(`group ${groupName} not found`);
+    }
+    return group;
+  });
+}
+
 /**
  * Methods
  */
-UserSchema.methods.addToGroup = function addToGroup(groupName, next) {
-  const self = this;
-  Group.findOne({name: groupName}, (error, group) => {
-    if (error) {
-      return next(error);
-    }
-    if (!group) {
-      return next({message: 'group not found'});
-    }
-    if (_.find(group.users, user => user === self._id)) {
-      return next({message: 'user belongs to the group already'});
-    }
-
-    self.groups.push(group._id);
-    group.users.push(self._id);
-    group.save();
-    self.save((saveError, user) => {
-      if (saveError) {
-        return next(saveError);
+UserSchema.methods.saltPassword = function saltPassword(password) {
+  return new Promise((resolve, reject) => {
+    logger.verbose('Salting password..');
+    bcrypt.genSalt(10, (saltError, salt) => {
+      if (saltError) {
+        return reject(saltError);
       }
-
-      return next(user);
+      return bcrypt.hash(password, salt, (hashError, hash) => {
+        if (saltError) {
+          return reject(hashError);
+        }
+        this.password = hash;
+        return resolve(this);
+      });
     });
-
-    return undefined;
   });
 };
-
-UserSchema.methods.removeFromGroup = function removeFromGroup(groupName, next) {
-  const self = this;
-  Group.findOne({name: groupName}, (error, group) => {
-    if (error) {
-      return next(error);
-    }
-    if (!group) {
-      return next({message: 'group not found'});
-    }
-
-    self.groups = _.without(self.groups, group._id);
-
-    const editedGroup = group;
-    editedGroup.users = _.without(group.users, self._id);
-    editedGroup.save();
-    self.save((saveError, user) => {
-      if (saveError) {
-        logger.error(error);
-        return next(saveError);
-      }
-
-      return next(user);
+UserSchema.methods.isAdmin = function isAdmin() {
+  return this
+    .populate('groups')
+    .execPopulate()
+    .then((populatedUser) => {
+      const admins = populatedUser.groups.find(g => g.name === 'admins');
+      return !!admins;
     });
+};
+UserSchema.methods.addToGroup = function addToGroup(groupName) {
+  return Group.findOne({name: groupName})
+    .then(requireGroup(groupName))
+    .then((group) => {
+      if (_.find(group.users, user => user === this._id)) {
+        logger.silly(`user ${this._id} belongs to group ${groupName} already`);
+        return Promise.resolve(this);
+      }
+      logger.silly(`adding user ${this._id} to group ${group._id}`);
+      this.groups.push(group._id);
+      group.users.push(this._id);
+      return group.save()
+        .then(() => this.save());
+    });
+};
 
-    return undefined;
-  });
+UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
+  return Group.findOne({name: groupName})
+    .then(requireGroup(groupName))
+    .then((group) => {
+      logger.silly(`remove group ${group._id} from user ${this._id}`);
+      const linkMissing = !_.find(this.groups, group._id);
+      const notBelong = !_.find(group.users, this._id);
+      if (linkMissing && notBelong) {
+        logger.debug('User does not belong to group');
+        throw new Error(`User ${this.name} does not belong to group ${group.name}`);
+      }
+      if (linkMissing) {
+        logger.warn('User did not have link to group even it should..');
+      }
+      if (notBelong) {
+        logger.warn('User had link to group even group does not include user')
+      }
+      this.groups = _.filter(this.groups, g => g._id === group._id);
+      group.users = _.filter(group.users, g => g._i  === this._id); // eslint-disable-line no-param-reassign
+      return group.save()
+        .then(() => this.save());
+    });
 };
 
 /**
  * Authenticate - check if the passwords are the same
  *
  * @param {String} plainText
- * @return {Boolean}
+ * @return {Promise}
  * @api public
  */
-UserSchema.methods.comparePassword = function comparePassword(password, next) {
-  bcrypt.compare(password, this.password, (error, isMatch) => {
-    next(error, isMatch);
-  });
+UserSchema.methods.comparePassword = function comparePassword(password) {
+  const compare = (user) => {
+    invariant(user.password, 'User does not have local password');
+    return new Promise((resolve, reject) =>
+      bcrypt.compare(password, user.password, (error, match) => {
+        if (error) {
+          reject(error);
+        } else if (match) {
+          resolve(match);
+        } else {
+          reject(new Error('Password does not match'));
+        }
+      }));
+  };
+  if (this.password) {
+    return compare(this);
+  }
+  return User.findById(this._id)
+    .select('+password')
+    .exec()
+    .then(compare);
+
+
 };
 
 /**

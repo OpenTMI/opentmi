@@ -23,19 +23,28 @@ const clientSecret = nconf.get('github').clientSecret;
 let loginCount = 0;
 
 class AuthenticationController {
+  // Simple route middleware to ensure user is authenticated.
+  //   Use this route middleware on any resource that needs to be protected.  If
+  //   the request is authenticated (typically via a persistent login session),
+  //   the request will proceed.  Otherwise, the user will be redirected to the
+  //   login page.
+  static ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) { next(); } else { res.redirect('/login'); }
+  }
   static loginRequiredResponse(req, res) {
     res.status(404).json({error: 'login required'});
   }
-
   static apiKeyRequiredResponse(req, res) {
     res.status(404).json({error: 'apikey required'});
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | GET /api/me
-  |--------------------------------------------------------------------------
-  */
+  static sendToken(req, res) {
+    // If this function gets called, authentication was successful.
+    // req.user` contains the authenticated user.
+    createJWT(req.user)
+      .then(token => res.json({token}));
+  }
+  // GET /api/me
   getme(req, res) { // eslint-disable-line class-methods-use-this
     User.findById(req.user._id, (error, user) => {
       if (error) {
@@ -48,28 +57,22 @@ class AuthenticationController {
     });
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | PUT /api/me
-  |--------------------------------------------------------------------------
-  */
+  // PUT /api/me
   putme(req, res) { // eslint-disable-line class-methods-use-this
     User.findById(req.user._id, (error, user) => {
       if (!user) {
         return res.status(400).send({message: 'User not found'});
       }
-
       const editedUser = user;
       editedUser.displayName = req.body.displayName || user.displayName;
       editedUser.email = req.body.email || user.email;
       editedUser.save(() => {
         res.status(200).end();
       });
-
       return undefined;
     });
   }
-
+  // POST /auth/signup
   signup(req, res) { // eslint-disable-line class-methods-use-this
     User.findOne({email: req.body.email}, (error, user) => {
       if (user) {
@@ -85,7 +88,7 @@ class AuthenticationController {
         if (saveError) {
           res.status(500).send({message: saveError.message});
         }
-        auth.createJWT(result)
+        createJWT(result)
           .then(token => res.json({token}));
       });
 
@@ -103,7 +106,7 @@ class AuthenticationController {
         if (!isMatch) {
           return res.status(401).send({message: 'Invalid email and/or password'});
         }
-        return auth.createJWT(user)
+        return createJWT(user)
           .then(token => res.json({token}));
       });
       return undefined;
@@ -444,34 +447,31 @@ class AuthenticationController {
           logger.info(addPrefix(`removing user: ${user._id} from admins.`));
 
           // TODO: should use either promise or a more standard callback format (err, user)
-          user.removeFromGroup('admins', (response) => {
-            logger.verbose(addPrefix('removing from group finished.'));
-
-            // If response has a message, error has occured
-            if (response.message) {
-              logger.error(addPrefix(`user: ${response._id} could not be removed from admins group.`));
-              return next({status: 500, msg: response.message});
-            }
-
-            // Save user and create token with groupname
-            logger.verbose(addPrefix('user removed from group successfully.'));
-            return next(null, response);
-          });
+          user.removeFromGroup('admins')
+            .then(() => {
+              logger.verbose(addPrefix('removing from group finished.'));
+              // Save user and create token with groupname
+              logger.verbose(addPrefix('user removed from group successfully.'));
+              return next(null, user);
+            })
+            .catch((errorRemove) => {
+              // If response has a message, error has occured
+              logger.error(addPrefix(`user: ${user._id} could not be removed from admins group.`));
+              return next({status: 500, msg: `${errorRemove}`});
+            });
         } else if (!group && groupname === 'admins') {
           logger.info(addPrefix(`adding user: ${user._id} to admins.`));
-          user.addToGroup('admins', (result) => {
-            logger.verbose(addPrefix('adding to group finished.'));
-
-            // If result has a message, error has occured
-            if (result.message) {
-              logger.error(addPrefix(`user: ${result._id} could not be added to the admins group.`));
-              return next({status: 500, msg: result.message});
-            }
-
-            // Save result/user and create token with groupname
-            logger.verbose(addPrefix('user added to group successfully.'));
-            return next(null, result);
-          });
+          user.addToGroup('admins')
+            .then(() => {
+              logger.verbose(addPrefix('adding to group finished.'));
+              // Save result/user and create token with groupname
+              logger.verbose(addPrefix('user added to group successfully.'));
+              return next(null, user);
+            })
+            .catch((errorAdd) => {
+              logger.error(addPrefix(`user: ${user._id} could not be added to the admins group.`));
+              return next({status: 500, msg: `${errorAdd}`});
+            });
         } else {
           logger.verbose(addPrefix(`user is in the correct group: ${groupname}.`));
 
@@ -498,7 +498,7 @@ class AuthenticationController {
         }
 
         logger.verbose(addPrefix('creating a token for the user.'));
-        return auth.createJWT(user)
+        return createJWT(user)
           .then((token) => {
             next(null, token);
           });
@@ -579,7 +579,7 @@ class AuthenticationController {
               editedUser.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
               editedUser.displayName = user.displayName || profile.name;
               editedUser.save(() => {
-                auth.createJWT(editedUser)
+                createJWT(editedUser)
                   .then(jwtToken => res.json({jwtToken}));
               });
               return undefined;
@@ -600,7 +600,7 @@ class AuthenticationController {
             newUser.picture = profile.picture.replace('sz=50', 'sz=200');
             newUser.displayName = profile.name;
             newUser.save(() => {
-              auth.createJWT(newUser)
+              createJWT(newUser)
                 .then(jwtToken => res.json({jwtToken}));
             });
 
