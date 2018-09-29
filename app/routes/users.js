@@ -48,7 +48,7 @@ function Route(app) {
 
   // Route for operations that target all users
   userRouter.route('/')
-    .all(...ensureAdmin)
+    .all(requireAuth)
     .get(userController.find.bind(userController))
     .post(userController.create.bind(userController));
 

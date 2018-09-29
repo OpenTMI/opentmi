@@ -92,18 +92,7 @@ class PassportStrategies {
             invariant(user, 'Invalid email and/or password');
             return user;
           })
-          .then(user => new Promise((resolve, reject) => {
-            logger.silly(`User exists: ${user}`);
-            user.comparePassword(password, (compareError, isMatch) => {
-              if (compareError) {
-                return reject(compareError);
-              }
-              if (!isMatch) {
-                return reject(new Error('Invalid email and/or password'));
-              }
-              return resolve(user);
-            });
-          }))
+          .then(user => user.comparePassword(password).return(user))
           .then((user) => {
             done(null, user);
           })

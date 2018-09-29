@@ -29,7 +29,11 @@ function requireAdmin(req, res, next) {
       if (yes) {
         next();
       } else {
-        res.status(401).json({message: 'Admin access required!'});
+        res.status(401).json({
+          method: req.method,
+          url: req.originalUrl,
+          message: 'Admin access required!'
+        });
       }
     })
     .catch(next);
