@@ -48,6 +48,7 @@ describe('Basic Get API', function () {
     superagent.get(`${api}/version`)
       .set('authorization', authString)
       .end(function (error, res) {
+        console.log(req.body)
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
