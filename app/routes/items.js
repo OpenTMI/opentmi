@@ -15,13 +15,13 @@ function Route(app) {
   router.route('/api/v0/items.:format?')
     .all(requireAuth)
     .get(controller.find.bind(controller))
-    .post(requireAdmin, controller.create.bind(controller));
+    .post(controller.create.bind(controller));
 
   router.route('/api/v0/items/:Item.:format?')
     .all(requireAuth)
     .get(controller.get.bind(controller))
-    .put(requireAdmin, controller.update.bind(controller))
-    .delete(requireAdmin, controller.remove.bind(controller));
+    .put(controller.update.bind(controller))
+    .delete(controller.remove.bind(controller));
 
   router.route('/api/v0/items/:Item/image')
     .get(ItemController.getImage);
