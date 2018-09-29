@@ -11,31 +11,29 @@ function Route(app) {
 
   router.param('Event', controller.modelParam.bind(controller));
 
-  const authentication = [requireAuth];
-
   router.route('/api/v0/events.:format?')
-    .all(...authentication)
+    .all(requireAuth)
     .all(controller.all.bind(controller))
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
 
   router.route('/api/v0/events/:Event.:format?')
-    .all(...authentication)
+    .all(requireAuth)
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
-    .delete(requireAdmin, controller.remove.bind(controller));
+    .delete(controller.remove.bind(controller));
   router.route('/api/v0/events/:Event/ref')
-    .all(...authentication)
+    .all(requireAuth)
     .all(controller.all.bind(controller))
     .get(EventsController.redirectRef);
   router.route('/api/v0/resources/:Resource/utilization')
-    .all(...authentication)
+    .all(requireAuth)
     .get(controller.utilization.bind(controller));
   router.route('/api/v0/resources/:Resource/statistics')
-    .all(...authentication)
+    .all(requireAuth)
     .get(controller.statistics.bind(controller));
   router.route('/api/v0/resources/:Resource/events')
-    .all(...authentication)
+    .all(requireAuth)
     .get(controller.resourceEvents.bind(controller));
   app.use(router);
 }

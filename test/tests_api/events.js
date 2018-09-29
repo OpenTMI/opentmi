@@ -5,6 +5,7 @@ const Promise = require('bluebird');
 const superagentPromise = require('superagent-promise');
 const superagent = superagentPromise(require('superagent'), Promise);
 const {expect} = require('chai');
+const _ = require('lodash');
 const logger = require('winston');
 
 // Local components
@@ -76,7 +77,7 @@ describe('Events', function () {
         expect(body).to.have.property('priority');
       })
       .catch((error) => {
-        throw new Error(error.response.body.error);
+        throw new Error(_.get(error, 'response.body.error', error));
       });
   });
   it('find events', function () {
@@ -175,8 +176,8 @@ describe('Events', function () {
         expect(stats.count).to.be.equal(3);
         expect(stats.summary.allocations.count).to.be.equal(1);
         expect(stats.summary.allocations.time).to.be.equal(3600);
-        expect(stats.summary.allocations.utilization >= 4).to.be.true;
-        expect(stats.summary.allocations.utilization < 4.2).to.be.true;
+        expect(stats.summary.allocations.utilization).to.be.at.least(4);
+        expect(stats.summary.allocations.utilization).to.be.below(4.2);
       });
   });
 });

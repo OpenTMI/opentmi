@@ -22,6 +22,7 @@ function requireAdmin(req, res, next) {
     _.find(_.get(req, 'decoded_token.groups', []), g => g === 'admins')
   ) {
     next();
+    return;
   }
   req.user.isAdmin()
     .then((yes) => {

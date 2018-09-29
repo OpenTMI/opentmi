@@ -2,7 +2,7 @@
 const express = require('express');
 
 // Local modules
-const {requireAuth, requireAdmin} = require('./middlewares/authorization');
+const {requireAuth, ensureAdmin} = require('./middlewares/authorization');
 const ItemController = require('./../controllers/items');
 
 
@@ -13,12 +13,12 @@ function Route(app) {
   router.param('Item', controller.modelParam.bind(controller));
 
   router.route('/api/v0/items.:format?')
-    .all(requireAuth)
+    .all(...ensureAdmin)
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
 
   router.route('/api/v0/items/:Item.:format?')
-    .all(requireAuth)
+    .all(...ensureAdmin)
     .get(controller.get.bind(controller))
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
