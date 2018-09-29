@@ -61,7 +61,7 @@ class PassportStrategies {
       passReqToCallback: true
     },
     (req, jwtPayload, cb) => {
-      req.decode_token = jwtPayload;
+      req.decoded_token = jwtPayload;
       User.findById(jwtPayload._id)
         .then((user) => {
           if (!user) {

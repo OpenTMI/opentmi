@@ -20,20 +20,17 @@ let authString;
 
 describe('Basic Get API', function () {
   // Create fresh DB
-  before(function (done) {
-    this.timeout(5000);
-
+  before(function () {
     // Create token for requests
     const payload = {
       _id: testUserId,
       group: 'admins',
+      groups: ['admins'],
       iat: moment().unix(),
       exp: moment().add(2, 'h').unix()
     };
-
     const token = jwtSimple.encode(payload, nconf.get('webtoken'));
     authString = `Bearer ${token}`;
-    done();
   });
 
   it('get api version', function (done) {

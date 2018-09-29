@@ -26,13 +26,6 @@ function Route(app) {
 
   // assume 404 since no middleware responded
   app.use((req, res) => {
-    // TEMPORARY hack so this branch does not break functionality
-    // will be removed very soon due to new addon manager merge
-    const path = require('path'); // eslint-disable-line
-    if (req.originalUrl.match(/^\/inventory/)) {
-      res.status(200).sendFile(path.resolve(__dirname, '../addons/inventory-service/dist/index.html'));
-    }
-
     res.status(404).json({
       url: req.originalUrl,
       error: 'Not found'
