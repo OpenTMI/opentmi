@@ -62,13 +62,8 @@ class PassportStrategies {
     (req, jwtPayload, cb) => {
       req.decoded_token = jwtPayload;
       User.findById(jwtPayload._id)
-        .then((user) => {
-          if (!user) {
-            throw new Error('invalid token, user not found');
-          }
-          cb(null, user);
-        })
-        .catch(err => cb(err));
+        .then((user) => cb(null, user))
+        .catch(cb);
     }));
   }
   static LocalStrategy() {
