@@ -146,7 +146,9 @@ describe('Users', function () {
 
     afterEach('cleanup user', function () {
       if (createdUser) {
-        return removeUser(createdUser);
+        const user = createdUser;
+        createdUser = undefined;
+        return removeUser(user);
       }
       return Promise.resolve();
     });

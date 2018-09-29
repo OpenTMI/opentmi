@@ -25,7 +25,7 @@ function createDefaultAdmin() {
   admin.password = nconf.get('admin').pwd;
   admin.save()
     .then(() => admin.addToGroup('admins'))
-    .catch((error) => logger.error(error));
+    .catch(error => logger.error(error));
 }
 
 /**
