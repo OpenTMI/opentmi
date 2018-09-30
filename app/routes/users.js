@@ -45,16 +45,9 @@ function Route(app) {
   const userRouter = express.Router();
   userRouter.param('User', userController.modelParam.bind(userController));
 
-  const debugMw = (req, res, next) => {
-    logger.silly(`[${req.method}] ${req.originalUrl}: req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
-    logger.silly(`body: ${JSON.stringify(req.body)}, headers: ${JSON.stringify(req.headers)}`);
-    next();
-  };
   // Route for operations that target all users
   userRouter.route('/')
-    .all(debugMw)
     .all(...ensureAdmin)
-    .all(debugMw)
     .get(userController.find.bind(userController))
     .post(userController.create.bind(userController));
 
@@ -81,9 +74,10 @@ function Route(app) {
   const apikeysRouter = express.Router();
 
   apikeysRouter
-    .get('/', requireAuth, apiKeys.userKeys)
-    .get('/new', requireAuth, apiKeys.createKey)
-    .delete('/:Key', requireAuth, apiKeys.deleteKey);
+    .all(requireAuth)
+    .get('/', apiKeys.userKeys)
+    .get('/new', apiKeys.createKey)
+    .delete('/:Key', apiKeys.deleteKey);
   singleUserRouter.use('/apikeys', apikeysRouter);
 
 

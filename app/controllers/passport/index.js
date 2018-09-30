@@ -53,7 +53,7 @@ class PassportStrategies {
     // PassportStrategies.GoogleStrategy();
   }
   static JWTStrategy() {
-  // JWT
+    // JWT
     passport.use(new JWTStrategy({
       jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
       secretOrKey: TOKEN_SECRET,
@@ -64,13 +64,8 @@ class PassportStrategies {
       logger.silly(`Check user: ${jwtPayload._id}`);
       User.findById(jwtPayload._id)
         .then((user) => {
-          if(!user) {
+          if (!user) {
             logger.warn(`User not found with id: ${jwtPayload._id}`);
-            User.find().exec()
-              .then((users) =>
-                logger.silly(JSON.stringify(
-                  users.map(u => _.pick(u, ['name', '_id']))
-                )));
           }
           cb(null, user);
         })
