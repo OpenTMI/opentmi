@@ -11,15 +11,12 @@ const logger = require('winston');
 
 // Local components
 const config = require('../../app/tools/config');
-const {createUserToken} = require('./tools/helpers');
+const {createUserToken, testUserId} = require('./tools/helpers');
 // Setup
 logger.level = 'error';
 
 // Test variables
 const api = 'http://localhost:3000/api/v0';
-
-const testUserId = '5825bb7afe7545132c88c761';
-
 
 const validResultBody = require('./mocking/mockResult.json');
 

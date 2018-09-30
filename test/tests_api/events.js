@@ -10,13 +10,11 @@ const logger = require('winston');
 
 // Local components
 const config = require('../../app/tools/config');
-const {createUserToken, apiV0} = require('./tools/helpers');
+const {createUserToken, apiV0, testUserId} = require('./tools/helpers');
 
 // Setup
 logger.level = 'error';
 
-// Test variables
-const testUserId = '5825bb7afe7545132c88c761';
 
 describe('Events', function () {
   let authString;

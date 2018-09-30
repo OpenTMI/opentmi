@@ -5,15 +5,14 @@ const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 
-const {createUserToken} = require('./tools/helpers');
+const {createUserToken, testUserId, apiV0} = require('./tools/helpers');
 
 // Setup
 logger.level = 'error';
 
 // Test variables
 const {expect} = chai;
-const api = 'http://localhost:3000/api/v0';
-const testUserId = '5825bb7afe7545132c88c761';
+const api = apiV0;
 let authString;
 
 describe('Basic Get API', function () {

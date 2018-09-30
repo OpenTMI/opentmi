@@ -57,8 +57,8 @@ function createJWT(user) {
     .populate('groups')
     .execPopulate()
     .then((populatedUser) => {
-      const expDays = nconf.get('webtoken_expiration_days');
-      logger.debug(`webtoken_expiration_days = ${expDays}`);
+      const expDays = nconf.get('webtokenExpirationDays');
+      logger.debug(`webtokenExpirationDays = ${expDays}`);
       const payload = {
         _id: populatedUser._id,
         groups: populatedUser.groups.map(g => g.name),
