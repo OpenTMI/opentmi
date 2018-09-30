@@ -14,7 +14,9 @@ function createToken(payload = {
   return jwtSimple.encode(payload, webtoken);
 }
 
-function createUserToken({userId, group, webtoken = config.get('webtoken'), expHours = 2}) {
+function createUserToken(
+  {userId, group, webtoken = config.get('webtoken'), expHours = 2}
+) {
   // Create token for requests
   const payload = {
     _id: userId,
@@ -35,9 +37,7 @@ const apiV0 = `${api}/api/v0`;
 
 function createUser({name, email, password}) {
   const body = {name, email, password};
-  const {authString} = createUserToken(
-    {userId: testUserId, group: 'admins'}
-  );
+  const {authString} = createUserToken({userId: testUserId, group: 'admins'});
   return superagent.post(`${apiV0}/users`)
     .send(body)
     .set('authorization', authString)

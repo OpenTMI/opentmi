@@ -15,7 +15,6 @@ const {expect} = chai;
 const api = apiV0;
 
 
-
 describe('Basic Get API', function () {
   let authorization;
   // Create fresh DB
