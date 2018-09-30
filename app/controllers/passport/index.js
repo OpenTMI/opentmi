@@ -61,9 +61,16 @@ class PassportStrategies {
     },
     (req, jwtPayload, cb) => {
       req.decoded_token = jwtPayload;
+      logger.silly(`Check user: ${jwtPayload._id}`);
       User.findById(jwtPayload._id)
-        .then(user => cb(null, user))
-        .catch(cb);
+        .then(user => {
+          if(!user) logger.warn(`User not found with id: ${jwtPayload._id}`);
+          cb(null, user);
+        })
+        .catch((error) => {
+          logger.warn(`User.findById throws: ${error}`);
+          cb(error);
+        });
     }));
   }
   static LocalStrategy() {
