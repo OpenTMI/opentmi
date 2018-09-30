@@ -32,7 +32,7 @@ function encodeToken(payload = {}) {
   // Create token for requests
   const defaultPayload = {
     _id: testUserId,
-    groups: ['123'],
+    group: 'admins',
     iat: moment().unix(),
     exp: moment().add(2, 'h').unix()
   };
