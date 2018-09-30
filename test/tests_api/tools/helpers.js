@@ -14,9 +14,9 @@ function createToken(payload = {
   return jwtSimple.encode(payload, webtoken);
 }
 
-function createUserToken(
-  {userId, group, webtoken = config.get('webtoken'), expHours = 2}
-) {
+function createUserToken({
+  userId, group, webtoken = config.get('webtoken'), expHours = 2
+}) {
   // Create token for requests
   const payload = {
     _id: userId,
