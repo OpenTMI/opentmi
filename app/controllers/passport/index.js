@@ -54,26 +54,27 @@ class PassportStrategies {
   }
   static JWTStrategy() {
     // JWT
-    const jwtStrategy = new JWTStrategy({
-      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-      secretOrKey: TOKEN_SECRET,
-      passReqToCallback: true
-    },
-    (req, jwtPayload, cb) => {
-      req.decoded_token = jwtPayload;
-      logger.silly(`Check user: ${jwtPayload._id}`);
-      User.findById(jwtPayload._id)
-        .then((user) => {
-          if (!user) {
-            logger.warn(`User not found with id: ${jwtPayload._id}`);
-          }
-          cb(null, user);
-        })
-        .catch((error) => {
-          logger.warn(`User.findById throws: ${error}`);
-          cb(error);
-        });
-    });
+    const jwtStrategy = new JWTStrategy(
+      {
+        jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+        secretOrKey: TOKEN_SECRET,
+        passReqToCallback: true
+      },
+      (req, jwtPayload, cb) => {
+        req.decoded_token = jwtPayload;
+        logger.silly(`Check user: ${jwtPayload._id}`);
+        User.findById(jwtPayload._id)
+          .then((user) => {
+            if (!user) {
+              logger.warn(`User not found with id: ${jwtPayload._id}`);
+            }
+            cb(null, user);
+          })
+          .catch((error) => {
+            logger.warn(`User.findById throws: ${error}`);
+            cb(error);
+          });
+      });
     passport.use(jwtStrategy);
   }
   static LocalStrategy() {
@@ -104,7 +105,8 @@ class PassportStrategies {
             logger.debug(`login failed: ${error}`);
             done(null, false, {message: error.message});
           });
-      });
+      }
+    );
     passport.use(localStrategy);
   }
 
@@ -142,29 +144,33 @@ class PassportStrategies {
       clientSecret: nconf.get('github').clientSecret,
       callbackURL: nconf.get('github').callbackURL
     },
-    ((accessToken, refreshToken, profile, next) => {
+    (accessToken, refreshToken, profile, next) => {
       const oauth2 = strategy._oauth2;
       PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
-    }));
+    }
+    );
     passport.use(strategy);
   }
   static GitHubTokenStrategy() {
     logger.info('Create github token strategy');
     const {clientID, clientSecret} = nconf.get('github');
-    const strategy = new GitHubTokenStrategy({clientID, clientSecret},
-      ((accessToken, refreshToken, profile, next) => {
+    const strategy = new GitHubTokenStrategy(
+      {clientID, clientSecret},
+      (accessToken, refreshToken, profile, next) => {
         const oauth2 = strategy._oauth2;
         PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
-      }));
+      }
+    );
     passport.use(strategy);
   }
   static GoogleStrategy() {
     const {clientID, clientSecret, callbackURL} = nconf.get('google');
-    const googleStrategy = new GoogleStrategy({clientID, clientSecret, callbackURL},
-      ((accessToken, refreshToken, profile, next) => {
+    const googleStrategy = new GoogleStrategy(
+      {clientID, clientSecret, callbackURL},
+      (accessToken, refreshToken, profile, next) => {
         // @todo this might not working yet..
         User.findOrCreate({googleId: profile.id}, (err, user) => next(err, user));
-      })
+      }
     );
     passport.use(googleStrategy);
   }
