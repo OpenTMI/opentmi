@@ -16,7 +16,7 @@ jobs:
       - run:
           name: install mongodb-org-tools
           command: |
-            npm install -g mongodb-prebuilt
+            sudo npm install -g mongodb-prebuilt
       - run:
           name: versions
           command: |
