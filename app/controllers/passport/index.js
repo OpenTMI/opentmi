@@ -63,8 +63,12 @@ class PassportStrategies {
       req.decoded_token = jwtPayload;
       logger.silly(`Check user: ${jwtPayload._id}`);
       User.findById(jwtPayload._id)
-        .then(user => {
-          if(!user) logger.warn(`User not found with id: ${jwtPayload._id}`);
+        .then((user) => {
+          if(!user) {
+            logger.warn(`User not found with id: ${jwtPayload._id}`);
+            User.find().exec()
+              .then((users) => logger.silly(users.map(u => _.pick(u, ['name', '_id']))));
+          }
           cb(null, user);
         })
         .catch((error) => {

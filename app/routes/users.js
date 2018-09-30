@@ -46,8 +46,8 @@ function Route(app) {
   userRouter.param('User', userController.modelParam.bind(userController));
 
   const debugMw = (req, res, next) => {
-    console.log(`[${req.method}] ${req.originalUrl}: req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
-    console.log(`body: ${JSON.stringify(req.body)}, headers: ${JSON.stringify(req.headers)}`);
+    logger.silly(`[${req.method}] ${req.originalUrl}: req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
+    logger.silly(`body: ${JSON.stringify(req.body)}, headers: ${JSON.stringify(req.headers)}`);
     next();
   };
   // Route for operations that target all users
