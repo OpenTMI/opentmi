@@ -1,13 +1,11 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const jwtSimple = require('jwt-simple');
-const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 
-const nconf = require('../../app/tools/config');
+const {createUserToken} = require('./tools/helpers');
 
 // Setup
 logger.level = 'error';
@@ -23,14 +21,10 @@ describe('Basic Get API', function () {
   before(function () {
     // Create token for requests
     const payload = {
-      _id: testUserId,
+      userId: testUserId,
       group: 'admins',
-      groups: ['admins'],
-      iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
     };
-    const token = jwtSimple.encode(payload, nconf.get('webtoken'));
-    authString = `Bearer ${token}`;
+    authString = createUserToken(payload).authString;
   });
 
   it('get api version', function (done) {

@@ -1,6 +1,8 @@
 // 3rd party modules
 const jwtSimple = require('jwt-simple');
 const moment = require('moment');
+const config = require('../../../app/tools/config');
+
 
 function createToken(payload = {
   iat: moment().unix(),
@@ -8,11 +10,11 @@ function createToken(payload = {
   return jwtSimple.encode(payload, webtoken);
 }
 
-function createUserToken({userId, group, groupId, webtoken, expHours = 2}) {
+function createUserToken({userId, group, webtoken=config.get('webtoken'), expHours = 2}) {
   // Create token for requests
   const payload = {
     _id: userId,
-    groups: [{name: group, _id: groupId}],
+    groups: [group],
     iat: moment().unix(),
     exp: moment().add(expHours, 'h').unix()
   };

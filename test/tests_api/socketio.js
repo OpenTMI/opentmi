@@ -56,7 +56,6 @@ describe('Basic socketio tests', function () {
     const tokenInput = {
       userId: testUserId,
       group: 'admins',
-      groupId: '123',
       webtoken: config.get('webtoken')
     };
     const tokenObj = createUserToken(tokenInput);

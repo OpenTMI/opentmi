@@ -24,7 +24,6 @@ describe('Builds', function () {
     const tokenInput = {
       userId: testUserId,
       group: 'admins',
-      groupId: '123',
       webtoken: config.get('webtoken')
     };
     authString = createUserToken(tokenInput).authString;
