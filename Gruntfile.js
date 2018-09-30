@@ -25,17 +25,21 @@ const gruntConfig = {
     single_server: {
       options: {
         delay: 15000,
-        script: 'app/index.js',
+        script: 'node_modules/istanbul/lib/cli.js',
         node_env: 'test',
-        args: ['--config', 'test/config.auth.json']
+        args: ['cover', '--report', 'none', '--print', 'none', '--include-pid', 'app/index.js',
+          '--',
+          '--config', 'test/config.auth.json']
       }
     },
     cluster_server: {
       options: {
         delay: 15000,
-        script: 'index.js',
+        script: 'node_modules/istanbul/lib/cli.js',
         node_env: 'test',
-        args: ['--config', 'test/config.auth.json']
+        args: ['cover', '--report', 'none', '--print', 'none', '--include-pid', 'app/index.js',
+          '--',
+          '--config', 'test/config.auth.json']
       }
     }
   },
