@@ -9,13 +9,18 @@ jobs:
           NODE_ENV: test
           XUNIT_FILE: shippable/testresults/result.xml
       - image: circleci/mongo:4.1.3
-        command: [mongod, --smallfiles]
-        ports:
-          - 27017:27017
+        command: [mongod]
     steps:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install mongotools
+          command: |
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E52529D4
+            sudo bash -c 'echo "deb http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.0 multiverse" > /etc/apt/sources.list.d/mongodb-org-4.0.list'
+            sudo apt-get update
+            sudo apt-get install mongodb-org-tools
       - run:
           name: versions
           command: |
