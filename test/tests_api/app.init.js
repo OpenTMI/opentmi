@@ -22,7 +22,7 @@ describe('Basic Get API', function () {
     // Create token for requests
     const payload = {
       userId: testUserId,
-      group: 'admins',
+      group: 'admins'
     };
     authString = createUserToken(payload).authString;
   });
