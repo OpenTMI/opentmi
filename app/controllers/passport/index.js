@@ -62,7 +62,7 @@ class PassportStrategies {
     (req, jwtPayload, cb) => {
       req.decoded_token = jwtPayload;
       User.findById(jwtPayload._id)
-        .then((user) => cb(null, user))
+        .then(user => cb(null, user))
         .catch(cb);
     }));
   }

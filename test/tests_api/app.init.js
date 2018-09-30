@@ -44,7 +44,7 @@ describe('Basic Get API', function () {
         done();
       });
   });
-  it.skip('get server version', function (done) {
+  it('get server version', function (done) {
     superagent.get(`${api}/version`)
       .set('authorization', authString)
       .end(function (error, res) {
@@ -59,7 +59,7 @@ describe('Basic Get API', function () {
         done();
       });
   });
-  it.skip('get server version deep', function (done) {
+  it('get server version deep', function (done) {
     this.timeout(10000);
     superagent.get(`${api}/version?deep=true`)
       .set('authorization', authString)
@@ -76,7 +76,6 @@ describe('Basic Get API', function () {
 
   it('get testcases', function (done) {
     superagent.get(`${api}/testcases`)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -88,7 +87,6 @@ describe('Basic Get API', function () {
 
   it('get campaigns', function (done) {
     superagent.get(`${api}/campaigns`)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -100,7 +98,6 @@ describe('Basic Get API', function () {
 
   it('get resources', function (done) {
     superagent.get(`${api}/resources`)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -112,7 +109,6 @@ describe('Basic Get API', function () {
 
   it('get results', function (done) {
     superagent.get(`${api}/results`)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -124,7 +120,6 @@ describe('Basic Get API', function () {
 
   it('get builds', function (done) {
     superagent.get(`${api}/duts/builds`)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -137,7 +132,6 @@ describe('Basic Get API', function () {
   it('get users', function (done) {
     superagent.get(`${api}/users`)
       .set('authorization', authString)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -151,7 +145,6 @@ describe('Basic Get API', function () {
   it('get items', function (done) {
     superagent.get(`${api}/items`)
       .set('authorization', authString)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -164,7 +157,6 @@ describe('Basic Get API', function () {
   it('get loans', function (done) {
     superagent.get(`${api}/loans`)
       .set('authorization', authString)
-      .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
