@@ -14,8 +14,13 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
+          name: install mongodb-org-tools
+          command: |
+            sudo npm install -g mongodb-prebuilt
+      - run:
           name: versions
           command: |
+            mongorestore --version
             node --version
             npm --version
       - run:
