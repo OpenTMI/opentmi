@@ -45,10 +45,16 @@ function Route(app) {
   const userRouter = express.Router();
   userRouter.param('User', userController.modelParam.bind(userController));
 
-
+  const debugMw = (req, res, next) => {
+    console.log(`[${req.method}] ${req.originalUrl}: req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
+    console.log(`body: ${JSON.stringify(req.body)}, headers: ${JSON.stringify(req.headers)}`);
+    next();
+  };
   // Route for operations that target all users
   userRouter.route('/')
+    .all(debugMw)
     .all(...ensureAdmin)
+    .all(debugMw)
     .get(userController.find.bind(userController))
     .post(userController.create.bind(userController));
 
