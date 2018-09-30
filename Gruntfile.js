@@ -51,7 +51,7 @@ const gruntConfig = {
     restore_db: {
       cmd: `bash ${dbPath} local ${dumpPath}`,
       stdout: false,
-      stderr: false
+      //stderr: true
     }
   },
   simplemocha: {

@@ -15,8 +15,9 @@ function Route(app) {
   const controller = new AdminController();
 
   router.route('/api/v0/version')
+    .all(requireAuth)
     .get(controller.version.bind(controller))
-    .post(requireAuth, requireAdmin, controller.update.bind(controller));
+    .post(requireAdmin, controller.update.bind(controller));
 
   let restart;
   if (!cluster.isMaster && cluster.worker.isConnected()) {

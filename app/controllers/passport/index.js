@@ -67,7 +67,10 @@ class PassportStrategies {
           if(!user) {
             logger.warn(`User not found with id: ${jwtPayload._id}`);
             User.find().exec()
-              .then((users) => logger.silly(users.map(u => _.pick(u, ['name', '_id']))));
+              .then((users) =>
+                logger.silly(JSON.stringify(
+                  users.map(u => _.pick(u, ['name', '_id']))
+                )));
           }
           cb(null, user);
         })
