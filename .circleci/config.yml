@@ -15,12 +15,12 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install mongotools
+          name: install mongodb-org-tools
           command: |
             sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
-            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb.list
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb.list
             sudo apt-get update
-            sudo apt install apt-transport-https mongodb-org=4.0.1 mongodb-org-shell=4.0.1 mongodb-org-tools=4.0.1
+            sudo apt install mongodb-org-tools=4.1.3
       - run:
           name: versions
           command: |
