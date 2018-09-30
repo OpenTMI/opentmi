@@ -27,7 +27,7 @@ describe('Basic Get API', function () {
       group: 'admins',
       groups: ['admins'],
       iat: moment().unix(),
-      exp: moment().add(1, 'days').unix()
+      exp: moment().add(2, 'h').unix()
     };
     const token = jwtSimple.encode(payload, nconf.get('webtoken'));
     authString = `Bearer ${token}`;
@@ -44,7 +44,7 @@ describe('Basic Get API', function () {
         done();
       });
   });
-  it('get server version', function (done) {
+  it.skip('get server version', function (done) {
     superagent.get(`${api}/version`)
       .set('authorization', authString)
       .end(function (error, res) {
@@ -59,7 +59,7 @@ describe('Basic Get API', function () {
         done();
       });
   });
-  it('get server version deep', function (done) {
+  it.skip('get server version deep', function (done) {
     this.timeout(10000);
     superagent.get(`${api}/version?deep=true`)
       .set('authorization', authString)
