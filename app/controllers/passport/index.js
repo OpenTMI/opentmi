@@ -36,7 +36,13 @@ passport.serializeUser((userDoc, done) => {
 
 passport.deserializeUser((id, done) => {
   User.findById(id)
-    .then(user => user.update({loggedIn: false}))
+    .then((user) => {
+      if (user) {
+        return user.update({loggedIn: false});
+      }
+      logger.warn(`deserialize user that does not found with id: ${id}`);
+      return Promise.resolve();
+    })
     .then(() => done(null, id))
     .catch(done);
 });
@@ -46,11 +52,17 @@ class PassportStrategies {
     PassportStrategies.JWTStrategy();
     PassportStrategies.LocalStrategy();
     // github access token
-    if (nconf.get('github')) {
-      PassportStrategies.GitHubStrategy();
-      PassportStrategies.GitHubTokenStrategy();
+    const github = nconf.get('github');
+    if (github && _.get(github, 'clientID') !== '<client-id>') {
+      logger.debug('enable github authentication strategy');
+      PassportStrategies.GitHubStrategy(github);
+      PassportStrategies.GitHubTokenStrategy(github);
     }
-    // PassportStrategies.GoogleStrategy();
+    const google = nconf.get('google');
+    if (google && _.get(google, 'clientID') !== '<client-id>') {
+      logger.debug('enable google authentication strategy');
+      PassportStrategies.GoogleStrategy(google);
+    }
   }
   static JWTStrategy() {
     // JWT
@@ -137,23 +149,23 @@ class PassportStrategies {
       )
       .catch(next);
   }
-  static GitHubStrategy() {
+  static GitHubStrategy({clientID, clientSecret, callbackURL}) {
     logger.info('Create github strategy');
-    const strategy = new GitHubStrategy({
-      clientID: nconf.get('github').clientID,
-      clientSecret: nconf.get('github').clientSecret,
-      callbackURL: nconf.get('github').callbackURL
-    },
-    (accessToken, refreshToken, profile, next) => {
-      const oauth2 = strategy._oauth2;
-      PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
-    }
+    const strategy = new GitHubStrategy(
+      {
+        clientID,
+        clientSecret,
+        callbackURL
+      },
+      (accessToken, refreshToken, profile, next) => {
+        const oauth2 = strategy._oauth2;
+        PassportStrategies._GithubStrategyHelper(oauth2, accessToken, profile, next);
+      }
     );
     passport.use(strategy);
   }
-  static GitHubTokenStrategy() {
+  static GitHubTokenStrategy({clientID, clientSecret}) {
     logger.info('Create github token strategy');
-    const {clientID, clientSecret} = nconf.get('github');
     const strategy = new GitHubTokenStrategy(
       {clientID, clientSecret},
       (accessToken, refreshToken, profile, next) => {
@@ -163,8 +175,7 @@ class PassportStrategies {
     );
     passport.use(strategy);
   }
-  static GoogleStrategy() {
-    const {clientID, clientSecret, callbackURL} = nconf.get('google');
+  static GoogleStrategy({clientID, clientSecret, callbackURL}) {
     const googleStrategy = new GoogleStrategy(
       {clientID, clientSecret, callbackURL},
       (accessToken, refreshToken, profile, next) => {

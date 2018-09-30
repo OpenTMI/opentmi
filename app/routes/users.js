@@ -96,11 +96,12 @@ function Route(app) {
     .put('/me', requireAuth, authController.putme.bind(authController))
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
-    // .post('/google', passport.authenticate('google'), AuthController.google)
+    .get('/google', passport.authenticate('google', {scope: ['profile']}), AuthController.sendToken)
     .get('/github', passport.authenticate('github', {scope: ['user:email']}), AuthController.sendToken)
     .post('/github', loginPostFix, passport.authenticate('github', {scope: ['user:email']}), AuthController.sendToken)
     .post('/github/token', passport.authenticate('github-token'), AuthController.sendToken)
-    .get('/github/id', AuthController.GetGithubClientId);
+    .get('/github/id', AuthController.GetClientId('github'))
+    .get('/google/id', AuthController.GetClientId('google'));
   app.use('/auth', authRoute);
 
   /**
