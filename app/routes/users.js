@@ -71,7 +71,7 @@ function Route(app) {
 
   // Create authentication routes:
   app.get('/api/v0/apikeys', requireAuth, requireAdmin, apiKeys.keys);
-  const apikeysRouter = express.Router();
+  const apikeysRouter = express.Router({mergeParams: true});
 
   apikeysRouter
     .get('/', requireAuth, apiKeys.userKeys)

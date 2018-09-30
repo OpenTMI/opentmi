@@ -86,8 +86,8 @@ class Github {
         // Attempt to find the correct admin team from list of teams the user belongs to
         const isAdmin = _.find(teams, team =>
           (team.name === adminTeam && team.organization.login === organization));
-        logger.verbose(`user belongs to group ${organization}`);
-        return isAdmin;
+        logger.verbose(`user ${isAdmin ? 'belongs' : 'does not belong'} to group ${organization}`);
+        return !!isAdmin;
       });
   }
 
