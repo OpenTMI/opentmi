@@ -18,7 +18,7 @@ function requireAdmin(req, res, next) {
   // this might not good idea to allow token to say if client is admin or not
   // what if token will expires after one month and admin credentials are already dropped..
   // @todo remove this eventually when tests generate token via API call..
-  console.log(`req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
+  console.log(`[${req.method}] ${req.originalUrl}: req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
   if (_.get(req, 'decoded_token.group') === 'admins' ||
     _.find(_.get(req, 'decoded_token.groups', []), g => g === 'admins')
   ) {
