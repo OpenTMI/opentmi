@@ -74,10 +74,9 @@ function Route(app) {
   const apikeysRouter = express.Router();
 
   apikeysRouter
-    .all(requireAuth)
-    .get('/', apiKeys.userKeys)
-    .get('/new', apiKeys.createKey)
-    .delete('/:Key', apiKeys.deleteKey);
+    .get('/', requireAuth, apiKeys.userKeys)
+    .get('/new', requireAuth, apiKeys.createKey)
+    .delete('/:Key', requireAuth, apiKeys.deleteKey);
   singleUserRouter.use('/apikeys', apikeysRouter);
 
 
