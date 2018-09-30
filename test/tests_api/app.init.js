@@ -4,7 +4,7 @@
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
-
+// app
 const {createUserToken, testUserId, apiV0} = require('./tools/helpers');
 
 // Setup
@@ -13,10 +13,11 @@ logger.level = 'error';
 // Test variables
 const {expect} = chai;
 const api = apiV0;
-let authString;
+
 
 
 describe('Basic Get API', function () {
+  let authorization;
   // Create fresh DB
   before(function () {
     // Create token for requests
@@ -24,7 +25,8 @@ describe('Basic Get API', function () {
       userId: testUserId,
       group: 'admins'
     };
-    authString = createUserToken(payload).authString;
+    const {authString} = createUserToken(payload);
+    authorization = authString;
   });
 
   it('get api version', function (done) {
@@ -40,7 +42,7 @@ describe('Basic Get API', function () {
   });
   it('get server version', function (done) {
     superagent.get(`${api}/version`)
-      .set('authorization', authString)
+      .set('authorization', authorization)
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -56,7 +58,7 @@ describe('Basic Get API', function () {
   it('get server version deep', function (done) {
     this.timeout(10000);
     superagent.get(`${api}/version?deep=true`)
-      .set('authorization', authString)
+      .set('authorization', authorization)
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -125,7 +127,7 @@ describe('Basic Get API', function () {
 
   it('get users', function (done) {
     superagent.get(`${api}/users`)
-      .set('authorization', authString)
+      .set('authorization', authorization)
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -138,7 +140,7 @@ describe('Basic Get API', function () {
 
   it('get items', function (done) {
     superagent.get(`${api}/items`)
-      .set('authorization', authString)
+      .set('authorization', authorization)
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -150,7 +152,7 @@ describe('Basic Get API', function () {
 
   it('get loans', function (done) {
     superagent.get(`${api}/loans`)
-      .set('authorization', authString)
+      .set('authorization', authorization)
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');

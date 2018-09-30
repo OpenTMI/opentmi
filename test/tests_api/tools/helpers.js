@@ -35,7 +35,9 @@ const apiV0 = `${api}/api/v0`;
 
 function createUser({name, email, password}) {
   const body = {name, email, password};
-  const {authString} = createUserToken({userId: testUserId, group: 'admins'});
+  const {authString} = createUserToken(
+    {userId: testUserId, group: 'admins'}
+  );
   return superagent.post(`${apiV0}/users`)
     .send(body)
     .set('authorization', authString)

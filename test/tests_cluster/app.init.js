@@ -8,12 +8,12 @@ const {expect} = require('chai');
 const logger = require('winston');
 
 const nconf = require('../../app/tools/config');
+const helpers = require('../tests_api/tools/helpers');
 
 // Setup
 logger.level = 'error';
 
 // Test variables
-const helpers = require('../tests_api/tools/helpers');
 const api = helpers.apiV0;
 const {testUserId} = helpers;
 

@@ -82,7 +82,16 @@ describe('authentication', function () {
         });
     });
     describe('credentials', function () {
-      // @todo
+      it('bad credentials', function () {
+        return superagent.post(`${api}/auth/github`, {code: 'invalid'})
+          .end()
+          .reflect()
+          .then((promise) => {
+            const {response} = promise.reason();
+            expect(promise.isRejected()).to.be.true;
+            expect(response.status).to.be.equal(500);
+          });
+      });
     });
     describe('access_token', function () {
       it('bad credentials', function () {

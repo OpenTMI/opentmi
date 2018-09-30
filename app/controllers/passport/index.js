@@ -86,7 +86,8 @@ class PassportStrategies {
             logger.warn(`User.findById throws: ${error}`);
             cb(error);
           });
-      });
+      }
+    );
     passport.use(jwtStrategy);
   }
   static LocalStrategy() {
@@ -145,8 +146,7 @@ class PassportStrategies {
               .return(user);
           })
           .then(user => next(null, user));
-      }
-      )
+      })
       .catch(next);
   }
   static GitHubStrategy({clientID, clientSecret, callbackURL}) {
