@@ -34,7 +34,7 @@ describe('authentication', function () {
         .end()
         .reflect()
         .then((promise) => {
-          const response = promise.reason().response;
+          const {response} = promise.reason();
           expect(promise.isRejected()).to.be.true;
           expect(response.status).to.be.equal(401);
         });
@@ -48,7 +48,7 @@ describe('authentication', function () {
         .end()
         .reflect()
         .then((promise) => {
-          const response = promise.reason().response;
+          const {response} = promise.reason();
           expect(promise.isRejected()).to.be.true;
           expect(response.status).to.be.equal(401);
         });
@@ -90,7 +90,7 @@ describe('authentication', function () {
           .end()
           .reflect()
           .then((promise) => {
-            const response = promise.reason().response;
+            const {response} = promise.reason();
             expect(promise.isRejected()).to.be.true;
             expect(response.status).to.be.equal(500);
           });

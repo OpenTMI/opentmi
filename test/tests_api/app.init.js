@@ -15,6 +15,7 @@ const {expect} = chai;
 const api = apiV0;
 let authString;
 
+
 describe('Basic Get API', function () {
   // Create fresh DB
   before(function () {

@@ -15,7 +15,7 @@ logger.level = 'error';
 // Test variables
 const helpers = require('../tests_api/tools/helpers');
 const api = helpers.apiV0;
-const testUserId = helpers.testUserId;
+const {testUserId} = helpers;
 
 
 describe('Basic cluster tests', function () {
