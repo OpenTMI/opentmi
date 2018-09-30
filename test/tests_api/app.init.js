@@ -27,7 +27,7 @@ describe('Basic Get API', function () {
       group: 'admins',
       groups: ['admins'],
       iat: moment().unix(),
-      exp: moment().add(2, 'h').unix()
+      exp: moment().add(1, 'days').unix()
     };
     const token = jwtSimple.encode(payload, nconf.get('webtoken'));
     authString = `Bearer ${token}`;
@@ -48,7 +48,6 @@ describe('Basic Get API', function () {
     superagent.get(`${api}/version`)
       .set('authorization', authString)
       .end(function (error, res) {
-        console.log(res.body)
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
         expect(res).to.have.property('status', 200);
