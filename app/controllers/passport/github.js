@@ -8,14 +8,13 @@ const nconf = require('../../tools/config');
 
 // implementation
 const User = mongoose.model('User');
-const Group = mongoose.model('Group');
 
 const userApiUrl = 'https://api.github.com/user';
 
 
 class Github {
   static createUserFromGithubProfile(profile) {
-    logger.silly(`create new user from github profile: ${profile.login}`);
+    logger.silly(`create new user from github profile: ${profile.username}`);
     const newUser = new User();
     newUser.name = profile.displayName;
     newUser.github = profile._json.username;
@@ -86,7 +85,7 @@ class Github {
         // Attempt to find the correct admin team from list of teams the user belongs to
         const isAdmin = _.find(teams, team =>
           (team.name === adminTeam && team.organization.login === organization));
-        logger.verbose(`user ${isAdmin ? 'belongs' : 'does not belong'} to group ${organization}`);
+        logger.verbose(`user ${isAdmin ? 'belongs' : 'does not belong'} to organization ${organization}`);
         return !!isAdmin;
       });
   }
@@ -94,23 +93,15 @@ class Github {
   // Update the user's admin status.
   static updateUsersGroup(user, groupname) {
     logger.debug('updating user\'s group to match current status.');
-    return Group.findOne({users: user, name: 'admins'})
-      .catch((error) => {
-        logger.error(`findOne throws: ${error}`);
-        throw error;
-      })
-      .then((group) => {
-        // If group was found but groupname is not admins, remove user from admins
-        if (group && groupname !== 'admins') {
-          logger.info(`removing user: ${user._id} from admins.`);
-          return user.removeFromGroup('admins');
-        } else if (!group && groupname === 'admins') {
-          logger.info(`adding user: ${user._id} to admins.`);
-          return user.addToGroup(groupname);
-        }
-        logger.verbose(`user is in the correct group: ${groupname}.`);
-        return user.save();
-      });
+    if (groupname !== 'admins') {
+      logger.info(`removing user: ${user._id} from admins.`);
+      return user.removeFromGroup('admins');
+    } else if (groupname === 'admins') {
+      logger.info(`adding user: ${user._id} to admins.`);
+      return user.addToGroup(groupname);
+    }
+    logger.verbose(`user is in the correct group: ${groupname}.`);
+    return user.save();
   }
 }
 

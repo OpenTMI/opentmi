@@ -40,7 +40,7 @@ passport.deserializeUser((id, done) => {
       if (user) {
         return user.update({loggedIn: false});
       }
-      logger.warn(`deserialize user that does not found with id: ${id}`);
+      logger.warn(`deserialize user that does not found with id: ${id.toString()}`);
       return Promise.resolve();
     })
     .then(() => done(null, id))
@@ -95,14 +95,14 @@ class PassportStrategies {
     const localStrategy = new LocalStrategy(
       {usernameField: 'email'},
       (email, password, done) => {
-        logger.debug(`local login: ${email}:${password}`);
+        logger.debug(`local login: ${email}:${password.replace(/./g, '*')}`);
         const req = {};
         if (email.match(/.*@.*\..*/)) {
           req.email = email;
         } else {
           req.name = email;
         }
-        logger.silly(`term: ${JSON.stringify(req)}`);
+        logger.silly(`findOne(${JSON.stringify(req)})`);
         User.findOne(req)
           .select('_id name email groups apikeys +password')
           .exec()
@@ -124,8 +124,8 @@ class PassportStrategies {
   }
 
   static _GithubStrategyHelper(oauth2, accessToken, profile, next) {
+    logger.debug(`Profile: ${JSON.stringify(profile)}`);
     const emails = _.map(profile.emails, obj => ({email: obj.value}));
-    logger.silly(`Profile: ${JSON.stringify(profile)}`);
     Github.checkOrganization(oauth2, accessToken)
       .then(() => Github.checkAdmin(oauth2, accessToken))
       .then((isAdmin) => {
@@ -142,9 +142,9 @@ class PassportStrategies {
             user.displayName = user.displayName || profile.name; // eslint-disable-line no-param-reassign
             user.name = user.displayName; // eslint-disable-line no-param-reassign
             user.email = _.get(profile, 'emails.0.value'); // eslint-disable-line no-param-reassign
-            return Github.updateUsersGroup(user, group)
-              .return(user);
+            return user;
           })
+          .then(user => Github.updateUsersGroup(user, group).return(user))
           .then(user => next(null, user));
       })
       .catch(next);

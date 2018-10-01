@@ -157,14 +157,21 @@ UserSchema.methods.addToGroup = function addToGroup(groupName) {
   return Group.findOne({name: groupName})
     .then(requireGroup(groupName))
     .then((group) => {
-      if (_.find(group.users, user => user === this._id)) {
+      const pending = [];
+      if (_.find(group.users, this._id)) {
         logger.silly(`user ${this._id} belongs to group ${groupName} already`);
-        return Promise.resolve(this);
+      } else {
+        logger.debug(`adding user ${this._id} to group ${group._id}`);
+        group.users.push(this._id);
+        pending.push(group.save());
       }
-      logger.silly(`adding user ${this._id} to group ${group._id}`);
-      this.groups.push(group._id);
-      group.users.push(this._id);
-      return group.save()
+      if (_.find(this.groups, group._id)) {
+        logger.silly(`user ${this._id} has link to ${groupName} already`);
+      } else {
+        logger.debug(`adding user ${this._id} link to group ${group._id}`);
+        this.groups.push(group._id);
+      }
+      return Promise.all(pending)
         .then(() => this.save());
     });
 };
@@ -173,6 +180,7 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
   return Group.findOne({name: groupName})
     .then(requireGroup(groupName))
     .then((group) => {
+      let pending = Promise.resolve();
       logger.silly(`remove group ${group._id} from user ${this._id}`);
       const linkMissing = !_.find(this.groups, group._id);
       const notBelong = !_.find(group.users, this._id);
@@ -182,14 +190,16 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
       }
       if (linkMissing) {
         logger.warn('User did not have link to group even it should..');
+      } else {
+        this.groups = _.filter(this.groups, id => !group._id.equals(id));
       }
       if (notBelong) {
         logger.warn('User had link to group even group does not include user');
+      } else {
+        group.users = _.filter(group.users, id => !this._id.equals(id)); // eslint-disable-line no-param-reassign
+        pending = group.save();
       }
-      this.groups = _.filter(this.groups, g => g._id === group._id);
-      group.users = _.filter(group.users, g => g._i === this._id); // eslint-disable-line no-param-reassign
-      return group.save()
-        .then(() => this.save());
+      return pending.then(() => this.save());
     });
 };
 

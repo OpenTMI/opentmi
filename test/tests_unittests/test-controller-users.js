@@ -66,6 +66,31 @@ describe('controllers/users.js', function () {
         .then(user => user.addToGroup('admins'))
         .then(user => user.removeFromGroup('admins'));
     });
+    it('do not duplicate users in same group', function () {
+      const admins = new Group({name: 'admins'});
+      return admins.save()
+        .then(() => {
+          const user = new User();
+          return user.save();
+        })
+        .then(user => user.addToGroup('admins'))
+        .then(user => user.addToGroup('admins'))
+        .then((user) => {
+          expect(user.groups.length).to.be.equal(1);
+          return Group.findOne({name: 'admins'})
+            .then((group) => {
+              expect(group.users.length).to.be.equal(1);
+            }).return(user);
+        })
+        .then(user => user.removeFromGroup('admins'))
+        .then((user) => {
+          expect(user.groups.length).to.be.equal(0);
+          return Group.findOne({name: 'admins'})
+            .then((group) => {
+              expect(group.users.length).to.be.equal(0);
+            });
+        });
+    });
     it('reject to remove from group if not included', function () {
       const admins = new Group({name: 'admins'});
       return admins.save()
