@@ -182,7 +182,7 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
     .then((group) => {
       let pending = Promise.resolve();
       logger.silly(`remove group ${group._id} from user ${this._id}`);
-      const match = (idOrDoc, id) => _.get(idOrDoc, '_id', idOrDoc).equals(id)
+      const match = (idOrDoc, id) => _.get(idOrDoc, '_id', idOrDoc).equals(id);
       const linkMissing = !_.find(this.groups, doc => match(doc, group._id));
       const notBelong = !_.find(group.users, doc => match(doc, this._id));
       if (linkMissing && notBelong) {
