@@ -1,5 +1,7 @@
 // 3rd party modules
 const mongoose = require('mongoose');
+const _ = require('lodash');
+
 // application modules
 const logger = require('../tools/logger');
 const nconf = require('../tools/config');
@@ -12,6 +14,11 @@ const User = mongoose.model('User');
 class AuthenticationController {
   constructor() {
     PassportStrategies.createStrategies();
+  }
+
+  static loginPostFix(req, res, next) {
+    req.query.code = req.body.code;
+    next();
   }
   // Simple route middleware to ensure user is authenticated.
   //   Use this route middleware on any resource that needs to be protected.  If
@@ -26,6 +33,11 @@ class AuthenticationController {
   }
   static apiKeyRequiredResponse(req, res) {
     res.status(404).json({error: 'apikey required'});
+  }
+  static loginFail(error, req, res, next) { // eslint-disable-line no-unused-vars
+    const message = _.get(error, 'message', `${error}`);
+    logger.debug(`login failed: ${message}`);
+    res.status(401).json({message});
   }
 
   static sendToken(req, res) {
@@ -124,15 +136,22 @@ class AuthenticationController {
 
   static GetClientId(service) {
     return (req, res) => {
-      logger.info(`GetClientId: giving ${service} clientID`);
       const {clientID} = nconf.get(service);
       if (!clientID) {
         logger.warn(`GetClientId: clientID for ${service} was undefined, perhaps it is not defined in the config.`);
-        res.status(400).json({error: 'found client id is undefined'});
+        res.status(400).json({error: 'Client id is not configured, please contact to admin'});
       } else {
         res.status(200).json({clientID});
       }
     };
+  }
+  static GetScope(service) {
+    switch(service) {
+      case('github'):
+        return {scope: ['user:email', 'read:org']};
+      default:
+        return {scope: []};
+    }
   }
 }
 

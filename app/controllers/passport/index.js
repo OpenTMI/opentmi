@@ -114,10 +114,7 @@ class PassportStrategies {
           .then((user) => {
             done(null, user);
           })
-          .catch((error) => {
-            logger.debug(`login failed: ${error}`);
-            done(null, false, {message: error.message});
-          });
+          .catch(done);
       }
     );
     passport.use(localStrategy);

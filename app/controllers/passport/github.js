@@ -34,9 +34,18 @@ class Github {
     logger.verbose('requesting organization information.');
     const orgUrl = `${userApiUrl}/orgs`;
     return new Promise((resolve, reject) => {
-      oauth2.get(orgUrl, accessToken, (err, body, res) => {
-        if (err) {
-          return reject(new Error('Failed to fetch user profile', err));
+      oauth2.get(orgUrl, accessToken, (error, body, res) => {
+        if (error) {
+          let message = 'cannot read organization';
+          try {
+            const json = JSON.parse(error.data);
+            message = json.message || message;
+          } catch (parseError) {
+            logger.debug('json parse error: ', parseError);
+          }
+          const err = new Error(message);
+          err.statusCode = error.statusCode || 500;
+          return reject(err);
         }
         try {
           logger.silly(`${orgUrl} - statusCode: ${res.statusCode}`);

@@ -84,22 +84,22 @@ function Route(app) {
   userRouter.use('/:User', singleUserRouter);
   app.use('/api/v0/users', userRouter);
 
-  const loginPostFix = (req, res, next) => {
-    req.query.code = req.body.code;
-    next();
-  };
-
   const authRoute = express.Router();
   authRoute
-    .post('/login', passport.authenticate('local'), AuthController.sendToken)
+    .post('/login', passport.authenticate('local'),
+      AuthController.sendToken, AuthController.loginFail)
     .get('/me', requireAuth, authController.getme.bind(authController))
     .put('/me', requireAuth, authController.putme.bind(authController))
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
-    .get('/google', passport.authenticate('google', {scope: ['profile']}), AuthController.sendToken)
-    .get('/github', passport.authenticate('github', {scope: ['user:email']}), AuthController.sendToken)
-    .post('/github', loginPostFix, passport.authenticate('github', {scope: ['user:email']}), AuthController.sendToken)
-    .post('/github/token', passport.authenticate('github-token'), AuthController.sendToken)
+    .get('/google', passport.authenticate('google', {scope: ['profile']}),
+      AuthController.sendToken, AuthController.loginFail)
+    .get('/github', passport.authenticate('github', {scope: ['user:email']}),
+      AuthController.sendToken, AuthController.loginFail)
+    .post('/github', AuthController.loginPostFix, passport.authenticate('github', AuthController.GetScope('github')),
+      AuthController.sendToken, AuthController.loginFail)
+    .post('/github/token', passport.authenticate('github-token'),
+      AuthController.sendToken, AuthController.loginFail)
     .get('/github/id', AuthController.GetClientId('github'))
     .get('/google/id', AuthController.GetClientId('google'));
   app.use('/auth', authRoute);
