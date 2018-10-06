@@ -1,8 +1,8 @@
 // Third party modules
 const jwt = require('jwt-simple');
 const moment = require('moment');
-const mongoose = require('mongoose');
-const async = require('async');
+const uuid = require('uuid');
+const passport = require('passport');
 const _ = require('lodash');
 
 // Local modules
@@ -11,55 +11,39 @@ const nconf = require('../../tools/config');
 require('../../models/group');
 
 // Middleware variables
-const TOKEN_SECRET = nconf.get('webtoken');
-const Group = mongoose.model('Group');
-const TOKEN_EXPIRATION_HOURS = 2;
+const TOKEN_SECRET = nconf.get('webtoken') || uuid.v1();
 
-/*
- |--------------------------------------------------------------------------
- | Login Required Middleware
- |--------------------------------------------------------------------------
- */
-function getUserGroups(req, res, next) {
-  if (!req.user) {
-    return res.status(401).send({message: 'not signed in'});
+
+function requireAdmin(req, res, next) {
+  // this might not good idea to allow token to say if client is admin or not
+  // what if token will expires after one month and admin credentials are already dropped..
+  // @todo remove this eventually when tests generate token via API call..
+  logger.silly(`[${req.method}] ${req.originalUrl}: req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
+  if (_.get(req, 'decoded_token.group') === 'admins' ||
+    _.find(_.get(req, 'decoded_token.groups', []), g => g === 'admins')
+  ) {
+    logger.debug('admin based on token..', req.user);
+    next();
+    return;
   }
-
-  Group.find({users: req.user._id}, (error, groups) => {
-    if (error) {
-      return res.status(500).send({message: error});
-    }
-    res.groups = groups;
-    return next();
-  });
-
-  return undefined;
-}
-
-function ensureAuthenticated(err, req, res, next) {
-  if (err) {
-    logger.info(err);
-    if (err.message) {
-      return res.status(401).send({message: err.message});
-    }
-    return res.sendStatus(401);
-  }
-  return next();
-}
-
-function ensureAdmin(error, req, res, next) {
-  async.waterfall([
-    ensureAuthenticated.bind(this, error, req, res),
-    getUserGroups.bind(this, req, res)
-  ], () => {
-    const isAdmin = req.groups.find(group => group.name === 'admins');
-
-    if (isAdmin) {
-      next();
-    } else {
-      res.status.send({message: 'Admin access required!'});
-    }
-  });
+  req.user.isAdmin()
+    .then((yes) => {
+      if (yes) {
+        logger.debug('admin based on User.isAdmin()');
+        next();
+      } else {
+        logger.debug(`${req.user.name} tries to use admin route..`);
+        res.status(401).json({
+          method: req.method,
+          url: req.originalUrl,
+          message: 'Admin access required!'
+        });
+      }
+    })
+    .catch((error) => {
+      logger.error(`${_.get(req, 'user.name', '?')} exception: ${error}`);
+      next(error);
+    });
 }
 
 /*
@@ -73,21 +57,28 @@ function createJWT(user) {
     .populate('groups')
     .execPopulate()
     .then((populatedUser) => {
+      const expDays = nconf.get('webtokenExpirationDays');
+      logger.debug(`webtokenExpirationDays = ${expDays}`);
       const payload = {
         _id: populatedUser._id,
-        groups: _.map(populatedUser.groups, g => g._id),
+        groups: populatedUser.groups.map(g => g.name),
+        group: populatedUser.groups.find(g => g.name === 'admins') ? 'admins' : 'users',
         iat: moment().unix(),
-        exp: moment().add(TOKEN_EXPIRATION_HOURS, 'hours').unix()
+        exp: moment().add(expDays, 'days').unix()
       };
-      // @todo remove this when it is not needed anymore! - just backward compatible reason.
-      payload.sub = payload._id;
-      return jwt.encode(payload, TOKEN_SECRET);
+      const options = {
+        jwtid: uuid.v1()
+      };
+      return jwt.encode(payload, TOKEN_SECRET, null, options);
     });
 }
 
+const requireAuth = passport.authenticate('jwt', {session: false});
+const ensureAdmin = [requireAuth, requireAdmin];
+
 module.exports = {
-  getUserGroups,
-  ensureAuthenticated,
+  requireAuth,
+  requireAdmin,
   ensureAdmin,
   createJWT
 };

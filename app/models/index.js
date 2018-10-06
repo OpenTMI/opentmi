@@ -52,7 +52,7 @@ function registerModels() {
             Model
               .on('error', (error) => {
                 // gets an error whenever index build fails
-                logger.warn('model error:', error.message);
+                logger.warn(`model error: ${error}`);
               });
           }
         } else {

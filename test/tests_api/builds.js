@@ -5,15 +5,12 @@ const logger = require('winston');
 
 // Local components
 const config = require('../../app/tools/config');
-const {createUserToken} = require('./tools/helpers');
+const {createUserToken, testUserId} = require('./tools/helpers');
 
 // Setup
 logger.level = 'error';
 
 // Test variables
-// const expect = chai.expect;
-// const api = 'http://localhost:3000/api/v0';
-const testUserId = '5825bb7afe7545132c88c761';
 let authString; // eslint-disable-line no-unused-vars
 
 describe('Builds', function () {
@@ -24,7 +21,6 @@ describe('Builds', function () {
     const tokenInput = {
       userId: testUserId,
       group: 'admins',
-      groupId: '123',
       webtoken: config.get('webtoken')
     };
     authString = createUserToken(tokenInput).authString;

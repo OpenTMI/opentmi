@@ -269,6 +269,10 @@ class Addon {
    * @return {Promise} promise to install dependencies eventually
    */
   static _installDependencies(addon) {
+    if (!nconf.get('autoInstallAddonDeps')) {
+      logger.debug('Skip addon dependency installation');
+      return Promise.resolve();
+    }
     const command = 'npm install';
 
     logger.debug(`[${addon.name}] npm installing, working directory: ${addon.addonPath}.`);

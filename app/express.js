@@ -18,6 +18,7 @@ const busboy = require('connect-busboy');
 const cors = require('cors');
 const Promise = require('bluebird');
 const MongoStore = require('connect-mongo')(session);
+const passport = require('passport');
 
 const logger = require('./tools/logger');
 const expressWinston = require('express-winston');
@@ -104,6 +105,9 @@ module.exports = (app) => {
       collection: 'sessions'
     })
   }));
+
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // adds CSRF support when production mode
   if (process.env.NODE_ENV === 'production') {

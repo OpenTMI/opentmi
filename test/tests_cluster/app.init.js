@@ -8,16 +8,17 @@ const {expect} = require('chai');
 const logger = require('winston');
 
 const nconf = require('../../app/tools/config');
+const helpers = require('../tests_api/tools/helpers');
 
 // Setup
 logger.level = 'error';
 
 // Test variables
-const api = 'http://localhost:3000/api/v0';
+const api = helpers.apiV0;
+const {testUserId} = helpers;
 
 
 describe('Basic cluster tests', function () {
-  const testUserId = '5825bb7afe7545132c88c761';
   let authString;
   // Create fresh DB
   before(function () {

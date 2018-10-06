@@ -3,24 +3,21 @@ const cluster = require('cluster');
 
 // Third party modules
 const express = require('express');
-const jwt = require('express-jwt');
 
 // Application modules
-const nconf = require('../tools/config');
-const auth = require('./middlewares/authorization');
+const {ensureAdmin, requireAuth, requireAdmin} = require('./middlewares/authorization');
 const AdminController = require('./../controllers/admin');
 const {notClustered} = require('./../controllers/common');
 
-// Route variables
-const TOKEN_SECRET = nconf.get('webtoken');
 
 function Route(app) {
   const router = express.Router();
   const controller = new AdminController();
 
-  router.route('/api/v0/version.:format?')
-    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.version.bind(controller))
-    .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, controller.update.bind(controller));
+  router.route('/api/v0/version')
+    .all(requireAuth)
+    .get(controller.version.bind(controller))
+    .post(requireAdmin, controller.update.bind(controller));
 
   let restart;
   if (!cluster.isMaster && cluster.worker.isConnected()) {
@@ -29,7 +26,8 @@ function Route(app) {
     restart = notClustered;
   }
   router.route('/api/v0/restart')
-    .post(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, restart);
+    .all(...ensureAdmin)
+    .post(restart);
 
   app.use(router);
 }

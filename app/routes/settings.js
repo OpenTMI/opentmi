@@ -1,15 +1,9 @@
+// 3rd party modules
 const express = require('express');
-const nconf = require('../tools/config');
+const nconf = require('nconf');
+// application
+const {ensureAdmin} = require('./middlewares/authorization');
 
-const admin = nconf.get('admin');
-
-function isAdmin(req, res, next) {
-  if (req.query.pwd && admin && req.query.pwd === admin.pwd) {
-    next();
-  } else {
-    res.status(500).json({error: 'Not allowed'});
-  }
-}
 
 function get(req, res) {
   res.json(nconf.get());
@@ -22,8 +16,8 @@ function put(req, res) {
 function Route(app) {
   const router = express.Router();
 
-  router.route('/api/v0/settings.:format?')
-    .all(isAdmin)
+  router.route('/api/v0/settings')
+    .all(...ensureAdmin)
     .get(get)
     .put(put);
 

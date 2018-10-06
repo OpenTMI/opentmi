@@ -23,7 +23,6 @@ function Route(app, io) {
     return next();
   });
 
-
   // IO security
   const authorize = socketioJwt.authorize({
     secret: TOKEN_SECRET,

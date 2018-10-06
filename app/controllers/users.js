@@ -27,7 +27,7 @@ class UsersController extends DefaultController {
     const namespace = req.params.Namespace;
     const doc = {$unset: {}};
     doc.$unset[`settings.${namespace}`] = 1;
-    req.User.update(doc)
+    req.user.update(doc)
       .catch(error => res.status(500).json({error: error.message}))
       .then((resp) => {
         if (resp.nModified === 1) {
@@ -40,9 +40,9 @@ class UsersController extends DefaultController {
   getSettings(req, res) { // eslint-disable-line class-methods-use-this
     const namespace = req.params.Namespace;
     const key = `settings.${namespace}`;
-    const value = _.get(req.User, key);
+    const value = _.get(req.user, key);
     if (value) {
-      const settings = _.get(req.User, key);
+      const settings = _.get(req.user, key);
       res.json(settings);
     } else {
       // no settings stored under that namespace - give empty object
@@ -53,7 +53,7 @@ class UsersController extends DefaultController {
     const namespace = req.params.Namespace;
     const doc = {};
     doc[`settings.${namespace}`] = req.body;
-    req.User.update(doc)
+    req.user.update(doc)
       .catch(error => res.status(500).json({error: error.message}))
       .then((resp) => {
         if (resp.nModified === 1) {

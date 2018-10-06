@@ -19,8 +19,6 @@ const userWithLoanId = '5825bb7cfe7545132c88c773';
 const host = 'http://localhost:3000';
 const api = `${host}/api/v0`;
 const testUserId = '5825bb7afe7545132c88c761';
-let authString;
-let newUserId;
 
 // @todo all tests should be able to run individually
 const statusCannotBe300 = (status) => {
@@ -34,7 +32,7 @@ function encodeToken(payload = {}) {
   // Create token for requests
   const defaultPayload = {
     _id: testUserId,
-    groups: ['123'],
+    group: 'admins',
     iat: moment().unix(),
     exp: moment().add(2, 'h').unix()
   };
@@ -46,9 +44,12 @@ const createHeaderFromToken = token => `Bearer ${token}`;
 const createToken = user => createHeaderFromToken(encodeToken({_id: user._id}));
 
 describe('Users', function () {
+  let authString, adminAuthString, newUserId;
+
   // Create fresh DB
   before(function (done) {
     authString = createHeaderFromToken(encodeToken());
+    adminAuthString = createHeaderFromToken(encodeToken({group: 'admins'}));
     done();
   });
 
@@ -133,9 +134,8 @@ describe('Users', function () {
         });
     });
     const removeUser = user => new Promise((resolve) => {
-      const customAuthString = createToken(user);
       superagent.delete(`${api}/users/${user._id}`)
-        .set('authorization', customAuthString)
+        .set('authorization', adminAuthString)
         .end(function (error, res) {
           expect(error).to.equal(null);
           expect(res).to.be.a('Object');
@@ -303,7 +303,7 @@ describe('Users', function () {
       });
   });
 
-  it.skip('should not delete a user that is referenced in a loan', function (done) {
+  it('should not delete a user that is referenced in a loan', function (done) {
     superagent.del(`${api}/users/${userWithLoanId}`)
       .set('authorization', authString)
       .end(function (error, res) {

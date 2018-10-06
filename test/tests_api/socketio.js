@@ -10,7 +10,7 @@ const chaiAsPromised = require('chai-as-promised');
 
 // application modules
 const config = require('../../app/tools/config');
-const {createUserToken} = require('./tools/helpers');
+const {createUserToken, testUserId} = require('./tools/helpers');
 
 // Setup
 chai.use(chaiAsPromised);
@@ -49,14 +49,12 @@ const ioDisconnect = (client) => {
 };
 
 describe('Basic socketio tests', function () {
-  const testUserId = '5825bb7afe7545132c88c761';
   let token, authString;
   // Create fresh DB
   before(function () {
     const tokenInput = {
       userId: testUserId,
       group: 'admins',
-      groupId: '123',
       webtoken: config.get('webtoken')
     };
     const tokenObj = createUserToken(tokenInput);
