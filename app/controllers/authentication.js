@@ -146,8 +146,8 @@ class AuthenticationController {
     };
   }
   static GetScope(service) {
-    switch(service) {
-      case('github'):
+    switch (service) {
+      case ('github'):
         return {scope: ['user:email', 'read:org']};
       default:
         return {scope: []};

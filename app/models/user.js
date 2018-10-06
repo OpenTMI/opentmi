@@ -182,8 +182,9 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
     .then((group) => {
       let pending = Promise.resolve();
       logger.silly(`remove group ${group._id} from user ${this._id}`);
-      const linkMissing = !_.find(this.groups, group._id);
-      const notBelong = !_.find(group.users, this._id);
+      const match = (idOrDoc, id) => _.get(idOrDoc, '_id', idOrDoc).equals(id)
+      const linkMissing = !_.find(this.groups, doc => match(doc, group._id));
+      const notBelong = !_.find(group.users, doc => match(doc, this._id));
       if (linkMissing && notBelong) {
         logger.debug('User does not belong to group');
         throw new Error(`User ${this.name} does not belong to group ${group.name}`);
@@ -191,12 +192,12 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
       if (linkMissing) {
         logger.warn('User did not have link to group even it should..');
       } else {
-        this.groups = _.filter(this.groups, id => !group._id.equals(id));
+        this.groups = _.filter(this.groups, doc => !match(doc, group._id));
       }
       if (notBelong) {
         logger.warn('User had link to group even group does not include user');
       } else {
-        group.users = _.filter(group.users, id => !this._id.equals(id)); // eslint-disable-line no-param-reassign
+        group.users = _.filter(group.users, doc => !match(doc, this._id)); // eslint-disable-line no-param-reassign
         pending = group.save();
       }
       return pending.then(() => this.save());
