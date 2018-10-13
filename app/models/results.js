@@ -13,15 +13,17 @@ const FileSchema = require('./extends/file');
 const tools = require('../tools');
 
 // Model variables
-const Schema = mongoose.Schema;
-const filedb = tools.filedb;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId, Mixed} = Types;
+const {filedb} = tools;
 const fileProvider = filedb.provider;
 const Build = mongoose.model('Build');
 
 // @Todo justify why file schema is extended here instead of adding to root model
 FileSchema.add({
   ref: {
-    type: Schema.Types.ObjectId,
+    type: ObjectId,
     ref: 'Resource'
   },
   from: {
@@ -32,7 +34,7 @@ FileSchema.add({
 
 const DutSchemaObj = { // Device(s) Under Test
   type: {type: String, enum: ['hw', 'simulator', 'process']},
-  ref: {type: Schema.Types.ObjectId, ref: 'Resource'},
+  ref: {type: ObjectId, ref: 'Resource'},
   vendor: {type: String},
   model: {type: String},
   ver: {type: String},
@@ -49,16 +51,16 @@ const DutSchema = new Schema(DutSchemaObj);
  */
 const ResultSchema = new Schema({
   tcid: {type: String, required: true, index: true},
-  tcRef: {type: Schema.Types.ObjectId, ref: 'Testcase'},
+  tcRef: {type: ObjectId, ref: 'Testcase'},
   job: {
     id: {type: String, default: ''}
   },
   campaign: {type: String, default: '', index: true},
-  campaignRef: {type: Schema.Types.ObjectId, ref: 'Campaign'},
+  campaignRef: {type: ObjectId, ref: 'Campaign'},
   cre: {
     time: {type: Date, default: Date.now, index: true},
     user: {type: String},
-    userRef: {type: Schema.Types.ObjectId, ref: 'User'}
+    userRef: {type: ObjectId, ref: 'User'}
   },
   exec: {
     verdict: {
@@ -69,11 +71,11 @@ const ResultSchema = new Schema({
     },
     note: {type: String, default: ''},
     duration: {type: Number}, // seconds
-    profiling: {type: Schema.Types.Mixed},
-    metadata: {type: Schema.Types.Mixed},
-    metrics: {type: Schema.Types.Mixed},
+    profiling: {type: Mixed},
+    metadata: {type: Mixed},
+    metrics: {type: Mixed},
     env: { // environment information
-      ref: {type: Schema.Types.ObjectId, ref: 'Resource'},
+      ref: {type: ObjectId, ref: 'Resource'},
       rackId: {type: String},
       framework: {
         name: {type: String, default: ''},
@@ -81,7 +83,7 @@ const ResultSchema = new Schema({
       }
     },
     sut: { // software under test
-      ref: {type: Schema.Types.ObjectId, ref: 'Build'},
+      ref: {type: ObjectId, ref: 'Build'},
       gitUrl: {type: String, default: ''},
       buildName: {type: String},
       buildDate: {type: Date},

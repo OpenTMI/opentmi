@@ -1,10 +1,9 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('chai');
 
 // Test variables
-const expect = chai.expect;
 const Event = require('../../../../app/tools/eventBus/event');
 
 describe('eventBus/event.js', function () {

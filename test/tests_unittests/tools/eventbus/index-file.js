@@ -5,7 +5,7 @@ const cluster = require('cluster');
 const path = require('path');
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('chai');
 
 // Local components
 let eventbus = require('../../../../app/tools/eventBus');
@@ -13,7 +13,6 @@ let localBus = require('../../../../app/tools/eventBus/local-event-bus');
 let clusterBus = require('../../../../app/tools/eventBus/cluster-event-bus');
 
 // Test variables
-const expect = chai.expect;
 const eventBusPath = path.resolve('app/tools/eventBus');
 
 describe('tools/eventBus', function () {

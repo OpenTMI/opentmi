@@ -4,47 +4,26 @@
 require('colors');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
-const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
-const Promise = require('bluebird');
 
 // Local components
+const {setup, reset, teardown} = require('./mongomock');
 require('./../../app/models/testcase.js');
 const TestcasesController = require('./../../app/controllers/testcases.js');
 
 // Setup
 logger.level = 'silly';
-mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
-const expect = chai.expect;
+const {expect} = chai;
 let controller = null;
 
-describe.skip('controllers/testcases.js', function () {
+describe('controllers/testcases.js', function () {
   // Create fresh DB
-  before(function () {
-    // this.timeout(120000);
-    mockgoose.helper.setDbVersion('3.2.1');
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB');
-    });
-  });
-
-  beforeEach(function () {
-    this.timeout(120000);
-    return mockgoose.helper.reset();
-  });
-
-  after(function (done) {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
-  });
+  before(setup);
+  beforeEach(reset);
+  after(teardown);
 
   it('constructor', function (done) {
     controller = new TestcasesController();

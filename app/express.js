@@ -18,12 +18,13 @@ const busboy = require('connect-busboy');
 const cors = require('cors');
 const Promise = require('bluebird');
 const MongoStore = require('connect-mongo')(session);
+const passport = require('passport');
 
 const logger = require('./tools/logger');
 const expressWinston = require('express-winston');
 
 /* Project libraries */
-const nconf = require('../config');
+const config = require('./tools/config');
 const pkg = require('../package.json');
 
 const env = process.env.NODE_ENV || 'development';
@@ -37,7 +38,10 @@ module.exports = (app) => {
     threshold: 512
   }));
 
-  app.use(express.static(`${nconf.get('root')}/public`));
+  app.use(express.static(`${config.get('root')}/public`));
+
+  const ignoreRoute = undefined;
+  // const ignoreRoute = req => req.url.match(/^\/api/) == null;
 
   // Logging middleware
   app.use(expressWinston.logger({
@@ -54,7 +58,7 @@ module.exports = (app) => {
     // uses the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red).
     // Will not be recognized if expressFormat is true
     colorize: true,
-    ignoreRoute: req => (req.url.match(/^\/api/) !== null && req.method === 'GET')
+    ignoreRoute
   }));
 
   // set views path, template engine and default layout
@@ -97,10 +101,13 @@ module.exports = (app) => {
     saveUninitialized: true,
     secret: pkg.name,
     store: new MongoStore({
-      url: nconf.get('db'),
+      url: config.get('db'),
       collection: 'sessions'
     })
   }));
+
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // adds CSRF support when production mode
   if (process.env.NODE_ENV === 'production') {

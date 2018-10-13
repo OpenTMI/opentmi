@@ -1,18 +1,18 @@
 // Third party modules
 const express = require('express');
 const mongoose = require('mongoose');
-const nconf = require('../../config');
-const jwt = require('express-jwt');
+const passport = require('passport');
+
+const nconf = require('../tools/config');
 const logger = require('../tools/logger');
 
 // Local modules
-const auth = require('./../../config/middlewares/authorization');
+const {requireAuth, requireAdmin, ensureAdmin} = require('./middlewares/authorization');
 const apiKeys = require('./../controllers/apikeys');
 const UserController = require('./../controllers/users');
 const AuthController = require('./../controllers/authentication');
 
 // Route variables
-const TOKEN_SECRET = nconf.get('webtoken');
 const User = mongoose.model('User');
 const userController = new UserController();
 const authController = new AuthController();
@@ -23,18 +23,10 @@ function createDefaultAdmin() {
   const admin = new User();
   admin.name = nconf.get('admin').user;
   admin.password = nconf.get('admin').pwd;
-  admin.save((error, user) => {
-    if (error) {
-      return logger.error(error);
-    }
-
-    user.addToGroup('admins', (addError, addedUser) => {
-      if (addError) logger.error(addError);
-      else logger.debug(addedUser);
-    });
-
-    return undefined;
-  });
+  return admin.save()
+    .then(user => user.addToGroup('admins'))
+    .then(user => logger.debug(`default admin account created, ObjectId: ${user._id}`))
+    .catch(error => logger.error(error));
 }
 
 /**
@@ -44,7 +36,8 @@ function Route(app) {
   // Create a default admin if there is no users in the database
   User.isEmpty()
     .then((empty) => {
-      if (empty) { createDefaultAdmin(); }
+      if (empty) { return createDefaultAdmin(); }
+      return Promise.resolve();
     })
     .catch(error => logger.warn(error));
 
@@ -54,33 +47,36 @@ function Route(app) {
 
   // Route for operations that target all users
   userRouter.route('/')
-    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.find.bind(userController))
-    .post(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.create.bind(userController));
+    .all(...ensureAdmin)
+    .get(userController.find.bind(userController))
+    .post(userController.create.bind(userController));
 
   // Route for operations that target individual users
   const singleUserRouter = express.Router({mergeParams: true});
   singleUserRouter.route('/')
-    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.get.bind(userController))
-    .put(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.update.bind(userController))
-    .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, userController.remove.bind(userController));
+    .all(...ensureAdmin)
+    .get(userController.get.bind(userController))
+    .put(userController.update.bind(userController))
+    .delete(userController.remove.bind(userController));
 
   // Create User settings routes
   singleUserRouter.route('/settings/:Namespace')
-    .get(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.getSettings.bind(userController))
-    .put(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.updateSettings.bind(userController))
-    .delete(jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, userController.deleteSettings.bind(userController));
+    .all(requireAuth)
+    .get(userController.getSettings.bind(userController))
+    .put(userController.updateSettings.bind(userController))
+    .delete(userController.deleteSettings.bind(userController));
 
   // allows to use /client-settings instead of /settings
   userRouter.use('/client-settings/', express.Router().all((req) => { req.redirect('../settings'); }));
 
   // Create authentication routes:
-  app.get('/api/v0/apikeys', jwt({secret: TOKEN_SECRET}), auth.ensureAdmin, apiKeys.keys);
-  const apikeysRouter = express.Router();
+  app.get('/api/v0/apikeys', requireAuth, requireAdmin, apiKeys.keys);
+  const apikeysRouter = express.Router({mergeParams: true});
 
   apikeysRouter
-    .get('/', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.userKeys)
-    .get('/new', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.createKey)
-    .delete('/:Key', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, apiKeys.deleteKey);
+    .get('/', requireAuth, apiKeys.userKeys)
+    .get('/new', requireAuth, apiKeys.createKey)
+    .delete('/:Key', requireAuth, apiKeys.deleteKey);
   singleUserRouter.use('/apikeys', apikeysRouter);
 
 
@@ -90,14 +86,22 @@ function Route(app) {
 
   const authRoute = express.Router();
   authRoute
-    .post('/login', authController.login.bind(authController))
-    .get('/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, authController.getme.bind(authController))
-    .put('/me', jwt({secret: TOKEN_SECRET}), auth.ensureAuthenticated, authController.putme.bind(authController))
+    .post('/login', passport.authenticate('local'),
+      AuthController.sendToken, AuthController.loginFail)
+    .get('/me', requireAuth, authController.getme.bind(authController))
+    .put('/me', requireAuth, authController.putme.bind(authController))
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
-    .post('/google', authController.google.bind(authController))
-    .post('/github', jwt({secret: TOKEN_SECRET, credentialsRequired: false}), AuthController.github)
-    .get('/github/id', AuthController.getGithubClientId);
+    .get('/google', passport.authenticate('google', {scope: ['profile']}),
+      AuthController.sendToken, AuthController.loginFail)
+    .get('/github', passport.authenticate('github', {scope: ['user:email']}),
+      AuthController.sendToken, AuthController.loginFail)
+    .post('/github', AuthController.loginPostFix, passport.authenticate('github', AuthController.GetScope('github')),
+      AuthController.sendToken, AuthController.loginFail)
+    .post('/github/token', passport.authenticate('github-token'),
+      AuthController.sendToken, AuthController.loginFail)
+    .get('/github/id', AuthController.GetClientId('github'))
+    .get('/google/id', AuthController.GetClientId('google'));
   app.use('/auth', authRoute);
 
   /**

@@ -3,19 +3,24 @@ jobs:
   build:
     working_directory: ~/opentmi
     docker:
-      - image: circleci/node:6.11.4-browsers
+      - image: circleci/node:8.11.4-browsers
         environment:
           CHROME_BIN: "/usr/bin/google-chrome"
           NODE_ENV: test
           XUNIT_FILE: shippable/testresults/result.xml
-      - image: mongo:3.2.3
+      - image: mongo:4.1.2
     steps:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
+          name: install mongodb-org-tools
+          command: |
+            sudo npm install -g mongodb-prebuilt
+      - run:
           name: versions
           command: |
+            mongorestore --version
             node --version
             npm --version
       - run:
@@ -35,9 +40,9 @@ jobs:
       - run:
           name: test
           command: |
-            MOCHA_FILE=junit/unittests.xml grunt unittests
-            MOCHA_FILE=junit/apitests.xml grunt apitests
-            MOCHA_FILE=junit/clustertests.xml grunt clustertests
+            MOCHA_FILE=junit/unittests.xml grunt unittests --silent
+            MOCHA_FILE=junit/apitests.xml grunt apitests --silent
+            MOCHA_FILE=junit/clustertests.xml grunt clustertests --silent
       - run:
           name: lint
           command: npm run lint

@@ -2,24 +2,23 @@
 
 // Third party components
 const jwtSimple = require('jwt-simple');
-const nconf = require('../../config');
 const moment = require('moment');
 const superagent = require('superagent');
 const chai = require('chai');
 const logger = require('winston');
 const _ = require('lodash');
 
+const nconf = require('../../app/tools/config');
+
 // Setup
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const userWithLoanId = '5825bb7cfe7545132c88c773';
 const host = 'http://localhost:3000';
 const api = `${host}/api/v0`;
 const testUserId = '5825bb7afe7545132c88c761';
-let authString;
-let newUserId;
 
 // @todo all tests should be able to run individually
 const statusCannotBe300 = (status) => {
@@ -33,7 +32,7 @@ function encodeToken(payload = {}) {
   // Create token for requests
   const defaultPayload = {
     _id: testUserId,
-    groups: ['123'],
+    group: 'admins',
     iat: moment().unix(),
     exp: moment().add(2, 'h').unix()
   };
@@ -45,9 +44,12 @@ const createHeaderFromToken = token => `Bearer ${token}`;
 const createToken = user => createHeaderFromToken(encodeToken({_id: user._id}));
 
 describe('Users', function () {
+  let authString, adminAuthString, newUserId;
+
   // Create fresh DB
   before(function (done) {
     authString = createHeaderFromToken(encodeToken());
+    adminAuthString = createHeaderFromToken(encodeToken({group: 'admins'}));
     done();
   });
 
@@ -109,6 +111,7 @@ describe('Users', function () {
       });
   });
   describe('/auth', function () {
+    let createdUser;
     const createUser = (data = {}) => new Promise((resolve) => {
       const body = {
         name: '/auth_testuser',
@@ -126,13 +129,13 @@ describe('Users', function () {
           expect(error).to.equal(null);
           expect(res).to.be.a('Object');
           expect(res).to.have.property('status', 200);
+          expect(res.body.password).to.be.undefined;
           resolve(res.body);
         });
     });
     const removeUser = user => new Promise((resolve) => {
-      const customAuthString = createToken(user);
       superagent.delete(`${api}/users/${user._id}`)
-        .set('authorization', customAuthString)
+        .set('authorization', adminAuthString)
         .end(function (error, res) {
           expect(error).to.equal(null);
           expect(res).to.be.a('Object');
@@ -141,9 +144,19 @@ describe('Users', function () {
         });
     });
 
+    afterEach('cleanup user', function () {
+      if (createdUser) {
+        const user = createdUser;
+        createdUser = undefined;
+        return removeUser(user);
+      }
+      return Promise.resolve();
+    });
+
     it('should get user data on /auth/me', function () {
       return createUser()
         .then((user) => {
+          createdUser = user;
           const customAuthString = createToken(user);
           return new Promise((resolve) => {
             superagent.get(`${host}/auth/me`)
@@ -160,8 +173,7 @@ describe('Users', function () {
                 resolve(res.body);
               });
           });
-        })
-        .then(removeUser);
+        });
     });
 
     it('should not get user data on /auth/me without token', function (done) {
@@ -177,6 +189,7 @@ describe('Users', function () {
     it('should update user data on PUT:/auth/me', function () {
       return createUser()
         .then((user) => {
+          createdUser = user;
           const customAuthString = createToken(user);
           return new Promise((resolve) => {
             superagent.put(`${host}/auth/me`)
@@ -190,8 +203,7 @@ describe('Users', function () {
                 resolve(user);
               });
           });
-        })
-        .then(removeUser);
+        });
     });
     it('should not allow to update user data on PUT:/auth/me without token', function (done) {
       superagent.put(`${host}/auth/me`)
@@ -207,6 +219,7 @@ describe('Users', function () {
     it('should allow to login', function () {
       return createUser({password: 'topsecret'})
         .then(user => new Promise((resolve) => {
+          createdUser = user;
           superagent.post(`${host}/auth/login`)
             .send({email: user.email, password: 'topsecret'})
             .type('json')
@@ -219,8 +232,7 @@ describe('Users', function () {
               expect(res.body.token).to.be.a('string');
               resolve(user);
             });
-        }))
-        .then(removeUser);
+        }));
     });
     it('should not allow to login without existing account', function () {
       return new Promise((resolve) => {
@@ -237,6 +249,7 @@ describe('Users', function () {
     it('should allow to logout', function () {
       return createUser({password: 'topsecret'})
         .then((user) => {
+          createdUser = user;
           const customAuthString = createToken(user);
           return new Promise((resolve) => {
             superagent.post(`${host}/auth/logout`)
@@ -249,8 +262,7 @@ describe('Users', function () {
                 resolve(user);
               });
           });
-        })
-        .then(removeUser);
+        });
     });
   });
 
@@ -291,7 +303,7 @@ describe('Users', function () {
       });
   });
 
-  it.skip('should not delete a user that is referenced in a loan', function (done) {
+  it('should not delete a user that is referenced in a loan', function (done) {
     superagent.del(`${api}/users/${userWithLoanId}`)
       .set('authorization', authString)
       .end(function (error, res) {

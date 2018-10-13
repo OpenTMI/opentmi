@@ -7,11 +7,10 @@ const QueryPlugin = require('mongoose-query');
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
 const validators = require('../tools/validators');
 // Implementation
-const tagsValidator = validators.tagsValidator;
-const appsValidator = validators.appsValidator;
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {tagsValidator, appsValidator} = validators;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId} = Types;
 
 /**
  * Resource schema

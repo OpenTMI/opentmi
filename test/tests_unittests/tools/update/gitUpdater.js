@@ -1,13 +1,12 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('chai');
 
 // Application components
 const GitUpdater = require('../../../../app/tools/update/gitUpdater');
 
 // Variables
-const expect = chai.expect;
 let gitUpdater;
 
 

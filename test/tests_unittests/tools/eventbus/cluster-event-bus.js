@@ -1,13 +1,12 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('chai');
 
 // Native components
 const cluster = require('cluster');
 
 // Test variables
-const expect = chai.expect;
 const clusterEventBus = require('../../../../app/tools/eventBus/cluster-event-bus');
 
 describe('eventBus/cluster-event-bus.js', function () {

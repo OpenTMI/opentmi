@@ -21,7 +21,7 @@ logger.level = 'silent';
 chai.use(chaiAsPromised);
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const filePath = path.resolve('app');
 let Master;
 

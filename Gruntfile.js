@@ -27,7 +27,7 @@ const gruntConfig = {
         delay: 15000,
         script: 'app/index.js',
         node_env: 'test',
-        args: ['-s'] // to more traces set -vvv instead of -s (silent)
+        args: ['--config', 'test/config.auth.json']
       }
     },
     cluster_server: {
@@ -35,7 +35,7 @@ const gruntConfig = {
         delay: 15000,
         script: 'index.js',
         node_env: 'test',
-        args: ['-s'] // to more traces set -vvv instead of -s (silent)
+        args: ['--config', 'test/config.auth.json']
       }
     }
   },
@@ -50,14 +50,13 @@ const gruntConfig = {
   exec: {
     restore_db: {
       cmd: `bash ${dbPath} local ${dumpPath}`,
-      stdout: false,
-      stderr: false
+      stdout: false
     }
   },
   simplemocha: {
     options: {
       globals: ['should', 'check'],
-      reporter: 'mocha-junit-reporter',
+      reporter: 'mocha-circleci-reporter',
       timeout: 120000,
       ignoreLeaks: false
     },

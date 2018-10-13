@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 
 // local module
 const logger = require('../../tools/logger');
-const nconf = require('../../../config');
+const nconf = require('../../tools/config');
 const checksum = require('../../tools/checksum.js');
 
 // Model variables

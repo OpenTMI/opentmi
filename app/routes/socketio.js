@@ -3,7 +3,7 @@ const socketioJwt = require('socketio-jwt');
 const _ = require('lodash');
 
 // Application modules
-const nconf = require('../../config');
+const nconf = require('../tools/config');
 const Controller = require('../controllers/socketio');
 const logger = require('../tools/logger');
 const eventBus = require('../tools/eventBus');
@@ -22,7 +22,6 @@ function Route(app, io) {
     }
     return next();
   });
-
 
   // IO security
   const authorize = socketioJwt.authorize({

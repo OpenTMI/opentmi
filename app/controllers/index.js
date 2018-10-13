@@ -40,7 +40,7 @@ class DefaultController extends EventEmitter {
           _.set(req, modelname, data);
           next();
         } else {
-          res.status(404).json({msg: 'not found'});
+          res.status(404).json({message: `Document with id ${docId} not found`});
         }
       });
     };
@@ -103,7 +103,7 @@ class DefaultController extends EventEmitter {
     const update = _.omit(req.body, [this.docId, '__v']);
     // increment version number every time when updating document
     update.$inc = {__v: 1};
-    logger.debug(update);
+    logger.debug(`updated: ${JSON.stringify(update)}`);
 
     const modelID = req.params[this.modelName];
     if (modelID === undefined) {

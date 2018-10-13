@@ -6,11 +6,12 @@ const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
+const {setup, reset, teardown} = require('./mongomock');
+
 require('./../../app/models/group.js');
 require('./../../app/models/user.js');
 require('./../../app/models/item.js');
@@ -34,51 +35,35 @@ let mockUser1 = null;
 let mockLoan1 = null;
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
-const expect = chai.expect;
+const {expect} = chai;
 let controller = null;
 
 const User = mongoose.model('User');
 const Item = mongoose.model('Item');
 
-describe.skip('controllers/loans.js', function () {
+describe('controllers/loans.js', function () {
   // Create fresh DB
+  before(setup);
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB').then(() => {
-        // Create controller to test
-        controller = new LoanController();
-      });
-    });
+    // Create controller to test
+    controller = new LoanController();
   });
+  afterEach(reset);
+  after(teardown);
 
   beforeEach(function () {
-    return mockgoose.helper.reset().then(() => {
-      // Load mock item
-      mockItem1 = new Item(mockItems[0]);
-      mockUser1 = new User(mockUsers[0]);
-      mockLoan1 = new controller.Model(mockLoans[0]);
-      return Promise.all([
-        mockItem1.save(),
-        mockUser1.save(),
-        mockLoan1.save()
-      ]);
-    });
+    mockItem1 = new Item(mockItems[0]);
+    mockUser1 = new User(mockUsers[0]);
+    mockLoan1 = new controller.Model(mockLoans[0]);
+    return Promise.all([
+      mockItem1.save(),
+      mockUser1.save(),
+      mockLoan1.save()
+    ]);
   });
-
-  after(function (done) {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
-  });
-
   it('update', function () {
     // Valid case, return 1 item from loan
-    const validReturn = new Promise((resolve) => {
+    const validReturn = () => new Promise((resolve) => {
       const body = {
         items: [
           {_id: mockLoan1.items[1]._id, return_date: new Date()}
@@ -101,7 +86,7 @@ describe.skip('controllers/loans.js', function () {
     });
 
     // Invalid case, return 1 item that is not in the loan
-    const invalidReturnMissingId = new Promise((resolve) => {
+    const invalidReturnMissingId = () => new Promise((resolve) => {
       const body = {
         items: [
           {_id: mockUser1._id, return_date: new Date()}
@@ -122,7 +107,7 @@ describe.skip('controllers/loans.js', function () {
     });
 
     // Invalid case, attempt to update with invalid loan_date
-    const invalidUpdate = new Promise((resolve) => {
+    const invalidUpdate = () => new Promise((resolve) => {
       const body = {loan_date: 'fake_date'};
       const Loan = mockLoan1;
       const params = {Loan: mockLoan1._id};
@@ -139,7 +124,9 @@ describe.skip('controllers/loans.js', function () {
     });
 
     // Chain and test all promises
-    return validReturn.then(() => invalidReturnMissingId).then(() => invalidUpdate);
+    return validReturn()
+      .then(invalidReturnMissingId)
+      .then(invalidUpdate);
   });
 
   it('_handleItemsInUpdate', function () {

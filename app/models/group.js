@@ -9,9 +9,9 @@ const {IsEmpty} = require('./plugins/isempty');
 
 
 /* Implementation */
-const Schema = mongoose.Schema;
-const Types = Schema.Types;
-const ObjectId = Types.ObjectId;
+const {Schema} = mongoose;
+const {Types} = Schema;
+const {ObjectId} = Types;
 
 /**
  * Group schema

@@ -1,48 +1,34 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-require('colors');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
 const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
 const Promise = require('bluebird');
-
-// Local components
-require('../../../app/models/build.js');
-const BuildsController = require('../../../app/controllers/builds.js');
 
 // Setup
 logger.level = 'error';
 mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
+const {setup, reset, teardown} = require('../mongomock');
+
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
 const expect = chai.expect;
 
-describe.skip('controllers/builds.js', function () {
+describe('controllers/builds.js', function () {
+  let BuildsController;
   // Create fresh DB
+  before(setup);
   before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
-
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB');
-    });
+    // Local components
+    require('../../../app/models/build.js'); // eslint-disable-line global-require
+    BuildsController = require('../../../app/controllers/builds.js'); // eslint-disable-line global-require
   });
+  beforeEach(reset);
 
-  beforeEach(function () {
-    return mockgoose.helper.reset();
-  });
-
-  after(function (done) {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
-  });
+  after(teardown);
 
   describe('exports', function () {
     it('should export a class named BuildsController', function (done) {

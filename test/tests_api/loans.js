@@ -7,7 +7,7 @@ const chai = require('chai');
 const logger = require('winston');
 
 // Local components
-const config = require('../../config');
+const config = require('../../app/tools/config');
 const {createUserToken, apiV0} = require('./tools/helpers');
 
 
@@ -15,7 +15,7 @@ const {createUserToken, apiV0} = require('./tools/helpers');
 logger.level = 'error';
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 const api = apiV0;
 const testUserId = '5825bb7afe7545132c88c761';
 const testItemId = '582c7948850f298a5acff991';
@@ -82,7 +82,6 @@ describe('Loans', function () {
     const tokenInput = {
       userId: testUserId,
       group: 'admins',
-      groupId: '123',
       webtoken: config.get('webtoken')
     };
     authString = createUserToken(tokenInput).authString;

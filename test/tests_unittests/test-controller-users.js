@@ -4,51 +4,127 @@
 require('colors');
 const chai = require('chai');
 const chaiSubset = require('chai-subset');
-const mongoose = require('mongoose');
-const Mockgoose = require('mockgoose').Mockgoose;
 const logger = require('winston');
-const Promise = require('bluebird');
 
 // Local components
-require('./../../app/models/group.js');
-require('./../../app/models/user.js');
+const {setup, reset, teardown} = require('./mongomock');
+const Group = require('./../../app/models/group.js').Model;
+const User = require('./../../app/models/user.js').Model;
 const UsersController = require('./../../app/controllers/users.js');
 
 // Setup
 logger.level = 'error';
-mongoose.Promise = Promise;
 chai.use(chaiSubset);
 
 // Test variables
-const mockgoose = new Mockgoose(mongoose);
-const expect = chai.expect;
+const {expect} = chai;
 let controller = null;
 
-describe.skip('controllers/users.js', function () {
+describe('controllers/users.js', function () {
   // Create fresh DB
-  before(function () {
-    mockgoose.helper.setDbVersion('3.2.1');
+  before(setup);
+  beforeEach(reset);
+  after(teardown);
 
-    logger.debug('[Before] Preparing storage'.gray);
-    return mockgoose.prepareStorage().then(() => {
-      logger.debug('[Before] Connecting to mongo\n'.gray);
-      return mongoose.connect('mongodb://testmock.com/TestingDB');
-    });
-  });
-
-  beforeEach(function () {
-    return mockgoose.helper.reset();
-  });
-
-  after(function (done) {
-    logger.debug('[After] Closing mongoose connection'.gray);
-    mongoose.disconnect();
-    done();
-  });
-
-  it('constructor', function (done) {
+  it('constructor', function () {
     controller = new UsersController();
     expect(controller).to.exist;
-    done();
+  });
+  describe('user model', function () {
+    describe('password', function () {
+      it('salt password by default', function () {
+        const user = new User({password: 'ohhoh'});
+        return user
+          .save()
+          .then(() => user.comparePassword('ohhoh'))
+          .then(() => user.comparePassword('ohhohh'))
+          .reflect()
+          .then((promise) => {
+            expect(promise.isRejected()).to.be.true;
+          });
+      });
+      it('can change password', function () {
+        const user = new User({password: 'ohhoh'});
+        return user.save()
+          .then(() => user.saltPassword('abc'))
+          .then(() => user.comparePassword('abc'))
+          .then(() => user.comparePassword('ohhoh'))
+          .reflect()
+          .then((promise) => {
+            expect(promise.isRejected()).to.be.true;
+          });
+      });
+    });
+
+    it('allow to add to group and remove from group', function () {
+      const admins = new Group({name: 'admins'});
+      return admins.save()
+        .then(() => {
+          const user = new User();
+          return user.save();
+        })
+        .then(user => user.addToGroup('admins'))
+        .then(user => user.removeFromGroup('admins'));
+    });
+    it('do not duplicate users in same group', function () {
+      const admins = new Group({name: 'admins'});
+      return admins.save()
+        .then(() => {
+          const user = new User();
+          return user.save();
+        })
+        .then(user => user.addToGroup('admins'))
+        .then(user => user.addToGroup('admins'))
+        .then((user) => {
+          expect(user.groups.length).to.be.equal(1);
+          return Group.findOne({name: 'admins'})
+            .then((group) => {
+              expect(group.users.length).to.be.equal(1);
+            }).return(user);
+        })
+        .then(user => user.removeFromGroup('admins'))
+        .then((user) => {
+          expect(user.groups.length).to.be.equal(0);
+          return Group.findOne({name: 'admins'})
+            .then((group) => {
+              expect(group.users.length).to.be.equal(0);
+            });
+        });
+    });
+    it('reject to remove from group if not included', function () {
+      const admins = new Group({name: 'admins'});
+      return admins.save()
+        .then(() => {
+          const user = new User();
+          return user.save();
+        })
+        .then(user => user.removeFromGroup('admins'))
+        .reflect()
+        .then((promise) => {
+          expect(promise.isRejected()).to.be.true;
+        });
+    });
+    it('isAdmin', function () {
+      const admins = new Group({name: 'admins'});
+      return admins.save()
+        .then(() => {
+          const user = new User();
+          return user.save();
+        })
+        .then(user => user.isAdmin()
+          .then((yes) => {
+            expect(yes).to.be.false;
+          })
+          .then(() => user.addToGroup('admins')))
+        .then(user => user.isAdmin()
+          .then((yes) => {
+            expect(yes).to.be.true;
+          })
+          .then(() => user.removeFromGroup('admins')))
+        .then(user => user.isAdmin()
+          .then((yes) => {
+            expect(yes).to.be.false;
+          }));
+    });
   });
 });

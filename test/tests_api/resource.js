@@ -14,7 +14,7 @@ logger.level = 'error';
 const api = apiV0;
 
 // Test variables
-const expect = chai.expect;
+const {expect} = chai;
 
 const getResource = resourceId => superagent.get(`${api}/resources/${resourceId}`)
   .type('json')
