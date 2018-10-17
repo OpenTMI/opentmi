@@ -105,7 +105,12 @@ class Github {
     if (groupname !== 'admins') {
       logger.info(`removing user: ${user._id} from admins.`);
       return user.isAdmin()
-        .then(isAdmin => isAdmin ? user.removeFromGroup('admins') : user.save());
+        .then((isAdmin) => {
+          if (isAdmin) {
+            return user.removeFromGroup('admins');
+          }
+          return user.save();
+        });
     } else if (groupname === 'admins') {
       logger.info(`adding user: ${user._id} to admins.`);
       return user.addToGroup(groupname);
