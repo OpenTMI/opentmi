@@ -186,8 +186,8 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
       const linkMissing = !_.find(this.groups, doc => match(doc, group._id));
       const notBelong = !_.find(group.users, doc => match(doc, this._id));
       if (linkMissing && notBelong) {
-        logger.debug(`User ${this.name} does not belong to group ${group.name}`);
-        return this.save();
+        logger.debug('User does not belong to group');
+        throw new Error(`User ${this.name} does not belong to group ${group.name}`);
       }
       if (linkMissing) {
         logger.warn('User did not have link to group even it should..');
