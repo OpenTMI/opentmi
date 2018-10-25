@@ -7,25 +7,21 @@ const os = require('os');
 const EventEmitter = require('events');
 
 // Third party components
-require('colors');
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
 
 // Local components
+const chai = require('../');
 const eventBus = require('../../app/tools/eventBus');
 const logger = require('../../app/tools/logger');
 
 // Test config
 cluster.fork = () => {}; // Do not allow forking while testing, will cause all manner of trouble
-logger.level = 'silent';
-chai.use(chaiAsPromised);
 
 // Test variables
 const {expect} = chai;
 const filePath = path.resolve('app');
 let Master;
 
-describe('app/master.js', function () {
+describe.skip('app/master.js', function () {
   beforeEach(function () {
     delete require.cache[path.join(filePath, 'master.js')];
     Master = require('../../app/master'); // eslint-disable-line
