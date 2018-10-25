@@ -54,8 +54,9 @@ describe('app/master.js', function () {
     });
     it('should listen for process and cluster events', function () {
       sinon.stub(Master, 'handleSIGINT').callsFake(() => Master.logMasterDeath());
-      sinon.stub(Master, 'logMasterDeath').callsFake(() =>{
-        expect(Master.handleSIGINT.calledOnce).to.equal(true, 'handleSIGINT should be called before logMasterDeath.');
+      sinon.stub(Master, 'logMasterDeath').callsFake(() => {
+        expect(Master.handleSIGINT.calledOnce).to.equal(true,
+          'handleSIGINT should be called before logMasterDeath.');
         cluster.emit('exit');
       });
       let workerExitResolve;
@@ -74,7 +75,7 @@ describe('app/master.js', function () {
           Master.handleSIGINT.restore();
           Master.logMasterDeath.restore();
           Master.handleWorkerExit.restore();
-        })
+        });
     });
 
     it('should listen for eventBus events', function () {
@@ -104,8 +105,7 @@ describe('app/master.js', function () {
           Master.broadcastHandler.restore();
           Master.statusHandler.restore();
           Master.handleWorkerRestart.restore();
-        })
-
+        });
     });
 
     it('should call createFileListener and activateFileListener when auto-reload is true', function () {
@@ -129,7 +129,8 @@ describe('app/master.js', function () {
         .then(() => {
           expect(Master.createFileListener.calledOnce).to.equal(false,
             'should not create file listener when autoReload is false');
-          expect(Master.activateFileListener.calledOnce).to.equal(false, 'should not activate file listener when autoReload is false');
+          expect(Master.activateFileListener.calledOnce).to.equal(false,
+            'should not activate file listener when autoReload is false');
         });
     });
 
@@ -145,7 +146,7 @@ describe('app/master.js', function () {
   describe('handleWorkerRestart', function () {
     it('should call reloadAllWorkers', function () {
       let done;
-      const pending = new Promise(resolve => {done = resolve;});
+      const pending = new Promise((resolve) => { done = resolve; });
       sinon.stub(Master, 'reloadAllWorkers').callsFake(done);
       Master.handleWorkerRestart(undefined, undefined);
       return pending
@@ -180,7 +181,7 @@ describe('app/master.js', function () {
     it('should emit event (data.id) with (Master.getStats()) data', function () {
       sinon.stub(Master, 'getStats').callsFake(() => Promise.resolve('handler_testData'));
       let done;
-      const pending = new Promise(resolve => {done = resolve;});
+      const pending = new Promise((resolve) => { done = resolve; });
       eventBus.on('handler_testEvent', (meta, data) => {
         expect(data).to.equal('handler_testData');
         done();
@@ -238,7 +239,7 @@ describe('app/master.js', function () {
   describe('onWorkerMessage', function () {
     it('should pass event message to correct handler', function () {
       let done;
-      const pending = new Promise(resolve => {done = resolve;});
+      const pending = new Promise((resolve) => { done = resolve; });
       sinon.stub(eventBus, 'clusterEventHandler').callsFake((worker, data) => {
         expect(data).to.have.property('type', 'event');
         expect(data).to.have.deep.property('args', ['arg1', 'arg2', 'arg3']);

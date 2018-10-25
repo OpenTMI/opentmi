@@ -7,8 +7,6 @@ const path = require('path');
 const Promise = require('bluebird');
 const sinon = require('sinon');
 const {expect} = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const logger = require('winston');
 
 // Test variables
 const cachePath = path.resolve('./app/addons/addon.js');
