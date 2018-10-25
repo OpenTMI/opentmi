@@ -3,7 +3,7 @@
 // Third party components
 const Promise = require('bluebird');
 
-const {expect} = require('../..')
+const {expect} = require('../..');
 const {setup, reset, teardown} = require('../../utils/mongomock');
 
 

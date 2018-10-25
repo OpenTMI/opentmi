@@ -1,7 +1,6 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const mongoose = require('mongoose');
 const Promise = require('bluebird');
 
 // Local components
