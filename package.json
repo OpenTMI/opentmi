@@ -28,8 +28,8 @@
     "cluster": "node app/cluster.js",
     "debug": "node --inspect index.js",
     "debug-cluster": "node --inspect app/cluster.js",
-    "test": "grunt",
-    "test2": "NODE_ENV=test istanbul cover -- _mocha --recursive -R spec test2",
+    "test": "NODE_ENV=test istanbul cover -- _mocha --recursive -R spec test/unittests",
+    "test-api": "grunt",
     "lint": "node node_modules/eslint/bin/eslint ."
   },
   "dependencies": {
