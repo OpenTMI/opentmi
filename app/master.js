@@ -44,6 +44,8 @@ class Master {
     eventBus.once('systemRestartNeeded', () => { systemRestartNeeded = true; });
 
     // Handle graceful exit
+    process.once('SIGINT', Master.handleSIGINT);
+    process.once('exit', Master.logMasterDeath);
     cluster.on('exit', Master.handleWorkerExit);
 
     // Start listening to changes in file system
