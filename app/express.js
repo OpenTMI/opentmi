@@ -46,7 +46,7 @@ module.exports = (app) => {
   // Logging middleware
   app.use(expressWinston.logger({
     winstonInstance: logger,
-    meta: false, // optional: control whether you want to log the meta data about the request (default to true)
+    // meta: false, // optional: control whether you want to log the meta data about the request (default to true)
     // msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}",
     // optional: customize the default logging message.
     // E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"

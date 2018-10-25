@@ -1,15 +1,14 @@
+// 3rd party modules
 const express = require('express');
+// opentmi modules
+const {Addon} = require('opentmi-addon');
 
-class AddonCore {
-  constructor(app, server, io, eventBus, logger) {
-    // Defined variables
-    this.logger = logger;
+
+class AddonCore extends Addon {
+  constructor(...args) {
+    super(...args);
     this.router = express.Router();
     this.staticPath = { prefix: '/test', folder: '/public/' };
-
-    // Own variables
-    this.server = server;
-    this.io = io;
   }
 
   // Default implementation of register
