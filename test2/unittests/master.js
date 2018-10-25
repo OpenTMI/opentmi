@@ -7,28 +7,33 @@ const os = require('os');
 const EventEmitter = require('events');
 
 // Third party components
+const Promise = require('bluebird');
+const sinon = require('sinon');
 
 // Local components
 const chai = require('../');
 const eventBus = require('../../app/tools/eventBus');
-const logger = require('../../app/tools/logger');
-
-// Test config
-cluster.fork = () => {}; // Do not allow forking while testing, will cause all manner of trouble
 
 // Test variables
 const {expect} = chai;
 const filePath = path.resolve('app');
 let Master;
 
-describe.skip('app/master.js', function () {
+describe('app/master.js', function () {
+  let forkEmitter;
   beforeEach(function () {
     delete require.cache[path.join(filePath, 'master.js')];
     Master = require('../../app/master'); // eslint-disable-line
+    forkEmitter = new EventEmitter();
+    sinon.stub(cluster, 'fork').returns(forkEmitter);
+    sinon.stub(Master, 'listen').callsFake(() => Promise.resolve());
 
     eventBus.removeAllListeners();
-    process.removeAllListeners();
     cluster.removeAllListeners();
+  });
+  afterEach(function () {
+    cluster.fork.restore();
+    Master.listen.restore();
   });
 
   after(function () {
@@ -38,130 +43,115 @@ describe.skip('app/master.js', function () {
 
   describe('initialize', function () {
     beforeEach(function () {
-      Master.forkWorker = () => {};
-
-      Master.createFileListener = () => {};
-      Master.activateFileListener = () => {};
+      sinon.stub(Master, 'forkWorker');
+      sinon.stub(Master, 'createFileListener');
+      sinon.stub(Master, 'activateFileListener');
     });
-
+    afterEach(function () {
+      Master.forkWorker.restore();
+      Master.createFileListener.restore();
+      Master.activateFileListener.restore();
+    });
     it('should listen for process and cluster events', function () {
-      let sigintCalled = false;
-      let exitCalled = false;
-
-      Master.handleSIGINT = () => {
-        sigintCalled = true;
-        process.emit('exit');
-      };
-      Master.logMasterDeath = () => {
-        expect(sigintCalled).to.equal(true, 'handleSIGINT should be called before logMasterDeath.');
-        exitCalled = true;
+      sinon.stub(Master, 'handleSIGINT').callsFake(() => Master.logMasterDeath());
+      sinon.stub(Master, 'logMasterDeath').callsFake(() =>{
+        expect(Master.handleSIGINT.calledOnce).to.equal(true, 'handleSIGINT should be called before logMasterDeath.');
         cluster.emit('exit');
-      };
+      });
       let workerExitResolve;
       const workerExit = new Promise((resolve) => { workerExitResolve = resolve; });
-      Master.handleWorkerExit = () => {
-        expect(sigintCalled).to.equal(true, 'handleSIGINT should be called before handleWorkerExit.');
-        expect(exitCalled).to.equal(true, 'logMasterDeath should be called before handleWorkerExit.');
+      sinon.stub(Master, 'handleWorkerExit').callsFake(() => {
+        expect(Master.handleSIGINT.calledOnce).to.equal(true,
+          'handleSIGINT should be called before handleWorkerExit.');
+        expect(Master.logMasterDeath.calledOnce).to.equal(true,
+          'logMasterDeath should be called before handleWorkerExit.');
         workerExitResolve();
-      };
-      Master.listen = () => Promise.resolve();
-
-      const pending = Master.initialize();
-      process.emit('SIGINT');
-      return Promise.all([pending, workerExit]);
+      });
+      const pending = Master.initialize().then(Master.handleSIGINT);
+      return Promise
+        .all([pending, workerExit])
+        .finally(() => {
+          Master.handleSIGINT.restore();
+          Master.logMasterDeath.restore();
+          Master.handleWorkerExit.restore();
+        })
     });
 
     it('should listen for eventBus events', function () {
-      Master.broadcastHandler = (event, meta, data) => {
+      sinon.stub(Master, 'broadcastHandler').callsFake((event, meta, data) => {
         expect(event).to.equal('testEvent');
         expect(data).to.equal('testData');
 
         eventBus.removeListener('*', Master.broadcastHandler);
         eventBus.emit('masterStatus', {id: 'testId', data: 'testData'});
-      };
+      });
 
-      Master.statusHandler = (meta, data) => {
+      sinon.stub(Master, 'statusHandler').callsFake((meta, data) => {
         expect(data).to.deep.equal({id: 'testId', data: 'testData'});
         eventBus.emit('workerRestartNeeded', 'reasons');
-      };
+      });
       let workerExitResolve;
       const workerExit = new Promise((resolve) => { workerExitResolve = resolve; });
-      Master.handleWorkerRestart = (meta, reason) => {
+      sinon.stub(Master, 'handleWorkerRestart').callsFake((meta, reason) => {
         expect(reason).to.equal('reasons');
         workerExitResolve();
-      };
-      Master.listen = () => Promise.resolve();
-
+      });
 
       const pending = Master.initialize();
       eventBus.emit('testEvent', 'testData');
-      return Promise.all([pending, workerExit]);
+      return Promise.all([pending, workerExit])
+        .finally(() => {
+          Master.broadcastHandler.restore();
+          Master.statusHandler.restore();
+          Master.handleWorkerRestart.restore();
+        })
+
     });
 
     it('should call createFileListener and activateFileListener when auto-reload is true', function () {
-      let createCalled = false;
-      Master.createFileListener = () => {
-        createCalled = true;
-        return 'mockFileWatcher';
-      };
-
-      let activateCalled = false;
-      Master.activateFileListener = (watcher) => {
+      Master.createFileListener.returns('mockFileWatcher');
+      Master.activateFileListener.callsFake((watcher) => {
         expect(watcher).to.equal('mockFileWatcher');
-        expect(createCalled).to.equal(true, 'should call createFileListener before listener activation');
-        activateCalled = true;
-      };
-      Master.listen = () => Promise.resolve();
-
-      Master.initialize(true);
-
-      expect(createCalled).to.equal(true, 'listener should be created when auto-reload is true');
-      expect(activateCalled).to.equal(true, 'listener should be activated when auto-reload is true');
+        expect(Master.createFileListener.calledOnce).to.equal(true,
+          'should call createFileListener before listener activation');
+      });
+      return Master.initialize(true)
+        .then(() => {
+          expect(Master.createFileListener.calledOnce).to.equal(true,
+            'listener should be created when auto-reload is true');
+          expect(Master.activateFileListener.calledOnce).to.equal(true,
+            'listener should be activated when auto-reload is true');
+        });
     });
 
     it('should not call createFileListener and activateFileListener when auto-reload is false', function () {
-      let createCalled = false;
-      Master.createFileListener = () => {
-        createCalled = true;
-      };
-
-      let activateCalled = false;
-      Master.activateFileListener = () => {
-        activateCalled = true;
-      };
-      Master.listen = () => Promise.resolve();
-
-      Master.initialize();
-
-      expect(createCalled).to.equal(false, 'should not create file listener when autoReload is false');
-      expect(activateCalled).to.equal(false, 'should not activate file listener when autoReload is false');
+      return Master.initialize()
+        .then(() => {
+          expect(Master.createFileListener.calledOnce).to.equal(false,
+            'should not create file listener when autoReload is false');
+          expect(Master.activateFileListener.calledOnce).to.equal(false, 'should not activate file listener when autoReload is false');
+        });
     });
 
     it('should call fork os.cpus().length times', function () {
       const cpus = process.env.CI ? 2 : os.cpus().length;
-
-      // Overwrite fork so we do not actually fork a child process
-      let forkCalled = 0;
-      let listenCalled = 0;
-      Master.forkWorker = () => {
-        forkCalled += 1;
-      };
-      Master.listen = () => {
-        listenCalled += 1;
-        return Promise.resolve();
-      };
-
       return Master.initialize().then(() => {
-        expect(forkCalled).to.equal(cpus, 'Should fork worker for each cpu core.');
-        expect(listenCalled).to.equal(1, 'sould call listen once');
+        expect(Master.forkWorker.callCount).to.equal(cpus, 'Should fork worker for each cpu core.');
+        expect(Master.listen.callCount).to.equal(1, 'sould call listen once');
       });
     });
   });
 
   describe('handleWorkerRestart', function () {
-    it('should call reloadAllWorkers', function (done) {
-      Master.reloadAllWorkers = done;
+    it('should call reloadAllWorkers', function () {
+      let done;
+      const pending = new Promise(resolve => {done = resolve;});
+      sinon.stub(Master, 'reloadAllWorkers').callsFake(done);
       Master.handleWorkerRestart(undefined, undefined);
+      return pending
+        .finally(() => {
+          Master.reloadAllWorkers.restore();
+        });
     });
   });
 
@@ -187,58 +177,41 @@ describe.skip('app/master.js', function () {
   });
 
   describe('statusHandler', function () {
-    it('should emit event (data.id) with (Master.getStats()) data', function (done) {
-      Master.getStats = () => Promise.resolve('handler_testData');
-
+    it('should emit event (data.id) with (Master.getStats()) data', function () {
+      sinon.stub(Master, 'getStats').callsFake(() => Promise.resolve('handler_testData'));
+      let done;
+      const pending = new Promise(resolve => {done = resolve;});
       eventBus.on('handler_testEvent', (meta, data) => {
         expect(data).to.equal('handler_testData');
         done();
       });
-
       Master.statusHandler({}, {id: 'handler_testEvent'});
+      return pending.finally(() => Master.getStats.restore());
     });
 
-    it('should not throw error when no id defined', function (done) {
+    it('should not throw error when no id defined', function () {
       Master.statusHandler({}, 5);
-      done();
     });
   });
 
   describe('broadcastHandler', function () {
-    it('should not throw errors with valid params', function (done) {
+    it('should not throw errors with valid params', function () {
       Master.broadcastHandler('name', {field1: 'sop', field2: 'sep'}, ['data', 'pata']);
-      done();
     });
   });
 
   describe('forkWorker', function () {
-    let forkCalled = false;
-    let forkEmitter;
-
-    before(function () {
-      cluster.fork = () => {
-        forkCalled = true;
-        return forkEmitter;
-      };
-    });
-
-    beforeEach(function (done) {
-      forkEmitter = new EventEmitter();
-      forkCalled = false;
-      done();
-    });
-
     it('should call fork', function () {
-      const forkPromise = Master.forkWorker().then(() => {
-        expect(forkCalled).to.equal(true);
-        expect(forkEmitter.listenerCount('exit')).to
-          .equal(1, 'Should remove rejecting exit event listener before rejecting.');
-        expect(forkEmitter.listenerCount('listening')).to
-          .equal(1, 'Should still listen to listening events');
-        expect(forkEmitter.listenerCount('message')).to
-          .equal(1, 'Should listen to message events');
-      });
-
+      const forkPromise = Master.forkWorker()
+        .then(() => {
+          expect(cluster.fork.calledOnce).to.equal(true);
+          expect(forkEmitter.listenerCount('exit')).to
+            .equal(1, 'Should remove rejecting exit event listener before rejecting.');
+          expect(forkEmitter.listenerCount('listening')).to
+            .equal(1, 'Should still listen to listening events');
+          expect(forkEmitter.listenerCount('message')).to
+            .equal(1, 'Should listen to message events');
+        });
       forkEmitter.emit('listening');
       return forkPromise;
     });
@@ -246,91 +219,84 @@ describe.skip('app/master.js', function () {
     it('should reject promise on early exit', function () {
       const forkPromise = Master.forkWorker();
       forkEmitter.emit('exit');
-
       return expect(forkPromise).to.eventually.be.rejectedWith(Error, 'Should not exit before listening event.');
     });
 
     it('should redirect message from worker to onWorkerMessage', function () {
-      Master.onWorkerMessage = (data) => {
+      sinon.stub(Master, 'onWorkerMessage').callsFake((data) => {
         expect(data).to.equal('data');
         forkEmitter.emit('listening');
-      };
+      });
 
       const forkPromise = Master.forkWorker();
 
       forkEmitter.emit('message', 'data');
-      return forkPromise;
+      return forkPromise.finally(() => Master.onWorkerMessage.restore());
     });
   });
 
   describe('onWorkerMessage', function () {
-    it('should pass event message to correct handler', function (done) {
-      eventBus.clusterEventHandler = (worker, data) => {
+    it('should pass event message to correct handler', function () {
+      let done;
+      const pending = new Promise(resolve => {done = resolve;});
+      sinon.stub(eventBus, 'clusterEventHandler').callsFake((worker, data) => {
         expect(data).to.have.property('type', 'event');
         expect(data).to.have.deep.property('args', ['arg1', 'arg2', 'arg3']);
         done();
-      };
+      });
 
       const data = {type: 'event', args: ['arg1', 'arg2', 'arg3']};
       Master.onWorkerMessage.call({id: 1}, data);
+      return pending.finally(() => eventBus.clusterEventHandler.restore());
     });
 
-    it('should throw error with missing message type', function (done) {
+    it('should throw error with missing message type', function () {
       const data = 'fork_TestData';
       expect(Master.onWorkerMessage.bind({}, data)).not.to.throw();
-      done();
     });
 
-    it('should throw error with unknown message type', function (done) {
+    it('should throw error with unknown message type', function () {
       const data = {type: 'Desbug', data: 'fork_TestData'};
       expect(Master.onWorkerMessage.bind({}, data)).not.to.throw();
-      done();
     });
   });
 
   describe('logMasterDeath', function () {
-    it('should return 2 with signal', function (done) {
+    it('should return 2 with signal', function () {
       expect(Master.logMasterDeath(undefined, 'SAIGNAL')).to.equal(2);
-      done();
     });
 
-    it('should return 1 with no signal and a nonzero code', function (done) {
+    it('should return 1 with no signal and a nonzero code', function () {
       expect(Master.logMasterDeath(1235, undefined)).to.equal(1);
-      done();
     });
 
-    it('should return 0 with success code', function (done) {
+    it('should return 0 with success code', function () {
       expect(Master.logMasterDeath(0, undefined)).to.equal(0);
-      done();
     });
   });
 
   describe('logWorkerDeath', function () {
-    it('should return 2 with signal', function (done) {
+    it('should return 2 with signal', function () {
       expect(Master.logWorkerDeath({id: 'ID1'}, undefined, 'SAIGNAL')).to.equal(2);
-      done();
     });
 
-    it('should return 1 with no signal and a nonzero code', function (done) {
+    it('should return 1 with no signal and a nonzero code', function () {
       expect(Master.logWorkerDeath({id: 'ID2'}, 1235, undefined)).to.equal(1);
-      done();
     });
 
-    it('should return 0 with success code', function (done) {
+    it('should return 0 with success code', function () {
       expect(Master.logWorkerDeath({id: 'ID3'}, 0, undefined)).to.equal(0);
-      done();
     });
   });
 
   describe('handleSIGINT', function () {
+    beforeEach(function () {
+      Master.onExit = sinon.stub();
+    });
+    afterEach(function () {
+      Master.onExit = undefined;
+    });
     it('should kill all workers', function () {
-      const processExitFunction = process.exit;
-
-      let processExitCalled = false;
-      process.exit = () => {
-        processExitCalled = true;
-      };
-
       const worker1 = new EventEmitter();
       const worker2 = new EventEmitter();
       const worker3 = new EventEmitter();
@@ -354,21 +320,18 @@ describe.skip('app/master.js', function () {
       };
 
       cluster.workers = {1: worker1, 2: worker2, 3: worker3};
-      return Master.handleSIGINT().then(() => {
-        process.exit = processExitFunction;
-        expect(killCalled1).to.equal(true,
-          'Kill function should be called for worker 1.');
-        expect(killCalled2).to.equal(true,
-          'Kill function should be called for worker 2.');
-        expect(killCalled3).to.equal(true,
-          'Kill function should be called for worker 3.');
+      return Master.handleSIGINT()
+        .then(() => {
+          expect(killCalled1).to.equal(true,
+            'Kill function should be called for worker 1.');
+          expect(killCalled2).to.equal(true,
+            'Kill function should be called for worker 2.');
+          expect(killCalled3).to.equal(true,
+            'Kill function should be called for worker 3.');
 
-        expect(processExitCalled).to.equal(true,
-          'Should call process.exit at some point.');
-      }).catch((error) => {
-        process.exit = processExitFunction;
-        throw error;
-      });
+          expect(Master.onExit.calledOnce).to.equal(true,
+            'Should call process.exit at some point.');
+        });
     });
   });
 

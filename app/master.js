@@ -44,8 +44,6 @@ class Master {
     eventBus.once('systemRestartNeeded', () => { systemRestartNeeded = true; });
 
     // Handle graceful exit
-    process.on('SIGINT', Master.handleSIGINT);
-    process.on('exit', Master.logMasterDeath);
     cluster.on('exit', Master.handleWorkerExit);
 
     // Start listening to changes in file system
@@ -356,8 +354,16 @@ class Master {
       .then(Master.close)
       .then(() => {
         logger.info('All workers killed, exiting process.');
-        process.exit();
+        Master.onExit();
       });
+  }
+
+  static get onExit() {
+    const dummyCb = () => {};
+    return Master._onExit || dummyCb;
+  }
+  static set onExit(cb) {
+    Master._onExit = cb;
   }
 
   /**
