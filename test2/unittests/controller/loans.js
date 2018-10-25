@@ -1,28 +1,18 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-require('colors');
-const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
-const {setup, reset, teardown} = require('./mongomock');
+const chai = require('../../index');
+const {setup, reset, teardown} = require('./../../utils/mongomock');
 
-require('./../../app/models/group.js');
-require('./../../app/models/user.js');
-require('./../../app/models/item.js');
-require('./../../app/models/loan.js');
-const LoanController = require('./../../app/controllers/loans.js');
-
-// Setup
-logger.level = 'error';
-mongoose.Promise = Promise;
-chai.use(chaiSubset);
-chai.use(chaiAsPromised);
+require('./../../../app/models/group.js');
+require('./../../../app/models/user.js');
+require('./../../../app/models/item.js');
+require('./../../../app/models/loan.js');
+const LoanController = require('./../../../app/controllers/loans.js');
 
 // Mocking
 const mockItems = require('./mocking/MockItems.js');

@@ -1,27 +1,17 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-require('colors');
-const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
-require('./../../app/models/item.js');
-const ItemController = require('./../../app/controllers/items.js');
+const chai = require('../../');
+require('./../../../app/models/item.js');
+const ItemController = require('./../../../app/controllers/items.js');
 const MockResponse = require('./mocking/MockResponse.js');
 const mockItems = require('./mocking/MockItems.js');
 
-// Setup
-logger.level = 'error';
-mongoose.Promise = Promise;
-chai.use(chaiSubset);
-chai.use(chaiAsPromised);
-
-const {setup, reset, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./../../utils/mongomock');
 
 
 // Test variables

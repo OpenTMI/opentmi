@@ -1,21 +1,11 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const mongoose = require('mongoose');
-const logger = require('winston');
 const Promise = require('bluebird');
 
-// Setup
-logger.level = 'error';
-mongoose.Promise = Promise;
-chai.use(chaiSubset);
+const {expect} = require('../..')
+const {setup, reset, teardown} = require('../../utils/mongomock');
 
-const {setup, reset, teardown} = require('../mongomock');
-
-// Test variables
-const expect = chai.expect;
 
 describe('controllers/builds.js', function () {
   let BuildsController;

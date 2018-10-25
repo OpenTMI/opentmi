@@ -1,19 +1,10 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
-// Third party components
-require('colors');
-const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const logger = require('winston');
-
 // Local components
-const {setup, reset, teardown} = require('./mongomock');
-require('./../../app/models/group.js');
-const GroupsController = require('./../../app/controllers/groups.js');
-
-// Setup
-logger.level = 'error';
-chai.use(chaiSubset);
+const {setup, reset, teardown} = require('./../../utils/mongomock');
+require('../../../app/models/group.js');
+const GroupsController = require('./../../../app/controllers/groups.js');
+const chai = require('../../index');
 
 // Test variables
 const {expect} = chai;

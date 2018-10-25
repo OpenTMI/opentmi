@@ -2,14 +2,10 @@
 
 // Third party components
 const chai = require('chai');
-const logger = require('winston');
 
 // Local components
 const SchemaController = require('../../../app/controllers/schemas');
-const MockResponse = require('../mocking/MockResponse');
-
-// Setup
-logger.level = 'error';
+const MockResponse = require('./mocking/MockResponse');
 
 // Test variables
 const expect = chai.expect;
