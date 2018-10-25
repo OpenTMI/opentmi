@@ -43,6 +43,10 @@ jobs:
             MOCHA_FILE=junit/unittests.xml grunt unittests --silent
             MOCHA_FILE=junit/apitests.xml grunt apitests --silent
             MOCHA_FILE=junit/clustertests.xml grunt clustertests --silent
+            npm run test2
+      - run:
+          name: coveralls
+          command: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
       - run:
           name: lint
           command: npm run lint
