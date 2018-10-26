@@ -76,9 +76,6 @@ defaults: &defaults
         name: lint
         command: npm run lint
         when: always
-    - run:
-        name: doc
-        command: npm run doc
     - store_test_results:
         path: junit
     - store_artifacts:
@@ -111,7 +108,7 @@ jobs:
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
-       NPM_CI_INSTALL: "ci"
+       NPM_CI_INSTALL: "install"
     - image: mongo:4.1.2
   test-node-latest:
     <<: *defaults
@@ -120,7 +117,7 @@ jobs:
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
-       NPM_CI_INSTALL: "ci"
+       NPM_CI_INSTALL: "install"
     - image: mongo:4.1.2
   publish:
     <<: *defaults
