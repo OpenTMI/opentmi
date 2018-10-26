@@ -11,3 +11,4 @@ sslcert
 *.log
 env.json
 config.json
+coverage

@@ -28,9 +28,8 @@ let User;
  * User schema
  */
 const UserSchema = new Schema({
-  name: {type: String},
-
-  email: {type: String, unique: true, lowercase: true},
+  name: {type: String, required: true},
+  email: {type: String, unique: true, sparse: true, lowercase: true},
   password: {type: String, select: false},
   displayName: String,
   picture: String,

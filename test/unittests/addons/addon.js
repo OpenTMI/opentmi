@@ -4,16 +4,11 @@
 const path = require('path');
 
 // Third party components
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const logger = require('winston');
-
-// Setup
-logger.level = 'error';
-chai.use(chaiAsPromised);
+const Promise = require('bluebird');
+const sinon = require('sinon');
+const {expect} = require('chai');
 
 // Test variables
-const {expect} = chai;
 const cachePath = path.resolve('./app/addons/addon.js');
 
 let Addon;
@@ -287,9 +282,17 @@ describe('addon.js', function () {
   });
 
   describe('_installDependencies', function () {
-    it.skip('_installDependencies', function (done) {
-      // TODO actually test that a command is executed
-      done();
+    it('_installDependencies', function () {
+      sinon.stub(Addon, 'exec').callsFake(() => Promise.resolve([undefined, undefined]));
+      sinon.stub(Addon, '_autoInstallAddonDeps').returns(true);
+      return addonPrototype.constructor._installDependencies(addon)
+        .then(() => {
+          expect(Addon.exec.calledOnceWith('npm install')).to.be.true;
+        })
+        .finally(() => {
+          Addon.exec.restore();
+          Addon._autoInstallAddonDeps.restore();
+        });
     });
   });
 
