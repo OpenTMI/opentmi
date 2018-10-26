@@ -40,11 +40,15 @@ defaults: &defaults
     - run:
         name: versions
         command: |
+          mongorestore --version
           node --version
           npm --version
+          echo $NPM_CI_INSTALL
     - run:
         name: npm-install
-        command: npm $NPM_CI_INSTALL
+        command: |
+          npm $NPM_CI_INSTALL
+          sudo npm install -g grunt-cli
 
     - save_cache:
         key: dependency-cache-{{ checksum "_tmp_file" }}-{{ checksum "package-lock.json" }}
