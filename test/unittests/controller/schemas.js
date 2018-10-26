@@ -1,14 +1,13 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
+const {expect} = require('../../chai');
 
 // Local components
 const SchemaController = require('../../../app/controllers/schemas');
 const MockResponse = require('./mocking/MockResponse');
 
 // Test variables
-const expect = chai.expect;
 const controller = new SchemaController();
 
 describe('controllers/schemas.js', function () {

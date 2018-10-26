@@ -4,7 +4,7 @@
 const {setup, reset, teardown} = require('./../../utils/mongomock');
 require('../../../app/models/group.js');
 const GroupsController = require('./../../../app/controllers/groups.js');
-const chai = require('../../index');
+const chai = require('../../chai');
 
 // Test variables
 const {expect} = chai;

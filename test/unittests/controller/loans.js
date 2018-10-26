@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const Promise = require('bluebird');
 
 // Local components
-const chai = require('../../index');
+const chai = require('../../chai');
 const {setup, reset, teardown} = require('./../../utils/mongomock');
 
 require('./../../../app/models/group.js');

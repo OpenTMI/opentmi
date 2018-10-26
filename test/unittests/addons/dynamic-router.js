@@ -1,13 +1,6 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
-// Third party components
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const logger = require('winston');
-
-// Setup
-logger.level = 'error';
-chai.use(chaiAsPromised);
+const chai = require('../../chai');
 
 // Local components
 const DynamicRouter = require('../../../app/addons/dynamic-router');
