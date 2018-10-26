@@ -11,7 +11,7 @@ const Promise = require('bluebird');
 const sinon = require('sinon');
 
 // Local components
-const chai = require('../');
+const chai = require('../chai');
 const eventBus = require('../../app/tools/eventBus');
 
 // Test variables

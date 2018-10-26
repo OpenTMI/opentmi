@@ -4,7 +4,7 @@
 const Promise = require('bluebird');
 
 // Local components
-const chai = require('../../');
+const chai = require('../../chai');
 require('./../../../app/models/item.js');
 const ItemController = require('./../../../app/controllers/items.js');
 const MockResponse = require('./mocking/MockResponse.js');

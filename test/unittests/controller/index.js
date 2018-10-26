@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const Promise = require('bluebird');
 
 // Local components
-const chai = require('../..');
+const chai = require('../../chai');
 const DefaultController = require('./../../../app/controllers/index.js');
 const MockResponse = require('./mocking/MockResponse.js');
 const DummySchema = require('./mocking/DummySchema.js');
