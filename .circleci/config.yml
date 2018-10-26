@@ -38,6 +38,10 @@ defaults: &defaults
     - restore_cache:
         key: dependency-cache-{{ checksum "_tmp_file" }}-{{ checksum "package-lock.json" }}
     - run:
+        name: install mongodb-org-tools
+        command: |
+          sudo npm install -g mongodb-prebuilt
+    - run:
         name: versions
         command: |
           mongorestore --version
@@ -63,10 +67,6 @@ defaults: &defaults
     - run:
         name: coveralls
         command: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
-    - run:
-        name: install mongodb-org-tools
-        command: |
-          sudo npm install -g mongodb-prebuilt
     - run:
         name: test-api
         command: |
