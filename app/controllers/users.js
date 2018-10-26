@@ -63,7 +63,7 @@ class UsersController extends DefaultController {
         }
         res.json(req.body);
       })
-      .catch(error => res.status(500).json({error: `${error}`}))
+      .catch(error => res.status(500).json({error: `${error}`}));
   }
 }
 

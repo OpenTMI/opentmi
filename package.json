@@ -30,7 +30,8 @@
     "debug-cluster": "node --inspect app/cluster.js",
     "test": "NODE_ENV=test istanbul cover -- _mocha --recursive -R spec test/unittests",
     "test-api": "grunt",
-    "lint": "node node_modules/eslint/bin/eslint ."
+    "lint": "node node_modules/eslint/bin/eslint .",
+    "lint-fix": "node node_modules/eslint/bin/eslint . --fix"
   },
   "dependencies": {
     "async": "^2.5.0",

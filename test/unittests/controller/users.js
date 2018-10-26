@@ -75,11 +75,9 @@ describe('controllers/users', function () {
       it('updateSettings, failed', function () {
         const req = newRequest({user: 'data'}, {Namespace: 'name'});
         req.user = {update: sinon.stub()};
-        const resp = _.merge({}, req.body, {nModified: 0});
         req.user.update.rejects(new Error('ohhoh'));
         return controller.updateSettings(req, res)
-          .then(() => { throw new Error('should not success'); })
-          .catch((error) => {
+          .then(() => {
             expect(res.status.calledOnceWith(500)).to.be.true;
             expect(res.json.calledOnce).to.be.true;
           });
@@ -87,7 +85,7 @@ describe('controllers/users', function () {
 
       it('getSettings, exists', function () {
         const req = newRequest({}, {Namespace: 'name'});
-        req.user = {settings: {'name': {user: 'data'}}};
+        req.user = {settings: {name: {user: 'data'}}};
         return controller.getSettings(req, res)
           .then(() => {
             expect(res.status.calledOnce).to.be.false;
@@ -97,7 +95,7 @@ describe('controllers/users', function () {
       });
       it('getSettings, not exists', function () {
         const req = newRequest({}, {Namespace: 'name'});
-        req.user = {settings: {'name2': {user: 'data'}}};
+        req.user = {settings: {name2: {user: 'data'}}};
         return controller.getSettings(req, res)
           .then(() => {
             expect(res.status.calledOnce).to.be.false;

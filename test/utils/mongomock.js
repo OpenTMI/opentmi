@@ -8,7 +8,7 @@ const mockgoose = new Mockgoose(mongoose);
 
 module.exports = {
   setup: function setup() {
-    const options = { useNewUrlParser: true };
+    const options = {useNewUrlParser: true};
     return mockgoose.prepareStorage()
       .then(() => mongoose.connect('mongodb://test', options));
   },

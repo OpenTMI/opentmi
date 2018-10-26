@@ -9,7 +9,5 @@ module.exports.newResponse = () => {
   res.json.returns(res);
   return res;
 };
-module.exports.newRequest = (body = {}, params = {}, query = {}) => {
-  return {body, params, query};
-};
+module.exports.newRequest = (body = {}, params = {}, query = {}) => ({body, params, query});
 
