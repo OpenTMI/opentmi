@@ -8,17 +8,13 @@ const fs = require('fs');
 const logger = require('winston');
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
+
+const chai = require('../../chai');
 
 // Local modules
 const nconf = require('../../../app/tools/config');
 require('../../../app/models/extends/file.js');
 const checksum = require('../../../app/tools/checksum.js');
-
-// Setup
-logger.level = 'error';
-chai.use(chaiAsPromised);
 
 // Test variables
 const {expect} = chai;

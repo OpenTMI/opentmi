@@ -263,20 +263,24 @@ class Addon {
       .then(() => Addon._requireModule(editedAddon));
   }
 
+  static _autoInstallAddonDeps() {
+    return nconf.get('autoInstallAddonDeps');
+  }
+
   /**
    * Install dependencies in addon with npm install
    * @param {Addon} addon - instance of an addon
    * @return {Promise} promise to install dependencies eventually
    */
   static _installDependencies(addon) {
-    if (!nconf.get('autoInstallAddonDeps')) {
+    if (!Addon._autoInstallAddonDeps()) {
       logger.debug('Skip addon dependency installation');
       return Promise.resolve();
     }
     const command = 'npm install';
 
     logger.debug(`[${addon.name}] npm installing, working directory: ${addon.addonPath}.`);
-    return exec(command, {cwd: addon.addonPath}).then(([stdout, stderr]) => {
+    return Addon.exec(command, {cwd: addon.addonPath}).then(([stdout, stderr]) => {
       logger.debug(`[${addon.name}] npm finished.`);
       logger.verbose(`STDOUT - "${command}"\n${stdout}`);
       logger.verbose(`STDERR - "${command}"\n${stderr}`);
@@ -362,6 +366,7 @@ class Addon {
       return Promise.reject(editedError);
     });
   }
+  static exec(...args) { return exec(...args); }
 }
 
 
