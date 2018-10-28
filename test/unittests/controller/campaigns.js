@@ -2,17 +2,12 @@
 
 // Third party components
 const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const logger = require('winston');
 
 // Local components
-const {setup, reset, teardown} = require('./mongomock');
-require('./../../app/models/campaign.js');
-const CampaignController = require('./../../app/controllers/campaigns.js');
+const {setup, reset, teardown} = require('../../utils/mongomock');
+require('./../../../app/models/campaign.js');
+const CampaignController = require('./../../../app/controllers/campaigns.js');
 
-// Setup
-logger.level = 'error';
-chai.use(chaiSubset);
 
 // Test variables
 const {expect} = chai;

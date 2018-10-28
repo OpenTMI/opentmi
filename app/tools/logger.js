@@ -12,7 +12,7 @@ const config = require('./config');
 
 // Setup
 const verbose = config.get('verbose');
-const silent = config.get('silent');
+const silent = config.get('silent') || process.env.NODE_ENV === 'test';
 
 const logDir = path.resolve(__dirname, '..', '..', 'log');
 if (!fs.existsSync(logDir)) {
@@ -41,6 +41,7 @@ class MasterLogger {
       format: format.combine(
         format.colorize(),
         format.timestamp(),
+        format.metadata(),
         format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
       )
     };
@@ -49,7 +50,7 @@ class MasterLogger {
     if (!silent) {
       this.logger.add(new transports.Console({
         colorize: true,
-        level: silent ? 'error' : ['info', 'debug', 'verbose', 'silly'][verbose % 4]
+        level: ['info', 'debug', 'verbose', 'silly'][verbose % 4]
       }));
     }
     // Add winston file logger, which rotates daily

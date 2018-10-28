@@ -1,31 +1,21 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-require('colors');
 const stream = require('stream');
-const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
+const {expect} = require('chai');
 const Promise = require('bluebird');
-const logger = require('winston');
 
 // Local components
 require('../../../app/models/build.js');
 require('../../../app/models/testcase.js');
 require('../../../app/models/results.js');
 const ResultsController = require('../../../app/controllers/results.js');
-const MockResponse = require('../mocking/MockResponse.js');
-const mockJunitXml = require('../mocking/MockJunitXmlTests.js');
-const {setup, reset, teardown} = require('../mongomock');
+const MockResponse = require('./mocking/MockResponse.js');
+const mockJunitXml = require('./mocking/MockJunitXmlTests.js');
+const {setup, reset, teardown} = require('../../utils/mongomock');
 
-
-// Setup
-logger.level = 'error';
-chai.use(chaiSubset);
-chai.use(chaiAsPromised);
 
 // Test variables
-const expect = chai.expect;
 let controller = null;
 
 describe('controllers/results.js', function () {

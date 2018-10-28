@@ -63,7 +63,7 @@ class Github {
           throw new Error(`You do not have required access to ${organization}.`);
         }
         logger.verbose('user belongs to '
-            + `organization: ${organization}, which has access to this server.`);
+            + `organization: ${organization} - OK`);
         return belongsOrg;
       });
   }
@@ -88,13 +88,13 @@ class Github {
       });
     })
       .then((teams) => {
-        logger.verbose(`response from: ${teamUrl} received`);
+        logger.verbose(`response from: ${teamUrl} received - OK`);
         const {adminTeam, organization} = nconf.get('github');
 
         // Attempt to find the correct admin team from list of teams the user belongs to
         const isAdmin = _.find(teams, team =>
           (team.name === adminTeam && team.organization.login === organization));
-        logger.verbose(`user ${isAdmin ? 'belongs' : 'does not belong'} to organization ${organization}`);
+        logger.verbose(`user ${isAdmin ? 'belongs' : 'does not belong'} to admin team: ${adminTeam}`);
         return !!isAdmin;
       });
   }
@@ -104,7 +104,13 @@ class Github {
     logger.debug('updating user\'s group to match current status.');
     if (groupname !== 'admins') {
       logger.info(`removing user: ${user._id} from admins.`);
-      return user.removeFromGroup('admins');
+      return user.isAdmin()
+        .then((isAdmin) => {
+          if (isAdmin) {
+            return user.removeFromGroup('admins');
+          }
+          return user.save();
+        });
     } else if (groupname === 'admins') {
       logger.info(`adding user: ${user._id} to admins.`);
       return user.addToGroup(groupname);

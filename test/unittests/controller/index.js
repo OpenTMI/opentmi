@@ -1,28 +1,19 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-require('colors');
 const _ = require('lodash');
-const chai = require('chai');
-const chaiSubset = require('chai-subset');
-const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
-const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
-const DefaultController = require('./../../app/controllers/index.js');
+const chai = require('../../chai');
+const DefaultController = require('./../../../app/controllers/index.js');
 const MockResponse = require('./mocking/MockResponse.js');
 const DummySchema = require('./mocking/DummySchema.js');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
-const {setup, reset, teardown} = require('./mongomock');
+const {setup, reset, teardown} = require('./../../utils/mongomock');
 
-// Setup
-logger.level = 'silly';
-mongoose.Promise = Promise;
-chai.use(chaiSubset);
-chai.use(chaiAsPromised);
 mongoose.model('DummyItem', DummySchema);
 
 // Test variables

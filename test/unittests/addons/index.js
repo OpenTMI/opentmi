@@ -4,17 +4,9 @@
 const path = require('path');
 const fs = require('fs');
 
-// Third party components
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const logger = require('winston');
-
 // Local components
+const chai = require('../../chai');
 const addonMockFiles = require('./mocking/addon-mock-files');
-
-// Setup
-logger.level = 'error';
-chai.use(chaiAsPromised);
 
 // Test variables
 const {expect} = chai;

@@ -1,21 +1,14 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-require('colors');
 const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const logger = require('winston');
 const Promise = require('bluebird');
 
 // Local components
-const {setup, reset, teardown} = require('./mongomock');
-require('./../../app/models/resource.js');
-const ResourceController = require('./../../app/controllers/resources.js');
+const {setup, reset, teardown} = require('../../utils/mongomock');
+require('./../../../app/models/resource.js');
+const ResourceController = require('./../../../app/controllers/resources.js');
 const MockResponse = require('./mocking/MockResponse.js');
-
-// Setup
-logger.level = 'error';
-chai.use(chaiAsPromised);
 
 
 // Test variables

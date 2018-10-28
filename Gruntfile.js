@@ -10,14 +10,7 @@ const dbPath = path.join('.', 'scripts', 'dbrestore.sh');
 const dumpPath = path.join('.', 'test', 'seeds', 'test_dump');
 
 const testFilesApi = ['test/tests_api/*.js'];
-const testFilesUnit = [
-  'test/tests_unittests/*.js',
-  'test/tests_unittests/tools/*.js',
-  'test/tests_unittests/tools/**/*.js',
-  'test/tests_unittests/addons/*.js',
-  'test/tests_unittests/controllers/*.js',
-  'test/tests_unittests/routes/*.js'
-];
+
 const testFilesCluster = ['test/tests_cluster/*.js', 'test/tests_api/socketio.js'];
 
 const gruntConfig = {
@@ -65,9 +58,6 @@ const gruntConfig = {
     },
     api: {
       src: testFilesApi
-    },
-    unit: {
-      src: testFilesUnit
     }
   }
 };
@@ -80,18 +70,6 @@ function listAddons() {
     .filter(itemPath => fs.statSync(itemPath).isDirectory()); // Filter only directories
 }
 
-function findAddonUnitTests() {
-  listAddons().forEach((addonPath) => {
-    // Read addon items
-    fs.readdirSync(addonPath)
-      .filter(item => item === 'unitTests') // Filter only items that are named unitTests
-      .map(item => path.join(addonPath, item)) // Map items to actual paths to those items
-      .filter(itemPath => fs.statSync(itemPath).isDirectory()) // filter only those paths that are directories
-      .forEach((testPath) => {
-        testFilesUnit.push(path.join(testPath, '*.js'));
-      });
-  });
-}
 
 function findAddonApiTests() {
   listAddons().forEach((addonPath) => {
@@ -114,13 +92,8 @@ function gruntSetup(grunt) {
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-simple-mocha');
 
-  grunt.registerTask('findAddonUnitTests', findAddonUnitTests);
   grunt.registerTask('findAddonApiTests', findAddonApiTests);
 
-  grunt.registerTask('unittests', [
-    'findAddonUnitTests',
-    'simplemocha:unit'
-  ]);
   grunt.registerTask('apitests', [
     'findAddonApiTests',
     'exec:restore_db',
@@ -134,7 +107,6 @@ function gruntSetup(grunt) {
     'simplemocha:cluster'
   ]);
   grunt.registerTask('default', [
-    'unittests',
     'apitests',
     'clustertests'
   ]);
