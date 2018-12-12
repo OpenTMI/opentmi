@@ -49,6 +49,7 @@ class Priorities {
   static get INFO() { return 'info'; }
   static get DEBUG() { return 'debug'; }
 }
+
 class Facilities {
   static list() {
     return [
@@ -82,14 +83,27 @@ const EventSchema = new Schema({
     user: {type: ObjectId, ref: 'User'}
   },
   ref: {
-    resource: {type: ObjectId, ref: 'Resource', required: function () {
-      return this.priority.facility === Facilities.RESOURCE; }},
-    result: {type: Types.ObjectId, ref: 'Result', required: function () {
-      return this.priority.facility === Facilities.RESULT; }},
-    testcase: {type: ObjectId, ref: 'Testcase', required: function () {
-      return this.priority.facility === Facilities.TESTCASE; }},
-    user: {type: ObjectId, ref: 'User', required: function () {
-      return this.priority.facility === Facilities.USER; }}
+    resource: {
+      type: ObjectId,
+      ref: 'Resource',
+      required: function () {
+        return this.priority.facility === Facilities.RESOURCE;
+      }},
+    result: {type: Types.ObjectId,
+      ref: 'Result',
+      required: function () {
+        return this.priority.facility === Facilities.RESULT;
+      }},
+    testcase: {type: ObjectId,
+      ref: 'Testcase',
+      required: function () {
+        return this.priority.facility === Facilities.TESTCASE;
+      }},
+    user: {type: ObjectId,
+      ref: 'User',
+      required: function () {
+        return this.priority.facility === Facilities.USER;
+      }}
   },
   priority: {
     level: {
