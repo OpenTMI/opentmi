@@ -16,9 +16,8 @@ describe('controllers/groups.js', function () {
   beforeEach(reset);
   after(teardown);
 
-  it('constructor', function (done) {
+  it('constructor', function () {
     controller = new GroupsController();
     expect(controller).to.exist; // eslint-disable-line no-unused-expressions
-    done();
   });
 });
