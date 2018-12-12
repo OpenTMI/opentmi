@@ -79,7 +79,7 @@ describe('controllers/events.js', function () {
     describe('redirectRef', function () {
       it('found', function () {
         const req = newRequest({}, {Resource: 'abc'});
-        req.Event = {ref: {resource: 'abc'}}
+        req.Event = {ref: {resource: 'abc'}};
         EventsController.redirectRef(req, res);
         expect(res.redirect.calledWith(`/api/v0/resources/${req.params.Resource}`)).to.be.true;
       });
