@@ -51,7 +51,7 @@ describe('Events', function () {
     })
     .catch((error) => {
       throw new Error(_.get(error, 'response.body.error', error));
-    })
+    });
 
   describe('create events', function () {
     it('can not create event without mandatory properties', function () {

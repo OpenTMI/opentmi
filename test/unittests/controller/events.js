@@ -42,7 +42,7 @@ describe('controllers/events.js', function () {
         return controller.create(req, res)
           .then(() => {
             expect(res.status.called).to.be.false;
-          })
+          });
       });
       it('require ref', function () {
         controller = new EventsController();
@@ -55,7 +55,7 @@ describe('controllers/events.js', function () {
         return controller.create(req, res)
           .then(() => {
             expect(res.status.calledOnceWith(400)).to.be.true;
-          })
+          });
       });
     });
   });
