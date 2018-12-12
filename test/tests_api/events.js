@@ -104,6 +104,9 @@ describe('Events', function () {
       priority: {
         level: 'info',
         facility: 'user'
+      },
+      ref: {
+        user: '5c10f57f35e9e38db25c0476'
       }
     };
     function findEvents() {
