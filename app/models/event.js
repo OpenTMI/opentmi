@@ -3,7 +3,7 @@ const QueryPlugin = require('mongoose-query');
 
 const {Schema} = mongoose;
 const {Types} = Schema;
-const {ObjectId} = Types;
+const {ObjectId, Mixed} = Types;
 
 
 class MsgIds {
@@ -49,6 +49,7 @@ class Priorities {
   static get INFO() { return 'info'; }
   static get DEBUG() { return 'debug'; }
 }
+
 class Facilities {
   static list() {
     return [
@@ -60,6 +61,7 @@ class Facilities {
       Facilities.SYSLOG,
       Facilities.USER,
       Facilities.RESOURCE,
+      Facilities.RESULT,
       Facilities.TESTCASE
     ];
   }
@@ -70,6 +72,7 @@ class Facilities {
   static get NEWS() { return 'news'; }
   static get SYSLOG() { return 'syslog'; }
   static get USER() { return 'user'; }
+  static get RESULT() { return 'result'; }
   static get RESOURCE() { return 'resource'; }
   static get TESTCASE() { return 'testcase'; }
 }
@@ -80,9 +83,27 @@ const EventSchema = new Schema({
     user: {type: ObjectId, ref: 'User'}
   },
   ref: {
-    resource: {type: ObjectId, ref: 'Resource'},
-    result: {type: Types.ObjectId, ref: 'Result'},
-    testcase: {type: ObjectId, ref: 'Testcase'}
+    resource: {
+      type: ObjectId,
+      ref: 'Resource',
+      required: function () {
+        return this.priority.facility === Facilities.RESOURCE;
+      }},
+    result: {type: Types.ObjectId,
+      ref: 'Result',
+      required: function () {
+        return this.priority.facility === Facilities.RESULT;
+      }},
+    testcase: {type: ObjectId,
+      ref: 'Testcase',
+      required: function () {
+        return this.priority.facility === Facilities.TESTCASE;
+      }},
+    user: {type: ObjectId,
+      ref: 'User',
+      required: function () {
+        return this.priority.facility === Facilities.USER;
+      }}
   },
   priority: {
     level: {
@@ -99,7 +120,9 @@ const EventSchema = new Schema({
   id: {type: String}, // e.g. PID of the process
   msgid: {type: String, enum: MsgIds.list()}, // pre-defined ID's
   tag: {type: String},
-  msg: {type: String}
+  msg: {type: String},
+  duration: {type: Number},
+  spare: {type: Mixed}
 });
 
 EventSchema.virtual('priorityStr')

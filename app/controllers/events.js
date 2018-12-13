@@ -94,12 +94,13 @@ class EventsController extends DefaultController {
     const filter = {'ref.resource': req.params.Resource};
     const query = _.defaults(filter, req.query);
 
-    Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
+    return Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
       .then((events) => { res.json(events); })
       .catch((error) => {
         logger.error(`resourceEvents failure: ${error}`);
+        const status = error.name === 'CastError' ? 400 : 500;
         res
-          .status(500)
+          .status(status)
           .json({message: error.message, error: error});
       });
   }

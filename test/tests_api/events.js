@@ -41,18 +41,6 @@ describe('Events', function () {
     return Promise.each(toBeDeleted, deleteEvent);
   });
 
-  it('can not create event without mandatory properties', function () {
-    const payload = {
-      priority: {}
-    };
-    return superagent.post(api, payload)
-      .set('authorization', authString)
-      .end()
-      .reflect()
-      .then((promise) => {
-        expect(promise.isRejected()).to.be.true;
-      });
-  });
 
   const createEvent = payload => superagent.post(api, payload)
     .set('authorization', authString)
@@ -60,28 +48,65 @@ describe('Events', function () {
     .then((response) => {
       createdEvents.push(response.body._id);
       return response.body;
+    })
+    .catch((error) => {
+      throw new Error(_.get(error, 'response.body.error', error));
     });
 
-  it('create events', function () {
-    const payload = {
-      priority: {
-        level: 'info',
-        facility: 'user'
-      }
-    };
-    return createEvent(payload)
-      .then((body) => {
-        expect(body).to.have.property('priority');
-      })
-      .catch((error) => {
-        throw new Error(_.get(error, 'response.body.error', error));
-      });
+  describe('create events', function () {
+    it('can not create event without mandatory properties', function () {
+      const payload = {
+        priority: {}
+      };
+      return superagent.post(api, payload)
+        .set('authorization', authString)
+        .end()
+        .reflect()
+        .then((promise) => {
+          expect(promise.isRejected()).to.be.true;
+        });
+    });
+    it('create info events', function () {
+      const payload = {
+        priority: {
+          level: 'info',
+          facility: 'user'
+        },
+        ref: {
+          user: '5c10f57f35e9e38db25c0476'
+        }
+      };
+      return createEvent(payload)
+        .then((body) => {
+          expect(body).to.have.property('priority');
+        });
+    });
+    it('create resource events', function () {
+      const payload = {
+        priority: {
+          level: 'info',
+          facility: 'resource'
+        },
+        ref: {
+          resource: '5c10f57f35e9e38db25c0476'
+        },
+        duration: 1,
+        spare: 'abc'
+      };
+      return createEvent(payload)
+        .then((body) => {
+          expect(body).to.deep.include(payload);
+        });
+    });
   });
   it('find events', function () {
     const payload = {
       priority: {
         level: 'info',
         facility: 'user'
+      },
+      ref: {
+        user: '5c10f57f35e9e38db25c0476'
       }
     };
     function findEvents() {
