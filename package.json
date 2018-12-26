@@ -62,7 +62,7 @@
     "moment": "^2.20.1",
     "mongoose": "^5.4.1",
     "mongoose-query": "^0.5.3",
-    "mongoose-schema-jsonschema": "1.1.15",
+    "mongoose-schema-jsonschema": "1.2.1",
     "nconf": "^0.10.0",
     "opentmi-addon": "github:opentmi/opentmi-addon",
     "passport": "^0.4.0",
