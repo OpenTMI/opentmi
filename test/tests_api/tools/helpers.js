@@ -35,9 +35,13 @@ const testUserId = '5825bb7afe7545132c88c761';
 const api = 'http://localhost:3000';
 const apiV0 = `${api}/api/v0`;
 
+function getTestUserToken() {
+  const {authString} = createUserToken({userId: testUserId, group: 'admins'});
+  return authString;
+}
 function createUser({name, email, password}) {
   const body = {name, email, password};
-  const {authString} = createUserToken({userId: testUserId, group: 'admins'});
+  const authString = getTestUserToken();
   return superagent.post(`${apiV0}/users`)
     .send(body)
     .set('authorization', authString)
@@ -45,7 +49,7 @@ function createUser({name, email, password}) {
     .then(res => res.body);
 }
 function deleteUser(userId) {
-  const {authString} = createUserToken({userId: testUserId, group: 'admins'});
+  const authString = getTestUserToken();
   return superagent.del(`${apiV0}/users/${userId}`)
     .set('authorization', authString)
     .end()
@@ -55,6 +59,7 @@ function deleteUser(userId) {
 module.exports = {
   testUserId,
   createToken,
+  getTestUserToken,
   createUserToken,
   createUser,
   deleteUser,
