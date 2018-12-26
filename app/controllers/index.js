@@ -80,7 +80,7 @@ class DefaultController extends EventEmitter {
   }
   create(req, res) {
     const editedReq = req;
-    this._create(editedReq.body)
+    return this._create(editedReq.body)
       .then((item) => {
         editedReq.query = req.body;
         const jsonItem = item.toJSON();

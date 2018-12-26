@@ -2,12 +2,14 @@
 
 // Third party components
 const _ = require('lodash');
-const superagent = require('superagent');
+const superagentPromise = require('superagent-promise');
+const superagent = superagentPromise(require('superagent'), Promise);
 const chai = require('chai');
 const logger = require('winston');
 
+
 // application modules
-const {apiV0} = require('./tools/helpers');
+const {apiV0, getTestUserToken} = require('./tools/helpers');
 
 // Setup
 logger.level = 'error';
@@ -28,7 +30,12 @@ const getResource = resourceId => superagent.get(`${api}/resources/${resourceId}
 describe('Resource', function () {
   let resourceId;
 
-  it('add resource', function (done) {
+  let authString;
+  before(function () {
+    authString = getTestUserToken();
+  });
+
+  it('add resource', function () {
     const body = {
       name: 'dev1',
       type: 'dut',
@@ -36,8 +43,7 @@ describe('Resource', function () {
         sn: 'SerialNumber'
       }
     };
-
-    superagent.post(`${api}/resources`)
+    return superagent.post(`${api}/resources`)
       .send(body)
       .end(function (error, res) {
         expect(error).to.equal(null);
@@ -53,12 +59,11 @@ describe('Resource', function () {
         expect(res.body.name).to.equal('dev1');
         expect(res.body.type).to.equal('dut');
         resourceId = res.body.id;
-        done();
       });
   });
 
-  it('get resource', function (done) {
-    superagent.get(`${api}/resources/${resourceId}`)
+  it('get resource', function () {
+    return superagent.get(`${api}/resources/${resourceId}`)
       .type('json')
       .end(function (error, res) {
         expect(error).to.equal(null);
@@ -69,13 +74,12 @@ describe('Resource', function () {
         expect(res.body).to.have.property('id');
         expect(res.body.name).to.equal('dev1');
         expect(res.body.type).to.equal('dut');
-        done();
       });
   });
 
-  it('update resource', function (done) {
+  it('update resource', function () {
     const body = {'status.value': 'active'};
-    superagent.put(`${api}/resources/${resourceId}`)
+    return superagent.put(`${api}/resources/${resourceId}`)
       .send(body)
       .end(function (error, res) {
         expect(error).to.equal(null);
@@ -84,7 +88,6 @@ describe('Resource', function () {
         expect(res.body).to.have.property('status');
         expect(res.body.status).to.have.property('value');
         expect(res.body.status.value).to.be.equal('active');
-        done();
       });
   });
   it('update resource with valid version key', function () {
@@ -128,15 +131,42 @@ describe('Resource', function () {
     return getResource(resourceId)
       .then(doUpdate);
   });
-  it('remove resource', function (done) {
-    superagent.delete(`${api}/resources/${resourceId}`)
+  it('remove resource', function () {
+    return superagent.del(`${api}/resources/${resourceId}`)
       .end(function (error, res) {
         expect(error).to.equal(null);
-
         expect(res).to.be.a('Object');
-        expect(res).to.have.property('status', 200);
-        resourceId = null;
-        done();
+        expect(res.status).to.be.equal(200);
       });
+  });
+  describe('events', function () {
+    it('events', function () {
+      return superagent
+        .get(`${api}/resources/${resourceId}/events`)
+        .set('authorization', authString)
+        .end()
+        .then((res) => {
+          expect(res.status).to.be.equal(200);
+        });
+    });
+    it('utilization', function () {
+      return superagent
+        .get(`${api}/resources/${resourceId}/utilization`)
+        .set('authorization', authString)
+        .end()
+        .then(() => new Error('Should not pass'))
+        .catch((res) => {
+          expect(res.status).to.be.equal(404);
+        });
+    });
+    it('statistics', function () {
+      return superagent
+        .get(`${api}/resources/${resourceId}/statistics`)
+        .set('authorization', authString)
+        .end()
+        .then((res) => {
+          expect(res.status).to.be.equal(200);
+        });
+    });
   });
 });

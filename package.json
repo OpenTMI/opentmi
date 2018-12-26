@@ -1,7 +1,7 @@
 {
   "name": "OpenTMI",
   "description": "OpenTMI - Open Source Test Management Infrastructure",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "author": {
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
@@ -60,7 +60,7 @@
     "method-override": "^3.0.0",
     "mime": "^2.0.3",
     "moment": "^2.20.1",
-    "mongoose": "^5.3.11",
+    "mongoose": "^5.4.1",
     "mongoose-query": "^0.5.3",
     "mongoose-schema-jsonschema": "1.1.15",
     "nconf": "^0.10.0",
@@ -106,7 +106,7 @@
     "mockgoose": "github:compwright/Mockgoose",
     "sinon": "^7.1.0",
     "socket.io-client": "^2.1.1",
-    "superagent": "^3.8.3",
+    "superagent": "^4.0.0",
     "superagent-promise": "^1.1.0",
     "xunit-file": "^1.0.0"
   }
