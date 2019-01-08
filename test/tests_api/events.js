@@ -192,12 +192,17 @@ describe('Events', function () {
     return Promise.mapSeries([
       create('1995-12-17T00:00:00', 'ALLOCATED', '123'),
       create('1995-12-17T01:00:00', 'RELEASED', '123'),
-      create('1995-12-18T00:00:00', 'RELEASED')
+      create('1995-12-17T01:00:00', 'RELEASED', '123')
+        .reflect()
+        .then((promise) => {
+          expect(promise.isRejected()).to.be.true;
+        }),
+      create('1995-12-18T00:00:00', 'ALLOCATED', '1234')
     ], () => {})
       .then(getUtilization)
       .then((stats) => {
         expect(stats.count).to.be.equal(3);
-        expect(stats.summary.allocations.count).to.be.equal(1);
+        expect(stats.summary.allocations.count).to.be.equal(2);
         expect(stats.summary.allocations.time).to.be.equal(3600);
         expect(stats.summary.allocations.utilization).to.be.at.least(4);
         expect(stats.summary.allocations.utilization).to.be.below(4.2);
