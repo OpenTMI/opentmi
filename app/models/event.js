@@ -127,7 +127,11 @@ const EventSchema = new Schema({
 });
 
 // this avoids accidentally uploading duplicate events
-EventSchema.index({msgid: 1, traceid: 1}, {unique: true, sparse: true});
+EventSchema.index({msgid: 1, traceid: 1}, {
+  unique: true,
+  sparse: true,
+  partialFilterExpression: { traceid: { $exists: true } }
+});
 
 
 EventSchema.virtual('priorityStr')
