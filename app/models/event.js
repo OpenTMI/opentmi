@@ -130,7 +130,7 @@ const EventSchema = new Schema({
 EventSchema.index({msgid: 1, traceid: 1}, {
   unique: true,
   sparse: true,
-  partialFilterExpression: { traceid: { $exists: true } }
+  partialFilterExpression: {traceid: {$exists: true}}
 });
 
 

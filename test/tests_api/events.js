@@ -192,7 +192,7 @@ describe('Events', function () {
     return Promise.mapSeries([
       create('1995-12-17T00:00:00', 'ALLOCATED', '123'),
       create('1995-12-17T01:00:00', 'RELEASED', '123'),
-      create('1995-12-18T00:00:00', 'RELEASED', '123')
+      create('1995-12-18T00:00:00', 'RELEASED')
     ], () => {})
       .then(getUtilization)
       .then((stats) => {
