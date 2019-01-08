@@ -117,6 +117,7 @@ const EventSchema = new Schema({
       enum: Facilities.list()
     }
   },
+  traceid: {type: String},
   id: {type: String}, // e.g. PID of the process
   msgid: {type: String, enum: MsgIds.list()}, // pre-defined ID's
   tag: {type: String},
@@ -124,6 +125,10 @@ const EventSchema = new Schema({
   duration: {type: Number},
   spare: {type: Mixed}
 });
+
+// this avoids accidentally uploading duplicate events
+EventSchema.index({msgid: 1, traceid: 1}, {unique: true, sparse: true});
+
 
 EventSchema.virtual('priorityStr')
   .get(function getPriority() {
