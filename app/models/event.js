@@ -79,7 +79,8 @@ class Facilities {
 
 const EventSchema = new Schema({
   cre: {
-    date: {type: Date, default: Date.now},
+    time: {type: Date, default: Date.now, index: true},
+    date: {type: Date, default: Date.now}, // just
     user: {type: ObjectId, ref: 'User'}
   },
   ref: {
