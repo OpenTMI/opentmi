@@ -31,16 +31,26 @@ class CronJobsController extends DefaultController {
 
     const {col, pipeline, view} = doc.toJSON();
 
+    if (_.find(mongoose.modelNames(), view) >= 0 ) {
+      const msg = `${prefix} Cannot overwrite default collections!`;
+      logger.warn(msg);
+      return Promise.reject(msg);
+    }
+
     if (!col) {
       const msg = `${prefix} coll is missing`;
-      logger.warning(msg);
+      logger.warn(msg);
       return Promise.reject(msg);
     }
 
     let pending = Promise.resolve();
     const startTime = new Date();
     if (view && pipeline) {
-      pending = Promise.try(() => JSON.parse(pipeline))
+      pending = Model.db.dropCollection(view)
+          // no worries even collection drop fails - probably it did not exists..
+          // @todo check first before removing
+          .catch(() => {})
+          .then(() => Promise.try(() => JSON.parse(pipeline)))
           .then(jsonPipeline => Model.db.createCollection(view, { viewOn: col, pipeline: jsonPipeline }))
     }
     return pending

@@ -61,7 +61,7 @@
     "mime": "^2.0.3",
     "moment": "^2.20.1",
     "mongoose": "^5.4.1",
-    "mongoose-cron": "github:opentmi/mongoose-cron#9529a3327bcb5e8f1ba6c308851883bade53d7d2",
+    "mongoose-cron": "github:opentmi/mongoose-cron#4a385bc48dbeab051aefdba8c8a14c70603e1f78",
     "mongoose-query": "^0.5.3",
     "mongoose-schema-jsonschema": "1.2.1",
     "nconf": "^0.10.0",
