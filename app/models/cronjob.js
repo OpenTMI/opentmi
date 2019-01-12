@@ -18,6 +18,7 @@ const CronJobSchema = new Schema({
     user: {type: ObjectId, ref: 'User'}
   },
   name: {type: String},
+  type: {type: String, enum: ['view'], default: 'view'},
   col: {type: String},
   pipeline: [{type: Mixed}],
 });

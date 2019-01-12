@@ -28,7 +28,16 @@ class CronJobsController extends DefaultController {
   _handler(doc) {
     const prefix = `Cronjob '${doc.name}':`;
     logger.info(`${prefix} started`);
-
+    const {type} = doc.type;
+    const defaultHandler = this._handleViewPipeline;
+    const handlers = {
+      'view': defaultHandler
+      // @todo support for more different types..
+    };
+    const handler = _.get(handlers, type, defaultHandler);
+    return handler.bind(this)(doc);
+  }
+  _handleViewPipeline(doc) {
     const {col, pipeline, view} = doc.toJSON();
 
     if (_.find(mongoose.modelNames(), view) >= 0 ) {
