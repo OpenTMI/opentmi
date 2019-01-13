@@ -84,6 +84,11 @@ function Route(app) {
   userRouter.use('/:User', singleUserRouter);
   app.use('/api/v0/users', userRouter);
 
+  // password recovery
+  app.post('/api/v0/password/forgot', userController.forgotPassword.bind(userController));
+  app.post('/api/v0/password/change', userController.changePassword.bind(userController));
+
+
   const authRoute = express.Router();
   authRoute
     .post('/login', passport.authenticate('local'),

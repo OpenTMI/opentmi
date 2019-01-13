@@ -11,6 +11,7 @@ const express = require('./express');
 const Server = require('./server');
 const models = require('./models');
 const routes = require('./routes');
+const Emailer = require('./controllers/emailer');
 const AddonManager = require('./addons');
 const logger = require('./tools/logger');
 const config = require('./tools/config');
@@ -43,12 +44,15 @@ const io = SocketIO(server);
 const ioAdapter = mongoAdapter(dbUrl);
 io.adapter(ioAdapter);
 
+const emailer = new Emailer(config.get('smtp'));
+
 // Initialize database connection
 DB.connect()
   .catch((error) => {
     console.error('mongoDB connection failed: ', error.stack); // eslint-disable-line no-console
     process.exit(-1);
   })
+  .then(() => emailer.verify())
   .then(() => models.registerModels())
   .then(() => express(app))
   .then(() => routes.registerRoutes(app, io))
