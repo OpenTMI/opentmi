@@ -14,6 +14,7 @@
 * Builds
 * Test Results
 * Events
+* CronJobs
 * Reports
  * Report template's
 * Addons
@@ -65,6 +66,10 @@ Test Result contains all information related Test Execution phase, like final ve
 
 ### Events
 [This API](APIs/events.md) contains system related events.
+
+### CronJobs
+[This API](APIs/cronjobs.md) contains cron jobs.
+
 
 ### Reports (not yet implemented)
 Report is like snapshot of database state in certain time period. Reports cannot be change afterward. Reports can be use any (some exceptions) other API's to fetch actual data to report. For example we could create Test Report from Test Results, or Test Case Report from Test Cases.
