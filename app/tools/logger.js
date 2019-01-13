@@ -2,6 +2,7 @@
 const cluster = require('cluster');
 const path = require('path');
 const fs = require('fs');
+const _ = require('lodash');
 
 // Third party components
 const {createLogger, format, transports} = require('winston');
@@ -42,7 +43,7 @@ class MasterLogger {
         format.colorize(),
         format.timestamp(),
         format.metadata(),
-        format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+        format.printf(info => `${_.get(info, 'metadata.timestamp', '')} ${info.level}: ${info.message}`)
       )
     };
     this.logger = createLogger(options);
