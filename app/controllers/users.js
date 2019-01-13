@@ -9,6 +9,7 @@ const moment = require('moment');
 const Promise = require('bluebird');
 
 // Own modules
+const config = require('../tools/config');
 const Emailer = require('./emailer');
 const logger = require('../tools/logger');
 const DefaultController = require('./');
@@ -102,8 +103,8 @@ class UsersController extends DefaultController {
   static _notifyPasswordToken(user) {
     const token = user.resetPasswordToken;
     const subject = 'OpenTMI Password Change';
-    const host = 'opentmi.com';
-    const link = `https://${host}/change-password/${token}`; // @todo this should be configurable
+    const host = _.get(config.get('github'), 'callbackURL', 'https://opentmi');
+    const link = `${host}/change-password/${token}`;
     const text = UsersController._tokenEmail(link, user.email, token);
     return Emailer.send({to: user.email, subject, text});
   }
@@ -152,6 +153,8 @@ class UsersController extends DefaultController {
     const body = {message: error.message};
     if (process.env.NODE_ENV !== 'production') {
       body.stack = error.stack;
+      logger.error(error);
+      logger.error(error.stack);
     }
     this.status(error.code || 500).json(body);
   }
