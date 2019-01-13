@@ -27,7 +27,13 @@ class CronJobsController extends DefaultController {
   }
   _handler(doc) {
     const prefix = `Cronjob '${doc.name}':`;
-    logger.info(`${prefix} started`);
+    const cronLogger = {
+      debug: msg => logger.debug(`${prefix} ${msg}`),
+      error: msg => logger.error(`${prefix} ${msg}`),
+      warn: msg => logger.warn(`${prefix} ${msg}`),
+      info: msg => logger.info(`${prefix} ${msg}`)
+    };
+    cronLogger.info(`started`);
     const {type} = doc.type;
     const defaultHandler = this._handleViewPipeline;
     const handlers = {
@@ -35,41 +41,45 @@ class CronJobsController extends DefaultController {
       // @todo support for more different types..
     };
     const handler = _.get(handlers, type, defaultHandler);
-    return handler.bind(this)(doc);
-  }
-  _handleViewPipeline(doc) {
-    const {col, pipeline, view} = doc.toJSON();
-
-    if (_.find(mongoose.modelNames(), view) >= 0 ) {
-      const msg = `${prefix} Cannot overwrite default collections!`;
-      logger.warn(msg);
-      return Promise.reject(msg);
-    }
-
-    if (!col) {
-      const msg = `${prefix} coll is missing`;
-      logger.warn(msg);
-      return Promise.reject(msg);
-    }
-
-    let pending = Promise.resolve();
     const startTime = new Date();
-    if (view && pipeline) {
-      pending = Model.db.dropCollection(view)
-          // no worries even collection drop fails - probably it did not exists..
-          // @todo check first before removing
-          .catch(() => {})
-          .then(() => Promise.try(() => JSON.parse(pipeline)))
-          .then(jsonPipeline => Model.db.createCollection(view, { viewOn: col, pipeline: jsonPipeline }))
-    }
-    return pending
+    return handler.bind(this)(doc, cronLogger)
         .then(() => {
           const duration = new Date() - startTime;
-          logger.info(`${prefix} took ${duration/1000} seconds`);
+          cronLogger.info(` took ${duration/1000} seconds`);
         })
         .catch((error) => {
-          logger.error(`${prefix} fails: ${error}`);
+          cronLogger.error(` fails: ${error}, trace: ${error}`);
+          console.log(error);
         });
+  }
+  _handleViewPipeline(doc, cronLogger) {
+    const docJson = doc.toJSON();
+    const {col, pipeline, view} = docJson.view;
+
+    //validate
+    if (_.find(mongoose.modelNames(), view) >= 0 ) {
+      const msg = `Cannot overwrite default collections!`;
+      cronLogger.warn(msg);
+      return Promise.reject(msg);
+    }
+    if (!col) {
+      const msg = `${prefix} coll is missing`;
+      cronLogger.warn(msg);
+      return Promise.reject(msg);
+    }
+    if (!view) {
+      return Promise.reject(`view is missing`);
+    }
+    if (!pipeline) {
+      return Promise.reject(`pipeline is missing`);
+    }
+    // all seems to be okay.. ->
+    return Model.db.dropCollection(view)
+        // no worries even collection drop fails - probably it did not exists..
+        // @todo check first before removing
+        .catch(() => {})
+        .then(() => Promise.try(() => JSON.parse(pipeline)))
+        .then(jsonPipeline => Model.db.createCollection(view, { viewOn: col, pipeline: jsonPipeline }));
   }
   _onError(err, doc) {
     logger.error(`Cronjob '${doc.name}' error: ${err}`)

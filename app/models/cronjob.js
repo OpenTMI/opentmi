@@ -19,8 +19,12 @@ const CronJobSchema = new Schema({
   },
   name: {type: String},
   type: {type: String, enum: ['view'], default: 'view'},
-  col: {type: String},
-  pipeline: [{type: Mixed}],
+  view: {
+    col: {type: String, required: function () {
+        return this.type == 'view';
+      }},
+    pipeline: [{type: Mixed}]
+  }
 });
 
 /**
@@ -39,7 +43,7 @@ CronJobSchema.plugin(cronPlugin, {
   idleDelay: 1000,
   // Wait 60s before processing the same job again in case
   // the job is a recurring job (default: 0).
-  nextDelay: 0
+  nextDelay: 1000
 });
 
 const Collection = 'cronjobs';
