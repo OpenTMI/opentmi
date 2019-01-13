@@ -119,8 +119,9 @@ class UsersController extends DefaultController {
   changePassword(req, res) {
     return Promise
       .try(() => {
-        if (!_.has(req, 'body.password')) {
-          const error = new Error('Missing new password');
+        if (!_.has(req, 'body.password') ||
+            !_.has(req, 'body.token')) {
+          const error = new Error('Missing token or new password');
           error.code = 400;
           throw error;
         }
@@ -148,7 +149,11 @@ class UsersController extends DefaultController {
       .catch(UsersController._restCatch.bind(res));
   }
   static _restCatch(error) {
-    this.status(error.code || 500).json({message: error.message, stack: error.stack});
+    const body = {message: error.message};
+    if (process.env.NODE_ENV !== 'production') {
+      body.stack = error.stack;
+    }
+    this.status(error.code || 500).json(body);
   }
 }
 
