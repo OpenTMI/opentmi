@@ -59,7 +59,7 @@ class CronJobsController extends DefaultController {
         cronLogger.warn(msg);
         throw new Error(msg);
       }
-      if (!col) {const msg = ;
+      if (!col) {
         throw new Error(`view.coll is missing`);
       }
       if (!view) {
