@@ -46,44 +46,40 @@ class CronJobsController extends DefaultController {
         .then(() => {
           const duration = new Date() - startTime;
           cronLogger.info(` took ${duration/1000} seconds`);
-        })
-        .catch((error) => {
-          cronLogger.error(` fails: ${error}, trace: ${error}`);
-          console.log(error);
         });
   }
   _handleViewPipeline(doc, cronLogger) {
-    const docJson = doc.toJSON();
-    const {col, pipeline, view} = docJson.view;
+    return Promise.try(() => {
+      const docJson = doc.toJSON();
+      const {col, pipeline, view} = docJson.view;
 
-    //validate
-    if (_.find(mongoose.modelNames(), view) >= 0 ) {
-      const msg = `Cannot overwrite default collections!`;
-      cronLogger.warn(msg);
-      return Promise.reject(msg);
-    }
-    if (!col) {
-      const msg = `${prefix} coll is missing`;
-      cronLogger.warn(msg);
-      return Promise.reject(msg);
-    }
-    if (!view) {
-      return Promise.reject(`view is missing`);
-    }
-    if (!pipeline) {
-      return Promise.reject(`pipeline is missing`);
-    }
-    // all seems to be okay.. ->
-    return Model.db.dropCollection(view)
-        // no worries even collection drop fails - probably it did not exists..
-        // @todo check first before removing
-        .catch(() => {})
-        .then(() => Promise.try(() => JSON.parse(pipeline)))
-        .then(jsonPipeline => Model.db.createCollection(view, { viewOn: col, pipeline: jsonPipeline }));
+      //validate
+      if (_.find(mongoose.modelNames(), view) >= 0 ) {
+        const msg = `Cannot overwrite default collections!`;
+        cronLogger.warn(msg);
+        throw new Error(msg);
+      }
+      if (!col) {const msg = ;
+        throw new Error(`view.coll is missing`);
+      }
+      if (!view) {
+        throw new Error(`view.view is missing`);
+      }
+      if (!pipeline) {
+        throw new Error(`view.pipeline is missing`);
+      }
+      // all seems to be okay.. ->
+      return Model.db.dropCollection(view)
+          // no worries even collection drop fails - probably it did not exists..
+          // @todo check first before removing
+          .catch(() => {})
+          .then(() => Promise.try(() => JSON.parse(pipeline)))
+          .then(jsonPipeline => Model.db.createCollection(view, { viewOn: col, pipeline: jsonPipeline }));
+    });
   }
-  _onError(err, doc) {
-    logger.error(`Cronjob '${doc.name}' error: ${err}`)
-    console.log(error);
+  _onError(error, doc) {
+    logger.error(`Cronjob '${_.get(doc, 'name')}' error: ${error}`);
+    logger.error(error.stack);
   }
 }
 
