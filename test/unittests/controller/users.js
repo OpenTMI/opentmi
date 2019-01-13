@@ -27,7 +27,11 @@ describe('controllers/users', function () {
 
     beforeEach(function () {
       controller = new UsersController();
+      sinon.stub(controller, '_notifyPasswordToken').resolves();
       res = newResponse();
+    });
+    afterEach(function () {
+        controller._notifyPasswordToken.restore();
     });
     it('ok', function () {
       expect(controller).to.exist;
@@ -124,6 +128,99 @@ describe('controllers/users', function () {
             expect(res.json.calledOnce).to.be.true;
           });
       });
+    });
+    describe('password', function () {
+        it('forgotPassword', function () {
+            const req = newRequest({email: 'my@mail.com'}, {});
+            req.user = {update: sinon.stub()};
+            const resetPasswordToken = sinon.stub();
+            const resetPasswordExpires = sinon.stub();
+            const user = {
+                save: sinon.stub().resolves(this),
+                set resetPasswordToken(value) { resetPasswordToken(value); },
+                set resetPasswordExpires(value) { resetPasswordExpires(value); }
+            };
+            controller.Model.findOne = sinon.stub().resolves(user);
+            return controller.forgotPassword(req, res)
+                .then(() => {
+                    expect(controller.Model.findOne.calledOnceWith({email: 'my@mail.com'})).to.be.true;
+                    expect(resetPasswordToken.getCall(0).args[0]).to.be.an('string');
+                    expect(resetPasswordExpires.getCall(0).args[0]).to.be.an('date');
+                    expect(user.save.calledOnce).to.be.true;
+                    expect(controller._notifyPasswordToken.calledOnce).to.be.true;
+                    expect(res.status.calledOnceWith(200)).to.be.true;
+                    expect(res.json.getCall(0).args[0]).to.be.an('object');
+                });
+        });
+        it('forgotPassword invalid email', function () {
+            const req = newRequest({email: 'my@mail.com'}, {});
+            req.user = {update: sinon.stub()};
+            const resetPasswordToken = sinon.stub();
+            const resetPasswordExpires = sinon.stub();
+            const user = {
+                save: sinon.stub().resolves(this),
+                set resetPasswordToken(value) { resetPasswordToken(value); },
+                set resetPasswordExpires(value) { resetPasswordExpires(value); }
+            };
+            controller.Model.findOne = sinon.stub().resolves();
+            return controller.forgotPassword(req, res)
+                .then(() => {
+                    expect(controller.Model.findOne.calledOnceWith({email: 'my@mail.com'})).to.be.true;
+                    expect(resetPasswordToken.called).to.be.false;
+                    expect(resetPasswordExpires.called).to.be.false;
+                    expect(user.save.called).to.be.false;
+                    expect(controller._notifyPasswordToken.calledOnce).to.be.false;
+                    expect(res.status.calledOnceWith(400)).to.be.true;
+                    expect(res.json.getCall(0).args[0]).to.be.an('object');
+                });
+        });
+        it('forgotPassword email not exists', function () {
+            const req = newRequest({}, {});
+            req.user = {update: sinon.stub()};
+            const resetPasswordToken = sinon.stub();
+            const resetPasswordExpires = sinon.stub();
+            const user = {
+                save: sinon.stub().resolves(this),
+                set resetPasswordToken(value) { resetPasswordToken(value); },
+                set resetPasswordExpires(value) { resetPasswordExpires(value); }
+            };
+            controller.Model.findOne = sinon.stub().resolves();
+            return controller.forgotPassword(req, res)
+                .then(() => {
+                    expect(controller.Model.findOne.called).to.be.false;
+                    expect(resetPasswordToken.called).to.be.false;
+                    expect(resetPasswordExpires.called).to.be.false;
+                    expect(controller._notifyPasswordToken.calledOnce).to.be.false;
+                    expect(user.save.called).to.be.false;
+                    expect(res.status.calledOnceWith(400)).to.be.true;
+                    expect(res.json.getCall(0).args[0]).to.be.an('object');
+                });
+        });
+        it('resetPassword', function () {
+            const reqForget = newRequest({email: 'my@mail.com'}, {});
+            reqForget.user = {update: sinon.stub()};
+            const resetPasswordToken = sinon.stub();
+            const resetPasswordExpires = sinon.stub();
+            const resChange = newResponse();
+            const user = {
+                save: sinon.stub().resolves(this),
+                set resetPasswordToken(value) { resetPasswordToken(value); },
+                set resetPasswordExpires(value) { resetPasswordExpires(value); }
+            };
+            controller.Model.findOne = sinon.stub().resolves(user);
+            return controller.forgotPassword(reqForget, res)
+                .then(() => {
+                    const token = resetPasswordToken.getCall(0).args[0];
+                    const reqChange = newRequest({token, password: 'newPass'});
+                    user.save.reset();
+                    return controller.changePassword(reqChange, resChange);
+                })
+                .then(() => {
+                    expect(user.save.callCount).to.be.equal(1);
+                    expect(res.status.calledOnceWith(200)).to.be.true;
+                    expect(res.json.getCall(0).args[0]).to.be.an('object');
+                });
+        });
     });
   });
   describe('model', function () {

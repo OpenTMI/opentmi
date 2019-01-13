@@ -4,9 +4,13 @@
 
 // 3rd party modules
 const _ = require('lodash');
+const crypto = require('crypto');
+const moment = require('moment');
 const Promise = require('bluebird');
 
 // Own modules
+const Emailer = require('./emailer');
+const logger = require('../tools/logger');
 const DefaultController = require('./');
 
 
@@ -64,6 +68,86 @@ class UsersController extends DefaultController {
         res.json(req.body);
       })
       .catch(error => res.status(500).json({error: `${error}`}));
+  }
+  forgotPassword(req, res) {
+    return Promise
+        .try(() => {
+          const email = req.body.email;
+          if (!email) {
+            const error = new Error('missing email address');
+            error.code = 400;
+            throw error;
+          }
+          return email;
+        })
+        .then((email) => {
+          return this.Model.findOne({email});
+        })
+        .then((user) => {
+          if (!user) {
+            const error = new Error('email not exists');
+            error.code = 400;
+            throw error;
+          }
+          user.resetPasswordToken = crypto.randomBytes(20).toString('hex');
+          user.resetPasswordExpires = moment().add(1, 'hours').toDate(); // 1 h
+          return user.save();
+        })
+        .then((user) => {
+            logger.debug(`User ${user.name} password reset token are: ${user.resetPasswordToken}`);
+            return this._notifyPasswordToken(user);
+        })
+        .then(() => res.status(200).json({message: 'password reset token is sent to you'}))
+        .catch(UsersController._restCatch.bind(res));
+  }
+  _notifyPasswordToken(user) {
+      const token = user.resetPasswordToken;
+      const subject = 'OpenTMI Password Change';
+      const host = 'opentmi.com';
+      const link = `https://${host}/change-password/${token}`; // @todo this should be configurable
+      const text = UsersController._tokenEmail(link, user.email, token);
+      return Emailer.send({to: user.email, subject, text});
+  }
+  static _tokenEmail(link, email, token) {
+      return `You requested a password reset for your OpenTMI account.` +
+             'In case this request was not initiated by you, you can safely ignore it.\n\n' +
+             'Your account:\n' +
+             `Email address: ${email}\n` +
+             'To reset your password, please click on the link below:\n' +
+             `${link}\n`;
+    }
+  changePassword(req, res) {
+    return Promise
+        .try(() => {
+          if (!_.has(req, 'body.password')) {
+            const error = new Error('Missing new password');
+            error.code = 400;
+            throw error;
+          }
+        })
+        .then(() => this.Model.findOne({
+            resetPasswordToken: req.body.token,
+            resetPasswordExpires: { $gt: Date.now() }
+          }
+        ))
+        .then((user) => {
+          if (!user) {
+            const error = new Error('invalid or expired token');
+            error.code = 401;
+            throw error;
+          }
+          user.password = req.body.password;
+          user.resetPasswordToken = undefined;
+          user.resetPasswordExpires = undefined;
+          return user.save();
+        })
+        .then(() => {
+          res.status(200).json({message: 'password reset was successful'});
+        })
+        .catch(UsersController._restCatch.bind(res));
+  }
+  static _restCatch(error) {
+    this.status(error.code || 500).json({message: error.message, stack: error.stack});
   }
 }
 
