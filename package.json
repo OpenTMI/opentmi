@@ -65,6 +65,7 @@
     "mongoose-query": "^0.5.3",
     "mongoose-schema-jsonschema": "1.2.1",
     "nconf": "^0.10.0",
+    "nodemailer": "^5.1.1",
     "opentmi-addon": "github:opentmi/opentmi-addon",
     "passport": "^0.4.0",
     "passport-github-token": "^2.1.0",

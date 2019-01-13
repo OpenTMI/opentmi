@@ -105,7 +105,9 @@ Available [here](doc/APIs)
 
 By default opentmi is started as development mode. You can configure environment using [`--config <file>`](`config.example.json`) -option.
 
-note: `"mongo"` options overwrites defaults and is pypassed to [MongoClient](http://mongodb.github.io/node-mongodb-native/3.0/api/MongoClient.html).
+**note**: 
+* `"mongo"` options overwrites defaults and is pypassed to [MongoClient](http://mongodb.github.io/node-mongodb-native/3.0/api/MongoClient.html).
+* `"smtp"` options is pypassed to [nodemailer](https://nodemailer.com/smtp/) transport configurations. To activate smpt use `enabled` property.
 
 # Architecture
 
