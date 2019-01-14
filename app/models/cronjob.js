@@ -20,8 +20,9 @@ const CronJobSchema = new Schema({
   name: {type: String},
   type: {type: String, enum: ['view'], default: 'view'},
   view: {
-    col: {type: String, required: function () {
-        return this.type == 'view';
+    col: {type: String,
+      required: function () {
+        return this.type === 'view';
       }},
     pipeline: [{type: Mixed}]
   }
