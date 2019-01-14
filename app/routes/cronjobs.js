@@ -10,20 +10,25 @@ function Route(app) {
 
   router.param('cronjobs', controller.modelParam.bind(controller));
 
-  router.route('/api/v0/cron')
+
+  router.route('/')
     //.all(requireAuth)
     .all(controller.all.bind(controller))
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
 
-  router.route('/api/v0/cron/:cronjobs')
+  router.route('/:cronjobs')
     //.all(requireAuth)
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
 
-  app.use(router);
+  router.route('/:cronjobs/view')
+      .get(controller.showView.bind(controller));
+
+
+  app.use('/api/v0/cron', router);
 }
 
 module.exports = Route;

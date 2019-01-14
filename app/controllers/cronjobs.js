@@ -37,7 +37,8 @@ class CronJobsController extends DefaultController {
     const {type} = doc.type;
     const defaultHandler = this._handleViewPipeline;
     const handlers = {
-      'view': defaultHandler
+      view: this._handleViewPipeline,
+      email: this._handleEmail
       // @todo support for more different types..
     };
     const handler = _.get(handlers, type, defaultHandler);
@@ -47,6 +48,48 @@ class CronJobsController extends DefaultController {
           const duration = new Date() - startTime;
           cronLogger.info(` took ${duration/1000} seconds`);
         });
+  }
+  showView(req, res) {
+    const view = _.get(req.cronjobs.toObject(), 'view.view');
+    if (!view) {
+      return res.status(404).json({message: `View ${view} not found`});
+    }
+    const collectionName = CronJobsController._getViewCollection(view);
+    return CronJobsController._validCollection(collectionName)
+        .then(() => CronJobsController._getQuery(req))
+        .then(query => mongoose.connection.db.collection(collectionName).find(query))
+        .then(docs => docs.toArray())
+        .then(docs => res.json(docs))
+        .catch((error) => {
+          logger.warn(`showView rejected with: ${error}`);
+          const code = error.code || 500;
+          res.status(code).json({error: `${error}`, stack: error.stack});
+        });
+  }
+  static _getQuery(req) {
+    if (req.query.q) {
+      return JSON.parse(req.query.q);
+    }
+    return {};
+  }
+  static _getCollectionNames() {
+    const colls = mongoose.connection.db.listCollections().toArray();
+    return colls.then(colls => _.map(colls, col => col.name));
+  }
+  static _validCollection(col) {
+    const colls = CronJobsController._getCollectionNames();
+    return colls.then(colls => (colls.indexOf(col) >= 0))
+        .then((yes) => {
+          if (!yes) {
+            const error = new Error(`Collection ${col} not found`);
+            error.code = 404;
+            throw error;
+          }
+          return col;
+        });
+  }
+  static _getViewCollection(view) {
+    return `cronjobs.${view}`
   }
   _handleViewPipeline(doc, cronLogger) {
     return Promise.try(() => {
@@ -74,8 +117,14 @@ class CronJobsController extends DefaultController {
           // @todo check first before removing
           .catch(() => {})
           .then(() => Promise.try(() => JSON.parse(pipeline)))
-          .then(jsonPipeline => Model.db.createCollection(view, { viewOn: col, pipeline: jsonPipeline }));
+          .then(jsonPipeline =>
+              Model.db.createCollection(CronJobsController._getViewCollection(view),
+                  {viewOn: col, pipeline: jsonPipeline}
+                  ));
     });
+  }
+  _handleEmail(doc) {
+    throw new Error('not supported yet');
   }
   _onError(error, doc) {
     logger.error(`Cronjob '${_.get(doc, 'name')}' error: ${error}`);
