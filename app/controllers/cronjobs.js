@@ -65,15 +65,22 @@ class CronJobsController extends DefaultController {
       .then(docs => res.json(docs))
       .catch((error) => {
         logger.warn(`showView rejected with: ${error}`);
-        const code = error.code || 500;
-        res.status(code).json({error: `${error}`, stack: error.stack});
+        const statusCode = error.statusCode || 500;
+        res.status(statusCode).json({error: `${error}`, stack: error.stack});
       });
   }
   static _getQuery(req) {
     if (req.query.q) {
-      return JSON.parse(req.query.q);
+      return CronJobsController.parseJson(req.query.q);
     }
     return {};
+  }
+  static parseJson(str) {
+    return Promise.try(() => JSON.parse(str))
+        .catch((error) => {
+          error.statusCode = 400; // bad request
+          throw error;
+        });
   }
   static _getCollectionNames() {
     const pending = mongoose.connection.db.listCollections().toArray();
@@ -88,7 +95,7 @@ class CronJobsController extends DefaultController {
       .then((yes) => {
         if (!yes) {
           const error = new Error(`Collection ${col} not found`);
-          error.code = 404;
+          error.statusCode = 404;
           throw error;
         }
         return col;
@@ -121,7 +128,7 @@ class CronJobsController extends DefaultController {
       // all seems to be okay.. -> let processing
       return CronJobsController._hasCollection(col)
         .then(yes => (yes ? Model.db.dropCollection(view) : true))
-        .then(() => Promise.try(() => JSON.parse(pipeline)))
+        .then(() => CronJobsController.parseJson(pipeline))
         .then(jsonPipeline => Model.db.createCollection(
           CronJobsController._getViewCollection(view),
           {viewOn: col, pipeline: jsonPipeline}
