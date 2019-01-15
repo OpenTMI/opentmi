@@ -77,10 +77,10 @@ class CronJobsController extends DefaultController {
   }
   static parseJson(str) {
     return Promise.try(() => JSON.parse(str))
-        .catch((error) => {
-          error.statusCode = 400; // bad request
-          throw error;
-        });
+      .catch((error) => {
+        _.set(error, 'statusCode', 400); // bad request
+        throw error;
+      });
   }
   static _getCollectionNames() {
     const pending = mongoose.connection.db.listCollections().toArray();
