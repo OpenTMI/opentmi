@@ -7,13 +7,13 @@ const mongoAdapter = require('socket.io-adapter-mongo');
 const Promise = require('bluebird');
 
 // application modules
+const logger = require('./tools/logger');
 const express = require('./express');
 const Server = require('./server');
 const models = require('./models');
 const routes = require('./routes');
 const Emailer = require('./controllers/emailer');
 const AddonManager = require('./addons');
-const logger = require('./tools/logger');
 const config = require('./tools/config');
 const eventBus = require('./tools/eventBus');
 const DB = require('./db');
