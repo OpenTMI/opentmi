@@ -274,7 +274,7 @@ class Addon {
    */
   static _installDependencies(addon) {
     if (!Addon._autoInstallAddonDeps()) {
-      logger.debug('Skip addon dependency installation');
+      logger.info('Skip addon dependency installation');
       return Promise.resolve();
     }
     const command = 'npm install';
