@@ -126,3 +126,64 @@ GET /api/v0/users/:User/apikeys/new
 ```
 DELETE /api/v0/users/:User/apikeys/:Key
 ```  
+
+
+## recover forgot password
+
+To request recovery token to user email
+
+* ##### URL
+  /api/v0/password/forgot
+
+* ##### Method:  
+  `POST`
+
+* ##### Request:  
+    **Content:**  
+    ```json
+    { "email": "my-email@address.com" }
+    ```
+
+* ##### Success Response:
+  * **Code:** 200  
+    **Content:**  
+    ```json
+    { "message": "success" }
+    ```
+
+* ##### Error Response:
+  * **Code:** 400 UNAUTHORIZED  
+    **Content:**  
+    ```json
+    { "message": "No authorization token was found" }
+    ```
+    
+## change password using recovery token
+
+To change password using token that was send when previous API was used.
+
+* ##### URL
+  /api/v0/password/change
+
+* ##### Method:  
+  `POST`
+
+* ##### Request:  
+    **Content:**  
+    ```json
+    { "token": "<token>", "password":  "<new-password>" }
+    ```
+
+* ##### Success Response:
+  * **Code:** 200  
+    **Content:**  
+    ```json
+    { "message": "success" }
+    ```
+
+* ##### Error Response:
+  * **Code:** 400 UNAUTHORIZED  
+    **Content:**  
+    ```json
+    { "message": "<message>" }
+    ```
