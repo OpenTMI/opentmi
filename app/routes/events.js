@@ -10,6 +10,7 @@ function Route(app) {
   const controller = new EventsController();
 
   router.param('Event', controller.modelParam.bind(controller));
+  router.param('Resource', controller.modelParam.bind(controller));
 
   router.route('/api/v0/events.:format?')
     .all(requireAuth)

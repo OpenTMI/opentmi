@@ -13,6 +13,7 @@ const _ = require('lodash');
 const DefaultController = require('./');
 const {Utilization} = require('../tools/utilization');
 const {MsgIds} = require('../models/event');
+const ResourceModel = require('../models/resource');
 const logger = require('../tools/logger');
 
 
@@ -37,7 +38,7 @@ class EventsController extends DefaultController {
   }
   statistics(req, res) {
     const find = {
-      'ref.resource': req.params.Resource,
+      'ref.resource': req.params.Resource._id,
       msgid: {
         $in: [
           MsgIds.ALLOCATED,
@@ -65,7 +66,7 @@ class EventsController extends DefaultController {
   }
   utilization(req, res) {
     const find = {
-      'ref.resource': req.params.Resource,
+      'ref.resource': req.params.Resource._id,
       msgid: {$in: [MsgIds.ALLOCATED, MsgIds.RELEASED]},
       'priority.level': 'info',
       'priority.facility': 'resource'
@@ -90,8 +91,19 @@ class EventsController extends DefaultController {
           });
       });
   }
+  resolveResource(req, res, next) {
+    logger.debug(`find resource by ${JSON.stringify(req.params)} (model: ${modelname})`);
+    const find = {$or: [{_id: req.params.Resource}, {'hw.sn': req.params.Resource}]};
+    const {Model} = ResourceModel;
+    Model.findOne(find)
+        .then(next)
+        .catch((error) => {
+          res.status(404)
+              .json({message: `Document with id ${req.params.Resource} not found`});
+        });
+  }
   resourceEvents(req, res) {
-    const filter = {'ref.resource': req.params.Resource};
+    const filter = {'ref.resource': req.params.Resource._id};
     const query = _.defaults(filter, req.query);
 
     return Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
