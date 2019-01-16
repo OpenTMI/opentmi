@@ -7,6 +7,8 @@ const {Schema} = mongoose;
 const {Types} = Schema;
 const {ObjectId, Mixed} = Types;
 
+const requireForView = function () { return this.type === 'view'};
+
 
 const CronJobSchema = new Schema({
   cre: {
@@ -20,11 +22,9 @@ const CronJobSchema = new Schema({
   name: {type: String},
   type: {type: String, enum: ['view'], default: 'view'},
   view: {
-    col: {type: String,
-      required: function () {
-        return this.type === 'view';
-      }},
-    pipeline: [{type: Mixed}]
+    view: {type: String, required: requireForView},
+    col: {type: String, required: requireForView},
+    aggregate: {type: String, required: requireForView}
   }
 });
 

@@ -53,7 +53,7 @@ payload:
   view: {
     col: "results",
     view: "myview",
-    pipeline: '[{"$projet": "name"}, {"$limit": 10}]'
+    aggregate: '[{"$projet": "name"}, {"$limit": 10}]'
   },
   cron: {
     enabled: true,
@@ -63,7 +63,7 @@ payload:
 ``` 
 
 This would generate collection `cronjobs.myview` once per 
-second using pipeline from `results` -collection:
+second using aggregate from `results` -collection:
 ```
 [{"$projet": "name", "_id": 0}, {"$limit": 3}]'
 ```

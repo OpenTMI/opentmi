@@ -34,9 +34,9 @@ class CronJobsController extends DefaultController {
     };
     cronLogger.info('started');
     const {type} = doc.type;
-    const defaultHandler = this._handleViewPipeline;
+    const defaultHandler = this._handleViewAggregate;
     const handlers = {
-      view: this._handleViewPipeline,
+      view: this._handleViewAggregate,
       email: this._handleEmail
       // @todo support for more different types..
     };
@@ -104,11 +104,11 @@ class CronJobsController extends DefaultController {
   static _getViewCollection(view) {
     return `cronjobs.${view}`;
   }
-  _handleViewPipeline(doc, cronLogger) {
+  _handleViewAggregate(doc, cronLogger) {
     return Promise.try(() => {
       const docJson = doc.toJSON();
-      this.logger(`Handle view: ${doc.name}`);
-      const {col, pipeline, view} = docJson.view;
+      this.logger.debug(`Handle view: ${doc.name}`);
+      const {col, aggregate, view} = docJson.view;
 
       // validate
       if (_.find(mongoose.modelNames(), view) >= 0) {
@@ -122,16 +122,16 @@ class CronJobsController extends DefaultController {
       if (!view) {
         throw new Error('view.view is missing');
       }
-      if (!pipeline) {
-        throw new Error('view.pipeline is missing');
+      if (!aggregate) {
+        throw new Error('view.aggregate is missing');
       }
       // all seems to be okay.. -> let processing
       return CronJobsController._hasCollection(col)
         .then(yes => (yes ? Model.db.dropCollection(view) : true))
-        .then(() => CronJobsController.parseJson(pipeline))
-        .then(jsonPipeline => Model.db.createCollection(
+        .then(() => CronJobsController.parseJson(aggregate))
+        .then(json => Model.db.createCollection(
           CronJobsController._getViewCollection(view),
-          {viewOn: col, pipeline: jsonPipeline}
+          {viewOn: col, aggregate: json}
         ));
     });
   }

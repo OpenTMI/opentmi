@@ -37,11 +37,13 @@ describe('controllers/events.js', function () {
             level: 'info',
             facility: 'resource'
           },
-          'ref.resource': '5c10f57f35e9e38db25c0476'
+          ref: {
+            resource: '5c10f57f35e9e38db25c0476'
+          }
         });
         return controller.create(req, res)
           .then(() => {
-            expect(res.status.called).to.be.false;
+            expect(res.status.calledOnceWith(200)).to.be.false;
           });
       });
       it('require ref', function () {
