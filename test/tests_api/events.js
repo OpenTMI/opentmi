@@ -137,7 +137,7 @@ describe('Events', function () {
           resource: resourceId
         },
         cre: {
-          date: timestamp
+          time: timestamp
         },
         msgid
       };
@@ -174,7 +174,7 @@ describe('Events', function () {
           resource: resourceId
         },
         cre: {
-          date: timestamp
+          time: timestamp
         },
         msgid,
         traceid
