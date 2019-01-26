@@ -193,9 +193,11 @@ describe('Events', function () {
       create('1995-12-17T00:00:00', 'ALLOCATED', '123'),
       create('1995-12-17T01:00:00', 'RELEASED', '123'),
       create('1995-12-17T01:00:00', 'RELEASED', '123')
-        .reflect()
-        .then((promise) => {
-          expect(promise.isRejected()).to.be.true;
+        .then(() => {
+          throw Error();
+        })
+        .catch((error) => {
+          expect(error).to.be.ok;
         }),
       create('1995-12-18T00:00:00', 'ALLOCATED', '1234')
     ], () => {})
