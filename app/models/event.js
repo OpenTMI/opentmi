@@ -80,7 +80,6 @@ class Facilities {
 const EventSchema = new Schema({
   cre: {
     time: {type: Date, default: Date.now, index: true},
-    date: {type: Date, default: Date.now}, // just backward compatible reason
     user: {type: ObjectId, ref: 'User'}
   },
   ref: {
