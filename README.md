@@ -75,19 +75,27 @@ $ npm start -- -h
 Usage: npm start -- (options)
 
 Options:
-  --listen, -l   set binding interface             [string] [default: "0.0.0.0"]
-  --https        use https                                      [default: false]
-  --port         set listen port                      [required] [default: 3000]
-  --env, -e      Select environment (development,test,production)
-                                               [string] [default: "development"]
-  --verbose, -v  verbose level                                           [count]
-  --silent, -s   Silent mode                                    [default: false]
+  --listen, -l            set binding interface                         [string]
+  --https                 use https
+  --port                  set listen port
+  --verbose, -v           verbose level                                  [count]
+  --silent, -s            Silent mode
+  --log                   log path. Use "null" or "/dev/null" to supress file
+                          logging                                       [string]
+  --autoInstallAddonDeps  automatically install dependencies when startup server
+                                                                 [default: true]
+  --config, -c            config file          [string] [default: "config.json"]
+  --db                    mongodb connection string                     [string]
+  --auto-reload, -r       Automatically restart workers when changes detected in
+                          server directory
 ```
 
 **https:**
 Generate self-signed ssl certifications:
 * `./scripts/gencerts.sh`
 * start daemon with `--https` -options (`npm start -- -https`)
+
+**NOTE:** Not recommended to use self-signed certificates in production usage!
 
 ## Clustered mode
 
@@ -105,7 +113,7 @@ Available [here](doc/APIs)
 
 By default opentmi is started as development mode. You can configure environment using [`--config <file>`](`config.example.json`) -option.
 
-**note**: 
+**note**:
 * `"mongo"` options overwrites defaults and is pypassed to [MongoClient](http://mongodb.github.io/node-mongodb-native/3.0/api/MongoClient.html).
 * `"smtp"` options is pypassed to [nodemailer](https://nodemailer.com/smtp/) transport configurations. To activate smpt use `enabled` property.
 
