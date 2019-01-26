@@ -31,6 +31,11 @@ const UserSchema = new Schema({
   name: {type: String, required: true},
   email: {type: String, unique: true, sparse: true, lowercase: true},
   password: {type: String, select: false},
+
+  // for recovering
+  resetPasswordToken: {type: String},
+  resetPasswordExpires: {type: Date},
+
   displayName: String,
   picture: String,
   bitbucket: String,

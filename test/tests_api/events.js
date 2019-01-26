@@ -164,7 +164,7 @@ describe('Events', function () {
   });
   it('can calculate utilization', function () {
     const resourceId = '5825bb7afe7545132c88c761';
-    const create = (timestamp, msgid) => {
+    const create = (timestamp, msgid, traceid) => {
       const payload = {
         priority: {
           level: 'info',
@@ -176,7 +176,8 @@ describe('Events', function () {
         cre: {
           date: timestamp
         },
-        msgid
+        msgid,
+        traceid
       };
       return createEvent(payload)
         .then((body) => {
@@ -189,14 +190,19 @@ describe('Events', function () {
         .end()
         .then(response => response.body);
     return Promise.mapSeries([
-      create('1995-12-17T00:00:00', 'ALLOCATED'),
-      create('1995-12-17T01:00:00', 'RELEASED'),
-      create('1995-12-18T00:00:00', 'RELEASED')
+      create('1995-12-17T00:00:00', 'ALLOCATED', '123'),
+      create('1995-12-17T01:00:00', 'RELEASED', '123'),
+      create('1995-12-17T01:00:00', 'RELEASED', '123')
+        .reflect()
+        .then((promise) => {
+          expect(promise.isRejected()).to.be.true;
+        }),
+      create('1995-12-18T00:00:00', 'ALLOCATED', '1234')
     ], () => {})
       .then(getUtilization)
       .then((stats) => {
         expect(stats.count).to.be.equal(3);
-        expect(stats.summary.allocations.count).to.be.equal(1);
+        expect(stats.summary.allocations.count).to.be.equal(2);
         expect(stats.summary.allocations.time).to.be.equal(3600);
         expect(stats.summary.allocations.utilization).to.be.at.least(4);
         expect(stats.summary.allocations.utilization).to.be.below(4.2);

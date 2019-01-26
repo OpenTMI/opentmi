@@ -2,6 +2,7 @@
 const cluster = require('cluster');
 const path = require('path');
 const fs = require('fs');
+const _ = require('lodash');
 
 // Third party components
 const {createLogger, format, transports} = require('winston');
@@ -14,9 +15,13 @@ const config = require('./config');
 const verbose = config.get('verbose');
 const silent = config.get('silent') || process.env.NODE_ENV === 'test';
 
-const logDir = path.resolve(__dirname, '..', '..', 'log');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
+const customLogPath = config.get('log');
+const logDir = customLogPath || path.resolve(__dirname, '..', '..', 'log');
+if (!customLogPath) {
+  // create default log path if custom is not given
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
+  }
 }
 
 function _parseError(error) {
@@ -42,7 +47,7 @@ class MasterLogger {
         format.colorize(),
         format.timestamp(),
         format.metadata(),
-        format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+        format.printf(info => `${_.get(info, 'metadata.timestamp', '')} ${info.level}: ${info.message}`)
       )
     };
     this.logger = createLogger(options);
@@ -54,16 +59,25 @@ class MasterLogger {
       }));
     }
     // Add winston file logger, which rotates daily
-    const fileLevel = 'silly';
-    this.logger.add(
-      new DailyRotateFile({
-        filename: `opentmi_%DATE%_${process.pid}.log`,
-        dirname: logDir,
-        level: fileLevel,
-        datePatter: 'yyyy-MM-dd_HH-mm',
-        maxSize: '100m',
-        maxFiles: '10d'
-      }));
+    if (customLogPath === '/dev/null' || customLogPath === null) {
+      // allows to suppress file logging e.g. when journalctl is in use
+      this.logger.add(
+        new transports.Stream({
+          stream: fs.createWriteStream('/dev/null')
+        })
+      );
+    } else {
+      const fileLevel = 'debug';
+      this.logger.add(
+        new DailyRotateFile({
+          filename: `opentmi_%DATE%_${process.pid}.log`,
+          dirname: logDir,
+          level: fileLevel,
+          datePatter: 'yyyy-MM-dd_HH-mm',
+          maxSize: '100m',
+          maxFiles: '3d'
+        }));
+    }
   }
   set level(level) {
     this.logger.level = level;

@@ -16,6 +16,16 @@
     "user": "admin",
     "pwd": "admin"
   },
+  "smtp": {
+    "enabled": false,
+    "host": "smtp.gmail.com",
+    "port": 465,
+    "secure": true,
+    "auth": {
+        "user": "<username>",
+        "pass": "<password>"
+    }
+  },
   "mongo": {
     "sslValidate": true
   },

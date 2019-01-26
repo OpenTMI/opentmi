@@ -1,7 +1,7 @@
 {
   "name": "OpenTMI",
   "description": "OpenTMI - Open Source Test Management Infrastructure",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "author": {
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
@@ -60,10 +60,11 @@
     "method-override": "^3.0.0",
     "mime": "^2.0.3",
     "moment": "^2.20.1",
-    "mongoose": "^5.4.1",
+    "mongoose": "^5.4.4",
     "mongoose-query": "^0.5.3",
-    "mongoose-schema-jsonschema": "1.1.15",
+    "mongoose-schema-jsonschema": "1.2.1",
     "nconf": "^0.10.0",
+    "nodemailer": "^5.1.1",
     "opentmi-addon": "github:opentmi/opentmi-addon",
     "passport": "^0.4.0",
     "passport-github-token": "^2.1.0",

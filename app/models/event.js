@@ -79,7 +79,8 @@ class Facilities {
 
 const EventSchema = new Schema({
   cre: {
-    date: {type: Date, default: Date.now},
+    time: {type: Date, default: Date.now, index: true},
+    date: {type: Date, default: Date.now}, // just backward compatible reason
     user: {type: ObjectId, ref: 'User'}
   },
   ref: {
@@ -117,6 +118,7 @@ const EventSchema = new Schema({
       enum: Facilities.list()
     }
   },
+  traceid: {type: String},
   id: {type: String}, // e.g. PID of the process
   msgid: {type: String, enum: MsgIds.list()}, // pre-defined ID's
   tag: {type: String},
@@ -124,6 +126,13 @@ const EventSchema = new Schema({
   duration: {type: Number},
   spare: {type: Mixed}
 });
+
+// this avoids accidentally uploading duplicate events
+EventSchema.index({msgid: 1, traceid: 1}, {
+  unique: true,
+  partialFilterExpression: {traceid: {$exists: true}}
+});
+
 
 EventSchema.virtual('priorityStr')
   .get(function getPriority() {
