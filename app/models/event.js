@@ -120,7 +120,7 @@ const EventSchema = new Schema({
   },
   traceid: {type: String},
   id: {type: String}, // e.g. PID of the process
-  msgid: {type: String, enum: MsgIds.list()}, // pre-defined ID's
+  msgid: {type: String, enum: MsgIds.list(), required: true}, // pre-defined ID's
   tag: {type: String},
   msg: {type: String},
   duration: {type: Number},
@@ -132,6 +132,9 @@ EventSchema.index({msgid: 1, traceid: 1}, {
   unique: true,
   partialFilterExpression: {traceid: {$exists: true}}
 });
+
+// more speed for filterin e.g. flash failures
+EventSchema.index({msgid: 1, 'priority.level': 1, 'cre.time': 1});
 
 
 EventSchema.virtual('priorityStr')
