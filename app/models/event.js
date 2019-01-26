@@ -119,7 +119,7 @@ const EventSchema = new Schema({
   },
   traceid: {type: String},
   id: {type: String}, // e.g. PID of the process
-  msgid: {type: String, enum: MsgIds.list(), required: true}, // pre-defined ID's
+  msgid: {type: String, enum: MsgIds.list()}, // pre-defined ID's
   tag: {type: String},
   msg: {type: String},
   duration: {type: Number},
