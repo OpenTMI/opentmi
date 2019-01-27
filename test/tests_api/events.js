@@ -195,8 +195,8 @@ describe('Events', function () {
       create('1995-12-18T00:00:00Z', 'ALLOCATED', '1234')
     ], () => {})
       .then(() =>
-          // duplicate msgid+traceid is rejected
-          create('1995-12-17T01:00:00Z', 'RELEASED', '123')
+      // duplicate msgid+traceid is rejected
+        create('1995-12-17T01:00:00Z', 'RELEASED', '123')
           .reflect()
           .then((promise) => {
             expect(promise.isRejected()).to.be.true;

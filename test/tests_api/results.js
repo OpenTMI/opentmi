@@ -21,7 +21,6 @@ const api = 'http://localhost:3000/api/v0';
 const validResultBody = require('./mocking/mockResult.json');
 
 const existingResultId = '5858375fbee7d73c703c5e13';
-const existingResultBody = require('./expectedValues/expectedResult.json');
 
 const relativeFiledbPath = config.get('filedb');
 const absoluteFiledbPath = path.resolve(__dirname, '..', '..', relativeFiledbPath);
