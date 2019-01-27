@@ -10,10 +10,10 @@ describe('tools/utilization.js', () => {
   describe('statistics', () => {
     it('allocations', () => {
       const events = [
-        {cre: {time: new Date('1995-12-17T00:00:00')}, msgid: 'ALLOCATED'},
-        {cre: {time: new Date('1995-12-17T00:00:01')}, msgid: 'RELEASED'},
-        {cre: {time: new Date('1995-12-18T00:00:00')}, msgid: 'ALLOCATED'},
-        {cre: {time: new Date('1995-12-18T00:00:02')}, msgid: 'RELEASED'}
+        {cre: {time: new Date('1995-12-17T00:00:00Z')}, msgid: 'ALLOCATED'},
+        {cre: {time: new Date('1995-12-17T00:00:01Z')}, msgid: 'RELEASED'},
+        {cre: {time: new Date('1995-12-18T00:00:00Z')}, msgid: 'ALLOCATED'},
+        {cre: {time: new Date('1995-12-18T00:00:02Z')}, msgid: 'RELEASED'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -27,9 +27,9 @@ describe('tools/utilization.js', () => {
     });
     it('allocations middle', () => {
       const events = [
-        {cre: {time: new Date('1995-12-17T00:00:01')}, msgid: 'RELEASED'},
-        {cre: {time: new Date('1995-12-18T00:00:00')}, msgid: 'ALLOCATED'},
-        {cre: {time: new Date('1995-12-18T00:00:02')}, msgid: 'RELEASED'}
+        {cre: {time: new Date('1995-12-17T00:00:01Z')}, msgid: 'RELEASED'},
+        {cre: {time: new Date('1995-12-18T00:00:00Z')}, msgid: 'ALLOCATED'},
+        {cre: {time: new Date('1995-12-18T00:00:02Z')}, msgid: 'RELEASED'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -45,8 +45,8 @@ describe('tools/utilization.js', () => {
       // / @todo this is not handled properly!
       // it calculate allocation time now for 18's day even it slips to 19's.
       const events = [
-        {cre: {time: new Date('1995-12-18T23:59:00')}, msgid: 'ALLOCATED'},
-        {cre: {time: new Date('1995-12-19T00:01:00')}, msgid: 'RELEASED'}
+        {cre: {time: new Date('1995-12-18T23:59:00Z')}, msgid: 'ALLOCATED'},
+        {cre: {time: new Date('1995-12-19T00:01:00Z')}, msgid: 'RELEASED'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -58,10 +58,10 @@ describe('tools/utilization.js', () => {
     });
     it('maintenances', () => {
       const events = [
-        {cre: {time: new Date('1995-12-17T00:00:00')}, msgid: 'ENTER_MAINTENANCE'},
-        {cre: {time: new Date('1995-12-17T00:00:01')}, msgid: 'EXIT_MAINTENANCE'},
-        {cre: {time: new Date('1995-12-18T00:00:00')}, msgid: 'ENTER_MAINTENANCE'},
-        {cre: {time: new Date('1995-12-18T00:00:02')}, msgid: 'EXIT_MAINTENANCE'}
+        {cre: {time: new Date('1995-12-17T00:00:00Z')}, msgid: 'ENTER_MAINTENANCE'},
+        {cre: {time: new Date('1995-12-17T00:00:01Z')}, msgid: 'EXIT_MAINTENANCE'},
+        {cre: {time: new Date('1995-12-18T00:00:00Z')}, msgid: 'ENTER_MAINTENANCE'},
+        {cre: {time: new Date('1995-12-18T00:00:02Z')}, msgid: 'EXIT_MAINTENANCE'}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -75,8 +75,8 @@ describe('tools/utilization.js', () => {
     });
     it('flashes', () => {
       const events = [
-        {cre: {time: new Date('1995-12-17T00:00:00')}, msgid: 'FLASHED'},
-        {cre: {time: new Date('1995-12-18T00:00:00')}, msgid: 'FLASHED', priority: {level: 'err'}}
+        {cre: {time: new Date('1995-12-17T00:00:00Z')}, msgid: 'FLASHED'},
+        {cre: {time: new Date('1995-12-18T00:00:00Z')}, msgid: 'FLASHED', priority: {level: 'err'}}
       ];
       return calcStatistics(events)
         .then((stats) => {
@@ -90,9 +90,9 @@ describe('tools/utilization.js', () => {
   describe('utilization', () => {
     it('usage utilization', () => {
       const events = [
-        {cre: {time: new Date('1995-12-17T00:00:00')}, msgid: 'ALLOCATED'},
-        {cre: {time: new Date('1995-12-17T23:00:00')}, msgid: 'RELEASED'},
-        {cre: {time: new Date('1995-12-18T00:00:00')}, msgid: 'FLASHED'}
+        {cre: {time: new Date('1995-12-17T00:00:00Z')}, msgid: 'ALLOCATED'},
+        {cre: {time: new Date('1995-12-17T23:00:00Z')}, msgid: 'RELEASED'},
+        {cre: {time: new Date('1995-12-18T00:00:00Z')}, msgid: 'FLASHED'}
       ];
       return calcUtilization(events)
         .then((stats) => {
