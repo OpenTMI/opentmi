@@ -27,16 +27,11 @@ workflows:
             branches:
               ignore: /.*/
 
-
-steps: &default_steps
-  - run: echo "THIS IS DEFAULT STEP BEFORE CHECKOUT"
-
 defaults: &defaults
   working_directory: ~/opentmi
   docker:
   - image: circleci/node:6.11.4
   steps:
-    <<: *default_steps
     - checkout
     - run: node --version > _tmp_file
     - restore_cache:
