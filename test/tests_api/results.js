@@ -54,16 +54,12 @@ describe('Results', function () {
   });
 
   it('should return a single result on results/<id> GET', function (done) {
-    const expectedBody = existingResultBody;
-
     superagent.get(`${api}/results/${existingResultId}`)
       .set('authorization', authString)
       .type('json')
       .end(function (error, res) {
         expect(error).to.not.exist;
-
-        expect(res.body).to.deep.equal(expectedBody);
-
+        expect(res.body._id).to.equal(existingResultId);
         done();
       });
   });
