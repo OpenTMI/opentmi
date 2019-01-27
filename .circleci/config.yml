@@ -24,7 +24,7 @@ workflows:
           requires:
             - test-node6
             - test-node8
-            - test-node-latest
+            - test-node10
           filters:
             tags:
               only: /^v.*/
