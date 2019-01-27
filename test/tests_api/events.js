@@ -41,18 +41,6 @@ describe('Events', function () {
     return Promise.each(toBeDeleted, deleteEvent);
   });
 
-  it('can not create event without mandatory properties', function () {
-    const payload = {
-      priority: {}
-    };
-    return superagent.post(api, payload)
-      .set('authorization', authString)
-      .end()
-      .reflect()
-      .then((promise) => {
-        expect(promise.isRejected()).to.be.true;
-      });
-  });
 
   const createEvent = payload => superagent.post(api, payload)
     .set('authorization', authString)
@@ -60,28 +48,65 @@ describe('Events', function () {
     .then((response) => {
       createdEvents.push(response.body._id);
       return response.body;
+    })
+    .catch((error) => {
+      throw new Error(_.get(error, 'response.body.error', error));
     });
 
-  it('create events', function () {
-    const payload = {
-      priority: {
-        level: 'info',
-        facility: 'user'
-      }
-    };
-    return createEvent(payload)
-      .then((body) => {
-        expect(body).to.have.property('priority');
-      })
-      .catch((error) => {
-        throw new Error(_.get(error, 'response.body.error', error));
-      });
+  describe('create events', function () {
+    it('can not create event without mandatory properties', function () {
+      const payload = {
+        priority: {}
+      };
+      return superagent.post(api, payload)
+        .set('authorization', authString)
+        .end()
+        .reflect()
+        .then((promise) => {
+          expect(promise.isRejected()).to.be.true;
+        });
+    });
+    it('create info events', function () {
+      const payload = {
+        priority: {
+          level: 'info',
+          facility: 'user'
+        },
+        ref: {
+          user: '5c10f57f35e9e38db25c0476'
+        }
+      };
+      return createEvent(payload)
+        .then((body) => {
+          expect(body).to.have.property('priority');
+        });
+    });
+    it('create resource events', function () {
+      const payload = {
+        priority: {
+          level: 'info',
+          facility: 'resource'
+        },
+        ref: {
+          resource: '5c10f57f35e9e38db25c0476'
+        },
+        duration: 1,
+        spare: 'abc'
+      };
+      return createEvent(payload)
+        .then((body) => {
+          expect(body).to.deep.include(payload);
+        });
+    });
   });
   it('find events', function () {
     const payload = {
       priority: {
         level: 'info',
         facility: 'user'
+      },
+      ref: {
+        user: '5c10f57f35e9e38db25c0476'
       }
     };
     function findEvents() {
@@ -112,7 +137,7 @@ describe('Events', function () {
           resource: resourceId
         },
         cre: {
-          date: timestamp
+          time: timestamp
         },
         msgid
       };
@@ -127,8 +152,8 @@ describe('Events', function () {
         .end()
         .then(response => response.body);
     return Promise.all([
-      create('1995-12-17T00:00:00', 'ALLOCATED'),
-      create('1995-12-17T00:00:01', 'RELEASED')
+      create('1995-12-17T00:00:00Z', 'ALLOCATED'),
+      create('1995-12-17T00:00:01Z', 'RELEASED')
     ])
       .then(getStatistics)
       .then((stats) => {
@@ -139,7 +164,7 @@ describe('Events', function () {
   });
   it('can calculate utilization', function () {
     const resourceId = '5825bb7afe7545132c88c761';
-    const create = (timestamp, msgid) => {
+    const create = (timestamp, msgid, traceid) => {
       const payload = {
         priority: {
           level: 'info',
@@ -149,9 +174,10 @@ describe('Events', function () {
           resource: resourceId
         },
         cre: {
-          date: timestamp
+          time: timestamp
         },
-        msgid
+        msgid,
+        traceid
       };
       return createEvent(payload)
         .then((body) => {
@@ -164,14 +190,21 @@ describe('Events', function () {
         .end()
         .then(response => response.body);
     return Promise.mapSeries([
-      create('1995-12-17T00:00:00', 'ALLOCATED'),
-      create('1995-12-17T01:00:00', 'RELEASED'),
-      create('1995-12-18T00:00:00', 'RELEASED')
+      create('1995-12-17T00:00:00Z', 'ALLOCATED', '123'),
+      create('1995-12-17T01:00:00Z', 'RELEASED', '123'),
+      create('1995-12-18T00:00:00Z', 'ALLOCATED', '1234')
     ], () => {})
+      .then(() =>
+          // duplicate msgid+traceid is rejected
+          create('1995-12-17T01:00:00Z', 'RELEASED', '123')
+          .reflect()
+          .then((promise) => {
+            expect(promise.isRejected()).to.be.true;
+          }))
       .then(getUtilization)
       .then((stats) => {
         expect(stats.count).to.be.equal(3);
-        expect(stats.summary.allocations.count).to.be.equal(1);
+        expect(stats.summary.allocations.count).to.be.equal(2);
         expect(stats.summary.allocations.time).to.be.equal(3600);
         expect(stats.summary.allocations.utilization).to.be.at.least(4);
         expect(stats.summary.allocations.utilization).to.be.below(4.2);

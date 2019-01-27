@@ -5,6 +5,7 @@
 // native modules
 
 // 3rd party modules
+const Promise = require('bluebird');
 const _ = require('lodash');
 
 // own modules
@@ -51,10 +52,16 @@ class EventsController extends DefaultController {
     const utilization = new Utilization();
     this.Model
       .find(find)
-      .select('cre.date msgid priority.level')
+      .select('cre.time msgid priority.level')
+      .sort({'cre.time': 1})
       .cursor()
       .on('data', utilization.push.bind(utilization))
-      .on('error', (err) => { logger.error(err); })
+      .on('error', (error) => {
+        logger.error(`Statistics failure: ${error}`);
+        res
+          .status(500)
+          .json({message: `${error}`, error: error});
+      })
       .on('end', () => res.json(utilization.summary));
   }
   utilization(req, res) {
@@ -67,10 +74,16 @@ class EventsController extends DefaultController {
     const utilization = new Utilization();
     this.Model
       .find(find)
-      .select('cre.date msgid priority.level')
+      .select('cre.time msgid priority.level')
+      .sort({'cre.time': 1})
       .cursor()
       .on('data', utilization.push.bind(utilization))
-      .on('error', err => logger.error(err))
+      .on('error', (error) => {
+        logger.error(`Utilization failure: ${error}`);
+        res
+          .status(500)
+          .json({message: `${error}`, error: error});
+      })
       .on('end', () => {
         utilization.calculate()
           .then(res.json.bind(res))
@@ -83,12 +96,13 @@ class EventsController extends DefaultController {
     const filter = {'ref.resource': req.params.Resource};
     const query = _.defaults(filter, req.query);
 
-    Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
+    return Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
       .then((events) => { res.json(events); })
       .catch((error) => {
-        logger.warn(error);
+        logger.error(`resourceEvents failure: ${error}`);
+        const status = error.name === 'CastError' ? 400 : 500;
         res
-          .status(500)
+          .status(status)
           .json({message: error.message, error: error});
       });
   }

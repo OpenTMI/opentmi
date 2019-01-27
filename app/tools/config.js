@@ -39,6 +39,15 @@ const args = {
     type: 'bool',
     describe: 'Silent mode'
   },
+  log: {
+    type: 'string',
+    describe: 'log path. Use "null" or "/dev/null" to supress file logging'
+  },
+  autoInstallAddonDeps: {
+    default: true,
+    type: 'bool',
+    describe: 'automatically install dependencies when startup server'
+  },
   config: {
     alias: 'c',
     default: 'config.json',
@@ -53,7 +62,8 @@ const args = {
     alias: 'r',
     type: 'bool',
     describe: 'Automatically restart workers when changes detected in server directory'
-  }
+  },
+  parseValues: true
 };
 
 const sampleFile = path.resolve(__dirname, '../../config.example.json');
