@@ -7,6 +7,7 @@
 // 3rd party modules
 const Promise = require('bluebird');
 const _ = require('lodash');
+const {CastError} = require('mongoose');
 
 // own modules
 // const eventBus = require('../tools/eventBus');
@@ -38,7 +39,7 @@ class EventsController extends DefaultController {
   }
   statistics(req, res) {
     const find = {
-      'ref.resource': req.params.Resource._id,
+      'ref.resource': req.Resource._id,
       msgid: {
         $in: [
           MsgIds.ALLOCATED,
@@ -67,7 +68,7 @@ class EventsController extends DefaultController {
   }
   utilization(req, res) {
     const find = {
-      'ref.resource': req.params.Resource._id,
+      'ref.resource': req.Resource._id,
       msgid: {$in: [MsgIds.ALLOCATED, MsgIds.RELEASED]},
       'priority.level': 'info',
       'priority.facility': 'resource'
@@ -94,18 +95,35 @@ class EventsController extends DefaultController {
       });
   }
   resolveResource(req, res, next) {
-    logger.debug(`find resource by ${JSON.stringify(req.params)} (model: ${modelname})`);
-    const find = {$or: [{_id: req.params.Resource}, {'hw.sn': req.params.Resource}]};
+    const find = {$or: []};
+    if (DefaultController.isObjectId(req.params.Resource)) {
+      find.$or.push({_id: req.params.Resource});
+    }
+    find.$or.push({'hw.sn': req.params.Resource});
+    logger.debug(`find resource by ${JSON.stringify(find)} (model: Resource)`);
     const {Model} = ResourceModel;
-    Model.findOne(find)
-        .then(next)
-        .catch((error) => {
-          res.status(404)
-              .json({message: `Document with id ${req.params.Resource} not found`});
-        });
+    return Model.findOne(find)
+        .then((data) => {
+            if (!data) {
+              const error = new Error(`Document with id ${docId} not found`);
+              error.statusCode = 404;
+              throw error;
+            }
+            _.set(req, 'Resource', data);
+            next();
+          })
+          .catch(CastError, (error) => {
+            error.statusCode = 400;
+            throw error;
+          })
+          .catch((error) => {
+            const status = error.statusCode || 500;
+            logger.error(error);
+            res.status(status).json({message: `${error}`});
+          });
   }
   resourceEvents(req, res) {
-    const filter = {'ref.resource': req.params.Resource._id};
+    const filter = {'ref.resource': req.Resource._id};
     const query = _.defaults(filter, req.query);
 
     return Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
