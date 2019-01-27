@@ -130,9 +130,8 @@ class EventsController extends DefaultController {
       .then((events) => { res.json(events); })
       .catch((error) => {
         logger.error(`resourceEvents failure: ${error}`);
-        const status = error.name === 'CastError' ? 400 : 500;
         res
-          .status(status)
+          .status(500)
           .json({message: error.message, error: error});
       });
   }

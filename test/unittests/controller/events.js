@@ -61,30 +61,32 @@ describe('controllers/events.js', function () {
     describe('resourceEvents', function () {
       it('list', function () {
         controller = new EventsController();
-        const req = newRequest({}, {Resource: {_id: '5c10f57f35e9e38db25c0476'}});
+        const req = newRequest({}, {Resource: '5c10f57f35e9e38db25c0476'});
+        req.Resource = {_id: '5c10f57f35e9e38db25c0476'};
         return controller.resourceEvents(req, res)
           .then(() => {
             expect(res.json.calledWith([])).to.be.true;
           });
       });
-      it('invalid id', function () {
+      it('allow to use hw.sn', function () {
         controller = new EventsController();
-        const req = newRequest({}, {Resource: {_id: '12'}});
+        const req = newRequest({}, {Resource: '12'});
+        req.Resource = {_id: '5c10f57f35e9e38db25c0476', hw: {sn: '12'}};
         return controller.resourceEvents(req, res)
           .then(() => {
-            expect(res.status.calledWith(400)).to.be.true;
+            expect(res.json.calledWith([])).to.be.true;
           });
       });
     });
     describe('redirectRef', function () {
       it('found', function () {
-        const req = newRequest({}, {Resource: {_id: 'abc'}});
+        const req = newRequest({}, {Resource: 'abc'});
         req.Event = {ref: {resource: 'abc'}};
         EventsController.redirectRef(req, res);
-        expect(res.redirect.calledWith(`/api/v0/resources/${req.params.Resource._id}`)).to.be.true;
+        expect(res.redirect.calledWith(`/api/v0/resources/${req.params.Resource}`)).to.be.true;
       });
       it('not found', function () {
-        const req = newRequest({}, {Resource: {_id: 'abc'}});
+        const req = newRequest({}, {Resource: 'abc'});
         EventsController.redirectRef(req, res);
         expect(res.status.calledWith(404)).to.be.true;
       });
