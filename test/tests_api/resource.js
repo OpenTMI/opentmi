@@ -140,6 +140,27 @@ describe('Resource', function () {
       });
   });
   describe('events', function () {
+    before(function () {
+      const body = {
+        name: 'dev1',
+        type: 'dut',
+        hw: {
+          sn: 'SerialNumber'
+        }
+      };
+      return superagent.post(`${api}/resources`)
+        .send(body)
+        .end(function (error, res) {
+          resourceId = res.body.id;
+        });
+    });
+    after(function () {
+      return superagent.del(`${api}/resources/${resourceId}`)
+        .end(function (error, res) {
+          expect(error).to.equal(null);
+          expect(res.status).to.be.equal(200);
+        });
+    });
     it('events', function () {
       return superagent
         .get(`${api}/resources/${resourceId}/events`)

@@ -13,7 +13,6 @@ const MockResponse = require('./mocking/MockResponse.js');
 const {newResponse, newRequest} = require('../helpers');
 
 
-
 // Test variables
 const {expect} = chai;
 
@@ -29,18 +28,18 @@ describe('controllers/resources.js', function () {
   after(teardown);
 
   it('custom modelParam', function () {
-    let next = sinon.stub();
+    const next = sinon.stub();
     const req = newRequest({}, {Resource: '123'});
     const res = newResponse();
     const resource = {a: 1};
     sinon.stub(controller._model, 'findOne').resolves(resource);
     return controller.modelParam(req, res, next)
-        .then(() => {
-          expect(next.called).to.be.true;
-          expect(res.status.called).to.be.false;
-          expect(res.json.called).to.be.false;
-          expect(req.Resource).to.be.deep.equal(resource);
-        });
+      .then(() => {
+        expect(next.called).to.be.true;
+        expect(res.status.called).to.be.false;
+        expect(res.json.called).to.be.false;
+        expect(req.Resource).to.be.deep.equal(resource);
+      });
   });
 
   it('setDeviceBuild', function (done) {
