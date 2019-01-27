@@ -80,7 +80,6 @@ class Facilities {
 const EventSchema = new Schema({
   cre: {
     time: {type: Date, default: Date.now, index: true},
-    date: {type: Date, default: Date.now}, // just backward compatible reason
     user: {type: ObjectId, ref: 'User'}
   },
   ref: {
@@ -132,6 +131,9 @@ EventSchema.index({msgid: 1, traceid: 1}, {
   unique: true,
   partialFilterExpression: {traceid: {$exists: true}}
 });
+
+// more speed for filterin e.g. flash failures
+EventSchema.index({msgid: 1, 'priority.level': 1, 'cre.time': 1});
 
 
 EventSchema.virtual('priorityStr')
