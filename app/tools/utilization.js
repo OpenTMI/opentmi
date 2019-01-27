@@ -78,7 +78,7 @@ class Utilization {
     } else {
       this.last = event;
     }
-    const date = _.get(event, 'cre.date');
+    const date = _.get(event, 'cre.time');
     const id = _.get(event, 'id');
     const dateStr = roundDate(date);
     if (!_.has(this._accumulator.dates, dateStr)) {
@@ -143,7 +143,7 @@ class Utilization {
      */
     let duration = 0;
     if (this._accumulator.count >= 2) {
-      duration = toSeconds(this.last.cre.date - this.first.cre.date);
+      duration = toSeconds(this.last.cre.time - this.first.cre.time);
     } else {
       return Promise.reject(new Error('There is no enough events for selected period'));
     }
