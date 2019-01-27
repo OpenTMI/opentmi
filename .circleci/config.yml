@@ -12,6 +12,10 @@ workflows:
           filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
               only: /.*/
+      - test-node10:
+          filters:  # required since `deploy` has tag filters AND requires `build`
+            tags:
+              only: /.*/
       - test-node-latest:
           filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
@@ -104,6 +108,15 @@ jobs:
     <<: *defaults
     docker:
     - image: circleci/node:8.12.0-browsers
+      environment:
+       CHROME_BIN: "/usr/bin/google-chrome"
+       NODE_ENV: test
+       NPM_CI_INSTALL: "install"
+    - image: mongo:4.1.2
+  test-node10:
+    <<: *defaults
+    docker:
+    - image: circleci/node:10-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
