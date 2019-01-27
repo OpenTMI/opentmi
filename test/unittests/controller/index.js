@@ -36,9 +36,6 @@ describe('controllers/index.js', function () {
   after(teardown);
 
   it('defaultModelParam', function (done) {
-    // Generate defaultModelParam function
-    const defaultModelParam = defaultController.defaultModelParam('DummyItem');
-
     // Mock request and response
     const req = {params: {DummyItem: mockDummies[0]._id}};
     const res = new MockResponse((value) => {
@@ -50,7 +47,7 @@ describe('controllers/index.js', function () {
     });
 
     // Call the tested function
-    defaultModelParam(req, res, function () {
+    defaultController.modelParam(req, res, function () {
       expect(req.DummyItem).to.containSubset(mockDummies[0]);
       done();
     }, undefined);

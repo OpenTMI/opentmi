@@ -19,6 +19,7 @@ class DefaultController extends EventEmitter {
     this._model = mongoose.model(modelName);
     this.modelName = modelName;
     this.docId = '_id';
+    this.logger = logger;
   }
 
   static isObjectId(str) {
@@ -36,24 +37,24 @@ class DefaultController extends EventEmitter {
     const find = this._getModelParamQuery(req);
     logger.debug(`find document by ${JSON.stringify(find)} (model: ${this.modelName})`);
     return this.Model.findOne(find)
-        .then((data) => {
-          if (!data) {
-            const error = new Error(`Document with id ${docId} not found`);
-            error.statusCode = 404;
-            throw error;
-          }
-          _.set(req, this.modelName, data);
-          next();
-        })
-        .catch(mongoose.CastError, () => {
-          const error = new Error('Invalid document id');
-          error.statusCode = 400;
+      .then((data) => {
+        if (!data) {
+          const error = new Error(`Document with id ${docId} not found`);
+          error.statusCode = 404;
           throw error;
-        })
-        .catch((error) => {
-          const status = error.statusCode || 500;
-          res.status(status).json({message: `${error}`});
-        });
+        }
+        _.set(req, this.modelName, data);
+        next();
+      })
+      .catch(mongoose.CastError, () => {
+        const error = new Error('Invalid document id');
+        error.statusCode = 400;
+        throw error;
+      })
+      .catch((error) => {
+        const status = error.statusCode || 500;
+        res.status(status).json({message: `${error}`});
+      });
   }
 
   get Model() {

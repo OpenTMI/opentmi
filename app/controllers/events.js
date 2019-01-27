@@ -7,7 +7,6 @@
 // 3rd party modules
 const Promise = require('bluebird');
 const _ = require('lodash');
-const {CastError} = require('mongoose');
 
 // own modules
 // const eventBus = require('../tools/eventBus');
@@ -100,27 +99,23 @@ class EventsController extends DefaultController {
       find.$or.push({_id: req.params.Resource});
     }
     find.$or.push({'hw.sn': req.params.Resource});
-    logger.debug(`find resource by ${JSON.stringify(find)} (model: Resource)`);
+    this.logger.debug(`find resource by ${JSON.stringify(find)} (model: Resource)`);
     const {Model} = ResourceModel;
     return Model.findOne(find)
-        .then((data) => {
-            if (!data) {
-              const error = new Error(`Document with id ${docId} not found`);
-              error.statusCode = 404;
-              throw error;
-            }
-            _.set(req, 'Resource', data);
-            next();
-          })
-          .catch(CastError, (error) => {
-            error.statusCode = 400;
-            throw error;
-          })
-          .catch((error) => {
-            const status = error.statusCode || 500;
-            logger.error(error);
-            res.status(status).json({message: `${error}`});
-          });
+      .then((data) => {
+        if (!data) {
+          const error = new Error(`Document with id/hw.sn ${req.params.Resource} not found`);
+          error.statusCode = 404;
+          throw error;
+        }
+        _.set(req, 'Resource', data);
+        next();
+      })
+      .catch((error) => {
+        const status = error.statusCode || 500;
+        this.logger.error(error);
+        res.status(status).json({message: `${error}`});
+      });
   }
   resourceEvents(req, res) {
     const filter = {'ref.resource': req.Resource._id};
