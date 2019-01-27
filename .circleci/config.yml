@@ -85,13 +85,13 @@ defaults: &defaults
         path: junit
     - store_artifacts:
         path: db.log
-        prefix: mongolog
+        destination: mongolog
     - store_artifacts:
         path: docs
-        prefix: documentations
+        destination: documentations
     - store_artifacts:
         path: coverage
-        prefix: coverage
+        destination: coverage
     - store_test_results:
         path: coverage/coverage.json
 jobs:
