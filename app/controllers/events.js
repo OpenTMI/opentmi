@@ -53,6 +53,7 @@ class EventsController extends DefaultController {
     this.Model
       .find(find)
       .select('cre.time msgid priority.level')
+      .sort({'cre.time': 1})
       .cursor()
       .on('data', utilization.push.bind(utilization))
       .on('error', (error) => {
@@ -74,6 +75,7 @@ class EventsController extends DefaultController {
     this.Model
       .find(find)
       .select('cre.time msgid priority.level')
+      .sort({'cre.time': 1})
       .cursor()
       .on('data', utilization.push.bind(utilization))
       .on('error', (error) => {

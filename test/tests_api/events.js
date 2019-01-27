@@ -152,8 +152,8 @@ describe('Events', function () {
         .end()
         .then(response => response.body);
     return Promise.all([
-      create('1995-12-17T00:00:00', 'ALLOCATED'),
-      create('1995-12-17T00:00:01', 'RELEASED')
+      create('1995-12-17T00:00:00Z', 'ALLOCATED'),
+      create('1995-12-17T00:00:01Z', 'RELEASED')
     ])
       .then(getStatistics)
       .then((stats) => {
@@ -190,17 +190,17 @@ describe('Events', function () {
         .end()
         .then(response => response.body);
     return Promise.mapSeries([
-      create('1995-12-17T00:00:00', 'ALLOCATED', '123'),
-      create('1995-12-17T01:00:00', 'RELEASED', '123'),
-      create('1995-12-17T01:00:00', 'RELEASED', '123')
-        .then(() => {
-          throw Error();
-        })
-        .catch((error) => {
-          expect(error).to.be.ok;
-        }),
-      create('1995-12-18T00:00:00', 'ALLOCATED', '1234')
+      create('1995-12-17T00:00:00Z', 'ALLOCATED', '123'),
+      create('1995-12-17T01:00:00Z', 'RELEASED', '123'),
+      create('1995-12-18T00:00:00Z', 'ALLOCATED', '1234')
     ], () => {})
+      .then(() =>
+          // duplicate msgid+traceid is rejected
+          create('1995-12-17T01:00:00Z', 'RELEASED', '123')
+          .reflect()
+          .then((promise) => {
+            expect(promise.isRejected()).to.be.true;
+          }))
       .then(getUtilization)
       .then((stats) => {
         expect(stats.count).to.be.equal(3);
