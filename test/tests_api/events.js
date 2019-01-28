@@ -47,7 +47,7 @@ describe('Events', function () {
     const info = {
       name: 'events-testing',
       type: 'dut',
-      hw: {sn: 'mysn'},
+      hw: {sn: 'mysn'}
     };
     return superagent.post(url, info)
       .set('authorization', authString)
@@ -170,7 +170,7 @@ describe('Events', function () {
             expect(body.msgid).to.be.equal(msgid);
           });
       };
-      const getEvents = (id) =>
+      const getEvents = id =>
         superagent.get(`${apiV0}/resources/${id}/events`)
           .set('authorization', authString)
           .end()
@@ -271,5 +271,5 @@ describe('Events', function () {
           expect(stats.summary.allocations.utilization).to.be.below(4.2);
         });
     });
-  })
+  });
 });

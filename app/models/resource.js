@@ -17,10 +17,10 @@ const {ObjectId} = Types;
  */
 const ResourceSchema = new Schema({
   name: {type: String}, // Resource Name
-  type: {
+  type: { // Resource type
     type: String,
     required: true,
-    enum: [ // Resource type
+    enum: [
       'system',
       'dut',
       'instrument',
@@ -106,7 +106,7 @@ const ResourceSchema = new Schema({
     }
   },
   network: {
-    hostname: {type: String, unique: true, sparse: true},
+    hostname: {type: String},
     domain: {type: String},
     lan: [{
       name: {type: String},
@@ -117,8 +117,8 @@ const ResourceSchema = new Schema({
       mac: {type: String}
     }],
     remote_connection: {
-      protocol: {type: String, enum: ['', 'vnc', 'http', 'ssh', 'telnet', 'rdm'], default: ''},
-      url: {type: String}, // if dedicated
+      protocol: {type: String, enum: ['vnc', 'http', 'https', 'ssh', 'telnet', 'rdm']},
+      url: {type: String},
       authentication: {
         username: {type: String},
         password: {type: String}
@@ -126,13 +126,13 @@ const ResourceSchema = new Schema({
     }
   },
   location: { // Resource physical location
-    site: {type: String, default: 'unknown'}, // Site
-    country: {type: String}, // Country
-    city: {type: String}, // City
-    adddress: {type: String}, // Street address
-    postcode: {type: String}, // Postcode
-    room: {type: String, default: 'unknown'}, // Room
-    subRoom: {type: String}, // subRoom
+    site: {type: String, default: 'unknown'},
+    country: {type: String},
+    city: {type: String},
+    adddress: {type: String},
+    postcode: {type: String},
+    room: {type: String, default: 'unknown'},
+    subRoom: {type: String},
     geo: {type: [Number], index: '2d'}
   },
   tags: {
@@ -190,7 +190,6 @@ const ResourceSchema = new Schema({
       rf: { type: Boolean }, // RF shield rack
   },
   app: [{
-
       type: {type: String, enum: ['application', 'plugin','library']},  // optional
       plugin: {
           application: {type: String}
@@ -202,7 +201,6 @@ const ResourceSchema = new Schema({
       href: {type: String},     // http url to file
       uuid: {type: String}      // or uuid to file
   }]
-  events: [ResourceEventSchema],      //Events
   change_history: []
   */
 
