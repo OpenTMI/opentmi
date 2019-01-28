@@ -2,6 +2,7 @@
 
 // Third party components
 const chai = require('chai');
+const sinon = require('sinon');
 const Promise = require('bluebird');
 
 // Local components
@@ -9,19 +10,37 @@ const {setup, reset, teardown} = require('../../utils/mongomock');
 require('./../../../app/models/resource.js');
 const ResourceController = require('./../../../app/controllers/resources.js');
 const MockResponse = require('./mocking/MockResponse.js');
+const {newResponse, newRequest} = require('../helpers');
 
 
 // Test variables
 const {expect} = chai;
 
 describe('controllers/resources.js', function () {
+  let controller;
+
   // Create fresh DB
   before(setup);
   before(function () {
-    const controller = new ResourceController(); // eslint-disable-line no-unused-vars
+    controller = new ResourceController(); // eslint-disable-line no-unused-vars
   });
   beforeEach(reset);
   after(teardown);
+
+  it('custom modelParam', function () {
+    const next = sinon.stub();
+    const req = newRequest({}, {Resource: '123'});
+    const res = newResponse();
+    const resource = {a: 1};
+    sinon.stub(controller._model, 'findOne').resolves(resource);
+    return controller.modelParam(req, res, next)
+      .then(() => {
+        expect(next.called).to.be.true;
+        expect(res.status.called).to.be.false;
+        expect(res.json.called).to.be.false;
+        expect(req.Resource).to.be.deep.equal(resource);
+      });
+  });
 
   it('setDeviceBuild', function (done) {
     let deviceBuildSet = false;

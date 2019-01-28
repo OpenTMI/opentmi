@@ -19,31 +19,42 @@ class DefaultController extends EventEmitter {
     this._model = mongoose.model(modelName);
     this.modelName = modelName;
     this.docId = '_id';
-    this.modelParam = this.defaultModelParam();
+    this.logger = logger;
   }
 
-  defaultModelParam() {
-    // Find from db
-    const modelname = this.modelName;
-    const docId = this.docId;
-    logger.silly(`Register model middleware for ${modelname}`);
+  static isObjectId(str) {
+    const ObjectId = mongoose.Types.ObjectId;
+    return ObjectId.isValid(str);
+  }
 
-    return (req, res, next) => {
-      logger.debug(`find document by ${JSON.stringify(req.params)} (model: ${modelname})`);
-      const find = {};
-      find[docId] = req.params[modelname];
-      this.Model.findOne(find, (error, data) => {
-        if (error) {
-          logger.warn(`${modelname}.findOne(${find}) error: ${error}`);
-          res.status(500).json({error});
-        } else if (data) {
-          _.set(req, modelname, data);
-          next();
-        } else {
-          res.status(404).json({message: `Document with id ${docId} not found`});
+  _getModelParamQuery(req) {
+    return {[this.docId]: req.params[this.modelName]};
+  }
+  modelParam(req, res, next) {
+    // Find from db
+    const docId = this.docId;
+    logger.silly(`Register model middleware for ${this.modelName}`);
+    const find = this._getModelParamQuery(req);
+    logger.debug(`find document by ${JSON.stringify(find)} (model: ${this.modelName})`);
+    return this.Model.findOne(find)
+      .then((data) => {
+        if (!data) {
+          const error = new Error(`Document with id ${docId} not found`);
+          error.statusCode = 404;
+          throw error;
         }
+        _.set(req, this.modelName, data);
+        next();
+      })
+      .catch(mongoose.CastError, () => {
+        const error = new Error('Invalid document id');
+        error.statusCode = 400;
+        throw error;
+      })
+      .catch((error) => {
+        const status = error.statusCode || 500;
+        res.status(status).json({message: `${error}`});
       });
-    };
   }
 
   get Model() {
