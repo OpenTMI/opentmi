@@ -18,7 +18,6 @@ class DefaultController extends EventEmitter {
     super();
     this._model = mongoose.model(modelName);
     this.modelName = modelName;
-    this.docId = '_id';
     this.logger = logger;
   }
 
@@ -28,18 +27,17 @@ class DefaultController extends EventEmitter {
   }
 
   _getModelParamQuery(req) {
-    return {[this.docId]: req.params[this.modelName]};
+    return {_id: req.params[this.modelName]};
   }
   modelParam(req, res, next) {
     // Find from db
-    const docId = this.docId;
     logger.silly(`Register model middleware for ${this.modelName}`);
     const find = this._getModelParamQuery(req);
     logger.debug(`find document by ${JSON.stringify(find)} (model: ${this.modelName})`);
     return this.Model.findOne(find)
       .then((data) => {
         if (!data) {
-          const error = new Error(`Document with id ${docId} not found`);
+          const error = new Error(`Document not found (${find})`);
           error.statusCode = 404;
           throw error;
         }
@@ -111,7 +109,7 @@ class DefaultController extends EventEmitter {
   }
 
   update(req, res) {
-    const update = _.omit(req.body, [this.docId, '__v']);
+    const update = _.omit(req.body, ['_id', '__v']);
     // increment version number every time when updating document
     update.$inc = {__v: 1};
     logger.debug(`updated: ${JSON.stringify(update)}`);
@@ -158,7 +156,7 @@ class DefaultController extends EventEmitter {
     if (req[this.modelName]) {
       const info = {
         collection: this.modelName,
-        _id: _.get(req[this.modelName], this.docId)
+        _id: _.get(req[this.modelName], '_id')
       };
       req[this.modelName].remove((error) => {
         if (error) {

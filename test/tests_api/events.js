@@ -53,7 +53,7 @@ describe('Events', function () {
       .set('authorization', authString)
       .end()
       .then((response) => {
-        resourceId = response.body.id;
+        resourceId = response.body._id;
         resourceHwSn = response.body.hw.sn;
       });
   });

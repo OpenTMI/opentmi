@@ -209,23 +209,16 @@ const ResourceSchema = new Schema({
   // Parent Resource
   parent: {type: ObjectId, ref: 'Resource'}
 });
+
+ResourceSchema.virtual('id').get(function getId() {
+  return this._id;
+});
 ResourceSchema.set('toJSON', {
   virtuals: true,
   getters: true,
   minimize: true,
   transform: (doc, ret) => {
-    const jsonResource = ret;
-
-    if (!jsonResource.id) {
-      jsonResource.id = ret._id;
-    }
-    delete jsonResource._id;
-
-    const ip = jsonResource.ip;
-    if (ip && ip.remote_connection && ip.remote_connection.authentication) {
-      delete ip.remote_connection.authentication;
-    }
-
+    _.unset(ret, 'ip.remote_connection.authentication');
     return ret;
   }
 });

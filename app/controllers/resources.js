@@ -23,7 +23,7 @@ class ResourcesController extends DefaultController {
     const find = {$or: []};
     const _id = req.params[this.modelName];
     if (DefaultController.isObjectId(_id)) {
-      find.$or.push({[this.docId]: _id});
+      find.$or.push({_id});
     }
     find.$or.push({'hw.sn': _id});
     return find;
