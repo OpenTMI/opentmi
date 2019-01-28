@@ -41,6 +41,28 @@ describe('Events', function () {
     return Promise.each(toBeDeleted, deleteEvent);
   });
 
+  let resourceId, resourceHwSn;
+  before('create test resource', function () {
+    const url = `${apiV0}/resources`;
+    const info = {
+      name: 'events-testing',
+      type: 'dut',
+      hw: {sn: 'mysn'},
+    };
+    return superagent.post(url, info)
+      .set('authorization', authString)
+      .end()
+      .then((response) => {
+        resourceId = response.body.id;
+        resourceHwSn = response.body.hw.sn;
+      });
+  });
+  after('remove test resource', function () {
+    const url = `${apiV0}/resources/${resourceId}`;
+    return superagent.del(url)
+      .set('authorization', authString)
+      .end();
+  });
 
   const createEvent = payload => superagent.post(api, payload)
     .set('authorization', authString)
@@ -53,7 +75,7 @@ describe('Events', function () {
       throw new Error(_.get(error, 'response.body.error', error));
     });
 
-  describe('create events', function () {
+  describe('create', function () {
     it('can not create event without mandatory properties', function () {
       const payload = {
         priority: {}
@@ -99,115 +121,155 @@ describe('Events', function () {
         });
     });
   });
-  it('find events', function () {
-    const payload = {
-      priority: {
-        level: 'info',
-        facility: 'user'
-      },
-      ref: {
-        user: '5c10f57f35e9e38db25c0476'
+  describe('find', function () {
+    it('filter by level=info', function () {
+      const payload = {
+        priority: {
+          level: 'info',
+          facility: 'user'
+        },
+        ref: {
+          user: '5c10f57f35e9e38db25c0476'
+        }
+      };
+      function findEvents() {
+        return superagent.get(`${apiV0}/events?priority.level=info`)
+          .set('authorization', authString)
+          .end()
+          .then(response => response.body)
+          .then((body) => {
+            expect(body.length).to.be.equal(1);
+            return body[0];
+          })
+          .then((body) => {
+            expect(body.priority.level).to.be.equal('info');
+          });
       }
-    };
-    function findEvents() {
-      return superagent.get(`${apiV0}/events?priority.level=info`)
-        .set('authorization', authString)
-        .end()
-        .then(response => response.body)
-        .then((body) => {
-          expect(body.length).to.be.equal(1);
-          return body[0];
+      return createEvent(payload)
+        .then(findEvents);
+    });
+  });
+  describe('resource', function () {
+    it('find', function () {
+      const create = (timestamp, msgid) => {
+        const payload = {
+          priority: {
+            level: 'info',
+            facility: 'resource'
+          },
+          ref: {
+            resource: resourceId
+          },
+          cre: {
+            time: timestamp
+          },
+          msgid
+        };
+        return createEvent(payload)
+          .then((body) => {
+            expect(body.msgid).to.be.equal(msgid);
+          });
+      };
+      const getEvents = (id) =>
+        superagent.get(`${apiV0}/resources/${id}/events`)
+          .set('authorization', authString)
+          .end()
+          .then(response => response.body);
+      return Promise.all([
+        create('1995-12-17T00:00:00Z', 'ALLOCATED'),
+        create('1995-12-17T00:00:01Z', 'RELEASED')
+      ])
+        .then(() => getEvents(resourceId))
+        .then((events) => {
+          expect(events.length).to.be.equal(2);
         })
-        .then((body) => {
-          expect(body.priority.level).to.be.equal('info');
+        .then(() => getEvents(resourceHwSn)) // verify that searching using hw.sn also works
+        .then((events) => {
+          expect(events.length).to.be.equal(2);
         });
-    }
-    return createEvent(payload)
-      .then(findEvents);
-  });
-  it('can calculate summary', function () {
-    const resourceId = '5825bb7afe7545132c88c761';
-    const create = (timestamp, msgid) => {
-      const payload = {
-        priority: {
-          level: 'info',
-          facility: 'resource'
-        },
-        ref: {
-          resource: resourceId
-        },
-        cre: {
-          time: timestamp
-        },
-        msgid
+    });
+    it('can calculate summary', function () {
+      const create = (timestamp, msgid) => {
+        const payload = {
+          priority: {
+            level: 'info',
+            facility: 'resource'
+          },
+          ref: {
+            resource: resourceId
+          },
+          cre: {
+            time: timestamp
+          },
+          msgid
+        };
+        return createEvent(payload)
+          .then((body) => {
+            expect(body.msgid).to.be.equal(msgid);
+          });
       };
-      return createEvent(payload)
-        .then((body) => {
-          expect(body.msgid).to.be.equal(msgid);
+      const getStatistics = () =>
+        superagent.get(`${apiV0}/resources/${resourceId}/statistics`)
+          .set('authorization', authString)
+          .end()
+          .then(response => response.body);
+      return Promise.all([
+        create('1995-12-17T00:00:00Z', 'ALLOCATED'),
+        create('1995-12-17T00:00:01Z', 'RELEASED')
+      ])
+        .then(getStatistics)
+        .then((stats) => {
+          expect(stats.count).to.be.equal(2);
+          expect(stats.summary.allocations.count).to.be.equal(1);
+          expect(stats.summary.allocations.time).to.be.equal(1);
         });
-    };
-    const getStatistics = () =>
-      superagent.get(`${apiV0}/resources/${resourceId}/statistics`)
-        .set('authorization', authString)
-        .end()
-        .then(response => response.body);
-    return Promise.all([
-      create('1995-12-17T00:00:00Z', 'ALLOCATED'),
-      create('1995-12-17T00:00:01Z', 'RELEASED')
-    ])
-      .then(getStatistics)
-      .then((stats) => {
-        expect(stats.count).to.be.equal(2);
-        expect(stats.summary.allocations.count).to.be.equal(1);
-        expect(stats.summary.allocations.time).to.be.equal(1);
-      });
-  });
-  it('can calculate utilization', function () {
-    const resourceId = '5825bb7afe7545132c88c761';
-    const create = (timestamp, msgid, traceid) => {
-      const payload = {
-        priority: {
-          level: 'info',
-          facility: 'resource'
-        },
-        ref: {
-          resource: resourceId
-        },
-        cre: {
-          time: timestamp
-        },
-        msgid,
-        traceid
+    });
+    it('can calculate utilization', function () {
+      const create = (timestamp, msgid, traceid) => {
+        const payload = {
+          priority: {
+            level: 'info',
+            facility: 'resource'
+          },
+          ref: {
+            resource: resourceId
+          },
+          cre: {
+            time: timestamp
+          },
+          msgid,
+          traceid
+        };
+        return createEvent(payload)
+          .then((body) => {
+            expect(body.msgid).to.be.equal(msgid);
+          });
       };
-      return createEvent(payload)
-        .then((body) => {
-          expect(body.msgid).to.be.equal(msgid);
+      const getUtilization = () =>
+        superagent.get(`${apiV0}/resources/${resourceId}/utilization`)
+          .set('authorization', authString)
+          .end()
+          .then(response => response.body);
+      return Promise.mapSeries([
+        create('1995-12-17T00:00:00Z', 'ALLOCATED', '123'),
+        create('1995-12-17T01:00:00Z', 'RELEASED', '123'),
+        create('1995-12-18T00:00:00Z', 'ALLOCATED', '1234')
+      ], () => {})
+        .then(() =>
+        // duplicate msgid+traceid is rejected
+          create('1995-12-17T01:00:00Z', 'RELEASED', '123')
+            .reflect()
+            .then((promise) => {
+              expect(promise.isRejected()).to.be.true;
+            }))
+        .then(getUtilization)
+        .then((stats) => {
+          expect(stats.count).to.be.equal(3);
+          expect(stats.summary.allocations.count).to.be.equal(2);
+          expect(stats.summary.allocations.time).to.be.equal(3600);
+          expect(stats.summary.allocations.utilization).to.be.at.least(4);
+          expect(stats.summary.allocations.utilization).to.be.below(4.2);
         });
-    };
-    const getUtilization = () =>
-      superagent.get(`${apiV0}/resources/${resourceId}/utilization`)
-        .set('authorization', authString)
-        .end()
-        .then(response => response.body);
-    return Promise.mapSeries([
-      create('1995-12-17T00:00:00Z', 'ALLOCATED', '123'),
-      create('1995-12-17T01:00:00Z', 'RELEASED', '123'),
-      create('1995-12-18T00:00:00Z', 'ALLOCATED', '1234')
-    ], () => {})
-      .then(() =>
-      // duplicate msgid+traceid is rejected
-        create('1995-12-17T01:00:00Z', 'RELEASED', '123')
-          .reflect()
-          .then((promise) => {
-            expect(promise.isRejected()).to.be.true;
-          }))
-      .then(getUtilization)
-      .then((stats) => {
-        expect(stats.count).to.be.equal(3);
-        expect(stats.summary.allocations.count).to.be.equal(2);
-        expect(stats.summary.allocations.time).to.be.equal(3600);
-        expect(stats.summary.allocations.utilization).to.be.at.least(4);
-        expect(stats.summary.allocations.utilization).to.be.below(4.2);
-      });
-  });
+    });
+  })
 });
