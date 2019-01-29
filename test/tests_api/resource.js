@@ -55,10 +55,11 @@ describe('Resource', function () {
         expect(res).to.have.property('status', 200);
         expect(res.body).to.have.property('name');
         expect(res.body).to.have.property('type');
-        expect(res.body).to.have.property('id');
+        expect(res.body).to.have.property('_id');
+        expect(res.body).to.be.an('string');
         expect(res.body.name).to.equal('dev1');
         expect(res.body.type).to.equal('dut');
-        resourceId = res.body.id;
+        resourceId = res.body._id;
       });
   });
 
@@ -71,7 +72,8 @@ describe('Resource', function () {
         expect(res).to.have.property('status', 200);
         expect(res.body).to.have.property('name');
         expect(res.body).to.have.property('type');
-        expect(res.body).to.have.property('id');
+        expect(res.body).to.have.property('_id');
+        expect(res.body).to.be.an('string');
         expect(res.body.name).to.equal('dev1');
         expect(res.body.type).to.equal('dut');
       });
@@ -151,7 +153,7 @@ describe('Resource', function () {
       return superagent.post(`${api}/resources`)
         .send(body)
         .end(function (error, res) {
-          resourceId = res.body.id;
+          resourceId = res.body._id;
         });
     });
     after(function () {
