@@ -178,11 +178,6 @@ const TestCaseSchema = new Schema({
   }
 });
 
-TestCaseSchema.virtual('id').get(function getId() {
-  return this._id;
-});
-
-
 TestCaseSchema.set('toJSON', {
   virtuals: true,
   getters: true,

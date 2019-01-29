@@ -210,9 +210,6 @@ const ResourceSchema = new Schema({
   parent: {type: ObjectId, ref: 'Resource'}
 });
 
-ResourceSchema.virtual('id').get(function getId() {
-  return this._id;
-});
 ResourceSchema.set('toJSON', {
   virtuals: true,
   getters: true,
