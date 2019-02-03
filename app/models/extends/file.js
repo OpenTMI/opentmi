@@ -103,5 +103,13 @@ FileSchema.methods.checksum = function () { // eslint-disable-line
   return this.sha1;
 };
 
+FileSchema.methods.readStreamFromFileDB = function retrieveFromFileDB(options = {skip: 0, limit: 100}) {
+  return filedb.readStream(this, options)
+    .catch((error) => {
+      logger.error(`Could not read file from filedb, reason: ${error.message}.`);
+      throw error;
+    });
+};
+
 mongoose.model('File', FileSchema);
 module.exports = FileSchema;

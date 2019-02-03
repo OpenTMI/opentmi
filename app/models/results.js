@@ -165,6 +165,14 @@ ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
     .catch(next);
 });
 
+ResultSchema.methods.getLog = function getLog(index) {
+  const file = _.get(this.exec, `logs.${index}`);
+  if (!file) {
+    return Promise.reject(new Error('Index invalid'));
+  }
+  return Promise.resolve(file);
+};
+
 /**
  * Virtuals
  */

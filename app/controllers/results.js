@@ -6,6 +6,7 @@
 
 // 3rd party modules
 require('colors');
+const _ = require('lodash');
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const JunitXmlParser = require('junit-xml-parser').parser;
@@ -17,6 +18,8 @@ mongoose.Promise = Promise;
 
 // own modules
 const DefaultController = require('./');
+const filedb = require('../tools/filedb');
+const streamToString = require('../tools/streamToString');
 
 class ResultsController extends DefaultController {
   constructor() {
@@ -24,11 +27,10 @@ class ResultsController extends DefaultController {
 
     this.Testcase = mongoose.model('Testcase');
 
-    const self = this;
     Object.resolve = (path, obj, safe) => path.split('.').reduce((prev, curr) => {
       if (!safe) { return prev[curr]; }
       return (prev ? prev[curr] : undefined);
-    }, obj || self); // self is undefined
+    }, obj || this);
 
     this.on('create', (data) => {
       if (data.exec && data.exec.verdict === 'pass') {
@@ -42,18 +44,6 @@ class ResultsController extends DefaultController {
       if (duration) {
         this.Testcase.updateTcDuration(data.tcid, duration);
       }
-    });
-  }
-
-  static streamToString(stream) {
-    return new Promise((resolve) => {
-      const chunks = [];
-      stream.on('data', (chunk) => {
-        chunks.push(chunk);
-      });
-      stream.on('end', () => {
-        resolve(chunks.join(''));
-      });
     });
   }
 
@@ -91,7 +81,7 @@ class ResultsController extends DefaultController {
     return new Promise((resolve, reject) => {
       if (req.busboy) {
         req.busboy.on('file', (fieldname, file) => {
-          this.streamToString(file).then((data) => {
+          streamToString(file).then((data) => {
             this.handleJunitXml(data).then((value) => {
               resolve(value);
             });
@@ -108,6 +98,22 @@ class ResultsController extends DefaultController {
   static buildDownload(req, res) {
     const buildId = req.Result.getBuildRef();
     res.redirect(`/api/v0/duts/builds/${buildId}/files/${req.params.Index}/download`);
+  }
+
+  static partialLogDownload(req, res) {
+    const options = {
+      skip: _.get(req.query, 'skip', 0),
+      limit: _.get(req.query, 'limit', 100)
+    };
+    logger.debug(options);
+    req.Result.getLog(req.params.Index)
+      .then(file => filedb.readStream(file, options)).then((stream) => {
+        stream.pipe(res);
+      })
+      .catch((error) => {
+        logger.warn(error);
+        res.status(500).json({error});
+      });
   }
 }
 
