@@ -20,6 +20,29 @@ const {filedb} = tools;
 const fileProvider = filedb.provider;
 const Build = mongoose.model('Build');
 
+const VERDICTS = ['pass', 'fail', 'inconclusive', 'blocked', 'error', 'skip'];
+
+const TestStepSchema = new Schema({
+  name: { type: String },
+  start_time: { type: Date, default: Date.now, required: true },
+  stop_time: { type: Date },
+  verdict: { type: String, required: true, enum: VERDICTS},
+  note: { type: String }
+});
+TestStepSchema.virtual('duration').get(function() {
+  let duration = null;
+  if(this.stop_time && this.start_time) {
+    duration = this.stop_time - this.start_time;
+  }
+  return duration;
+});
+TestStepSchema.pre('validate', function (next) {
+  if (this.duration) {
+    this.stop_time += this.duration;
+  }
+  next();
+});
+
 // @Todo justify why file schema is extended here instead of adding to root model
 FileSchema.add({
   ref: {
@@ -66,9 +89,10 @@ const ResultSchema = new Schema({
     verdict: {
       type: String,
       required: true,
-      enum: ['pass', 'fail', 'inconclusive', 'blocked', 'error', 'skip'],
+      enum: VERDICTS,
       index: true
     },
+    testSteps:[ TestStepSchema ],
     note: {type: String, default: ''},
     duration: {type: Number}, // seconds
     profiling: {type: Mixed},
