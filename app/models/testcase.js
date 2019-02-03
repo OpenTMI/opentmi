@@ -178,22 +178,10 @@ const TestCaseSchema = new Schema({
   }
 });
 
-
 TestCaseSchema.set('toJSON', {
   virtuals: true,
   getters: true,
-  minimize: true,
-  transform(doc, ret) {
-    const jsonResource = ret;
-
-    if (!jsonResource.id) {
-      jsonResource.id = ret._id;
-    }
-
-    delete jsonResource._id;
-    delete jsonResource.__v;
-    return jsonResource;
-  }
+  minimize: true
 });
 
 TestCaseSchema.index({tcid: 1, 'ver.cur': -1}, {unique: true});
