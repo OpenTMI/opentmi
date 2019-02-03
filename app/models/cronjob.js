@@ -5,9 +5,9 @@ const {cronPlugin} = require('mongoose-cron');
 
 const {Schema} = mongoose;
 const {Types} = Schema;
-const {ObjectId, Mixed} = Types;
+const {ObjectId} = Types;
 
-const requireForView = function () { return this.type === 'view'};
+const requireForView = function () { return this.type === 'view'; };
 
 
 const CronJobSchema = new Schema({

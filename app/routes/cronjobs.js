@@ -11,7 +11,6 @@ function Route(app) {
 
   router.param('cronjobs', controller.modelParam.bind(controller));
 
-
   router.route('/')
     .all(requireAuth)
     .all(controller.all.bind(controller))
@@ -26,8 +25,8 @@ function Route(app) {
     .delete(controller.remove.bind(controller));
 
   router.route('/:cronjobs/view')
+    .all(requireAuth)
     .get(controller.showView.bind(controller));
-
 
   app.use('/api/v0/cron', router);
 }
