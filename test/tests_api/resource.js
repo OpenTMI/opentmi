@@ -73,7 +73,7 @@ describe('Resource', function () {
         expect(res.body).to.have.property('name');
         expect(res.body).to.have.property('type');
         expect(res.body).to.have.property('_id');
-        expect(res.body).to.be.an('string');
+        expect(res.body._id).to.be.an('string');
         expect(res.body.name).to.equal('dev1');
         expect(res.body.type).to.equal('dut');
       });
