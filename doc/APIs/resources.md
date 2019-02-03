@@ -3,7 +3,7 @@
 **NOTE** Following API's require authentication token to work.
 
 ## Find Resources
-Find Events. Data schema available [here](../../app/models/resource.js)
+Find Resources. Data schema available [here](../../app/models/resource.js)
 
 *  **URL**
 
@@ -42,7 +42,9 @@ Find Events. Data schema available [here](../../app/models/resource.js)
 
 
 **Notes:**
-  You can use filter results by using url parameters. E.g. <api>/resources?hw.sn=abc
+  You can use filter results by using url parameters.
+  E.g. <api>/resources?hw.sn=abc`
+  
 
 ## Get single resource
  Returns single Resource.
@@ -50,6 +52,8 @@ Find Events. Data schema available [here](../../app/models/resource.js)
 * **URL**
 
   /api/v0/resources/:resource
+
+  `hw.sn` can be also used for resource identification
 
 * **Method:**
 
@@ -62,7 +66,7 @@ Find Events. Data schema available [here](../../app/models/resource.js)
     **Content:**
     ```json
     {
-      "_id" : "5a89c4121a6d6e068a08c60e"),
+      "_id" : "5a89c4121a6d6e068a08c60e",
       "cre" : {
         "date" : "2018-02-18T18:21:06.865Z"
       },
@@ -83,7 +87,6 @@ Find Events. Data schema available [here](../../app/models/resource.js)
     ```json
     {"error": "No resources found by id"}
     ```
-
 
 ## resource events and utilization based on resource id
 see documentation from [here](events.md#get-events-based-on-resource-id)

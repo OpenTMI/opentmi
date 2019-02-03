@@ -21,7 +21,6 @@ const api = 'http://localhost:3000/api/v0';
 const validResultBody = require('./mocking/mockResult.json');
 
 const existingResultId = '5858375fbee7d73c703c5e13';
-const existingResultBody = require('./expectedValues/expectedResult.json');
 
 const relativeFiledbPath = config.get('filedb');
 const absoluteFiledbPath = path.resolve(__dirname, '..', '..', relativeFiledbPath);
@@ -53,17 +52,13 @@ describe('Results', function () {
       });
   });
 
-  it.skip('should return a single result on results/<id> GET', function (done) {
-    const expectedBody = existingResultBody;
-
+  it('should return a single result on results/<id> GET', function (done) {
     superagent.get(`${api}/results/${existingResultId}`)
       .set('authorization', authString)
       .type('json')
       .end(function (error, res) {
         expect(error).to.not.exist;
-
-        expect(res.body).to.deep.equal(expectedBody);
-
+        expect(res.body._id).to.equal(existingResultId);
         done();
       });
   });

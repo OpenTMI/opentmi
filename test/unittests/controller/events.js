@@ -64,17 +64,19 @@ describe('controllers/events.js', function () {
       it('list', function () {
         controller = new EventsController();
         const req = newRequest({}, {Resource: '5c10f57f35e9e38db25c0476'});
+        req.Resource = {_id: '5c10f57f35e9e38db25c0476'};
         return controller.resourceEvents(req, res)
           .then(() => {
             expect(res.json.calledWith([])).to.be.true;
           });
       });
-      it('invalid id', function () {
+      it('allow to use hw.sn', function () {
         controller = new EventsController();
         const req = newRequest({}, {Resource: '12'});
+        req.Resource = {_id: '5c10f57f35e9e38db25c0476', hw: {sn: '12'}};
         return controller.resourceEvents(req, res)
           .then(() => {
-            expect(res.status.calledWith(400)).to.be.true;
+            expect(res.json.calledWith([])).to.be.true;
           });
       });
     });

@@ -13,6 +13,7 @@ const _ = require('lodash');
 const DefaultController = require('./');
 const {Utilization} = require('../tools/utilization');
 const {MsgIds} = require('../models/event');
+const ResourceModel = require('../models/resource');
 const logger = require('../tools/logger');
 
 
@@ -37,7 +38,7 @@ class EventsController extends DefaultController {
   }
   statistics(req, res) {
     const find = {
-      'ref.resource': req.params.Resource,
+      'ref.resource': req.Resource._id,
       msgid: {
         $in: [
           MsgIds.ALLOCATED,
@@ -52,7 +53,8 @@ class EventsController extends DefaultController {
     const utilization = new Utilization();
     this.Model
       .find(find)
-      .select('cre.date msgid priority.level')
+      .select('cre.time msgid priority.level')
+      .sort({'cre.time': 1})
       .cursor()
       .on('data', utilization.push.bind(utilization))
       .on('error', (error) => {
@@ -65,7 +67,7 @@ class EventsController extends DefaultController {
   }
   utilization(req, res) {
     const find = {
-      'ref.resource': req.params.Resource,
+      'ref.resource': req.Resource._id,
       msgid: {$in: [MsgIds.ALLOCATED, MsgIds.RELEASED]},
       'priority.level': 'info',
       'priority.facility': 'resource'
@@ -73,7 +75,8 @@ class EventsController extends DefaultController {
     const utilization = new Utilization();
     this.Model
       .find(find)
-      .select('cre.date msgid priority.level')
+      .select('cre.time msgid priority.level')
+      .sort({'cre.time': 1})
       .cursor()
       .on('data', utilization.push.bind(utilization))
       .on('error', (error) => {
@@ -90,17 +93,40 @@ class EventsController extends DefaultController {
           });
       });
   }
+  resolveResource(req, res, next) {
+    const find = {$or: []};
+    if (DefaultController.isObjectId(req.params.Resource)) {
+      find.$or.push({_id: req.params.Resource});
+    }
+    find.$or.push({'hw.sn': req.params.Resource});
+    this.logger.debug(`find resource by ${JSON.stringify(find)} (model: Resource)`);
+    const {Model} = ResourceModel;
+    return Model.findOne(find)
+      .then((data) => {
+        if (!data) {
+          const error = new Error(`Document with id/hw.sn ${req.params.Resource} not found`);
+          error.statusCode = 404;
+          throw error;
+        }
+        _.set(req, 'Resource', data);
+        next();
+      })
+      .catch((error) => {
+        const status = error.statusCode || 500;
+        this.logger.error(error);
+        res.status(status).json({message: `${error}`});
+      });
+  }
   resourceEvents(req, res) {
-    const filter = {'ref.resource': req.params.Resource};
+    const filter = {'ref.resource': req.Resource._id};
     const query = _.defaults(filter, req.query);
 
     return Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
       .then((events) => { res.json(events); })
       .catch((error) => {
         logger.error(`resourceEvents failure: ${error}`);
-        const status = error.name === 'CastError' ? 400 : 500;
         res
-          .status(status)
+          .status(500)
           .json({message: error.message, error: error});
       });
   }

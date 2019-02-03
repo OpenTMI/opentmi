@@ -19,6 +19,16 @@ class ResourcesController extends DefaultController {
     res.redirect(`/api/v0/resources/${req.params.Resource}`);
   }
 
+  _getModelParamQuery(req) {
+    const find = {$or: []};
+    const _id = req.params[this.modelName];
+    if (DefaultController.isObjectId(_id)) {
+      find.$or.push({_id});
+    }
+    find.$or.push({'hw.sn': _id});
+    return find;
+  }
+
   static solveRoute(req, res) {
     req.Resource.solveRoute((error, route) => {
       if (error) {
