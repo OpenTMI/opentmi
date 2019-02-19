@@ -19,7 +19,7 @@
     "backend"
   ],
   "copyright": "Jussi Vatjus-Anttila <jussiva@gmail.com>",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "engines": {
     "node": "~6.11.1"
   },
