@@ -29,7 +29,7 @@ workflows:
 defaults: &defaults
   working_directory: ~/opentmi
   docker:
-	  - image: circleci/node:8.12.0-browsers
+    - image: circleci/node:8.12.0-browsers
   steps:
     - checkout
     - run: node --version > _tmp_file
