@@ -4,10 +4,6 @@ workflows:
   version: 2
   test-publish:
     jobs:
-      - test-node6:
-          filters:  # required since `deploy` has tag filters AND requires `build`
-            tags:
-              only: /.*/
       - test-node8:
           filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
@@ -22,7 +18,6 @@ workflows:
               only: /.*/
       - publish:
           requires:
-            - test-node6
             - test-node8
             - test-node10
           filters:
@@ -33,8 +28,6 @@ workflows:
 
 defaults: &defaults
   working_directory: ~/opentmi
-  docker:
-  - image: circleci/node:6.11.4
   steps:
     - checkout
     - run: node --version > _tmp_file
@@ -95,15 +88,6 @@ defaults: &defaults
     - store_test_results:
         path: coverage/coverage.json
 jobs:
-  test-node6:
-    <<: *defaults
-    docker:
-    - image: circleci/node:6.14.4-browsers
-      environment:
-       CHROME_BIN: "/usr/bin/google-chrome"
-       NODE_ENV: test
-       NPM_CI_INSTALL: "install"
-    - image: mongo:4.1.2
   test-node8:
     <<: *defaults
     docker:
