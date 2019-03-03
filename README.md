@@ -11,7 +11,8 @@ Open Source Test Management Infrastructure for IoT and embedded world.
 [![Test Coverage][coveralls-image]][coveralls-url]
 -->
 
-OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [GPLv3 license](LICENSE.md).
+OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / 
+Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [MIT license](LICENSE.md).
 OpenTMI is extremely customizable through [addons](doc/addons.md).
 
 ![screenshot](doc/screenshot.jpg)
@@ -53,7 +54,8 @@ See [here](doc/docker.md) for more instructions.
 
 ### Prepare
 
-You need to install [mongodb][MongoDB] and run it. File `mongod.sh` contains simple script to start single mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
+You need to install [mongodb][MongoDB] and run it. File `mongod.sh` contains simple script to start single
+mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
 
 ```
 > git clone --recursive https://github.com/OpenTMI/opentmi
@@ -106,6 +108,9 @@ OpenTMI support [clustered mode](doc/cluster.md) which gives some benefits in pr
 * serve more clients
 * better performance
 
+**NOTE** same can be achieved using load-balancer and systemd service for example.
+In such case you doesn't need to use cluster mode.
+
 ## API documentation
 Available [here](doc/APIs)
 
@@ -130,7 +135,9 @@ By default opentmi is started as development mode. You can configure environment
   * [opentmi-cli](https://github.com/opentmi/opentmi-cli)
 
 ### Addons
-Way to extend backend-service functionality. Addon registry (future plan) contains information about existing addons, which can easily to install via administrator API. More documentation can be found from [here](doc/addons.md)
+Way to extend backend-service functionality. Addon registry (future plan) contains information
+about existing addons, which can easily to install via administrator API.
+More documentation can be found from [here](doc/addons.md)
 
 ### Test
 
@@ -159,11 +166,11 @@ You can use for example:
 
 * linux [systemd](https://www.freedesktop.org/wiki/Software/systemd/)
 
-    see [example](scripts/opentmi.service)
+    see [example](scripts/opentmi.service) service script
 
  **Note:** if your service management is storing `stdout` and `stderr` to log
  files - be sure that it is rotated properly to ensure that disk space doesn't
- cause trouble. By default OpenTMI store logs log/ -folder, configured as
+ cause trouble. By default OpenTMI store logs under `log/` -folder, configured as
  daily rotate.
 
 ### Who do I talk to?
@@ -173,7 +180,7 @@ You can use for example:
 
 ## License
 
-  [GPL-3.0](LICENSE.md)
+  [MIT](LICENSE.md)
 
 <!-- references -->
 [Node.js]: https://nodejs.com

@@ -19,7 +19,7 @@
     "backend"
   ],
   "copyright": "Jussi Vatjus-Anttila <jussiva@gmail.com>",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "engines": {
     "node": "~6.11.1"
   },
@@ -58,10 +58,10 @@
     "jwt-simple": "^0.5.5",
     "lodash": "^4.17.11",
     "method-override": "^3.0.0",
-    "mime": "^2.0.3",
-    "moment": "^2.20.1",
-    "mongoose": "^5.4.4",
-    "mongoose-query": "^0.5.3",
+    "mime": "^2.4.0",
+    "moment": "^2.24.0",
+    "mongoose": "^5.4.14",
+    "mongoose-query": "^0.6.0",
     "mongoose-cron": "github:opentmi/mongoose-cron",
     "mongoose-schema-jsonschema": "1.2.1",
     "nconf": "^0.10.0",
@@ -103,7 +103,7 @@
     "grunt-simple-mocha": "^0.4.1",
     "grunt-wait-server": "^0.3.1",
     "istanbul": "^0.4.5",
-    "mocha": "^5.0.0",
+    "mocha": "^6.0.0",
     "mocha-circleci-reporter": "0.0.3",
     "mockgoose": "github:compwright/Mockgoose",
     "sinon": "^7.2.3",
