@@ -107,7 +107,7 @@
     "mockgoose": "github:compwright/Mockgoose",
     "sinon": "^7.2.3",
     "socket.io-client": "^2.2.0",
-    "superagent": "^4.1.0",
+    "superagent": "^5.0.2",
     "superagent-promise": "^1.1.0",
     "xunit-file": "^1.0.0"
   }
