@@ -51,7 +51,7 @@
     "express-session": "^1.16.2",
     "express-winston": "^3.2.1",
     "farmhash": "^3.0.0",
-    "fs-extra": "^7.0.1",
+    "fs-extra": "^8.1.0",
     "invariant": "^2.2.2",
     "jsonschema": "^1.2.0",
     "junit-xml-parser": "0.0.3",
