@@ -73,7 +73,7 @@ function createJWT(user) {
     });
 }
 
-const requireAuth = passport.authenticate('jwt', {session: false});
+const requireAuth = passport.authenticate(['jwt', 'basic'], {session: false});
 const ensureAdmin = [requireAuth, requireAdmin];
 
 module.exports = {
