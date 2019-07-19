@@ -136,8 +136,8 @@ class PassportStrategies {
         .then((user) => {
           done(null, user);
         })
-        .catch(error => {
-          error.statusCode = 401;
+        .catch((error) => {
+          _.set(error, 'statusCode', 401);
           done(error);
         });
     }));
