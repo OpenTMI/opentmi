@@ -28,7 +28,7 @@ GET /auth/github/id get github client id
 
 Client can include username and password to http request like:
 ```
-curl http://admin:admin@localhost:3000/api/v0/events
+curl https://admin:admin@localhost:3000/api/v0/events
 ```
 
 **NOTE:** Do not use this when plain HTTP is in use!
@@ -41,9 +41,32 @@ This is not needed when user login using github authentication.
 POST /auth/signup
 ```
 
+
+### Get authenticated user information
+
 ```
 GET /auth/me
+
+{ groups: [],
+  apikeys: [],
+  _id: '<string>',
+  name: '<string>',
+  email: '<string>',
+  registered: '<iso-date>',
+  lastVisited: '<iso-date>'
+}
+```
+
+### Update user information
+
+TBD
+```
 PUT /auth/me
+```
+
+### Log out
+
+```
 POST /auth/logout
 ```
 
