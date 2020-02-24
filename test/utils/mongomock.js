@@ -1,29 +1,27 @@
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
-const {Mockgoose} = require('mockgoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 
 mongoose.Promise = Promise;
-const mockgoose = new Mockgoose(mongoose);
+
+let mongoServer;
+const opts = {  }; // remove this option if you use mongoose 5 and above
 
 
 module.exports = {
-  setup: function setup() {
-    const options = {useNewUrlParser: true};
-    return mockgoose.prepareStorage()
-      .then(() => mongoose.connect('mongodb://test', options));
+  setup: async function setup() {
+    mongoServer = new MongoMemoryServer();
+    const mongoUri = await mongoServer.getUri();
+    await mongoose.connect(mongoUri, opts);
   },
-  reset: function () {
-    return mockgoose.helper.reset();
+  reset: async function () {
+    await mongoServer.stop();
+    await mongoServer.start();
+    const mongoUri = await mongoServer.getUri();
+    await mongoose.connect(mongoUri, opts);
   },
-  teardown: function teardown() {
-    return mockgoose.helper.reset()
-      .then(() => mongoose.disconnect())
-      .then(() => {
-        const retval = new Promise((resolve) => {
-          mockgoose.mongodHelper.mongoBin.childProcess.once('exit', resolve);
-        }).timeout(2000, 'cannot kill mongoBin process');
-        mockgoose.mongodHelper.mongoBin.childProcess.kill('SIGTERM');
-        return retval;
-      });
+  teardown: async function teardown() {
+    await mongoose.disconnect();
+    await mongoServer.stop();
   }
 };
