@@ -1,12 +1,11 @@
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const {MongoMemoryServer} = require('mongodb-memory-server');
 
 mongoose.Promise = Promise;
 
 let mongoServer;
-const opts = { useNewUrlParser: true }; // remove this option if you use mongoose 5 and above
-
+const opts = {useNewUrlParser: true}; // remove this option if you use mongoose 5 and above
 
 
 async function setup() {
@@ -14,13 +13,15 @@ async function setup() {
   const mongoUri = await mongoServer.getUri();
   await mongoose.connect(mongoUri, opts);
 }
-async function reset() {
-  await teardown();
-  await setup();
-}
+
 async function teardown() {
   await mongoose.disconnect();
   await mongoServer.stop();
+}
+
+async function reset() {
+  await teardown();
+  await setup();
 }
 
 module.exports = {setup, reset, teardown};
