@@ -106,7 +106,7 @@
     "mocha": "^6.2.0",
     "mocha-circleci-reporter": "0.0.3",
     "mongodb-memory-server": "^6.2.4",
-    "sinon": "^7.3.2",
+    "sinon": "^9.0.0",
     "socket.io-client": "^2.2.0",
     "superagent": "^5.1.0",
     "superagent-promise": "^1.1.0",
