@@ -1,7 +1,7 @@
 {
   "name": "OpenTMI",
   "description": "OpenTMI - Open Source Test Management Infrastructure",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "author": {
     "name": "Jussi Vatjus-Anttila",
     "email": "jussiva@gmail.com"
@@ -21,7 +21,7 @@
   "copyright": "Jussi Vatjus-Anttila <jussiva@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": "~6.11.1"
+    "node": ">10.0.0"
   },
   "scripts": {
     "start": "node index.js",
@@ -105,7 +105,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^6.2.0",
     "mocha-circleci-reporter": "0.0.3",
-    "mockgoose": "github:compwright/Mockgoose",
+    "mongodb-memory-server": "^6.2.4",
     "sinon": "^7.3.2",
     "socket.io-client": "^2.2.0",
     "superagent": "^5.1.0",
