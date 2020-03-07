@@ -36,8 +36,8 @@ class ResultsController extends DefaultController {
         const colors = {
           pass: 'green',
           fail: 'red',
-          skip: 'yellow',
-          inconclusive: 'america'
+          inconclusive: 'yellow',
+          skip: 'gray'
         };
         const color = _.get(colors, data.exec.verdict, 'red');
         logger.info(`Got new ${`${data.exec.verdict}`[color]} result: ${data.tcid}`);
