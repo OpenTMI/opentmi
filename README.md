@@ -92,6 +92,9 @@ Options:
                           server directory
 ```
 
+**db:**
+* `inmemory` as connection string uses in-memory mongodb server - for testing purpose.
+
 **https:**
 Generate self-signed ssl certifications:
 * `./scripts/gencerts.sh`
