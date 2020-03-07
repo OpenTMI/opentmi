@@ -5,7 +5,6 @@ const Express = require('express');
 const SocketIO = require('socket.io');
 const mongoAdapter = require('socket.io-adapter-mongo');
 const Promise = require('bluebird');
-const _ = require('lodash');
 
 // application modules
 const logger = require('./tools/logger');

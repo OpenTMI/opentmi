@@ -14,14 +14,14 @@ mongoose.Promise = Promise;
 let mongoServer = null;
 let tearingDown = false;
 
-const initialize = async function() {
+const initialize = async function () {
   if (dbUrl === 'inmemory') {
     mongoServer = new MongoMemoryServer();
     dbUrl = await mongoServer.getUri();
     logger.info(`use inmemory db: ${dbUrl}`);
     config.set('db', dbUrl);
   }
-}
+};
 
 const connect = async function () {
   const must = {
