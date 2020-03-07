@@ -5,6 +5,7 @@ const Express = require('express');
 const SocketIO = require('socket.io');
 const mongoAdapter = require('socket.io-adapter-mongo');
 const Promise = require('bluebird');
+const _ = require('lodash');
 
 // application modules
 const logger = require('./tools/logger');
@@ -28,8 +29,6 @@ if (config.get('help') || config.get('h')) {
 const https = config.get('https');
 const listen = cluster.isMaster ? config.get('listen') : 'localhost';
 const port = cluster.isMaster ? config.get('port') : 0;
-const dbUrl = config.get('db');
-
 
 // Create express instance
 const app = Express();
@@ -40,14 +39,18 @@ const server = Server(app);
 // Register socket io
 const io = SocketIO(server);
 
-// Register mongo adapter for socket.io
-const ioAdapter = mongoAdapter(dbUrl);
-io.adapter(ioAdapter);
-
 const emailer = new Emailer(config.get('smtp'));
 
+
 // Initialize database connection
-DB.connect()
+DB.initialize()
+  .then(() => DB.connect())
+  .then(() => {
+    // Register mongo adapter for socket.io
+    const dbUrl = config.get('db');
+    const ioAdapter = mongoAdapter(dbUrl);
+    io.adapter(ioAdapter);
+  })
   .catch((error) => {
     console.error('mongoDB connection failed: ', error.stack); // eslint-disable-line no-console
     process.exit(-1);

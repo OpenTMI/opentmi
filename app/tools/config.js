@@ -70,6 +70,7 @@ const sampleFile = path.resolve(__dirname, '../../config.example.json');
 const defaults = JSON.parse(fs.readFileSync(sampleFile));
 defaults.db = getDefaultDb();
 nconf
+  .use('memory')
   .argv(args, 'Usage: npm start -- (options)')
   .env()
   .file(path.resolve(process.cwd(), nconf.get('config')))
