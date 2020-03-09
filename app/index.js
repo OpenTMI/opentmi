@@ -77,7 +77,7 @@ DB.initialize()
     }
 
     function onListening() {
-      const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
+      const listenurl = `${(https ? 'https' : 'http')}://${listen}:${port}`;
       logger.info(`OpenTMI started on ${listenurl}`);
       eventBus.emit('start_listening', {url: listenurl});
     }

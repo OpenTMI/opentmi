@@ -29,4 +29,4 @@ RUN npm install --only=production
 COPY --from=build /app ./
 COPY package.json /
 
-CMD ["node", ".", "-vvv", "--config", "data/config.json"]
+CMD ["node", ".", "-vvv", "--port", "8000"]
