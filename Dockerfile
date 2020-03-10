@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:12-alpine AS base
+FROM node:12-stretch AS base
 # Create app directory
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN npm install
 # ---- Copy Files/Build ----
 FROM dependencies AS build
 WORKDIR /app
-COPY app /app
+COPY app ./app
 # Build react/vue/angular bundle static files
 # RUN npm run build
 
@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=dependencies /app/package.json ./
 # Install app dependencies
 RUN npm install --only=production
-COPY --from=build /app ./
-COPY package.json /
+COPY --from=build /app/app ./app
 
-CMD ["node", ".", "-vvv", "--port", "8000"]
+EXPOSE 8000
+CMD ["npm", "start", "--", "-vvv", "--port", "8000", "--db", "inmemory"]
