@@ -23,14 +23,8 @@ const Testcase = mongoose.model('Testcase');
 
 // @Todo justify why file schema is extended here instead of adding to root model
 FileSchema.add({
-  ref: {
-    type: ObjectId,
-    ref: 'Resource'
-  },
-  from: {
-    type: String,
-    enum: ['dut', 'framework', 'env', 'other']
-  }
+  ref: {type: ObjectId, ref: 'Resource'},
+  from: {type: String, enum: ['dut', 'framework', 'env', 'other']}
 });
 
 // Device(s) Under Test
