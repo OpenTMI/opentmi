@@ -29,4 +29,4 @@ RUN npm install --only=production
 COPY --from=build /app/app ./app
 
 EXPOSE 8000
-CMD ["npm", "start", "--", "-vvv", "--port", "8000", "--db", "inmemory"]
+CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000"]
