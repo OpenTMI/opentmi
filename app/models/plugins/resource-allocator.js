@@ -128,7 +128,6 @@ function ResourceAllocator(schema, options) { // eslint-disable-line no-unused-v
       next(result);
     }
   };
-  logger.silly('ResourceAllocator registered to model');
 }
 
 module.exports = ResourceAllocator;

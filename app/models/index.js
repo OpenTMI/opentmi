@@ -8,7 +8,7 @@ const logger = require('../tools/logger');
 
 const models = {};
 
-function ensureIndexes() {
+function refreshIndexes() {
   logger.info(`Ensuring models (${Object.keys(models).length}) indexes...`);
   const ensureModelIndexes = Model => Model.createIndexes()
     .catch((err) => {
@@ -63,7 +63,7 @@ function registerModels() {
       }
     }
   });
-  return ensureIndexes();
+  return refreshIndexes();
 }
 
-module.exports = {registerModels, ensureIndexes};
+module.exports = {registerModels, refreshIndexes};
