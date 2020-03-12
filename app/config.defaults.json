@@ -1,0 +1,45 @@
+{
+  "name": "opentmi",
+  "listen": "127.0.0.1",
+  "port": 8000,
+  "webtoken": "OpenTMI-toP-SeCRet-tOKEn",
+  "webtokenExpirationDays": 5,
+  "db": "mongodb://localhost/opentmi",
+  "filedb": "./data",
+  "auto-reload": false,
+  "autoInstallAddonDeps": false,
+  "silent": false,
+  "verbose": 1,
+  "https": false,
+  "sslcertKey": "./sslcert/server.key",
+  "sslcertCrt": "./sslcert/server.crt",
+  "admin": {
+    "user": "admin",
+    "pwd": "admin"
+  },
+  "smtp": {
+    "enabled": false,
+    "host": "smtp.gmail.com",
+    "port": 465,
+    "secure": true,
+    "auth": {
+        "user": "<username>",
+        "pass": "<password>"
+    }
+  },
+  "mongo": {
+    "sslValidate": true
+  },
+  "github": {
+    "clientID": "<client-id>",
+    "clientSecret": "<client-secret>",
+    "callbackURL": "http://localhost/auth/github/callback",
+    "organization": "<github-org>",
+    "adminTeam": "<admin-team>"
+  },
+  "google": {
+    "clientID": "<client-id>",
+    "clientSecret": "<client-secret>",
+    "callbackURL": "http://localhost/auth/github/callback"
+  }
+}
