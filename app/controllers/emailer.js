@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer');
 const logger = require('../tools/logger');
 
 
-let emailer = {send: () => Promise.reject('emailer is not configured')};
+let emailer = {send: () => Promise.reject(new Error('emailer is not configured'))};
 
 
 class Emailer {
