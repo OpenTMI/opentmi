@@ -44,7 +44,7 @@ const args = {
     describe: 'log path. Use "null" or "/dev/null" to supress file logging'
   },
   autoInstallAddonDeps: {
-    default: true,
+    default: false,
     type: 'bool',
     describe: 'automatically install dependencies when startup server'
   },
