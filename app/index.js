@@ -100,7 +100,7 @@ DB.initialize()
           .timeout(1000)
           .catch((error) => { logger.warn(`restClose fails: ${error}`); }))
         .then(() => logger.debug('Closing DB connection'))
-        .then(() => DB.disconnect().timeout(2000))
+        .then(() => DB.disconnect())
         .catch((error) => {
           console.error(`shutdown Error: ${error}`); // eslint-disable-line no-console
         })
