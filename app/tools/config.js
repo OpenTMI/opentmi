@@ -66,8 +66,9 @@ const args = {
   parseValues: true
 };
 
-const sampleFile = path.resolve(__dirname, '../../config.example.json');
-const defaults = JSON.parse(fs.readFileSync(sampleFile));
+
+const defaultFile = path.resolve(__dirname, '../config.defaults.json');
+const defaults = JSON.parse(fs.readFileSync(defaultFile));
 defaults.db = getDefaultDb();
 nconf
   .use('memory')
@@ -78,7 +79,7 @@ nconf
 
 const cfgFileName = path.resolve(process.cwd(), nconf.get('config'));
 if (!fs.existsSync(cfgFileName)) {
-  fs.copySync(sampleFile, cfgFileName);
+  fs.copySync(defaultFile, cfgFileName);
 }
 
 module.exports = nconf;

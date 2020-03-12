@@ -1,21 +1,32 @@
-FROM node:12
-
+# ---- Base Node ----
+FROM node:12-stretch AS base
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install app dependencies
-# COPY package.json and package-lock.json
-COPY package.json package-lock.json ./
-
+# ---- Dependencies ----
+FROM base AS dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+COPY package*.json ./
+# install app dependencies including 'devDependencies'
 RUN npm install
 
-# Bundle app source
-COPY . .
+# ---- Copy Files/Build ----
+FROM dependencies AS build
+WORKDIR /app
+COPY app ./app
+# Build react/vue/angular bundle static files
+# RUN npm run build
 
-# Use production as default node environment
-# to change this use '--build-arg NODE_ENV=development' when building docker
-# ARG NODE=development
-# ENV NODE_ENV ${NODE}
+# --- Release with Alpine ----
+FROM node:12-alpine AS release
+# Create app directory
+WORKDIR /app
+# optional
+# RUN npm -g install serve
+COPY --from=dependencies /app/package.json ./
+# Install app dependencies
+RUN npm install --only=production
+COPY --from=build /app/app ./app
 
 EXPOSE 8000
-CMD [ "npm", "start", "--", "-v", "--listen", "0.0.0.0", "--port", "8000"]
+CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000"]

@@ -77,7 +77,7 @@ DB.initialize()
     }
 
     function onListening() {
-      const listenurl = `${(https ? 'https' : 'http:')}://${listen}:${port}`;
+      const listenurl = `${(https ? 'https' : 'http')}://${listen}:${port}`;
       logger.info(`OpenTMI started on ${listenurl}`);
       eventBus.emit('start_listening', {url: listenurl});
     }
@@ -100,7 +100,7 @@ DB.initialize()
           .timeout(1000)
           .catch((error) => { logger.warn(`restClose fails: ${error}`); }))
         .then(() => logger.debug('Closing DB connection'))
-        .then(() => DB.disconnect().timeout(2000))
+        .then(() => DB.disconnect())
         .catch((error) => {
           console.error(`shutdown Error: ${error}`); // eslint-disable-line no-console
         })

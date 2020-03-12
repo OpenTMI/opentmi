@@ -73,7 +73,7 @@ class Updater extends EventEmitter {
 
   version(deep) {
     if (this._pending.isPending()) {
-      return Promise.reject('Cannot fetch version, pending action exists.');
+      return Promise.reject(new Error('Cannot fetch version, pending action exists.'));
     }
     return Promise.all([
       this.npm.version(this._options),
@@ -83,7 +83,7 @@ class Updater extends EventEmitter {
 
   restart() {
     if (this._pending.isPending()) {
-      return Promise.reject('Updating in progress.');
+      return Promise.reject(new Error('Updating in progress.'));
     }
     eventBus.emit('workerRestartNeeded', 'Request from updater tool.');
     return Promise.resolve('Server will be restarted.');
