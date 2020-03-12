@@ -17,6 +17,10 @@ COPY app ./app
 # Build react/vue/angular bundle static files
 # RUN npm run build
 
+ADD https://github.com/OpenTMI/opentmi-default-gui/archive/v0.1.0.tar.gz ./
+RUN tar -xzf v0.1.0.tar.gz -C app/addons \
+ && rm v0.1.0.tar.gz
+
 # --- Release with Alpine ----
 FROM node:12-alpine AS release
 # Create app directory
