@@ -4,7 +4,7 @@ Open Source Test Management Infrastructure for IoT and embedded world.
  [![Build Status][build-image]][build-url]
  [![Dependencies Status][depupdated-image]][depupdated-url]
  [![devDependencies Status][devdepupdated-image]][devdepupdated-url]
- [![Greenkeeper badge](https://badges.greenkeeper.io/OpenTMI/opentmi.svg)](https://greenkeeper.io/)
+ 
 
 
  <!--
