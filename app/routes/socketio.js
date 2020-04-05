@@ -31,10 +31,10 @@ function Route(app, io) {
   });
   io.use(authorize);
 
-  const ioEvents = ['disconnect', 'whoami'];
+  const ioEvents = ['disconnect', 'whoami', 'join', 'leave'];
 
   io.on('connection', (socket) => {
-    const controller = new Controller(socket);
+    const controller = new Controller(socket, io);
     _.each(ioEvents, event => socket.on(event, controller[event].bind(controller)));
   });
   const resultNS = io.of('results');

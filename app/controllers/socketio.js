@@ -7,13 +7,38 @@ const logger = require('../tools/logger');
 
 const User = mongoose.model('User');
 
+const Transport = require('winston-transport');
+const util = require('util');
+
+//
+// Inherit from `winston-transport` so you can take advantage
+// of the base functionality and `.exceptions.handle()`.
+//
+class RoomCustomTransport extends Transport {
+  constructor(io) {
+    super();
+    this._io = io;
+  }
+
+  log(info, callback) {
+    setImmediate(() => {
+      this._io.to('logs').emit('log', `${info[Symbol.for('message')]}\n`);
+    });
+
+    // Perform the writing to the remote service
+    callback();
+  }
+}
+
 class SocketIOController {
-  constructor(socket) {
+  constructor(socket, io) {
     this._socket = socket;
+    this._io = io
     logger.info(`New ${this.isAdmin ? 'admin' : 'user'} (ip: ${this.ipAddress}, id: ${this.id}) connected to IO`);
     logger.silly(`Current clients: ${Object.keys(SocketIOController.clients).length}`);
     SocketIOController.clients[this.id] = this;
     this._lastActivity = new Date();
+    logger.logger.add(new RoomCustomTransport(io));
   }
 
   /**
@@ -47,6 +72,23 @@ class SocketIOController {
       .catch(callback)
       .finally(this.activity.bind(this));
   }
+
+  async join({room}, callback) {
+    if (!['logs'].includes(room)) {
+      logger.warn(`Trying to join room that does not exists: ${room}`);
+      callback(new Error('room does not exists'));
+      return;
+    }
+    logger.info(`New user join to room: ${room}`)
+    await this._socket.join(room)
+    this._io.to(room).emit('log', 'New user joined to room\n');
+  }
+
+  async leave(room) {
+    await this._socket.leave(room)
+    this._io.to(room).emit('log', 'user leave from room\n');
+  }
+
   //  helpers
   activity() {
     const promise = Promise.resolve(this._lastActivity);
