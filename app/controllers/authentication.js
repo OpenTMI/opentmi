@@ -154,6 +154,8 @@ class AuthenticationController {
     switch (service) {
       case ('github'):
         return {scope: ['user:email', 'read:org']};
+      case ('google'):
+        return {scope: ['profile']};
       default:
         return {scope: []};
     }

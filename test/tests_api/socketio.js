@@ -94,6 +94,8 @@ describe('Basic socketio tests', function () {
       const join = new Promise(resolve => io.emit('join', {room: 'logs'}, (error) => {
         expect(error).to.be.undefined;
         resolve();
+        superagent.get(api).end(() => {
+        });
       }));
       return Promise.all([log, join]);
     });
