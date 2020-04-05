@@ -34,13 +34,7 @@ function Route(app, io) {
   io.use(authorize);
 
   if (cluster.isMaster) {
-    try {
-      logger.logger.add(new SocketLoggerTransport(io));
-    } catch (error) {
-      logger.warn(`Cant create socket logger transport: ${error}`);
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
+    logger.logger.add(new SocketLoggerTransport(io));
   }
 
   const ioEvents = ['disconnect', 'whoami', 'join', 'leave'];
