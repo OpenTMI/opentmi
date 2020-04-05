@@ -12,5 +12,3 @@ sslcert
 env.json
 config.json
 coverage
-log
-db3.4

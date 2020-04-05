@@ -56,9 +56,10 @@ class SocketIOController {
     }
     logger.info(`New user join to room: ${room}`);
     await this._socket.join(room);
+    callback();
   }
 
-  async leave(room, callback) {
+  async leave({room}, callback) {
     if (!['logs'].includes(room)) {
       logger.warn(`Trying to leave room that does not exists: ${room}`);
       callback(new Error('room does not exists'));
@@ -66,6 +67,7 @@ class SocketIOController {
     }
     logger.info(`user leave ${room} room`);
     await this._socket.leave(room);
+    callback();
   }
 
   //  helpers
