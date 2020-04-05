@@ -87,10 +87,19 @@ describe('Basic socketio tests', function () {
       });
     });
     it('join(logs)', function () {
-      const log = new Promise(resolve => io.once('log', (line) => {
-        expect(line).to.be.a('string');
-        resolve();
-      }));
+      const log = new Promise((resolve) => {
+        superagent.get(`${host}/api`)
+          .end((error, {body}) => {
+            const {isMaster} = body;
+            if (!isMaster) {
+              resolve();
+            }
+          });
+        io.once('log', (line) => {
+          expect(line).to.be.a('string');
+          resolve();
+        });
+      });
       const join = new Promise(resolve => io.emit('join', {room: 'logs'}, (error) => {
         expect(error).to.be.undefined;
         resolve();
