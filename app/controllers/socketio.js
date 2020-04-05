@@ -1,3 +1,4 @@
+const cluster = require('cluster');
 // 3rd party modules
 const _ = require('lodash');
 const mongoose = require('mongoose');
@@ -17,7 +18,9 @@ class SocketIOController {
     logger.silly(`Current clients: ${Object.keys(SocketIOController.clients).length}`);
     SocketIOController.clients[this.id] = this;
     this._lastActivity = new Date();
-    logger.logger.add(new SocketLoggerTransport(io));
+    if (cluster.isMaster) {
+      logger.logger.add(new SocketLoggerTransport(io));
+    }
   }
 
   /**
