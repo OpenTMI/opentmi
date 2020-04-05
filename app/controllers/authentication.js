@@ -17,17 +17,13 @@ class AuthenticationController {
   }
 
   static loginPostFix(req, res, next) {
-    req.query.code = req.body.code;
-    next();
-    /*
-    _.merge(req.query, req.body);
+    _.defaults(req.query, req.body);
     if (!req.query.code) {
       next(new Error('missing code'));
     } else {
       logger.debug(`code: ${req.query.code}`);
       next();
     }
-    */
   }
   // Simple route middleware to ensure user is authenticated.
   //   Use this route middleware on any resource that needs to be protected.  If
