@@ -4,31 +4,10 @@ const mongoose = require('mongoose');
 
 // Application modules
 const logger = require('../tools/logger');
+const SocketLoggerTransport = require('../tools/SocketLoggerTransport');
 
 const User = mongoose.model('User');
 
-const Transport = require('winston-transport');
-const util = require('util');
-
-//
-// Inherit from `winston-transport` so you can take advantage
-// of the base functionality and `.exceptions.handle()`.
-//
-class RoomCustomTransport extends Transport {
-  constructor(io) {
-    super();
-    this._io = io;
-  }
-
-  log(info, callback) {
-    setImmediate(() => {
-      this._io.to('logs').emit('log', `${info[Symbol.for('message')]}\n`);
-    });
-
-    // Perform the writing to the remote service
-    callback();
-  }
-}
 
 class SocketIOController {
   constructor(socket, io) {
@@ -38,7 +17,7 @@ class SocketIOController {
     logger.silly(`Current clients: ${Object.keys(SocketIOController.clients).length}`);
     SocketIOController.clients[this.id] = this;
     this._lastActivity = new Date();
-    logger.logger.add(new RoomCustomTransport(io));
+    logger.logger.add(new SocketLoggerTransport(io));
   }
 
   /**
