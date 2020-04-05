@@ -12,7 +12,10 @@ module.exports = class SocketLoggerTransport extends Transport {
 
   log(info, callback) {
     setImmediate(() => {
-      this._io.to('logs').emit('log', `${info[Symbol.for('message')]}\n`);
+      try {
+        this._io.to('logs').emit('log', `${info[Symbol.for('message')]}\n`);
+      } catch (error) {  // eslint-disable-line
+      }
     });
 
     // Perform the writing to the remote service

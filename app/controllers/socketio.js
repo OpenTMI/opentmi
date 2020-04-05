@@ -1,26 +1,21 @@
-const cluster = require('cluster');
 // 3rd party modules
 const _ = require('lodash');
 const mongoose = require('mongoose');
 
 // Application modules
 const logger = require('../tools/logger');
-const SocketLoggerTransport = require('../tools/SocketLoggerTransport');
+
 
 const User = mongoose.model('User');
 
 
 class SocketIOController {
-  constructor(socket, io) {
+  constructor(socket) {
     this._socket = socket;
-    this._io = io;
     logger.info(`New ${this.isAdmin ? 'admin' : 'user'} (ip: ${this.ipAddress}, id: ${this.id}) connected to IO`);
     logger.silly(`Current clients: ${Object.keys(SocketIOController.clients).length}`);
     SocketIOController.clients[this.id] = this;
     this._lastActivity = new Date();
-    if (cluster.isMaster) {
-      logger.logger.add(new SocketLoggerTransport(io));
-    }
   }
 
   /**
@@ -63,12 +58,16 @@ class SocketIOController {
     }
     logger.info(`New user join to room: ${room}`);
     await this._socket.join(room);
-    this._io.to(room).emit('log', 'New user joined to room\n');
   }
 
-  async leave(room) {
+  async leave(room, callback) {
+    if (!['logs'].includes(room)) {
+      logger.warn(`Trying to leave room that does not exists: ${room}`);
+      callback(new Error('room does not exists'));
+      return;
+    }
+    logger.info(`user leave ${room} room`);
     await this._socket.leave(room);
-    this._io.to(room).emit('log', 'user leave from room\n');
   }
 
   //  helpers
