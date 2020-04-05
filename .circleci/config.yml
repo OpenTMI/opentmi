@@ -79,6 +79,8 @@ defaults: &defaults
     - store_artifacts:
         path: junit
     - store_artifacts:
+        path: log
+    - store_artifacts:
         path: db.log
         destination: mongolog
     - store_artifacts:

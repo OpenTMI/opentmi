@@ -95,7 +95,7 @@ describe('update/gitUpdater', function () {
         let cleanlinessChecked = false;
         gitUpdater._isClean = () => {
           cleanlinessChecked = true;
-          return Promise.reject('Unclean');
+          return Promise.reject(new Error('Unclean'));
         };
 
         let resetCalled = false;
