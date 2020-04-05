@@ -18,8 +18,6 @@ const {Types} = Schema;
 const {ObjectId, Mixed} = Types;
 const {filedb} = tools;
 const fileProvider = filedb.provider;
-const Build = mongoose.model('Build');
-const Testcase = mongoose.model('Testcase');
 
 // @Todo justify why file schema is extended here instead of adding to root model
 FileSchema.add({
@@ -132,7 +130,7 @@ async function linkRelatedBuild(result) {
     return;
   }
   logger.debug(`Processing result build sha1: ${buildChecksum}`);
-  const build = Build.findOne({'files.sha1': buildChecksum});
+  const build = mongoose.model('Build').findOne({'files.sha1': buildChecksum});
   if (build) {
     logger.debug(`Build found, linking Result: ${result._id} with Build: ${build._id}`);
     result.exec.sut.ref = build._id; // eslint-disable-line no-param-reassign
@@ -147,7 +145,7 @@ async function linkTestcase(result) {
     return;
   }
   logger.debug(`Processing result tcid: ${tcid}`);
-  const test = Testcase.findOne({tcid});
+  const test = mongoose.model('Testcase').findOne({tcid});
   if (test) {
     logger.debug(`Test found, linking Result: ${result._id} with Test: ${test._id}`);
     result.tcRef = test._id; // eslint-disable-line no-param-reassign
@@ -169,7 +167,7 @@ async function storeFile(file, i) {
   return Promise.resolve();
 }
 
-const preValidate = async (next) => {
+async function preValidate(next) {
   try {
     // Link related objects
     await linkTestcase(this, _.get(this, ''));
@@ -180,7 +178,7 @@ const preValidate = async (next) => {
   } catch (error) {
     next(error);
   }
-};
+}
 
 ResultSchema.pre('validate', preValidate);
 
