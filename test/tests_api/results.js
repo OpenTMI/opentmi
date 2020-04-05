@@ -84,6 +84,7 @@ describe('Results', function () {
         expect(res.body.exec.logs).to.have.lengthOf(1);
         expect(res.body.exec).to.have.property('duts').which.is.an('array');
         expect(res.body.exec.duts).to.have.lengthOf(1);
+        expect(res.body.exec.dut).to.be.deep.equal(res.body.exec.duts[0]);
 
         // Check log sanity
         expect(res.body.exec.logs[0]).to.not.have.property('data');

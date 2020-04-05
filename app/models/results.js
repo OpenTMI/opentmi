@@ -93,9 +93,10 @@ const ResultSchema = new Schema({
     duts: [DutSchema],
     logs: [FileSchema]
   }
+}, {
+  toJSON: {virtuals: true, getters: true},
+  toObject: {virtuals: true, getters: true}
 });
-
-ResultSchema.set('toObject', {virtuals: true});
 
 /**
  * Query plugin
@@ -118,7 +119,7 @@ ResultSchema.methods.getBuildRef = function () { // eslint-disable-line func-nam
 };
 
 /**
- * Validation
+ * Mappers
  */
 async function linkRelatedBuild(result) {
   const buildChecksum = _.get(result, 'exec.sut.buildSha1');
@@ -130,14 +131,14 @@ async function linkRelatedBuild(result) {
     return;
   }
   logger.debug(`Processing result build sha1: ${buildChecksum}`);
-  const build = mongoose.model('Build').findOne({'files.sha1': buildChecksum});
+  const build = await mongoose.model('Build').findOne({'files.sha1': buildChecksum});
   if (build) {
     logger.debug(`Build found, linking Result: ${result._id} with Build: ${build._id}`);
     result.exec.sut.ref = build._id; // eslint-disable-line no-param-reassign
   }
 }
 async function linkTestcase(result) {
-  const tcid = result.tcid;
+  const {tcid} = result;
   if (!tcid) {
     throw new Error('tcid is missing!');
   }
@@ -145,7 +146,7 @@ async function linkTestcase(result) {
     return;
   }
   logger.debug(`Processing result tcid: ${tcid}`);
-  const test = mongoose.model('Testcase').findOne({tcid});
+  const test = await mongoose.model('Testcase').findOne({tcid});
   if (test) {
     logger.debug(`Test found, linking Result: ${result._id} with Test: ${test._id}`);
     result.tcRef = test._id; // eslint-disable-line no-param-reassign
@@ -167,7 +168,7 @@ async function storeFile(file, i) {
   return Promise.resolve();
 }
 
-async function preValidate(next) {
+async function preSave(next) {
   try {
     // Link related objects
     await linkTestcase(this, _.get(this, ''));
@@ -180,15 +181,22 @@ async function preValidate(next) {
   }
 }
 
-ResultSchema.pre('validate', preValidate);
+ResultSchema.pre('save', preSave);
 
 /**
  * Virtuals
  */
 ResultSchema
-  .virtual('dut')
-  .get(() => _.get(this, 'duts.0', {}))
-  .set((obj) => { this.duts.push(obj); });
+  .virtual('exec.dut')
+  .get(function dutGet() {
+    return _.get(this, 'exec.duts.0', {});
+  })
+  .set(function dutSet(obj) {
+    if (!this.exec.duts) {
+      this.exec.duts = [];
+    }
+    this.exec.duts.push(obj);
+  });
 
 /**
  * Statics
