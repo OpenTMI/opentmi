@@ -13,7 +13,7 @@ const User = mongoose.model('User');
 class SocketIOController {
   constructor(socket, io) {
     this._socket = socket;
-    this._io = io
+    this._io = io;
     logger.info(`New ${this.isAdmin ? 'admin' : 'user'} (ip: ${this.ipAddress}, id: ${this.id}) connected to IO`);
     logger.silly(`Current clients: ${Object.keys(SocketIOController.clients).length}`);
     SocketIOController.clients[this.id] = this;
@@ -61,13 +61,13 @@ class SocketIOController {
       callback(new Error('room does not exists'));
       return;
     }
-    logger.info(`New user join to room: ${room}`)
-    await this._socket.join(room)
+    logger.info(`New user join to room: ${room}`);
+    await this._socket.join(room);
     this._io.to(room).emit('log', 'New user joined to room\n');
   }
 
   async leave(room) {
-    await this._socket.leave(room)
+    await this._socket.leave(room);
     this._io.to(room).emit('log', 'user leave from room\n');
   }
 
