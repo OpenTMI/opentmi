@@ -17,7 +17,10 @@ class AuthenticationController {
   }
 
   static loginPostFix(req, res, next) {
-    req.query = _.clone(req.body);
+    if (!_.has(req, 'query')) {
+      req.query = {};
+    }
+    _.merge(req.query, req.body);
     if (!req.query.code) {
       next(new Error('missing code'));
     } else {

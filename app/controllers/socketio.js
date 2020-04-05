@@ -5,9 +5,7 @@ const mongoose = require('mongoose');
 // Application modules
 const logger = require('../tools/logger');
 
-
 const User = mongoose.model('User');
-
 
 class SocketIOController {
   constructor(socket) {
