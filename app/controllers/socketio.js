@@ -54,8 +54,8 @@ class SocketIOController {
       callback(new Error('room does not exists'));
       return;
     }
-    logger.info(`New user join to room: ${room}`);
     await this._socket.join(room);
+    logger.info(`New user join to room: ${room}`);
     callback();
   }
 
@@ -65,8 +65,8 @@ class SocketIOController {
       callback(new Error('room does not exists'));
       return;
     }
-    logger.info(`user leave ${room} room`);
     await this._socket.leave(room);
+    logger.info(`user leave ${room} room`);
     callback();
   }
 

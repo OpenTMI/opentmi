@@ -88,16 +88,12 @@ describe('Basic socketio tests', function () {
     });
     it('join(logs)', function () {
       const log = new Promise(resolve => io.once('log', (line) => {
-        logger.error('got log line');
         expect(line).to.be.a('string');
         resolve();
       }));
       const join = new Promise(resolve => io.emit('join', {room: 'logs'}, (error) => {
-        logger.error('got join response');
         expect(error).to.be.undefined;
         resolve();
-        superagent.get(api).end(() => {
-        });
       }));
       return Promise.all([log, join]);
     });
