@@ -1,4 +1,5 @@
 // Third party modules
+const cluster = require('cluster');
 const socketioJwt = require('socketio-jwt');
 const _ = require('lodash');
 
@@ -7,6 +8,7 @@ const nconf = require('../tools/config');
 const Controller = require('../controllers/socketio');
 const logger = require('../tools/logger');
 const eventBus = require('../tools/eventBus');
+const SocketLoggerTransport = require('../tools/SocketLoggerTransport');
 
 // Route variables
 const TOKEN_SECRET = nconf.get('webtoken');
@@ -31,7 +33,11 @@ function Route(app, io) {
   });
   io.use(authorize);
 
-  const ioEvents = ['disconnect', 'whoami'];
+  if (cluster.isMaster) {
+    logger.logger.add(new SocketLoggerTransport(io));
+  }
+
+  const ioEvents = ['disconnect', 'whoami', 'join', 'leave'];
 
   io.on('connection', (socket) => {
     const controller = new Controller(socket);
