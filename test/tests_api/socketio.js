@@ -86,6 +86,37 @@ describe('Basic socketio tests', function () {
         done();
       });
     });
+    it('join(logs)', function () {
+      const log = new Promise((resolve) => {
+        superagent.get(`${host}/api`)
+          .end((error, {body}) => {
+            const {isMaster} = body;
+            if (!isMaster) {
+              resolve();
+            }
+          });
+        io.once('log', (line) => {
+          expect(line).to.be.a('string');
+          resolve();
+        });
+      });
+      const join = new Promise(resolve => io.emit('join', {room: 'logs'}, (error) => {
+        expect(error).to.be.undefined;
+        resolve();
+      }));
+      return Promise.all([log, join]);
+    });
+    it('leave(logs)', function () {
+      const join = new Promise(resolve => io.emit('join', {room: 'logs'}, (error) => {
+        expect(error).to.be.undefined;
+        resolve();
+      }));
+      const leave = () => new Promise(resolve => io.emit('leave', {room: 'logs'}, (error) => {
+        expect(error).to.be.undefined;
+        resolve();
+      }));
+      return join.then(leave);
+    });
   });
   describe('results namespace', function () {
     let io;

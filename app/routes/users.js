@@ -97,11 +97,12 @@ function Route(app) {
     .put('/me', requireAuth, authController.putme.bind(authController))
     .post('/signup', authController.signup.bind(authController))
     .post('/logout', authController.logout.bind(authController))
-    .get('/google', passport.authenticate('google', {scope: ['profile']}),
+    .get('/google', passport.authenticate('google', AuthController.GetScope('google')),
       AuthController.sendToken, AuthController.loginFail)
-    .get('/github', passport.authenticate('github', {scope: ['user:email']}),
+    .get('/github', passport.authenticate('github', AuthController.GetScope('github')),
       AuthController.sendToken, AuthController.loginFail)
-    .post('/github', AuthController.loginPostFix, passport.authenticate('github', AuthController.GetScope('github')),
+    .post('/github', AuthController.loginPostFix,
+      passport.authenticate('github', AuthController.GetScope('github')),
       AuthController.sendToken, AuthController.loginFail)
     .post('/github/token', passport.authenticate('github-token'),
       AuthController.sendToken, AuthController.loginFail)

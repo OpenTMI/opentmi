@@ -47,6 +47,29 @@ class SocketIOController {
       .catch(callback)
       .finally(this.activity.bind(this));
   }
+
+  async join({room}, callback) {
+    if (!['logs'].includes(room)) {
+      logger.warn(`Trying to join room that does not exists: ${room}`);
+      callback(new Error('room does not exists'));
+      return;
+    }
+    await this._socket.join(room);
+    logger.info(`New user join to room: ${room}`);
+    callback();
+  }
+
+  async leave({room}, callback) {
+    if (!['logs'].includes(room)) {
+      logger.warn(`Trying to leave room that does not exists: ${room}`);
+      callback(new Error('room does not exists'));
+      return;
+    }
+    await this._socket.leave(room);
+    logger.info(`user leave ${room} room`);
+    callback();
+  }
+
   //  helpers
   activity() {
     const promise = Promise.resolve(this._lastActivity);
