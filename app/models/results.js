@@ -138,11 +138,11 @@ async function linkRelatedBuild(result) {
   }
 }
 async function linkTestcase(result) {
-  const {tcid} = result;
+  const {tcid, tcRef} = result;
   if (!tcid) {
     throw new Error('tcid is missing!');
   }
-  if (result.tcRef) {
+  if (tcRef) {
     return;
   }
   logger.debug(`Processing result tcid: ${tcid}`);
@@ -171,7 +171,7 @@ async function storeFile(file, i) {
 async function preSave(next) {
   try {
     // Link related objects
-    await linkTestcase(this, _.get(this, ''));
+    await linkTestcase(this);
     await linkRelatedBuild(this);
     const logs = _.get(this, 'exec.logs', []);
     await Promise.all(logs.map(storeFile));
