@@ -189,7 +189,10 @@ ResultSchema.pre('save', preSave);
 ResultSchema
   .virtual('exec.dut')
   .get(function dutGet() {
-    return _.get(this, 'exec.duts.0', {});
+    const duts = _.get(this, 'exec.duts', []);
+    const obj = duts.length === 1 ? duts[0].toJSON() : {};
+    obj.count = duts.length;
+    return obj;
   })
   .set(function dutSet(obj) {
     if (!this.exec.duts) {
