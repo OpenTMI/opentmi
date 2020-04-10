@@ -9,7 +9,7 @@
       "count": 1,
       "type": "hw"
     },
-    "duts": [{"type": "hw"}],
+    "duts": [{"type": "hw", "platform": "custom"}],
     "metadata": {"mymeta": 0},
     "metrics": {"heapmax": 0},
     "logs": [

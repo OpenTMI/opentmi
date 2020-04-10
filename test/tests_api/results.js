@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Third party components
+const _ = require('lodash');
 const superagent = require('superagent');
 const {expect} = require('chai');
 const logger = require('winston');
@@ -84,6 +85,9 @@ describe('Results', function () {
         expect(res.body.exec.logs).to.have.lengthOf(1);
         expect(res.body.exec).to.have.property('duts').which.is.an('array');
         expect(res.body.exec.duts).to.have.lengthOf(1);
+        expect(res.body.exec.dut).to.be.deep.equal(_.merge({count: 1}, res.body.exec.duts[0]));
+        expect(res.body.exec.duts[0].platform).to.be.equal('custom');
+        expect(res.body.exec.duts[0].type).to.be.equal('hw');
 
         // Check log sanity
         expect(res.body.exec.logs[0]).to.not.have.property('data');
