@@ -6,7 +6,6 @@
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
-const _ = require('lodash');
 
 // Local components
 const FileSchema = require('./extends/file');
@@ -115,26 +114,29 @@ ResultSchema.plugin(QueryPlugin); // install QueryPlugin
  */
 ResultSchema.methods.getBuildRef = function () { // eslint-disable-line func-names
   logger.debug('lookup build..');
-  return _.get(this, 'exec.sut.ref', undefined);
+  return this.get('exec.sut.ref');
 };
 
 /**
  * Mappers
  */
 async function linkRelatedBuild(result) {
-  const buildChecksum = _.get(result, 'exec.sut.buildSha1');
+  const buildChecksum = result.get('exec.sut.buildSha1');
   if (!buildChecksum) {
     return;
   }
-  if (_.get(result, 'exec.sut.ref')) {
+  if (result.get('exec.sut.ref')) {
     // already given
     return;
   }
   logger.debug(`Processing result build sha1: ${buildChecksum}`);
-  const build = await mongoose.model('Build').findOne({'files.sha1': buildChecksum});
+  const build = await mongoose.model('Build')
+    .findOne({'files.sha1': buildChecksum})
+    .select('_id')
+    .exec();
   if (build) {
     logger.debug(`Build found, linking Result: ${result._id} with Build: ${build._id}`);
-    result.exec.sut.ref = build._id; // eslint-disable-line no-param-reassign
+    result.set('exec.sut.ref', build._id); // eslint-disable-line no-param-reassign
   }
 }
 async function linkTestcase(result) {
@@ -146,7 +148,10 @@ async function linkTestcase(result) {
     return;
   }
   logger.debug(`Processing result tcid: ${tcid}`);
-  const test = await mongoose.model('Testcase').findOne({tcid});
+  const test = await mongoose.model('Testcase')
+    .findOne({tcid})
+    .select('_id')
+    .exec();
   if (test) {
     logger.debug(`Test found, linking Result: ${result._id} with Test: ${test._id}`);
     result.tcRef = test._id; // eslint-disable-line no-param-reassign
@@ -173,7 +178,7 @@ async function preSave(next) {
     // Link related objects
     await linkTestcase(this);
     await linkRelatedBuild(this);
-    const logs = _.get(this, 'exec.logs', []);
+    const logs = this.get('exec.logs');
     await Promise.all(logs.map(storeFile));
     next();
   } catch (error) {
@@ -189,7 +194,7 @@ ResultSchema.pre('save', preSave);
 ResultSchema
   .virtual('exec.dut')
   .get(function dutGet() {
-    const duts = _.get(this, 'exec.duts', []);
+    const duts = this.get('exec.duts');
     const obj = duts.length === 1 ? duts[0].toJSON() : {};
     obj.count = duts.length;
     return obj;
