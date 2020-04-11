@@ -17,9 +17,6 @@ COPY app ./app
 # Build react/vue/angular bundle static files
 # RUN npm run build
 
-ADD https://github.com/OpenTMI/opentmi-default-gui/archive/v0.1.0.tar.gz ./
-RUN tar -xzf v0.1.0.tar.gz -C app/addons \
- && rm v0.1.0.tar.gz
 
 # --- Release with Alpine ----
 FROM node:12-alpine AS release
@@ -31,6 +28,7 @@ COPY --from=dependencies /app/package.json ./
 # Install app dependencies
 RUN npm install --only=production
 COPY --from=build /app/app ./app
+RUN npm install opentmi/opentmi-default-gui
 
 EXPOSE 8000
 CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000"]
