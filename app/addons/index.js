@@ -4,7 +4,7 @@ const path = require('path');
 
 // 3rd party modules
 const logger = require('../tools/logger');
-const Addon = require('./addon').Addon;
+const {Addon} = require('./addon');
 
 const DynamicRouter = require('./dynamic-router');
 
@@ -101,7 +101,7 @@ class AddonManager {
     logger.debug(`Loading addons from path: ${addonPath}, required prefix: "${prefix}"`);
     // Iterate through all directory files in the addons folder
     const addonNames = fs.readdirSync(addonPath).filter(isAddon);
-    this.addons = addonNames.map(name => new Addon(name, true));
+    this.addons = addonNames.map(name => new Addon(name, true, addonPath));
     return AddonManager._recursiveLoad(this.addons, this.app, this.server, this.io, this.eventBus);
   }
 

@@ -1,34 +1,41 @@
 # ---- Base Node ----
 FROM node:12-stretch AS base
-# Create app directory
-WORKDIR /app
 
 # ---- Dependencies ----
 FROM base AS dependencies
+WORKDIR /app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
 # install app dependencies including 'devDependencies'
-RUN npm install
+RUN npm install --only=production
+#RUN npm run test
 
 # ---- Copy Files/Build ----
 FROM dependencies AS build
 WORKDIR /app
 COPY app ./app
-# Build react/vue/angular bundle static files
-# RUN npm run build
 
+## ---- UI ----
+FROM base AS ui
+WORKDIR /app
+RUN git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git .
+RUN npm install
+RUN NODE_ENV=production npm run build:prod
+
+RUN rm -r node_modules
 
 # --- Release with Alpine ----
 FROM node:12-alpine AS release
-# Create app directory
 WORKDIR /app
-# optional
-# RUN npm -g install serve
+RUN apk add --no-cache git
+# copy package.json
 COPY --from=dependencies /app/package.json ./
-# Install app dependencies
-RUN npm install --only=production
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copy application and UI
 COPY --from=build /app/app ./app
-RUN npm install opentmi/opentmi-default-gui
+COPY --from=ui /app /app/node_modules/opentmi-default-gui
 
 EXPOSE 8000
-CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000"]
+CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000", "--db", "mongodb://host.docker.internal:27017/opentmi"]
+# CMD ("/bin/sh")
