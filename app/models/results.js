@@ -6,7 +6,6 @@
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
-const _ = require('lodash');
 
 // Local components
 const FileSchema = require('./extends/file');
@@ -18,23 +17,18 @@ const {Types} = Schema;
 const {ObjectId, Mixed} = Types;
 const {filedb} = tools;
 const fileProvider = filedb.provider;
-const Build = mongoose.model('Build');
 
 // @Todo justify why file schema is extended here instead of adding to root model
 FileSchema.add({
-  ref: {
-    type: ObjectId,
-    ref: 'Resource'
-  },
-  from: {
-    type: String,
-    enum: ['dut', 'framework', 'env', 'other']
-  }
+  ref: {type: ObjectId, ref: 'Resource'},
+  from: {type: String, enum: ['dut', 'framework', 'env', 'other']}
 });
 
-const DutSchemaObj = { // Device(s) Under Test
+// Device(s) Under Test
+const DutSchema = new Schema({
   type: {type: String, enum: ['hw', 'simulator', 'process']},
   ref: {type: ObjectId, ref: 'Resource'},
+  platform: {type: String},
   vendor: {type: String},
   model: {type: String},
   ver: {type: String},
@@ -44,8 +38,7 @@ const DutSchemaObj = { // Device(s) Under Test
     id: {type: String},
     ver: {type: String}
   }
-};
-const DutSchema = new Schema(DutSchemaObj);
+});
 /**
  * User schema
  */
@@ -84,25 +77,25 @@ const ResultSchema = new Schema({
     },
     sut: { // software under test
       ref: {type: ObjectId, ref: 'Build'},
-      gitUrl: {type: String, default: ''},
+      gitUrl: {type: String},
       buildName: {type: String},
       buildDate: {type: Date},
-      buildUrl: {type: String, default: ''},
+      buildUrl: {type: String},
       buildSha1: {type: String},
-      branch: {type: String, default: ''},
-      commitId: {type: String, default: ''},
+      branch: {type: String},
+      commitId: {type: String},
       tag: [{type: String}],
       href: {type: String},
       cut: [{type: String}], // Component Under Test
       fut: [{type: String}] // Feature Under Test
     },
-    dut: _.merge({}, DutSchemaObj, {count: {type: Number}}), // Device(s) Under Test
     duts: [DutSchema],
     logs: [FileSchema]
   }
+}, {
+  toJSON: {virtuals: true, getters: true},
+  toObject: {virtuals: true, getters: true}
 });
-
-ResultSchema.set('toObject', {virtuals: true});
 
 /**
  * Query plugin
@@ -121,59 +114,97 @@ ResultSchema.plugin(QueryPlugin); // install QueryPlugin
  */
 ResultSchema.methods.getBuildRef = function () { // eslint-disable-line func-names
   logger.debug('lookup build..');
-  return _.get(this, 'exec.sut.ref', undefined);
+  return this.get('exec.sut.ref');
 };
 
 /**
- * Validation
+ * Mappers
  */
-function linkRelatedBuild(buildChecksum) {
+async function linkRelatedBuild(result) {
+  const buildChecksum = result.get('exec.sut.buildSha1');
   if (!buildChecksum) {
-    return Promise.resolve();
+    return;
   }
-
+  if (result.get('exec.sut.ref')) {
+    // already given
+    return;
+  }
   logger.debug(`Processing result build sha1: ${buildChecksum}`);
-  return Build.findOne({'files.sha1': buildChecksum}).then((build) => {
-    if (build) {
-      logger.debug(`Build found, linking Result: ${this._id} with Build: ${build._id}`);
-      this.exec.sut.ref = build._id;
-    }
-  });
+  const build = await mongoose.model('Build')
+    .findOne({'files.sha1': buildChecksum})
+    .select('_id')
+    .exec();
+  if (build) {
+    logger.debug(`Build found, linking Result: ${result._id} with Build: ${build._id}`);
+    result.set('exec.sut.ref', build._id); // eslint-disable-line no-param-reassign
+  }
+}
+async function linkTestcase(result) {
+  const {tcid, tcRef} = result;
+  if (!tcid) {
+    throw new Error('tcid is missing!');
+  }
+  if (tcRef) {
+    return;
+  }
+  logger.debug(`Processing result tcid: ${tcid}`);
+  const test = await mongoose.model('Testcase')
+    .findOne({tcid})
+    .select('_id')
+    .exec();
+  if (test) {
+    logger.debug(`Test found, linking Result: ${result._id} with Test: ${test._id}`);
+    result.tcRef = test._id; // eslint-disable-line no-param-reassign
+  }
 }
 
-ResultSchema.pre('validate', function (next) { // eslint-disable-line func-names
-  const logs = _.get(this, 'exec.logs', []);
-  const mapFile = (file, i) => {
-    file.prepareDataForStorage(i);
 
-    // Decide what to do with file
-    if (fileProvider === 'mongodb') {
-      file.keepInMongo(i);
-      return Promise.resolve();
-    } else if (fileProvider) {
-      return file.storeInFiledb(filedb, i);
-    }
+async function storeFile(file, i) {
+  file.prepareDataForStorage(i);
 
-    file.dumpData(i);
+  // Decide what to do with file
+  if (fileProvider === 'mongodb') {
+    file.keepInMongo(i);
     return Promise.resolve();
-  };
+  } else if (fileProvider) {
+    return file.storeInFiledb(filedb, i);
+  }
+  file.dumpData(i);
+  return Promise.resolve();
+}
 
-  // Link related build to this result
-  return linkRelatedBuild.bind(this)(_.get(this, 'exec.sut.buildSha1'))
-    .then(() => Promise.all(logs.map(mapFile))) // Promise to store all files
-    .then(() => next())
-    .catch(next);
-});
+async function preSave(next) {
+  try {
+    // Link related objects
+    await linkTestcase(this);
+    await linkRelatedBuild(this);
+    const logs = this.get('exec.logs');
+    await Promise.all(logs.map(storeFile));
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
+ResultSchema.pre('save', preSave);
 
 /**
  * Virtuals
  */
-/*
-ResultSchema.virtual('exec.sut.sha1');
-  .get()
-  .set(function(v) {
-});
-*/
+ResultSchema
+  .virtual('exec.dut')
+  .get(function dutGet() {
+    const duts = this.get('exec.duts');
+    const obj = duts.length === 1 ? duts[0].toJSON() : {};
+    obj.count = duts.length;
+    return obj;
+  })
+  .set(function dutSet(obj) {
+    if (!this.exec.duts) {
+      this.exec.duts = [];
+    }
+    this.exec.duts.push(obj);
+  });
 
 /**
  * Statics
