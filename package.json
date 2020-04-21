@@ -28,7 +28,7 @@
     "cluster": "node app/cluster.js",
     "debug": "node --inspect index.js",
     "debug-cluster": "node --inspect app/cluster.js",
-    "test": "NODE_ENV=test nyc mocha --recursive -R spec test/unittests",
+    "test": "NODE_ENV=test nyc mocha --recursive --reporter=text-lcov > coverage/lcov.info",
     "test-api": "grunt",
     "lint": "node node_modules/eslint/bin/eslint .",
     "lint-fix": "node node_modules/eslint/bin/eslint . --fix",
