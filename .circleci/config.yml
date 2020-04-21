@@ -56,12 +56,33 @@ defaults: &defaults
         key: dependency-cache-{{ checksum "_tmp_file" }}-{{ checksum "package-lock.json" }}
         paths:
           - ./node_modules
+    # Run unit tess
     - run:
-        name: test-node
-        command: npm test
-        environment:
-          REPORTER: mocha-circleci-reporter
-          MOCHA_FILE: junit/test-results.xml
+        name: npm test
+        command: ./node_modules/.bin/nyc ./node_modules/.bin/mocha --recursive --timeout=10000 --exit --reporter mocha-junit-reporter --reporter-options mochaFile=reports/mocha/test-results.xml
+
+    # Run coverage report for Code Climate
+    - run:
+        name: Setup Code Climate test-reporter
+        command: |
+          # download test reporter as a static binary
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
+          ./cc-test-reporter before-build
+    
+    - run:
+        name: code-coverage
+        command: |
+          mkdir coverage
+          # nyc report requires that nyc has already been run,
+          # which creates the .nyc_output folder containing necessary data
+          ./node_modules/.bin/nyc report --reporter=text-lcov > coverage/lcov.info
+          ./cc-test-reporter after-build -t lcov
+
+    # Upload results
+    - store_test_results:
+        path: reports
+
     - run:
         name: coveralls
         command: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
