@@ -28,7 +28,7 @@
     "cluster": "node app/cluster.js",
     "debug": "node --inspect index.js",
     "debug-cluster": "node --inspect app/cluster.js",
-    "test": "NODE_ENV=test istanbul cover -- _mocha --recursive -R spec test/unittests",
+    "test": "NODE_ENV=test nyc mocha --recursive -R spec test/unittests",
     "test-api": "grunt",
     "lint": "node node_modules/eslint/bin/eslint .",
     "lint-fix": "node node_modules/eslint/bin/eslint . --fix",
@@ -78,6 +78,7 @@
     "passport-local": "^1.0.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
+    "snyk": "^1.305.0",
     "socket.io": "^2.3.0",
     "socket.io-adapter-mongo": "^2.0.5",
     "socketio-jwt": "^4.5.0",
@@ -85,7 +86,6 @@
     "uuid": "^7.0.3",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.4.2",
-    "snyk": "^1.305.0",
     "winston-transport": "^4.3.0"
   },
   "devDependencies": {
@@ -110,6 +110,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^7.0.1",
     "mocha-circleci-reporter": "0.0.3",
+    "nyc": "^15.0.1",
     "sinon": "^9.0.0",
     "socket.io-client": "^2.3.0",
     "superagent": "^5.2.2",

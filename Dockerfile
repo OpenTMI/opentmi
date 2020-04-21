@@ -37,5 +37,4 @@ COPY --from=build /app/app ./app
 COPY --from=ui /app /app/node_modules/opentmi-default-gui
 
 EXPOSE 8000
-CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000", "--db", "mongodb://host.docker.internal:27017/opentmi"]
-# CMD ("/bin/sh")
+CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000"]
