@@ -59,7 +59,7 @@ defaults: &defaults
     # Run unit tess
     - run:
         name: npm test
-        command: ./node_modules/.bin/nyc ./node_modules/.bin/mocha --recursive --timeout=10000 --exit --reporter mocha-junit-reporter --reporter-options mochaFile=reports/mocha/test-results.xml
+        command: ./node_modules/.bin/nyc ./node_modules/.bin/mocha --recursive --reporter mocha-junit-reporter --reporter-options mochaFile=junit/test-results.xml
 
     # Run coverage report for Code Climate
     - run:
@@ -69,7 +69,7 @@ defaults: &defaults
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
           chmod +x ./cc-test-reporter
           ./cc-test-reporter before-build
-    
+
     - run:
         name: code-coverage
         command: |
@@ -80,9 +80,6 @@ defaults: &defaults
           ./cc-test-reporter after-build -t lcov
 
     # Upload results
-    - store_test_results:
-        path: reports
-
     - run:
         name: coveralls
         command: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
