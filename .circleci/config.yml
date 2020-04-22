@@ -77,7 +77,7 @@ defaults: &defaults
           # nyc report requires that nyc has already been run,
           # which creates the .nyc_output folder containing necessary data
           ./node_modules/.bin/nyc report --reporter=text-lcov > coverage/lcov.info
-          ./cc-test-reporter after-build -t lcov
+#          ./cc-test-reporter after-build -t lcov
 
     # Upload results
     - run:
