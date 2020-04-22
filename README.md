@@ -4,37 +4,38 @@ Open Source Test Management Infrastructure for IoT and embedded world.
  [![Build Status][build-image]][build-url]
  [![Dependencies Status][depupdated-image]][depupdated-url]
  [![devDependencies Status][devdepupdated-image]][devdepupdated-url]
- [![Greenkeeper badge](https://badges.greenkeeper.io/OpenTMI/opentmi.svg)](https://greenkeeper.io/)
+ 
 
 
  <!--
 [![Test Coverage][coveralls-image]][coveralls-url]
 -->
 
-OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [GPLv3 license](LICENSE.md).
+OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / 
+Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [MIT license](LICENSE.md).
 OpenTMI is extremely customizable through [addons](doc/addons.md).
 
-![screenshot](doc/screenshot.jpg)
+![logo](doc/images/OpenTMI_logo.png)
 
 # Ideology
 
 Basic idea is to store **all** information related to test execution to database, like software under test (SUT/Build), test logs, test cases (TC), and test related resources, like DUT's. That allows then much more intelligent and more efficient way to manage testing. Also it gives very valuable information when users can directly see what is tested in individual Device with individual Build. All information is linked together and can be analyzed very deeply.
 
-## Challenges with SW testing in IoT HW
+## Challenges with software testing in IoT hardware
 * how to identify when test failed because of unstable HW
 * how to identify unique unstable HW in test lab
 * how to identify if certain test causes that HW's become unstable/unusable
 * how to estimate when HW start to be unstable/unusable (e.g. memory start burning out)
 * how to direct testing to right HW when there is multiple HW configurations
 * how to identify if tools deployment (e.g. new test framework revision) causes more test failures
-* how to execute right tests for different purpose if cannot run all of them for every commit (eg because of too long execution time)
+* how to optimize test execution time
 * how to manage all of these automatically
 
 OpenTMI try to solve these kind of challenges using "big-data".
 
 # Pre-requirements
 
-* [Node.js][Node.js] v8.11< (tested with 8.11.4, recommended to use latest LTS version)
+* [Node.js][Node.js] v12.13< (tested with 10 and 12, recommended to use latest LTS version)
 * [mongodb][MongoDB] v3.6< (tested with 4.1.2, recommented to use latest version)
 
 # Installation
@@ -53,7 +54,8 @@ See [here](doc/docker.md) for more instructions.
 
 ### Prepare
 
-You need to install [mongodb][MongoDB] and run it. File `mongod.sh` contains simple script to start single mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
+You need to install [mongodb][MongoDB] and run it. File `mongod.sh` contains simple script to start single
+mongod instance (db location ./db and logs ./db.logs) - that is not recommended for production usage.
 
 ```
 > git clone --recursive https://github.com/OpenTMI/opentmi
@@ -90,6 +92,9 @@ Options:
                           server directory
 ```
 
+**db:**
+* `inmemory` as connection string uses in-memory mongodb server - for testing purpose.
+
 **https:**
 Generate self-signed ssl certifications:
 * `./scripts/gencerts.sh`
@@ -105,6 +110,9 @@ OpenTMI support [clustered mode](doc/cluster.md) which gives some benefits in pr
 * auto restart on failure
 * serve more clients
 * better performance
+
+**NOTE** same can be achieved using load-balancer and systemd service for example.
+In such case you doesn't need to use cluster mode.
 
 ## API documentation
 Available [here](doc/APIs)
@@ -130,7 +138,9 @@ By default opentmi is started as development mode. You can configure environment
   * [opentmi-cli](https://github.com/opentmi/opentmi-cli)
 
 ### Addons
-Way to extend backend-service functionality. Addon registry (future plan) contains information about existing addons, which can easily to install via administrator API. More documentation can be found from [here](doc/addons.md)
+Way to extend backend-service functionality. Addon registry (future plan) contains information
+about existing addons, which can easily to install via administrator API.
+More documentation can be found from [here](doc/addons.md)
 
 ### Test
 
@@ -159,11 +169,11 @@ You can use for example:
 
 * linux [systemd](https://www.freedesktop.org/wiki/Software/systemd/)
 
-    see [example](scripts/opentmi.service)
+    see [example](scripts/opentmi.service) service script
 
  **Note:** if your service management is storing `stdout` and `stderr` to log
  files - be sure that it is rotated properly to ensure that disk space doesn't
- cause trouble. By default OpenTMI store logs log/ -folder, configured as
+ cause trouble. By default OpenTMI store logs under `log/` -folder, configured as
  daily rotate.
 
 ### Who do I talk to?
@@ -173,7 +183,7 @@ You can use for example:
 
 ## License
 
-  [GPL-3.0](LICENSE.md)
+  [MIT](LICENSE.md)
 
 <!-- references -->
 [Node.js]: https://nodejs.com

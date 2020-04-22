@@ -1,21 +1,40 @@
-FROM node:boron
+# ---- Base Node ----
+FROM node:12-stretch AS base
 
-# Create app directory
-WORKDIR /usr/src/app
+# ---- Dependencies ----
+FROM base AS dependencies
+WORKDIR /app
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+COPY package*.json ./
+# install app dependencies including 'devDependencies'
+RUN npm install --only=production
+#RUN npm run test
 
-# Install app dependencies
-# COPY package.json and package-lock.json
-COPY package.json package-lock.json ./
+# ---- Copy Files/Build ----
+FROM dependencies AS build
+WORKDIR /app
+COPY app ./app
 
+## ---- UI ----
+FROM base AS ui
+WORKDIR /app
+RUN git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git .
 RUN npm install
+RUN NODE_ENV=production npm run build:prod
 
-# Bundle app source
-COPY . .
+RUN rm -r node_modules
 
-# Use production as default node environment
-# to change this use '--build-arg NODE_ENV=development' when building docker
-# ARG NODE=development
-# ENV NODE_ENV ${NODE}
+# --- Release with Alpine ----
+FROM node:12-alpine AS release
+WORKDIR /app
+RUN apk add --no-cache git
+# copy package.json
+COPY --from=dependencies /app/package.json ./
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copy application and UI
+COPY --from=build /app/app ./app
+COPY --from=ui /app /app/node_modules/opentmi-default-gui
 
 EXPOSE 8000
-CMD [ "npm", "start", "--", "-v", "--listen", "0.0.0.0", "--port", "8000"]
+CMD ["npm", "start", "--", "-vvv", "--listen", "0.0.0.0", "--port", "8000"]

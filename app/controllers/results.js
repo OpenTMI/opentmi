@@ -5,6 +5,7 @@
 // native modules
 
 // 3rd party modules
+const _ = require('lodash');
 require('colors');
 const _ = require('lodash');
 const Promise = require('bluebird');
@@ -33,11 +34,15 @@ class ResultsController extends DefaultController {
     }, obj || this);
 
     this.on('create', (data) => {
-      if (data.exec && data.exec.verdict === 'pass') {
-        // data.exec.duration
-        logger.info(`Got new ${'PASS'.green} result: ${data.tcid}`);
-      } else {
-        logger.info(`Got new ${'FAIL'.red} result: ${data.tcid}`);
+      if (data.exec) {
+        const colors = {
+          pass: 'green',
+          fail: 'red',
+          inconclusive: 'yellow',
+          skip: 'gray'
+        };
+        const color = _.get(colors, data.exec.verdict, 'red');
+        logger.info(`Got new ${`${data.exec.verdict}`[color]} result: ${data.tcid}`);
       }
 
       const duration = Object.resolve('exec.duration', data, null);

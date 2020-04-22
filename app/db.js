@@ -1,21 +1,35 @@
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
 const _ = require('lodash');
+const {MongoMemoryServer} = require('mongodb-memory-server');
+
 
 const logger = require('./tools/logger');
 const config = require('./tools/config');
 
-const dbUrl = config.get('db');
+let dbUrl = config.get('db');
 const dbOptions = config.get('mongo') || {};
 mongoose.Promise = Promise;
 
+let mongoServer = null;
 let tearingDown = false;
 
-const connect = function () {
+const initialize = async function () {
+  if (dbUrl === 'inmemory') {
+    mongoServer = new MongoMemoryServer();
+    dbUrl = await mongoServer.getUri();
+    logger.info(`use inmemory db: ${dbUrl}`);
+    config.set('db', dbUrl);
+  }
+};
+
+const connect = async function () {
   const must = {
     logger: logger.info.bind(logger),
     promiseLibrary: Promise,
-    useNewUrlParser: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true
   };
   const overwritable = {
     appname: 'opentmi',
@@ -30,10 +44,13 @@ const connect = function () {
 };
 
 const close = Promise.promisify(mongoose.connection.close.bind(mongoose.connection));
-function disconnect() {
+async function disconnect() {
   tearingDown = true;
   logger.info(`Force to close the MongoDB connection: ${dbUrl}`);
-  return close();
+  await close();
+  if (mongoServer) {
+    mongoServer.stop();
+  }
 }
 
 mongoose.connection.on('error', (error) => {
@@ -58,6 +75,7 @@ mongoose.connection.on('reconnected', () => {
 });
 
 module.exports = {
+  initialize,
   connect,
   disconnect,
   mongoose

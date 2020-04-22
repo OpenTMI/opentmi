@@ -4,11 +4,13 @@ const path = require('path');
 
 // 3rd party modules
 const logger = require('../tools/logger');
-const Addon = require('./addon').Addon;
+const {Addon} = require('./addon');
 
 const DynamicRouter = require('./dynamic-router');
 
 const METADATA_KEY_LENGTH = 10;
+const ADDON_BASECLASS = 'opentmi-addon';
+const ADDON_PREFIX = 'opentmi';
 
 // Pads a string to a certain length
 function padToLength(txt, length) {
@@ -84,36 +86,23 @@ class AddonManager {
   }
 
   /**
-   * Loads addons found in directory app/addons/ in an arbitary order
-   * @return {Promise} promise to try loading all addons
-   */
-  static _asyncLoad(addonArray, app, server, io, eventBus) {
-    logger.info('Loading addons...');
-    return Promise.all(addonArray.map(
-      addon => addon.loadModule()
-        .then(() => addon.createInstance(app, server, io, eventBus))
-        .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error))
-    ));
-  }
-
-  /**
    * Loads all addons using a specific loading method, eq. recursive, async
+   * @param addonPath path where addons to be loaded: default: opentmi
+   * @param prefix addon prefix. default: 'opentmi'
+   * @return {Promise}
    */
-  loadAddons(recursive = true) {
-    const relativeAddonPath = path.relative('.', __dirname);
-
+  loadAddons({addonPath = path.resolve(__dirname, '../../node_modules'), prefix = ADDON_PREFIX}) {
     // Function that returns whether a file is a directory or not
     function isAddon(file) {
-      const lstat = fs.lstatSync(path.resolve(relativeAddonPath, file));
-      return lstat.isDirectory() || lstat.isSymbolicLink();
+      const realPath = fs.realpathSync(path.resolve(addonPath, file));
+      const lstat = fs.lstatSync(realPath);
+      return lstat.isDirectory() && file.startsWith(prefix) && file !== ADDON_BASECLASS;
     }
-
+    logger.debug(`Loading addons from path: ${addonPath}, required prefix: "${prefix}"`);
     // Iterate through all directory files in the addons folder
-    const addonNames = fs.readdirSync(relativeAddonPath).filter(isAddon);
-    this.addons = addonNames.map(name => new Addon(name, true));
-
-    const loadMethod = recursive ? AddonManager._recursiveLoad : AddonManager._asyncLoad;
-    return loadMethod(this.addons, this.app, this.server, this.io, this.eventBus);
+    const addonNames = fs.readdirSync(addonPath).filter(isAddon);
+    this.addons = addonNames.map(name => new Addon(name, true, addonPath));
+    return AddonManager._recursiveLoad(this.addons, this.app, this.server, this.io, this.eventBus);
   }
 
   /**

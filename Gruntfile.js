@@ -26,7 +26,7 @@ const gruntConfig = {
     cluster_server: {
       options: {
         delay: 15000,
-        script: 'index.js',
+        script: 'app/cluster.js',
         node_env: 'test',
         args: ['--config', 'test/config.auth.json']
       }

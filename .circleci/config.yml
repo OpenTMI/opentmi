@@ -4,15 +4,11 @@ workflows:
   version: 2
   test-publish:
     jobs:
-      - test-node6:
-          filters:  # required since `deploy` has tag filters AND requires `build`
-            tags:
-              only: /.*/
-      - test-node8:
-          filters:  # required since `deploy` has tag filters AND requires `build`
-            tags:
-              only: /.*/
       - test-node10:
+          filters:  # required since `deploy` has tag filters AND requires `build`
+            tags:
+              only: /.*/
+      - test-node12:
           filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
               only: /.*/
@@ -22,9 +18,8 @@ workflows:
               only: /.*/
       - publish:
           requires:
-            - test-node6
-            - test-node8
             - test-node10
+            - test-node12
           filters:
             tags:
               only: /^v.*/
@@ -34,7 +29,7 @@ workflows:
 defaults: &defaults
   working_directory: ~/opentmi
   docker:
-  - image: circleci/node:6.11.4
+    - image: circleci/node:8.12.0-browsers
   steps:
     - checkout
     - run: node --version > _tmp_file
@@ -61,12 +56,12 @@ defaults: &defaults
         key: dependency-cache-{{ checksum "_tmp_file" }}-{{ checksum "package-lock.json" }}
         paths:
           - ./node_modules
+    # Run unit tess
     - run:
-        name: test-node
-        command: npm test
-        environment:
-          REPORTER: mocha-circleci-reporter
-          MOCHA_FILE: junit/test-results.xml
+        name: npm test
+        command: npm run test-unit-ci
+
+    # Upload results
     - run:
         name: coveralls
         command: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
@@ -82,7 +77,7 @@ defaults: &defaults
     - store_test_results:
         path: junit
     - store_artifacts:
-        path: junit
+        path: log
     - store_artifacts:
         path: db.log
         destination: mongolog
@@ -90,33 +85,22 @@ defaults: &defaults
         path: docs
         destination: documentations
     - store_artifacts:
-        path: coverage
+        path: coverage/lcov-report
         destination: coverage
-    - store_test_results:
-        path: coverage/coverage.json
 jobs:
-  test-node6:
-    <<: *defaults
-    docker:
-    - image: circleci/node:6.14.4-browsers
-      environment:
-       CHROME_BIN: "/usr/bin/google-chrome"
-       NODE_ENV: test
-       NPM_CI_INSTALL: "install"
-    - image: mongo:4.1.2
-  test-node8:
-    <<: *defaults
-    docker:
-    - image: circleci/node:8.12.0-browsers
-      environment:
-       CHROME_BIN: "/usr/bin/google-chrome"
-       NODE_ENV: test
-       NPM_CI_INSTALL: "install"
-    - image: mongo:4.1.2
   test-node10:
     <<: *defaults
     docker:
     - image: circleci/node:10-browsers
+      environment:
+       CHROME_BIN: "/usr/bin/google-chrome"
+       NODE_ENV: test
+       NPM_CI_INSTALL: "install"
+    - image: mongo:4.1.2
+  test-node12:
+    <<: *defaults
+    docker:
+    - image: circleci/node:12-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test

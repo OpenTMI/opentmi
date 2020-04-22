@@ -1,3 +1,4 @@
+const cluster = require('cluster');
 const express = require('express');
 
 function Route(app) {
@@ -11,7 +12,8 @@ function Route(app) {
       name: app.get('name'),
       mode: process.env.NODE_ENV ? process.env.NODE_ENV : 'development',
       // listenscope: nconf.get('host'),
-      hostname: req.hostname
+      hostname: req.hostname,
+      isMaster: cluster.isMaster
     });
   });
 

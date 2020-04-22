@@ -32,7 +32,10 @@ function createUserToken({
 }
 
 const testUserId = '5825bb7afe7545132c88c761';
-const api = 'http://localhost:3000';
+const protocol = 'http';
+const host = 'localhost';
+const port = '3000';
+const api = `${protocol}://${host}:${port}`;
 const apiV0 = `${api}/api/v0`;
 
 function getTestUserToken() {
@@ -63,6 +66,9 @@ module.exports = {
   createUserToken,
   createUser,
   deleteUser,
+  protocol,
+  port,
+  host,
   api,
   apiV0
 };

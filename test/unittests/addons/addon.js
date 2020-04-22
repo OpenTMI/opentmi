@@ -19,22 +19,21 @@ let addon;
 let addonPrototype;
 
 describe('addon.js', function () {
-  beforeEach(function (done) {
+  beforeEach(function () {
     delete require.cache[cachePath];
     const AddonModule = require('../../../app/addons/addon'); // eslint-disable-line
     Addon = AddonModule.Addon;
     STATES = AddonModule.states;
     PHASES = AddonModule.phases;
 
-    addon = new Addon('naim', true);
+    addon = new Addon('naim', true, __dirname);
     addon.addonPath = path.join(__dirname, 'mocking');
 
     addonPrototype = Object.getPrototypeOf(addon);
-    done();
   });
 
   describe('toJson', function () {
-    it('toJson - uncorrupted addon', function (done) {
+    it('toJson - uncorrupted addon', function () {
       addon.description = 'description data';
       addon.version = 'version data';
       addon.repository = 'repository of addon';
@@ -46,64 +45,53 @@ describe('addon.js', function () {
       expect(jsonData).to.have.property('repository', 'repository of addon');
       expect(jsonData).to.have.property('status', 'introduce-done');
       expect(jsonData).to.have.property('hasStaticContent', false);
-
-      done();
     });
   });
 
   describe('Status', function () {
-    it('Status - valid state', function (done) {
+    it('Status - valid state', function () {
       addon._status = {state: STATES.load, phase: PHASES.failed};
       expect(addon.Status).to.equal('load-failed');
-      done();
     });
   });
 
   describe('isBusy', function () {
-    it('isBusy - true and false case', function (done) {
+    it('isBusy - true and false case', function () {
       addon._status = {state: STATES.introduce, phase: PHASES.done};
       expect(addon.isBusy).to.equal(false, 'not busy addon should return false.');
 
       addon._status.phase = PHASES.inProgress;
       expect(addon.isBusy).to.equal(true, 'busy addon should return true');
-
-      done();
     });
   });
 
   describe('isLoaded', function () {
-    it('isLoaded - valid state', function (done) {
+    it('isLoaded - valid state', function () {
       addon._status = {state: STATES.load, phase: PHASES.done};
       expect(addon.isLoaded).to.equal(true, 'loaded addon should return true');
 
       addon._status = {state: STATES.load, phase: PHASES.failed};
       expect(addon.isLoaded).to.equal(false, 'unloaded addon should return false');
-
-      done();
     });
   });
 
   describe('isRegistered', function () {
-    it('isRegistered - valid state', function (done) {
+    it('isRegistered - valid state', function () {
       addon._status = {state: STATES.register, phase: PHASES.done};
       expect(addon.isRegistered).to.equal(true, 'registered addon should return true');
 
       addon._status = {state: STATES.register, phase: PHASES.failed};
       expect(addon.isRegistered).to.equal(false, 'unregistered addon should return false');
-
-      done();
     });
   });
 
   describe('safeToRemove', function () {
-    it('isRegistered - valid state', function (done) {
+    it('isRegistered - valid state', function () {
       addon._status = {state: STATES.load, phase: PHASES.done};
       expect(addon.safeToRemove).to.equal(true, 'safe to remove addon should return true');
 
       addon._status = {state: STATES.register, phase: PHASES.done};
       expect(addon.safeToRemove).to.equal(false, 'unsafe to remove addon should return false');
-
-      done();
     });
   });
 
@@ -120,7 +108,6 @@ describe('addon.js', function () {
           expect(addon).to.have.property('_status');
           expect(addon._status).to.have.property('state', STATES.load);
           expect(addon._status).to.have.property('phase', PHASES.inProgress);
-          return Promise.resolve();
         });
     });
   });
@@ -180,7 +167,6 @@ describe('addon.js', function () {
           expect(addon).to.have.property('_status');
           expect(addon._status).to.have.property('state', STATES.register);
           expect(addon._status).to.have.property('phase', PHASES.done);
-          return Promise.resolve();
         });
     });
   });
@@ -236,7 +222,6 @@ describe('addon.js', function () {
           expect(addon).to.have.property('_status');
           expect(addon._status).to.have.property('state', STATES.load);
           expect(addon._status).to.have.property('phase', PHASES.done);
-          return Promise.resolve();
         });
     });
   });

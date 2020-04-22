@@ -1,3 +1,0 @@
-[submodule "default-gui"]
-	path = app/addons/default-gui
-	url = https://github.com/OpenTMI/opentmi-default-gui.git

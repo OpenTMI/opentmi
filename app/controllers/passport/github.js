@@ -77,7 +77,7 @@ class Github {
     return new Promise((resolve, reject) => {
       oauth2.get(teamUrl, accessToken, (err, body, res) => {
         if (err) {
-          return reject(new Error(`Failed to fetch user profile: ${err}`));
+          return reject(new Error(`Failed to fetch user profile: ${teamUrl} ${err}`));
         }
         try {
           logger.silly(`${teamUrl} - statusCode: ${res.statusCode}`);

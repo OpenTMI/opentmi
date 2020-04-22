@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const invariant = require('invariant');
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
+const HttpStrategy = require('passport-http').BasicStrategy;
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
@@ -51,6 +52,7 @@ class PassportStrategies {
   static createStrategies() {
     PassportStrategies.JWTStrategy();
     PassportStrategies.LocalStrategy();
+    PassportStrategies.HttpStrategy();
     // github access token
     const github = nconf.get('github');
     if (github && _.get(github, 'clientID') !== '<client-id>') {
@@ -118,6 +120,27 @@ class PassportStrategies {
       }
     );
     passport.use(localStrategy);
+  }
+  static HttpStrategy() {
+    passport.use(new HttpStrategy((userid, password, done) => {
+      const req = {name: userid};
+      logger.silly(`basic auth, findOne(${JSON.stringify(req)})`);
+      User.findOne(req)
+        .select('_id name email groups apikeys +password')
+        .exec()
+        .then((user) => {
+          invariant(user, 'Invalid email and/or password');
+          return user;
+        })
+        .then(user => user.comparePassword(password).return(user))
+        .then((user) => {
+          done(null, user);
+        })
+        .catch((error) => {
+          _.set(error, 'statusCode', 401);
+          done(error);
+        });
+    }));
   }
 
   static _GithubStrategyHelper(oauth2, accessToken, profile, next) {

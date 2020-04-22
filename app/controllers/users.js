@@ -130,8 +130,7 @@ class UsersController extends DefaultController {
       .then(() => this.Model.findOne({
         resetPasswordToken: req.body.token,
         resetPasswordExpires: {$gt: Date.now()}
-      }
-      ))
+      }))
       .then((theUser) => {
         const user = theUser;
         if (!user) {

@@ -52,13 +52,12 @@ function requireAdmin(req, res, next) {
  |--------------------------------------------------------------------------
  */
 function createJWT(user) {
-  logger.info('Auth middleware: creating JWT token');
+  const expDays = nconf.get('webtokenExpirationDays');
+  logger.info(`Auth middleware: creating JWT token (exp: ${expDays} days)`);
   return user
     .populate('groups')
     .execPopulate()
     .then((populatedUser) => {
-      const expDays = nconf.get('webtokenExpirationDays');
-      logger.debug(`webtokenExpirationDays = ${expDays}`);
       const payload = {
         _id: populatedUser._id,
         groups: populatedUser.groups.map(g => g.name),
@@ -73,7 +72,7 @@ function createJWT(user) {
     });
 }
 
-const requireAuth = passport.authenticate('jwt', {session: false});
+const requireAuth = passport.authenticate(['jwt', 'basic'], {session: false});
 const ensureAdmin = [requireAuth, requireAdmin];
 
 module.exports = {

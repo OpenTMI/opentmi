@@ -1,0 +1,55 @@
+version: "3.7"
+services:
+  opentmi:
+    build:
+      context: .
+      args:
+        - NODE_ENV=production
+    volumes:
+      - data-volume:/app/data
+    ports:
+      - "80:8000"
+    environment:
+      - NODE_ENV=production
+      - db=mongodb://mongo/opentmi
+    command: "npm start -- -vvv --listen 0.0.0.0 --port 8000"
+    restart: on-failure
+    depends_on:
+      - mongo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+  mongo:
+    image: mongo:4.1.2
+    ports:
+      - "27017:27017"
+    volumes:
+      - db-volume:/data/db
+    environment:
+      #- MONGO_INITDB_ROOT_USERNAME=root
+      #- MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_DATABASE=opentmi
+    healthcheck:
+      test: "[ `echo 'db.runCommand(\"ping\").ok' | mongo localhost/opentmi --quiet` ] && echo 0 || echo 1"
+      interval: 5s
+      start_period: 10s
+      timeout: 4s
+      retries: 3
+  # SSL termination for HTTPS
+  #nginx-ssl-proxy:
+  #  image: danieldent/nginx-ssl-proxy
+  #  restart: always
+  #  environment:
+  #    UPSTREAM: opentmi:8000
+  #    SERVERNAME: my.server.com
+  #  ports:
+  #    - "80:80"
+  #    - "443:443"
+  #  volumes:
+  #    - "/etc/letsencrypt"
+volumes:
+  db-volume:
+  data-volume:

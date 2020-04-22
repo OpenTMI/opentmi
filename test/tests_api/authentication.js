@@ -9,7 +9,7 @@ const logger = require('winston');
 
 // Setup
 logger.level = 'error';
-const {api, createUser, deleteUser} = require('./tools/helpers');
+const {api, protocol, host, port, createUser, deleteUser} = require('./tools/helpers');
 
 
 describe('authentication', function () {
@@ -69,6 +69,54 @@ describe('authentication', function () {
         .then(res => res.body)
         .then((body) => {
           expect(body.token).to.be.an('string');
+        });
+    });
+    describe('basic', function () {
+      it('success', function () {
+        return superagent.get(`${protocol}://${name}:${password}@${host}:${port}/auth/me`)
+          .end()
+          .then(res => res.body)
+          .then((body) => {
+            expect(body._id).to.be.an('string');
+            expect(body.__v).to.be.an('number');
+            expect(body.loggedIn).to.be.an('boolean');
+            expect(body.groups).to.be.an('array');
+            expect(body.apikeys).to.be.an('array');
+            expect(body.name).to.be.equal(name);
+            expect(body.email).to.be.equal(email);
+            expect(body.registered).to.be.an('string');
+            expect(body.lastVisited).to.be.an('string');
+          });
+      });
+      it('invalid password', function () {
+        const url = `${protocol}://${name}:invalid@${host}:${port}/auth/me`;
+        return superagent.get(url)
+          .end()
+          .reflect()
+          .then((promise) => {
+            const {response} = promise.reason();
+            expect(promise.isRejected()).to.be.true;
+            expect(response.status).to.be.equal(401);
+          });
+      });
+      it('invalid username', function () {
+        const url = `${protocol}://invalid:${password}@${host}:${port}/auth/me`;
+        return superagent.get(url)
+          .end()
+          .reflect()
+          .then((promise) => {
+            const {response} = promise.reason();
+            expect(promise.isRejected()).to.be.true;
+            expect(response.status).to.be.equal(401);
+          });
+      });
+    });
+    it('logout', function () {
+      return superagent.post(`${protocol}://${name}:${password}@${host}:${port}/auth/logout`)
+        .end()
+        .then(res => res.body)
+        .then((body) => {
+          expect(body).to.be.deep.equal({});
         });
     });
   });
