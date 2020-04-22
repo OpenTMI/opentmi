@@ -7,7 +7,6 @@
 // 3rd party modules
 const _ = require('lodash');
 require('colors');
-const _ = require('lodash');
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const JunitXmlParser = require('junit-xml-parser').parser;

@@ -28,23 +28,6 @@ describe('controllers/results.js', function () {
   beforeEach(reset);
   after(teardown);
 
-  describe('streamToString', function () {
-    it('should concat streamed data correctly', function () {
-      const mockedStream = stream.Readable();
-      mockedStream._read = function () { };
-
-      const stringPromise = ResultsController.streamToString(mockedStream);
-
-      // Stream mock data
-      mockedStream.emit('data', 'chunk1');
-      mockedStream.emit('data', 'chunk2');
-      mockedStream.emit('data', 'chunk3');
-      mockedStream.emit('end');
-
-      return expect(stringPromise).to.eventually.equal('chunk1chunk2chunk3');
-    });
-  });
-
 
   describe('handleJunitXml', function () {
     it('should result in message created 2 results', function () {

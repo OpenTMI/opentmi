@@ -11,8 +11,9 @@ class Limiter extends Transform {
     if (chunk.length > this._limit) {
       this.push(chunk.slice(0, this._limit));
       this._limit = 0;
-      this.end();
-    } else {
+      // limiter does not push data anymore so basically it could call this.end();
+      // but then source stream would cause "write after end" unexpectedly.
+    } else if (this._limit > 0) {
       this.push(chunk);
       this._limit -= chunk.length;
     }
