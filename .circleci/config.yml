@@ -61,24 +61,6 @@ defaults: &defaults
         name: npm test
         command: npm run test-unit-ci
 
-    # Run coverage report for Code Climate
-    - run:
-        name: Setup Code Climate test-reporter
-        command: |
-          # download test reporter as a static binary
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-          ./cc-test-reporter before-build
-
-    - run:
-        name: code-coverage
-        command: |
-          mkdir coverage
-          # nyc report requires that nyc has already been run,
-          # which creates the .nyc_output folder containing necessary data
-          ./node_modules/.bin/nyc report --reporter=text-lcov > coverage/lcov.info
-#          ./cc-test-reporter after-build -t lcov
-
     # Upload results
     - run:
         name: coveralls
@@ -95,8 +77,6 @@ defaults: &defaults
     - store_test_results:
         path: junit
     - store_artifacts:
-        path: junit
-    - store_artifacts:
         path: log
     - store_artifacts:
         path: db.log
@@ -105,10 +85,8 @@ defaults: &defaults
         path: docs
         destination: documentations
     - store_artifacts:
-        path: coverage
+        path: coverage/lcov-report
         destination: coverage
-    - store_test_results:
-        path: coverage/coverage.json
 jobs:
   test-node10:
     <<: *defaults
