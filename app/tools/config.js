@@ -43,6 +43,10 @@ const args = {
     type: 'string',
     describe: 'log path. Use "null" or "/dev/null" to supress file logging'
   },
+  addon_path: {
+    type: 'string',
+    describe: 'custom addon path. Default: "./node_modules"'
+  },
   autoInstallAddonDeps: {
     default: false,
     type: 'bool',

@@ -24,11 +24,11 @@ const PHASES = Object.freeze({inProgress: 0, done: 1, failed: 2});
  * @todo store addon instances in database
  */
 class Addon {
-  constructor(name, loadedDuringStartup = false) {
+  constructor(name, loadedDuringStartup = false, addonPath = null) {
     this.name = name;
     this._status = {state: STATES.introduce, phase: PHASES.done};
 
-    this.addonPath = path.join(__dirname, this.name);
+    this.addonPath = path.join(addonPath, name);
 
     this.hasStaticContent = false;
     this.loadedDuringStartup = loadedDuringStartup;
