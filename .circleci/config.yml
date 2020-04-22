@@ -59,7 +59,7 @@ defaults: &defaults
     # Run unit tess
     - run:
         name: npm test
-        command: ./node_modules/.bin/nyc ./node_modules/.bin/mocha --recursive --reporter mocha-junit-reporter --reporter-options mochaFile=junit/test-results.xml
+        command: npm run test-unit-ci
 
     # Run coverage report for Code Climate
     - run:
