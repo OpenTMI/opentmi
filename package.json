@@ -53,7 +53,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-jwt": "^5.3.3",
-    "express-session": "^1.17.0",
+    "express-session": "^1.17.1",
     "express-winston": "^4.0.3",
     "farmhash": "^3.0.0",
     "fs-extra": "^8.1.0",
