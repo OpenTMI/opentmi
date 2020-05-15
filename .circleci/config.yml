@@ -56,12 +56,12 @@ defaults: &defaults
         key: dependency-cache-{{ checksum "_tmp_file" }}-{{ checksum "package-lock.json" }}
         paths:
           - ./node_modules
+    # Run unit tess
     - run:
-        name: test-node
-        command: npm test
-        environment:
-          REPORTER: mocha-circleci-reporter
-          MOCHA_FILE: junit/test-results.xml
+        name: npm test
+        command: npm run test-unit-ci
+
+    # Upload results
     - run:
         name: coveralls
         command: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
@@ -77,8 +77,6 @@ defaults: &defaults
     - store_test_results:
         path: junit
     - store_artifacts:
-        path: junit
-    - store_artifacts:
         path: log
     - store_artifacts:
         path: db.log
@@ -87,10 +85,8 @@ defaults: &defaults
         path: docs
         destination: documentations
     - store_artifacts:
-        path: coverage
+        path: coverage/lcov-report
         destination: coverage
-    - store_test_results:
-        path: coverage/coverage.json
 jobs:
   test-node10:
     <<: *defaults
@@ -128,7 +124,7 @@ jobs:
           key: dependency-cache-{{ checksum "_tmp_file" }}-{{ checksum "package-lock.json" }}
       - run:
           name: Authenticate with registry
-          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - run:
           name: Publish package
           command: echo npm publish

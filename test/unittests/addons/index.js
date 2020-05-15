@@ -11,7 +11,7 @@ const addonMockFiles = require('./mocking/addon-mock-files');
 // Test variables
 const {expect} = chai;
 const cachePath = path.resolve('./app/addons/index.js');
-const rootPath = path.resolve(__dirname, '..', '..', '..', 'app', 'addons');
+const rootPath = path.resolve(__dirname, 'mocking');
 let AddonManager;
 
 function createMockAddons(next) {
@@ -54,7 +54,6 @@ describe('addons/index.js', function () {
     // AddonManager functions get overriden in the tests, we need to re-require it for every test
     delete require.cache[cachePath];
     AddonManager = require('../../../app/addons'); // eslint-disable-line
-
     createMockAddons(done);
   });
   afterEach(cleanupMockAddons);
@@ -175,8 +174,9 @@ describe('addons/index.js', function () {
         return Promise.resolve('finished');
       };
       Object.setPrototypeOf(AddonManager, addonProto);
-
-      return expect(AddonManager.loadAddons(true)).to.eventually.equal('finished');
+      const addonPath = path.join(__dirname, 'mocking');
+      const prefix = '';
+      return expect(AddonManager.loadAddons({addonPath, prefix})).to.eventually.equal('finished');
     });
   });
 
