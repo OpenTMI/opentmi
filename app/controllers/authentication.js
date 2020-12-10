@@ -41,7 +41,9 @@ class AuthenticationController {
   }
   static loginFail(error, req, res, next) { // eslint-disable-line no-unused-vars
     const message = _.get(error, 'message', `${error}`);
-    logger.debug(`login failed: ${message}`);
+    const oAuthError = JSON.parse(_.get(error, 'oauthError.data', '{}'));
+    const details = _.get(oAuthError, 'message');
+    logger.debug(`login failed: ${message}: ${details}`);
     res.status(401).json({message});
   }
 
