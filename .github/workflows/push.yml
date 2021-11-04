@@ -30,7 +30,6 @@ jobs:
     - name: install dependencies
       run: |
         npm ci
-        sudo npm install -g grunt-cli
     - name: run unit tests
       run: npm run test-unit-ci
     - name: coveralls
