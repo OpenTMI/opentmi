@@ -2,18 +2,17 @@ name: OpenTMI CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
-     paths:
+     paths-ignore:
       - '**/*.md'
 env:
   CHROME_BIN: "/usr/bin/google-chrome"
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [12.x, 14.x, 16.x, latest]
