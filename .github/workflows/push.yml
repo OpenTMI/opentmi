@@ -11,6 +11,10 @@ env:
   CHROME_BIN: "/usr/bin/google-chrome"
   NODE_ENV: test
 
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
