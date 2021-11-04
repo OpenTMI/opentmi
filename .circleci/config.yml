@@ -99,7 +99,7 @@ jobs:
   test-node10:
     <<: *defaults
     docker:
-    - image: cimg/node:10-browsers
+    - image: cimg/node:10.24.1-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -108,7 +108,7 @@ jobs:
   test-node12:
     <<: *defaults
     docker:
-    - image: cimg/node:12-browsers
+    - image: cimg/node:12.22.7-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -117,7 +117,7 @@ jobs:
   test-node14:
     <<: *defaults
     docker:
-    - image: cimg/node:14-browsers
+    - image: cimg/node:14.18.1-browsers-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -126,7 +126,7 @@ jobs:
   test-node16:
     <<: *defaults
     docker:
-    - image: cimg/node:16-browsers
+    - image: cimg/node:16.12.0-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -135,7 +135,7 @@ jobs:
   test-node-latest:
     <<: *defaults
     docker:
-    - image: cimg/node:latest-browsers
+    - image: cimg/node:17.0.1-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
