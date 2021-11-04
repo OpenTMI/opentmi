@@ -51,7 +51,7 @@ jobs:
       with:
         # Artifact name
         name: coverage-report-${{ matrix.node-version }}
-        path: lcov-report/**
+        path: coverage/lcov-report/**
     - name: Junit Report to Annotations
       uses: ashley-taylor/junit-report-annotations-action@1.3
       with:
