@@ -30,6 +30,8 @@ jobs:
     - name: install dependencies
       run: |
         npm ci
+        # to avoid missing libssl when calling mongo tools
+        sudo apt-get install libssl1.0.0 libssl-dev --reinstall
     - name: run unit tests
       run: npm run test-unit-ci
     - name: coveralls
