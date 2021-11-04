@@ -40,12 +40,12 @@ defaults: &defaults
         command: |
           sudo npm install -g mongodb-prebuilt
     - run:
-        name: versions
+        name: print tools versions
         command: |
-          mongorestore --version
           node --version
           npm --version
-          echo $NPM_CI_INSTALL
+          echo "NPM_CI_INSTALL: $NPM_CI_INSTALL"
+          mongorestore --version
     - run:
         name: npm-install
         command: |

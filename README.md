@@ -2,20 +2,12 @@
 Open Source Test Management Infrastructure for IoT and embedded world.
 
  [![Build Status][build-image]][build-url]
- [![Dependencies Status][depupdated-image]][depupdated-url]
- [![devDependencies Status][devdepupdated-image]][devdepupdated-url]
- 
-
-
- <!--
-[![Test Coverage][coveralls-image]][coveralls-url]
--->
+ [![Test Coverage][coveralls-image]][coveralls-url]
 
 OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / 
 Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [MIT license](LICENSE.md).
 OpenTMI is extremely customizable through [addons](doc/addons.md).
 
-![logo](doc/images/OpenTMI_logo.png)
 
 # Ideology
 
@@ -136,6 +128,7 @@ By default opentmi is started as development mode. You can configure environment
   * [opentmi-pyclient](https://github.com/opentmi/opentmi-pyclient)
   * [opentmi-jsclient](https://github.com/opentmi/opentmi-jsclient) for nodejs / browser
   * [opentmi-cli](https://github.com/opentmi/opentmi-cli)
+  * [pytest-opentmi](https://github.com/opentmi/pytest-opentmi)
 
 ### Addons
 Way to extend backend-service functionality. Addon registry (future plan) contains information
@@ -193,8 +186,3 @@ You can use for example:
 [build-url]: https://circleci.com/gh/OpenTMI/opentmi
 [coveralls-image]: https://coveralls.io/repos/OpenTMI/opentmi/badge.svg?branch=master&service=github
 [coveralls-url]: https://coveralls.io/github/OpenTMI/opentmi?branch=master
-
-[depupdated-image]: https://david-dm.org/opentmi/opentmi.svg
-[depupdated-url]: https://david-dm.org/opentmi/opentmi
-[devdepupdated-image]: https://david-dm.org/opentmi/opentmi/dev-status.svg
-[devdepupdated-url]: https://david-dm.org/opentmi/opentmi?type=dev
