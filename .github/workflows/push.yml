@@ -30,15 +30,12 @@ jobs:
     - name: install dependencies
       run: |
         npm ci
-        # to avoid missing libssl when calling mongo tools
-        sudo apt update 
-        sudo apt install libssl1.0.0
     - name: run unit tests
       run: npm run test-unit-ci
     - name: coveralls
       run: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - name: Create mongoDB Docker container      
-      run: sudo docker run -d -p 27017:27017 mongo:4.1.2
+      run: sudo docker run -d -p 27017:27017 mongo:4.4.10-focal
     - name: api tests
       run: |
         MOCHA_FILE=junit/apitests.xml grunt apitests --silent
