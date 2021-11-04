@@ -3,6 +3,7 @@ Open Source Test Management Infrastructure for IoT and embedded world.
 
  [![Build Status][build-image]][build-url]
  [![Test Coverage][coveralls-image]][coveralls-url]
+ [![Docker][docker-image]][docker-url]
 
 OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / 
 Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [MIT license](LICENSE.md).
@@ -182,7 +183,10 @@ You can use for example:
 [Node.js]: https://nodejs.com
 [MongoDB]: https://mongodb.com
 
-[build-image]: https://circleci.com/gh/OpenTMI/opentmi.svg?style=svg
-[build-url]: https://circleci.com/gh/OpenTMI/opentmi
+[build-image]: https://github.com/OpenTMI/opentmi/actions/workflows/push.yml/badge.svg
+[build-url]: https://github.com/OpenTMI/opentmi/actions/workflows/push.yml
 [coveralls-image]: https://coveralls.io/repos/OpenTMI/opentmi/badge.svg?branch=master&service=github
 [coveralls-url]: https://coveralls.io/github/OpenTMI/opentmi?branch=master
+[docker-image]: https://img.shields.io/docker/cloud/build/opentmi/opentmi?label=Docker&style=flat
+[docker-url]: https://hub.docker.com/r/opentmi/opentmi/builds
+
