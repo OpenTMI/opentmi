@@ -30,7 +30,7 @@
     "debug-cluster": "node --inspect app/cluster.js",
     "test": "NODE_ENV=test npm run test-unit-spec",
     "test-unit-ci": "npm run test-unit-lcov && npm run test-unit-json",
-    "test-unit-json": "nyc mocha --recursive --reporter json --reporter-options output=report/report.json test/unittests",
+    "test-unit-json": "nyc mocha --recursive --reporter json --reporter-option output=report.json test/unittests",
     "test-unit-lcov": "nyc --reporter lcov mocha --recursive test/unittests",
     "test-api": "grunt",
     "lint": "node node_modules/eslint/bin/eslint .",
