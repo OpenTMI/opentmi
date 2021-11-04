@@ -60,6 +60,6 @@ jobs:
       uses: dorny/test-reporter@v1
       if: success() || failure()    # run this step even if previous step failed
       with:
-        name: JEST Tests            # Name of the check run which will be created
-        path: report/report.json
+        name: Mocha Tests            # Name of the check run which will be created
+        path: report.json
         reporter: mocha-json
