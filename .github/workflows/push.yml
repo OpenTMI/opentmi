@@ -1,11 +1,11 @@
-name: Node.js CI
+name: OpenTMI CI
 
 on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ !master ]
-    
+     paths:
+      - '**/*.md'
 env:
   CHROME_BIN: "/usr/bin/google-chrome"
 
@@ -38,8 +38,8 @@ jobs:
       run: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - name: api tests
       run: |
-          MOCHA_FILE=junit/apitests.xml grunt apitests --silent
-          MOCHA_FILE=junit/clustertests.xml grunt clustertests --silent
+        MOCHA_FILE=junit/apitests.xml grunt apitests --silent
+        MOCHA_FILE=junit/clustertests.xml grunt clustertests --silent
     - name: lint
       run: |
         npm run lint
