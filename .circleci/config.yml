@@ -37,7 +37,7 @@ workflows:
 defaults: &defaults
   working_directory: ~/opentmi
   docker:
-    - image: cimg/node:8.12.0-browsers
+    - image: circleci/node:8.12.0-browsers
   steps:
     - checkout
     - run: node --version > _tmp_file
@@ -99,7 +99,7 @@ jobs:
   test-node10:
     <<: *defaults
     docker:
-    - image: cimg/node:10.24.1-browsers
+    - image: circleci/node:10-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -108,7 +108,7 @@ jobs:
   test-node12:
     <<: *defaults
     docker:
-    - image: cimg/node:12.22.7-browsers
+    - image: circleci/node:12-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -117,7 +117,7 @@ jobs:
   test-node14:
     <<: *defaults
     docker:
-    - image: cimg/node:14.18.1-browsers-browsers
+    - image: circleci/node:14-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -126,7 +126,7 @@ jobs:
   test-node16:
     <<: *defaults
     docker:
-    - image: cimg/node:16.12.0-browsers
+    - image: circleci/node:16-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
@@ -135,7 +135,7 @@ jobs:
   test-node-latest:
     <<: *defaults
     docker:
-    - image: cimg/node:17.0.1-browsers
+    - image: circleci/node:latest-browsers
       environment:
        CHROME_BIN: "/usr/bin/google-chrome"
        NODE_ENV: test
