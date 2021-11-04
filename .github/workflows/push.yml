@@ -31,7 +31,8 @@ jobs:
       run: |
         npm ci
         # to avoid missing libssl when calling mongo tools
-        sudo apt-get install libssl1.0.0 libssl-dev --reinstall
+        sudo apt update 
+        sudo apt install libssl1.0.0
     - name: run unit tests
       run: npm run test-unit-ci
     - name: coveralls
