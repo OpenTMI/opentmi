@@ -9,7 +9,7 @@ on:
   pull_request:
      paths-ignore:
       - '**/*.md'
-  tags:
+  release:
 
 jobs:
   build-and-publish-latest:
