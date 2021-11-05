@@ -48,8 +48,7 @@ const gruntConfig = {
   },
   simplemocha: {
     options: {
-      globals: ['should', 'check'],
-      reporter: 'mocha-circleci-reporter',
+      reporter: 'json',
       timeout: 120000,
       ignoreLeaks: false
     },
