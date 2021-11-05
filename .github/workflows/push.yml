@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 16.x]
+        node-version: [12.x, 14.x, 16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
     - uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
       run: npm run test-unit-ci
     - name: coveralls
       run: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
-    - name: Create mongoDB Docker container      
+    - name: Create mongoDB Docker container
       run: sudo docker run -d -p 27017:27017 mongo:4.4.10-focal
     - name: api tests
       run: |
@@ -61,5 +61,5 @@ jobs:
       if: success() || failure()    # run this step even if previous step failed
       with:
         name: Mocha Tests            # Name of the check run which will be created
-        path: report.json
+        path: report_unit.json
         reporter: mocha-json
