@@ -12,7 +12,7 @@ env:
   NODE_ENV: test
 
 concurrency:
-  group: ${{ github.head_ref }}
+  group: ${{ github.branch }}
   cancel-in-progress: true
 
 jobs:
