@@ -44,7 +44,7 @@ jobs:
       - name: publish to dockerhub
         # if: github.event_name == 'push' || github.event_name == 'tag'
         run:
-          docker push -t opentmi/opentmi:${{ steps.vars.outputs.docker_tag }}
+          docker push opentmi/opentmi:${{ steps.vars.outputs.docker_tag }}
       
 
       - name: Login to DockerHub
@@ -56,6 +56,6 @@ jobs:
       - name: publish to dockerhub
         # if: github.event_name == 'push' || github.event_name == 'tag'
         run:
-          docker push -t opentmi/opentmi:${{ steps.vars.outputs.docker_tag }}
+          docker push opentmi/opentmi:${{ steps.vars.outputs.docker_tag }}
 
       
