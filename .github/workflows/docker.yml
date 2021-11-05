@@ -1,10 +1,17 @@
 name: Dockerimage
 
 on:
-  pull:
   push:
+    paths-ignore:
+      - '**/*.md'
+    branches:
+      - master
+  pull_request:
+     paths-ignore:
+      - '**/*.md'
 
-build-and-publish-head:
+jobs:
+  build-and-publish-latest:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2 # Checking out the repo
