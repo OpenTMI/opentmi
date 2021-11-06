@@ -49,7 +49,7 @@ jobs:
           # create image id for ghcr
           IMAGE_ID=ghcr.io/opentmi/$IMAGE_NAME
           # tag image
-          docker tag image $IMAGE_ID:$VERSION
+          docker tag image $IMAGE_ID:${{ steps.vars.docker_tag }}
           
            # Removes the original image tag
          
