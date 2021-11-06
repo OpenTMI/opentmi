@@ -21,6 +21,13 @@ jobs:
       
       - name: build
         run: docker build . -t image
+        
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
+          echo ${{ github.event.pull_request.title }}
       
       - name: resolve tag
         id: vars
@@ -36,7 +43,7 @@ jobs:
           
           
           # Use Docker `<branch>` tag convention
-          [ "$VERSION" == "merge" ] && VERSION=$(git rev-parse --abbrev-ref HEAD)
+          [ "$VERSION" == "merge" ] && VERSION=${{ github.head_ref }}
           
           echo ::set-output name=docker_tag::${VERSION}
           echo tag=${VERSION}          
