@@ -47,7 +47,7 @@ jobs:
       - name: push
         run: |
           # create image id for ghcr
-          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=ghcr.io/opentmi/$IMAGE_NAME
           # tag image
           docker tag image $IMAGE_ID:$VERSION
           
@@ -61,7 +61,7 @@ jobs:
           docker push --all-tags $IMAGE_ID
           
           # create image id for dockerhub
-          IMAGE_ID=${{ github.repository }}/$IMAGE_NAME
+          IMAGE_ID=opentmi/$IMAGE_NAME
           # tag image
           docker tag image $IMAGE_ID:$VERSION
           
