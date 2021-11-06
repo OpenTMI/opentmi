@@ -63,12 +63,12 @@ jobs:
           docker rmi image
           
           # list all images
-          docker image ls
+          docker image ls | grep opentmi
           
           # Login to ghcr and push
-          #echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          #docker push --all-tags ghcr.io/$IMAGE_ID
+          echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push --all-tags ghcr.io/$IMAGE_ID
           
           # Login to Dockerhub and push
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login ghcr.io -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker push --all-tags $IMAGE_ID      
