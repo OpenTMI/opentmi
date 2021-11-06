@@ -53,28 +53,28 @@ jobs:
       
       - name: push
         run: |
-          # create image id for ghcr
-          IMAGE_ID=ghcr.io/opentmi/$IMAGE_NAME
-          # tag image
-          docker tag image $IMAGE_ID:${{ steps.vars.outputs.docker_tag }}
+          VERSION=${{ steps.vars.outputs.docker_tag }}
           
-           # Removes the original image tag
+          # create image id for ghcr
+          IMAGE_ID=opentmi/$IMAGE_NAME          
+          echo IMAGE_ID=$IMAGE_ID, VERSION=$VERSION
+          
+          # tag image
+          docker tag image ghcr.io/$IMAGE_ID:$VERSION
+          
+          # Removes the original image tag
+          # Removes the original image tag
+          docker rmi image
          
-          echo Tags for $IMAGE_ID $(docker images $IMAGE_ID --format="{{ .Tag }}")
+          echo Tags for $IMAGE_ID $(docker images ghcr.io/$IMAGE_ID --format="{{ .Tag }}")
           
           # Login to ghcr
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           # push 
-          docker push --all-tags $IMAGE_ID
-          
-          # create image id for dockerhub
-          IMAGE_ID=opentmi/$IMAGE_NAME
+          docker push --all-tags ghcr.io/$IMAGE_ID
+   
           # tag image
           docker tag image $IMAGE_ID:$VERSION
-          
-           # Removes the original image tag
-          docker rmi image
-          echo Tags for $IMAGE_ID $(docker images $IMAGE_ID --format="{{ .Tag }}")
           
           # Login to Dockerhub
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login ghcr.io -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
