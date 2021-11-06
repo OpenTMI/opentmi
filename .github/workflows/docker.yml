@@ -6,10 +6,11 @@ on:
       - '**/*.md'
     branches:
       - master
+    tags:
+      - 'v*'
   pull_request:
      paths-ignore:
       - '**/*.md'
-  release:
 env:
   IMAGE_NAME: opentmi
 
@@ -21,13 +22,6 @@ jobs:
       
       - name: build
         run: docker build . -t image
-        
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-          echo ${{ github.event.pull_request.title }}
       
       - name: resolve tag
         id: vars
@@ -49,6 +43,7 @@ jobs:
           echo tag=${VERSION}          
       
       - name: push
+        if: github.event_name == 'push' || github.event_name == 'release'
         run: |
           VERSION=${{ steps.vars.outputs.docker_tag }}
           
