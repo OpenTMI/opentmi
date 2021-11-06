@@ -47,9 +47,6 @@ jobs:
           
           echo ::set-output name=docker_tag::${VERSION}
           echo tag=${VERSION}          
-          
-      
-      - run: docker image ls
       
       - name: push
         run: |
@@ -61,27 +58,24 @@ jobs:
           
           # tag image
           docker tag image ghcr.io/$IMAGE_ID:$VERSION
-          
-          # Removes the original image tag
+          docker tag image $IMAGE_ID:$VERSION
           # Removes the original image tag
           docker rmi image
-         
-          echo Tags for $IMAGE_ID $(docker images ghcr.io/$IMAGE_ID --format="{{ .Tag }}")
           
-          # Login to ghcr
+          # list all images
+          docker image ls
+          
+          # Login to ghcr and push
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          # push 
           docker push --all-tags ghcr.io/$IMAGE_ID
-   
-          # tag image
-          docker tag image $IMAGE_ID:$VERSION
           
-          # Login to Dockerhub
+          
+          # Login to Dockerhub and push
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login ghcr.io -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          # push 
           docker push --all-tags $IMAGE_ID
           
-          docker rmi image
+          
+
 
 
       
