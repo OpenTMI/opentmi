@@ -11,7 +11,7 @@ on:
       - '**/*.md'
   release:
 env:
-  IMAGE_NAME: OPENTMI
+  IMAGE_NAME: opentmi
 
 jobs:
   build-and-publish-latest:
