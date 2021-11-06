@@ -1,0 +1,69 @@
+name: Dockerimage
+
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+    branches:
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+     paths-ignore:
+      - '**/*.md'
+env:
+  IMAGE_NAME: opentmi
+
+jobs:
+  build-and-publish-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2 # Checking out the repo
+      
+      - name: build
+        run: docker build . -t image
+      
+      - name: resolve tag
+        id: vars
+        run: |
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+          
+          
+          # Use Docker `<branch>` tag convention
+          [ "$VERSION" == "merge" ] && VERSION=${{ github.head_ref }}
+          
+          echo ::set-output name=docker_tag::${VERSION}
+          echo tag=${VERSION}          
+      
+      - name: push
+        if: github.event_name == 'push' || github.event_name == 'release'
+        run: |
+          VERSION=${{ steps.vars.outputs.docker_tag }}
+          
+          # create image id for ghcr
+          IMAGE_ID=opentmi/$IMAGE_NAME          
+          echo IMAGE_ID=$IMAGE_ID, VERSION=$VERSION
+          
+          # tag image
+          docker tag image ghcr.io/$IMAGE_ID:$VERSION
+          docker tag image $IMAGE_ID:$VERSION
+          # Removes the original image tag
+          docker rmi image
+          
+          # list all images
+          docker image ls | grep opentmi
+          
+          # Login to ghcr and push
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push --all-tags ghcr.io/$IMAGE_ID
+          
+          # Login to Dockerhub and push
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker push --all-tags $IMAGE_ID      

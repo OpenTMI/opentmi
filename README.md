@@ -183,7 +183,7 @@ You can use for example:
 [Node.js]: https://nodejs.com
 [MongoDB]: https://mongodb.com
 
-[build-image]: https://github.com/OpenTMI/opentmi/actions/workflows/push.yml/badge.svg
+[build-image]: https://github.com/OpenTMI/opentmi/actions/workflows/push.yml/badge.svg?branch=master&event=push
 [build-url]: https://github.com/OpenTMI/opentmi/actions/workflows/push.yml
 [coveralls-image]: https://coveralls.io/repos/OpenTMI/opentmi/badge.svg?branch=master&service=github
 [coveralls-url]: https://coveralls.io/github/OpenTMI/opentmi?branch=master
