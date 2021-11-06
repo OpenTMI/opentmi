@@ -61,7 +61,7 @@ jobs:
           docker image ls | grep opentmi
           
           # Login to ghcr and push
-          echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push --all-tags ghcr.io/$IMAGE_ID
           
           # Login to Dockerhub and push
