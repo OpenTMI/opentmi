@@ -3,7 +3,8 @@ const cluster = require('cluster');
 // 3rd party modules
 const Express = require('express');
 const SocketIO = require('socket.io');
-const mongoAdapter = require('socket.io-adapter-mongo');
+// not supported by socket.io v3<
+// const mongoAdapter = require('socket.io-adapter-mongo');
 const Promise = require('bluebird');
 
 // application modules
@@ -44,12 +45,12 @@ const emailer = new Emailer(config.get('smtp'));
 // Initialize database connection
 DB.initialize()
   .then(() => DB.connect())
-  .then(() => {
+  /* .then(() => {
     // Register mongo adapter for socket.io
     const dbUrl = config.get('db');
     const ioAdapter = mongoAdapter(dbUrl);
     io.adapter(ioAdapter);
-  })
+  }) */
   .catch((error) => {
     console.error('mongoDB connection failed: ', error.stack); // eslint-disable-line no-console
     process.exit(-1);

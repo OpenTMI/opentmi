@@ -15,6 +15,7 @@ module.exports = class SocketLoggerTransport extends Transport {
       try {
         this._io.to('logs').emit('log', `${info[Symbol.for('message')]}\n`);
       } catch (error) {  // eslint-disable-line
+        console.error(error);
       }
     });
 
