@@ -6,3 +6,48 @@ patch:
   'npm:ms:20170412':
     - socketio-jwt > jsonwebtoken > ms:
         patched: '2020-03-13T06:49:17.168Z'
+  SNYK-JS-LODASH-567746:
+    - lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - express-winston > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - mongoose-query > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - opentmi-addon > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - request-promise > request-promise-core > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > @snyk/dep-graph > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > inquirer > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-config > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-mvn-plugin > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-nodejs-lockfile-parser > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-nuget-plugin > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - winston > async > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-go-plugin > graphlib > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-nodejs-lockfile-parser > graphlib > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/dep-graph > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-nuget-plugin > dotnet-deps-parser > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > snyk-php-plugin > @snyk/composer-lockfile-parser > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/cocoapods-lockfile-parser > @snyk/ruby-semver > lodash:
+        patched: '2020-05-01T04:49:17.285Z'
+    - snyk > @snyk/snyk-cocoapods-plugin > @snyk/cocoapods-lockfile-parser > @snyk/dep-graph > graphlib > lodash:
+        patched: '2020-05-01T04:49:17.285Z'

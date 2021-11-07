@@ -2,20 +2,13 @@
 Open Source Test Management Infrastructure for IoT and embedded world.
 
  [![Build Status][build-image]][build-url]
- [![Dependencies Status][depupdated-image]][depupdated-url]
- [![devDependencies Status][devdepupdated-image]][devdepupdated-url]
- 
-
-
- <!--
-[![Test Coverage][coveralls-image]][coveralls-url]
--->
+ [![Test Coverage][coveralls-image]][coveralls-url]
+ [![Docker][docker-image]][docker-url]
 
 OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / 
 Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [MIT license](LICENSE.md).
 OpenTMI is extremely customizable through [addons](doc/addons.md).
 
-![logo](doc/images/OpenTMI_logo.png)
 
 # Ideology
 
@@ -35,7 +28,7 @@ OpenTMI try to solve these kind of challenges using "big-data".
 
 # Pre-requirements
 
-* [Node.js][Node.js] v12.13< (tested with 10 and 12, recommended to use latest LTS version)
+* [Node.js][Node.js] v12.13< (tested with 12, 14 and 16, recommended to use latest LTS version)
 * [mongodb][MongoDB] v3.6< (tested with 4.1.2, recommented to use latest version)
 
 # Installation
@@ -136,6 +129,7 @@ By default opentmi is started as development mode. You can configure environment
   * [opentmi-pyclient](https://github.com/opentmi/opentmi-pyclient)
   * [opentmi-jsclient](https://github.com/opentmi/opentmi-jsclient) for nodejs / browser
   * [opentmi-cli](https://github.com/opentmi/opentmi-cli)
+  * [pytest-opentmi](https://github.com/opentmi/pytest-opentmi)
 
 ### Addons
 Way to extend backend-service functionality. Addon registry (future plan) contains information
@@ -189,12 +183,10 @@ You can use for example:
 [Node.js]: https://nodejs.com
 [MongoDB]: https://mongodb.com
 
-[build-image]: https://circleci.com/gh/OpenTMI/opentmi.svg?style=svg
-[build-url]: https://circleci.com/gh/OpenTMI/opentmi
+[build-image]: https://github.com/OpenTMI/opentmi/actions/workflows/push.yml/badge.svg?branch=master&event=push
+[build-url]: https://github.com/OpenTMI/opentmi/actions/workflows/push.yml
 [coveralls-image]: https://coveralls.io/repos/OpenTMI/opentmi/badge.svg?branch=master&service=github
 [coveralls-url]: https://coveralls.io/github/OpenTMI/opentmi?branch=master
+[docker-image]: https://img.shields.io/docker/cloud/build/opentmi/opentmi?label=Docker&style=flat
+[docker-url]: https://hub.docker.com/r/opentmi/opentmi/builds
 
-[depupdated-image]: https://david-dm.org/opentmi/opentmi.svg
-[depupdated-url]: https://david-dm.org/opentmi/opentmi
-[devdepupdated-image]: https://david-dm.org/opentmi/opentmi/dev-status.svg
-[devdepupdated-url]: https://david-dm.org/opentmi/opentmi?type=dev
