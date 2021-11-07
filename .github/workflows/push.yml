@@ -1,0 +1,67 @@
+name: OpenTMI CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+     paths-ignore:
+      - '**/*.md'
+      - '.github/workflows/docker.yml'
+env:
+  CHROME_BIN: "/usr/bin/google-chrome"
+  NODE_ENV: test
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: install mongodb tools
+      run: sudo apt-get install -y mongodb-org-shell
+    - name: install dependencies
+      run: npm ci
+    - name: run unit tests
+      run: npm run test-unit-ci
+    - name: coveralls
+      run: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+    - name: Create mongoDB Docker container
+      run: sudo docker run -d -p 27017:27017 mongo:4.4.10-focal
+    - name: api tests
+      run: |
+        MOCHA_FILE=junit/apitests.xml grunt apitests --silent
+        MOCHA_FILE=junit/clustertests.xml grunt clustertests --silent
+    - name: lint
+      run: |
+        npm run lint
+    - uses: actions/upload-artifact@v2.2.4
+      with:
+        # Artifact name
+        name: logs-${{ matrix.node-version }}
+        path: log/*
+    - uses: actions/upload-artifact@v2.2.4
+      with:
+        # Artifact name
+        name: coverage-report-${{ matrix.node-version }}
+        path: coverage/lcov-report/**
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()    # run this step even if previous step failed
+      with:
+        # Name of the check run which will be created
+        name: Unit Test report ${{ matrix.node-version }}
+        path: report_unit.json
+        reporter: mocha-json

@@ -1,6 +1,3 @@
-## Status
-**READY/IN DEVELOPMENT/HOLD**
-
 ## Migrations
 YES | NO
 
