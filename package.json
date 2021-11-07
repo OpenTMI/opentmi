@@ -69,7 +69,7 @@
     "mongoose": "^5.7.5",
     "mongoose-query": "^0.6.1",
     "mongoose-schema-jsonschema": "1.4.4",
-    "nconf": "^0.10.0",
+    "nconf": "^0.11.3",
     "nodemailer": "^6.6.1",
     "opentmi-addon": "^0.2.0",
     "passport": "^0.4.1",
