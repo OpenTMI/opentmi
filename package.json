@@ -70,7 +70,7 @@
     "mongoose-query": "^0.6.1",
     "mongoose-schema-jsonschema": "1.4.4",
     "nconf": "^0.11.3",
-    "nodemailer": "^6.6.1",
+    "nodemailer": "^6.7.0",
     "opentmi-addon": "^0.2.0",
     "passport": "^0.5.0",
     "passport-github-token": "^3.0.0",
