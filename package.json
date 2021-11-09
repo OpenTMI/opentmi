@@ -64,7 +64,7 @@
     "lodash": "^4.17.21",
     "method-override": "^3.0.0",
     "mime": "^2.6.0",
-    "moment": "^2.27.0",
+    "moment": "^2.29.1",
     "mongodb-memory-server": "^6.9.2",
     "mongoose": "^5.7.5",
     "mongoose-query": "^0.6.1",
