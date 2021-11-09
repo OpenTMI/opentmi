@@ -65,7 +65,7 @@
     "method-override": "^3.0.0",
     "mime": "^2.6.0",
     "moment": "^2.27.0",
-    "mongodb-memory-server": "^6.9.2",
+    "mongodb-memory-server": "^6.9.6",
     "mongoose": "^5.7.5",
     "mongoose-query": "^0.6.1",
     "mongoose-schema-jsonschema": "1.4.4",
