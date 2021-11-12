@@ -68,7 +68,7 @@
     "mongodb-memory-server": "^6.9.2",
     "mongoose": "^5.7.5",
     "mongoose-query": "^0.6.1",
-    "mongoose-schema-jsonschema": "1.4.4",
+    "mongoose-schema-jsonschema": "1.4.7",
     "nconf": "^0.11.3",
     "nodemailer": "^6.7.0",
     "opentmi-addon": "^0.2.0",
