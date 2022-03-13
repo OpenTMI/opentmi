@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:12-stretch AS base
+FROM node:14-stretch AS base
 
 # ---- Dependencies ----
 FROM base AS dependencies
@@ -25,7 +25,7 @@ RUN NODE_ENV=production npm run build:prod
 RUN rm -r node_modules
 
 # --- Release with Alpine ----
-FROM node:12-alpine AS release
+FROM node:14-alpine AS release
 WORKDIR /app
 RUN apk add --no-cache git
 # copy package.json
