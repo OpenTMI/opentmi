@@ -6,8 +6,7 @@ Open Source Test Management Infrastructure for IoT and embedded world.
  [![Docker][docker-image]][docker-url]
  [![ghcr][ghcr-image]][ghcr-url]
 
-OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] / 
-Javascript and uses [MongoDB][MongoDB] as backing store. It is published in [MIT license](LICENSE.md).
+OpenTMI is Open Source Test Management System. It is written in [Node.js][Node.js] and uses [MongoDB][MongoDB] as backing store. It is published in [MIT license](LICENSE.md).
 OpenTMI is extremely customizable through [addons](doc/addons.md).
 
 
