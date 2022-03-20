@@ -19,7 +19,7 @@ COPY app ./app
 FROM base AS ui
 WORKDIR /app
 RUN git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git .
-RUN npm install
+RUN npm ci
 RUN NODE_ENV=production npm run build:prod
 
 RUN rm -r node_modules
