@@ -35,6 +35,7 @@ class DefaultController extends EventEmitter {
     const find = this._getModelParamQuery(req);
     logger.debug(`find document by ${JSON.stringify(find)} (model: ${this.modelName})`);
     return this.Model.findOne(find)
+      .populate(req.query.p)
       .then((data) => {
         if (!data) {
           const error = new Error(`Document not found (${find})`);

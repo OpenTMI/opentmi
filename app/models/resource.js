@@ -186,7 +186,7 @@ const ResourceSchema = new Schema({
     }
   },
   shield: {
-    rf: {type: Boolean} // RF shielded resource (rack/)
+    rf: {type: Boolean} // RF shielded resource
   },
   /*
   configurations: {
@@ -248,7 +248,11 @@ async function linkItem(resource) {
     .findOne({name: resource.item.model})
     .exec();
   if (!item) return;
+
+  // link item to resource object
   resource.item.ref = item._id; // eslint-disable-line no-param-reassign
+
+  // link resource to item
   if (!_.has(item.unique_resources, resource._id)) {
     if (!item.unique_resources) item.unique_resources = [];
     item.unique_resources.push(resource._id);

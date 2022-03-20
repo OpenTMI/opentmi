@@ -165,7 +165,6 @@ ItemSchema.plugin(QueryPlugin); // install QueryPlugin
  * Pre-save hook
  */
 ItemSchema.pre('save', function preSave(next) {
-  logger.info('Item pre-save hook started');
   if (this.available > this.in_stock) {
     return next(new Error('availability cannot be higher than in_stock'));
   }
