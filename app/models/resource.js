@@ -245,8 +245,8 @@ ResourceSchema.plugin(ResourceAllocationPlugin);
 async function linkItem(resource) {
   const Item = mongoose.model('Item');
   const item = await Item
-      .findOne({name: resource.item.model})
-      .exec();
+    .findOne({name: resource.item.model})
+    .exec();
   if (!item) return;
   resource.item.ref = item._id; // eslint-disable-line no-param-reassign
   if (!_.has(item.unique_resources, resource._id)) {
@@ -266,9 +266,7 @@ async function preSave(next) {
   }
 }
 
-
 ResourceSchema.pre('save', preSave);
-
 
 
 /**
