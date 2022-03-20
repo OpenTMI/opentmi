@@ -40,6 +40,21 @@ const APPS = {
   required: ['apps']
 };
 
+const META_DATA = {
+  type: 'object',
+  properties: {
+    meta_data: {
+      type: 'object',
+      patternProperties: {
+        '.+': {type: 'string'}
+      },
+      minProperties: 0
+    }
+  },
+  additionalProperties: false,
+  required: ['meta_data']
+};
+
 function wrapValidator(schema, key) {
   return (value) => {
     const validator = tv4.freshApi();
@@ -53,3 +68,4 @@ function wrapValidator(schema, key) {
 
 module.exports.tagsValidator = wrapValidator(TAGS, 'tags');
 module.exports.appsValidator = wrapValidator(APPS, 'apps');
+module.exports.metaValidator = wrapValidator(META_DATA, 'meta_data');

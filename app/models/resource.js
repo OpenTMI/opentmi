@@ -7,7 +7,7 @@ const QueryPlugin = require('mongoose-query');
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
 const validators = require('../tools/validators');
 // Implementation
-const {tagsValidator, appsValidator} = validators;
+const {tagsValidator, appsValidator, metaValidator} = validators;
 const {Schema} = mongoose;
 const {Types} = Schema;
 const {ObjectId} = Types;
@@ -133,6 +133,9 @@ const ResourceSchema = new Schema({
     postcode: {type: String},
     room: {type: String, default: 'unknown'},
     subRoom: {type: String},
+    rack: {type: String},
+    bed: {type: String},
+    slot: {type: String},
     geo: {type: [Number], index: '2d'}
   },
   tags: {
@@ -160,7 +163,14 @@ const ResourceSchema = new Schema({
       type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
       sn: {type: String},
       mac: {type: String}
-    }]
+    }],
+    meta_data: {
+      type: Types.Mixed,
+      validate: {
+        validator: metaValidator,
+        message: '{VALUE} is not a valid meta_data configuration!'
+      }
+    }
   },
   installed: {
     os: {
@@ -175,6 +185,9 @@ const ResourceSchema = new Schema({
       }
     }
   },
+  shield: {
+    rf: {type: Boolean} // RF shielded resource (rack/)
+  },
   /*
   configurations: {
     defaults: {
@@ -185,9 +198,6 @@ const ResourceSchema = new Schema({
         path: [{type: String}]
       }
     }
-  },
-  shield: {
-      rf: { type: Boolean }, // RF shield rack
   },
   app: [{
       type: {type: String, enum: ['application', 'plugin','library']},  // optional
@@ -230,6 +240,36 @@ ResourceSchema.plugin(ResourceAllocationPlugin);
  * - validations
  * - virtuals
  */
+
+
+async function linkItem(resource) {
+  const Item = mongoose.model('Item');
+  const item = await Item
+      .findOne({name: resource.item.model})
+      .exec();
+  if (!item) return;
+  resource.item.ref = item._id; // eslint-disable-line no-param-reassign
+  if (!_.has(item.unique_resources, resource._id)) {
+    if (!item.unique_resources) item.unique_resources = [];
+    item.unique_resources.push(resource._id);
+    await item.save();
+  }
+}
+
+async function preSave(next) {
+  try {
+    // Link related objects
+    await linkItem(this);
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+ResourceSchema.pre('save', preSave);
+
+
 
 /**
  * Methods
