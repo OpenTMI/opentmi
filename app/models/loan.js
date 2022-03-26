@@ -177,7 +177,10 @@ LoanSchema.methods.pushIdsToItemsArray = function pushIds() {
   self.items = [];
 
   for (let i = 0; i < copyItems.length; i += 1) {
-    self.items.push({item: copyItems[i].item});
+    self.items.push({
+      item: copyItems[i].item,
+      resource: copyItems[i].resource
+    });
   }
 };
 
