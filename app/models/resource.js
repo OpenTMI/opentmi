@@ -32,6 +32,7 @@ const ResourceSchema = new Schema({
     model: {type: String},
     ref: {type: ObjectId, ref: 'Item'}
   },
+  barcode: {type: String, unique: true, sparse: true},
   status: {
     value: {
       type: String,
