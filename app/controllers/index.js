@@ -34,7 +34,20 @@ class DefaultController extends EventEmitter {
     logger.silly(`Register model middleware for ${this.modelName}`);
     const find = this._getModelParamQuery(req);
     logger.debug(`find document by ${JSON.stringify(find)} (model: ${this.modelName})`);
-    return this.Model.findOne(find)
+    const select = _.get(req, 'query.f', undefined);
+    const timeout = parseInt(_.get(req, 'query.to', '5000'), 10);
+    let populate = _.get(req, 'query.p', undefined);
+    if (populate && populate[0] === '{') {
+      try {
+        populate = JSON.parse(populate);
+      } catch (err) {
+        const error = new Error(`populate json was incorrect ${err.message}`);
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+    return this.Model.findOne(find, select, {maxTimeMS: timeout})
+      .populate(populate)
       .then((data) => {
         if (!data) {
           const error = new Error(`Document not found (${find})`);
