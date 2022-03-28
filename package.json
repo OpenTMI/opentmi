@@ -52,7 +52,7 @@
     "cookie-session": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "express-jwt": "^6.0.0",
+    "express-jwt": "^6.1.1",
     "express-session": "^1.17.2",
     "express-winston": "^4.0.5",
     "farmhash": "^3.2.2",
