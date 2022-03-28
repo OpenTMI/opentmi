@@ -54,6 +54,9 @@ class LoansController extends DefaultController {
     for (let i = 0; i < req.body.items.length; i += 1) {
       for (let j = 0; j < req.Loan.items.length; j += 1) {
         if (req.body.items[i]._id.toString() === req.Loan.items[j]._id.toString()) {
+          if (req.Loan.items[j].return_date) {
+            return next(new Error('item already returned'));
+          }
           req.Loan.items[j].return_date = req.body.items[i].return_date;
           break;
         }

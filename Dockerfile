@@ -18,11 +18,11 @@ COPY app ./app
 ## ---- UI ----
 FROM base AS ui
 WORKDIR /app
-RUN git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git .
-RUN npm install
-RUN NODE_ENV=production npm run build:prod
-
-RUN rm -r node_modules
+RUN git config --global url."https://github.com/".insteadOf git://github.com/ \
+  && git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git . \
+  && npm ci \
+  && NODE_ENV=production npm run build:prod \
+  && rm -r node_modules
 
 # --- Release with Alpine ----
 FROM node:14-alpine AS release
