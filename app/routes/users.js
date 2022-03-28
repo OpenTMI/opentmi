@@ -17,7 +17,6 @@ const User = mongoose.model('User');
 const userController = new UserController();
 const authController = new AuthController();
 
-
 function createDefaultAdmin() {
   logger.info('Create default admin accounts');
   const admin = new User();

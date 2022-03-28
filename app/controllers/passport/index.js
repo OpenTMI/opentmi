@@ -39,12 +39,13 @@ passport.deserializeUser((id, done) => {
   User.findById(id)
     .then((user) => {
       if (user) {
-        return user.update({loggedIn: false});
+        return user.updateOne({loggedIn: false})
+          .then(() => user);
       }
       logger.warn(`deserialize user that does not found with id: ${id.toString()}`);
       return Promise.resolve();
     })
-    .then(() => done(null, id))
+    .then(user => done(null, user))
     .catch(done);
 });
 
