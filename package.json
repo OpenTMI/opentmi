@@ -25,6 +25,7 @@
   },
   "scripts": {
     "start": "node app/index.js",
+    "healthcheck": "node app/tools/healthcheck.js",
     "cluster": "node app/cluster.js",
     "debug": "node --inspect index.js",
     "debug-cluster": "node --inspect app/cluster.js",
