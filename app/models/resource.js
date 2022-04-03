@@ -4,6 +4,7 @@ const _ = require('lodash');
 const QueryPlugin = require('mongoose-query');
 
 // application modules
+const logger = require('../tools/logger');
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
 const validators = require('../tools/validators');
 // Implementation
@@ -95,11 +96,6 @@ const ResourceSchema = new Schema({
     },
     group: {
       type: String,
-      enum: [
-        'global',
-        'department',
-        'unknown'
-      ],
       default: 'unknown'
     },
     automation: {
@@ -156,7 +152,10 @@ const ResourceSchema = new Schema({
       index: true,
       unique: true,
       sparse: true,
-      required: () => (_.findIndex(['dut', 'instrument'], this.type) >= 0)
+      required: function () {
+        const typesWhenRequired = ['dut', 'instrument'];
+        return _.includes(this.type, typesWhenRequired);
+      }
     }, // ue PSN
     imei: {type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
     hwid: {type: String},
@@ -241,7 +240,9 @@ ResourceSchema.plugin(ResourceAllocationPlugin);
  * - validations
  * - virtuals
  */
-
+ResourceSchema.path('childs').validate(function validate(items) {
+  return ensureUniqueItems(items);
+});
 
 async function linkItem(resource) {
   const Item = mongoose.model('Item');
@@ -260,11 +261,38 @@ async function linkItem(resource) {
     await item.save();
   }
 }
+async function ensureUniqueItems(list) {
+  const childs = new Set();
+  list.forEach(child =>
+    childs.add(child.toString())
+  );
+  if (childs.size !== list.length) {
+    throw new Error('there is duplicate childs');
+  }
+}
+async function linkParent(doc) {
+  logger.debug(`linkParent(${doc._id}) childs: ${doc.childs}`);
+  const Resource = mongoose.model('Resource');
+  const parent = await Resource.findById(doc.parent, '_id').exec();
+  if (!parent) {
+    throw new Error('parent not found');
+  }
 
+  const updateOpts = {runValidators: true, useFindAndModify: true};
+  await Resource.findOneAndUpdate(
+    {_id: parent._id},
+    {$addToSet: {childs: doc}},
+    updateOpts);
+
+}
 async function preSave(next) {
   try {
     // Link related objects
     await linkItem(this);
+    await ensureUniqueItems(this.childs);
+    if (this.parent) {
+      await linkParent(this);
+    }
     next();
   } catch (error) {
     next(error);
@@ -293,6 +321,7 @@ ResourceSchema.method({
     };
     loop(null, this);
   }
+
 });
 
 /**
