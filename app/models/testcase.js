@@ -209,7 +209,7 @@ TestCaseSchema.method({
   },
   getPrev(next) {
     if (this.ver.prev) {
-      this.populate(this.ver.prev).exec(next);
+      this.populate(this.ver.prev, next);
     } else {
       next('no previous version');
     }

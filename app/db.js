@@ -28,12 +28,10 @@ const connect = async function () {
     logger: logger.info.bind(logger),
     promiseLibrary: Promise,
     useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true
+    useUnifiedTopology: true
   };
   const overwritable = {
     appname: 'opentmi',
-    validateOptions: true,
     loggerLevel: 'info'
   };
   const options = _.merge(overwritable, dbOptions, must);

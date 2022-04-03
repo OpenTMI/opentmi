@@ -78,7 +78,7 @@ GroupSchema.methods.addUser = function addUser(email, next) {
 
 GroupSchema.static({
   getUsers(group, next) {
-    this.findOne({name: group}).select('users').populate('users').exec(
+    this.findOne({name: group}).populate('users', 'users',
       (error, docs) => {
         if (error) return next(error);
         if (docs) return next(error, docs.users);

@@ -73,8 +73,7 @@ class LoansController extends DefaultController {
 
   findUsersLoans(req, res) {
     this.Model.find({loaner: req.user._id})
-      .populate('items.item')
-      .exec((err, loans) => {
+      .populate('items.item', (err, loans) => {
         if (err) {
           logger.warn(err.message);
           return res.status(500).json({error: err.message});

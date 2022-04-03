@@ -151,7 +151,6 @@ UserSchema.methods.saltPassword = function saltPassword(password) {
 UserSchema.methods.isAdmin = function isAdmin() {
   return this
     .populate('groups')
-    .execPopulate()
     .then((populatedUser) => {
       const admins = populatedUser.groups.find(g => g.name === 'admins');
       return !!admins;
@@ -279,9 +278,7 @@ UserSchema.static({
   load(options, next) {
     const editedOptions = options;
     editedOptions.select = options.select || 'name username';
-    this.findOne(editedOptions.criteria)
-      .select(editedOptions.select)
-      .exec(next);
+    this.findOne(editedOptions.criteria).select(editedOptions.select).exec(next);
   },
 
   admins(next) {
@@ -294,7 +291,7 @@ UserSchema.static({
   },
 
   getApiKeys(user, next) {
-    this.findOne({_id: user}).populate('apikeys').exec((error, doc) => {
+    this.findOne({_id: user}).populate('apikeys', (error, doc) => {
       if (error) {
         return next(error);
       }
