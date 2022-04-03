@@ -240,6 +240,15 @@ ResourceSchema.plugin(ResourceAllocationPlugin);
  * - validations
  * - virtuals
  */
+async function ensureUniqueItems(list) {
+  const childs = new Set();
+  list.forEach(child =>
+    childs.add(child.toString())
+  );
+  if (childs.size !== list.length) {
+    throw new Error('there is duplicate childs');
+  }
+}
 ResourceSchema.path('childs').validate(function validate(items) {
   return ensureUniqueItems(items);
 });
@@ -261,15 +270,6 @@ async function linkItem(resource) {
     await item.save();
   }
 }
-async function ensureUniqueItems(list) {
-  const childs = new Set();
-  list.forEach(child =>
-    childs.add(child.toString())
-  );
-  if (childs.size !== list.length) {
-    throw new Error('there is duplicate childs');
-  }
-}
 async function linkParent(doc) {
   logger.debug(`linkParent(${doc._id}) childs: ${doc.childs}`);
   const Resource = mongoose.model('Resource');
@@ -283,7 +283,6 @@ async function linkParent(doc) {
     {_id: parent._id},
     {$addToSet: {childs: doc}},
     updateOpts);
-
 }
 async function preSave(next) {
   try {
