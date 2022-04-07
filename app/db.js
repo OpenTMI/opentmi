@@ -16,8 +16,8 @@ let tearingDown = false;
 
 const initialize = async function () {
   if (dbUrl === 'inmemory') {
-    mongoServer = new MongoMemoryServer();
-    dbUrl = await mongoServer.getUri();
+    mongoServer = await MongoMemoryServer.create();
+    dbUrl = mongoServer.getUri();
     logger.info(`use inmemory db: ${dbUrl}`);
     config.set('db', dbUrl);
   }
