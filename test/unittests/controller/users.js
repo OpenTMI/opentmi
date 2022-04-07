@@ -57,7 +57,7 @@ describe('controllers/users', function () {
       it('updateSettings', function () {
         const req = newRequest({user: 'data'}, {Namespace: 'name'});
         req.user = {update: sinon.stub()};
-        const resp = _.merge({}, req.body, {nModified: 1});
+        const resp = _.merge({}, req.body, {modifiedCount: 1});
         req.user.update.resolves(resp);
         return controller.updateSettings(req, res)
           .then(() => {
@@ -68,7 +68,7 @@ describe('controllers/users', function () {
       it('updateSettings, already reported', function () {
         const req = newRequest({user: 'data'}, {Namespace: 'name'});
         req.user = {update: sinon.stub()};
-        const resp = _.merge({}, req.body, {nModified: 0});
+        const resp = _.merge({}, req.body, {modifiedCount: 0});
         req.user.update.resolves(resp);
         return controller.updateSettings(req, res)
           .then(() => {
@@ -109,7 +109,7 @@ describe('controllers/users', function () {
       it('deleteSettings, exists', function () {
         const req = newRequest({}, {Namespace: 'name'});
         req.user = {update: sinon.stub()};
-        const resp = _.merge({}, req.body, {nModified: 1});
+        const resp = _.merge({}, req.body, {modifiedCount: 1});
         req.user.update.resolves(resp);
         return controller.deleteSettings(req, res)
           .then(() => {
@@ -120,7 +120,7 @@ describe('controllers/users', function () {
       it('deleteSettings, not exists', function () {
         const req = newRequest({}, {Namespace: 'name'});
         req.user = {update: sinon.stub()};
-        const resp = _.merge({}, req.body, {nModified: 0});
+        const resp = _.merge({}, req.body, {modifiedCount: 0});
         req.user.update.resolves(resp);
         return controller.deleteSettings(req, res)
           .then(() => {

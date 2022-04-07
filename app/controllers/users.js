@@ -35,7 +35,7 @@ class UsersController extends DefaultController {
     doc.$unset[`settings.${namespace}`] = 1;
     return req.user.update(doc)
       .then((resp) => {
-        if (resp.nModified === 1) {
+        if (resp.modifiedCount === 1) {
           res.json({});
         } else {
           res.status(404).json({error: resp.message});
