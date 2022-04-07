@@ -164,7 +164,7 @@ describe('controllers/users', function () {
           set resetPasswordToken(value) { resetPasswordToken(value); },
           set resetPasswordExpires(value) { resetPasswordExpires(value); }
         };
-        controller.Model.findOne = sinon.stub().resolves();
+        sinon.stub(controller.Model, 'findOne').resolves();
         return controller.forgotPassword(req, res)
           .then(() => {
             expect(controller.Model.findOne.calledOnceWith({email: 'my@mail.com'})).to.be.true;
@@ -174,6 +174,7 @@ describe('controllers/users', function () {
             expect(UsersController._notifyPasswordToken.calledOnce).to.be.false;
             expect(res.status.calledOnceWith(400)).to.be.true;
             expect(res.json.getCall(0).args[0]).to.be.an('object');
+            controller.Model.findOne.restore();
           });
       });
       it('forgotPassword email not exists', function () {
@@ -186,7 +187,7 @@ describe('controllers/users', function () {
           set resetPasswordToken(value) { resetPasswordToken(value); },
           set resetPasswordExpires(value) { resetPasswordExpires(value); }
         };
-        controller.Model.findOne = sinon.stub().resolves();
+        sinon.stub(controller.Model, 'findOne').resolves(user);
         return controller.forgotPassword(req, res)
           .then(() => {
             expect(controller.Model.findOne.called).to.be.false;
@@ -196,6 +197,7 @@ describe('controllers/users', function () {
             expect(user.save.called).to.be.false;
             expect(res.status.calledOnceWith(400)).to.be.true;
             expect(res.json.getCall(0).args[0]).to.be.an('object');
+            controller.Model.findOne.restore();
           });
       });
       it('changePassword', function () {
@@ -209,7 +211,7 @@ describe('controllers/users', function () {
           set resetPasswordToken(value) { resetPasswordToken(value); },
           set resetPasswordExpires(value) { resetPasswordExpires(value); }
         };
-        controller.Model.findOne = sinon.stub().resolves(user);
+        sinon.stub(controller.Model, 'findOne').resolves(user);
         return controller.forgotPassword(reqForget, res)
           .then(() => {
             const token = resetPasswordToken.getCall(0).args[0];
@@ -221,6 +223,7 @@ describe('controllers/users', function () {
             expect(user.save.callCount).to.be.equal(1);
             expect(res.status.calledOnceWith(200)).to.be.true;
             expect(res.json.getCall(0).args[0]).to.be.an('object');
+            controller.Model.findOne.restore();
           });
       });
 
@@ -235,7 +238,7 @@ describe('controllers/users', function () {
           set resetPasswordToken(value) { resetPasswordToken(value); },
           set resetPasswordExpires(value) { resetPasswordExpires(value); }
         };
-        controller.Model.findOne = sinon.stub().resolves();
+        sinon.stub(controller.Model, 'findOne').resolves();
         return controller.forgotPassword(reqForget, res)
           .then(() => {
             const reqChange = newRequest({token: '123', password: 'newPass'});
@@ -246,6 +249,7 @@ describe('controllers/users', function () {
             expect(user.save.callCount).to.be.equal(0);
             expect(res.status.calledOnceWith(400)).to.be.true;
             expect(res.json.getCall(0).args[0]).to.be.an('object');
+            controller.Model.findOne.restore();
           });
       });
       it('changePassword without token', function () {
@@ -259,7 +263,7 @@ describe('controllers/users', function () {
           set resetPasswordToken(value) { resetPasswordToken(value); },
           set resetPasswordExpires(value) { resetPasswordExpires(value); }
         };
-        controller.Model.findOne = sinon.stub().resolves();
+        sinon.stub(controller.Model, 'findOne').resolves();
         return controller.forgotPassword(reqForget, res)
           .then(() => {
             const reqChange = newRequest({password: 'newPass'});
@@ -270,6 +274,7 @@ describe('controllers/users', function () {
             expect(user.save.callCount).to.be.equal(0);
             expect(res.status.calledOnceWith(400)).to.be.true;
             expect(res.json.getCall(0).args[0]).to.be.an('object');
+            controller.Model.findOne.restore();
           });
       });
     });
@@ -310,7 +315,7 @@ describe('controllers/users', function () {
         .then(user => user.addToGroup('admins'))
         .then(user => user.removeFromGroup('admins'));
     });
-    it.skip('do not duplicate users in same group', function () {
+    it('do not duplicate users in same group', function () {
       const admins = new Group({name: 'admins'});
       return admins.save()
         .then(() => {
