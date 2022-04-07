@@ -17,7 +17,7 @@ services:
     depends_on:
       - mongo
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      test: ["CMD", "npm", "run", "healthcheck"]
       interval: 1m30s
       timeout: 5s
       retries: 3

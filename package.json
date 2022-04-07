@@ -25,6 +25,7 @@
   },
   "scripts": {
     "start": "node app/index.js",
+    "healthcheck": "node app/tools/healthcheck.js",
     "cluster": "node app/cluster.js",
     "debug": "node --inspect index.js",
     "debug-cluster": "node --inspect app/cluster.js",
@@ -64,7 +65,7 @@
     "lodash": "^4.17.21",
     "method-override": "^3.0.0",
     "mime": "^2.6.0",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "mongodb-memory-server": "^8.4.2",
     "mongoose": "^6.2.9",
     "mongoose-query": "^0.7.4",
