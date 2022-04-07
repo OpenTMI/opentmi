@@ -157,6 +157,7 @@ describe('Users', function () {
     });
 
     afterEach('cleanup user', function () {
+      console.log('cleanup user..')
       if (createdUser) {
         const user = createdUser;
         createdUser = undefined;
