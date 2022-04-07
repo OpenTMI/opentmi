@@ -203,6 +203,10 @@ ResultSchema
     if (!this.exec.duts) {
       this.exec.duts = [];
     }
+    if (obj.count === this.exec.duts.length) {
+      // expect that duts array holds same data than what dut object contains
+      return;
+    }
     this.exec.duts.push(obj);
   });
 
