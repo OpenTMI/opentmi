@@ -140,8 +140,7 @@ describe('controllers/users', function () {
           set resetPasswordToken(value) { resetPasswordToken(value); },
           set resetPasswordExpires(value) { resetPasswordExpires(value); }
         };
-        const findOne = controller.Model.findOne
-        controller.Model.findOne = sinon.stub().resolves(user);
+        sinon.stub(controller.Model, 'findOne').resolves(user);
         return controller.forgotPassword(req, res)
           .then(() => {
             expect(controller.Model.findOne.calledOnceWith({email: 'my@mail.com'})).to.be.true;
@@ -151,7 +150,7 @@ describe('controllers/users', function () {
             expect(UsersController._notifyPasswordToken.calledOnce).to.be.true;
             expect(res.status.calledOnceWith(200)).to.be.true;
             expect(res.json.getCall(0).args[0]).to.be.an('object');
-            controller.Model.findOne = findOne
+            controller.Model.findOne.restore();
           });
       });
       it('forgotPassword invalid email', function () {
