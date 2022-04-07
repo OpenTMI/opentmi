@@ -63,7 +63,7 @@ class UsersController extends DefaultController {
     doc[`settings.${namespace}`] = req.body;
     return req.user.update(doc)
       .then((resp) => {
-        if (!resp.nModified) {
+        if (!resp.modifiedCount) {
           res.status(208);
         }
         res.json(req.body);

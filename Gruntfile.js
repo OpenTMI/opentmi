@@ -48,7 +48,7 @@ const gruntConfig = {
   },
   simplemocha: {
     options: {
-      reporter: 'json',
+      reporter: 'spec',
       timeout: 120000,
       ignoreLeaks: false
     },

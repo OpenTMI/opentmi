@@ -53,7 +53,7 @@ describe('Users', function () {
     done();
   });
 
-  it('should add a SINGLE user on /users POST', function (done) {
+  beforeEach('should add a SINGLE user on /users POST', function (done) {
     const body = {
       name: 'Test User',
       email: 'testuser@fakemail.se',
@@ -83,6 +83,18 @@ describe('Users', function () {
         expect(res.body).to.have.ownProperty('loggedIn');
         expect(res.body).to.have.ownProperty('lastVisited');
         expect(res.body).to.have.ownProperty('registered');
+        done();
+      });
+  });
+  afterEach(function (done) {
+    if (!newUserId) {
+      done();
+      return;
+    }
+    superagent.del(`${api}/users/${newUserId}`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(res.status).to.equal(200);
         done();
       });
   });
