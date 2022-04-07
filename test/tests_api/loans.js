@@ -241,9 +241,8 @@ describe('Loans', function () {
       .set('authorization', authString)
       .send(body)
       .end(function (error, res) {
-        console.log(error)
-        expect(error).to.equal(null);
-        console.log(res)
+        console.log(error, res)
+        expect(error).to.not.equal(null);
         expectResult(res, 400, undefined);
         done();
       });
