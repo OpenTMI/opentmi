@@ -9,8 +9,8 @@ const opts = {useNewUrlParser: true}; // remove this option if you use mongoose 
 
 
 async function setup() {
-  mongoServer = new MongoMemoryServer();
-  const mongoUri = await mongoServer.getUri();
+  mongoServer = await MongoMemoryServer.create();
+  const mongoUri = mongoServer.getUri();
   await mongoose.connect(mongoUri, opts);
 }
 
