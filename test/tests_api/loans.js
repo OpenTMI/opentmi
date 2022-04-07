@@ -235,12 +235,13 @@ describe('Loans', function () {
 
   it('should not accept item without _id field when adding return_date to item on PUT', function (done) {
     const body = {items: cloneObject(validLoanBody.items)};
-    delete body.items[0].item;
+    delete body.items[0]._id;
 
     superagent.put(`${api}/loans/${testLoanId}`)
       .set('authorization', authString)
       .send(body)
       .end(function (error, res) {
+        console.log(error)
         expect(error).to.equal(null);
         console.log(res)
         expectResult(res, 400, undefined);
