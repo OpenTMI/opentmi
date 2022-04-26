@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:14-stretch AS base
+FROM node:14-bullseye AS base
 
 # ---- Dependencies ----
 FROM base AS dependencies
