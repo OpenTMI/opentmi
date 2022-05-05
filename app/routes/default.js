@@ -3,25 +3,26 @@ const express = require('express');
 
 function Route(app) {
   const api = express();
-  const api_v0 = express(); // eslint-disable-line camelcase
+  const apiV0 = express();
   app.use('/api', api);
-  api.use('/v0', api_v0);
+  api.use('/v0', apiV0);
 
   api.get('/', (req, res) => {
     res.json({
       name: app.get('name'),
       mode: process.env.NODE_ENV ? process.env.NODE_ENV : 'development',
+      version: res.locals.pkg.version,
       // listenscope: nconf.get('host'),
       hostname: req.hostname,
       isMaster: cluster.isMaster
     });
   });
 
-  api_v0.get('/', (req, res) => {
+  apiV0.get('/', (req, res) => {
     res.json({apiVersion: 'v0'});
   });
 
-  api_v0.get('/routes.:format?', (req, res) => {
+  apiV0.get('/routes.:format?', (req, res) => {
     const routes = [];
     app._router.stack.forEach((item) => {
       if (item.route && item.route.path) {
