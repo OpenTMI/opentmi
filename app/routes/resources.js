@@ -30,7 +30,7 @@ function Route(app) {
     .delete(controller.remove.bind(controller));
 
   router.route('/api/v0/resources/:Resource/alloc')
-    .put(ResourceController.alloc);
+    .put(ResourceController.alloc.bind(controller));
 
   router.route('/api/v0/resources/:Resource/release')
     .put(ResourceController.release);
