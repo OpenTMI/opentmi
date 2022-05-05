@@ -110,6 +110,48 @@ LoanSchema.pre('save', function preSave(next) {
   next();
 });
 
+
+// ensure resource is loaned only once
+async function ensureResourceExists(item) {
+  if (!item.resource) {
+    // if resource is not given assume there is no unique resource for this loan
+    return;
+  }
+  if (typeof item.return_date !== 'undefined') {
+    // don't care because item already returned
+    return;
+  }
+  logger.debug(`Ensure that item ${item.item} has valid resource ${item.resource}`);
+  const Loan = mongoose.model('Loan');
+  const Resource = mongoose.model('Resource');
+  const res = await Resource.findOne({_id: item.resource})
+    .select('_id')
+    .exec();
+  if (!res) {
+    throw new Error(`Resource ${res.name} not exists!`);
+  }
+
+  // exists, check it's not loaned already
+  const loans = await Loan.find({items: {$elemMatch: {
+    resource: res._id,
+    return_date: {$exists: false}
+  }}}).exec();
+  if (loans.length > 0) {
+    throw new Error(`resource ${res.name} already loaned!`);
+  }
+}
+LoanSchema.pre('save', async function preSave() {
+  logger.info('ensure only one resource is loaned at time');
+  try {
+    // ensures all resources exists
+    await async.eachOfSeries(this.items, ensureResourceExists);
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+});
+
+
 // Takes care of decreasing availability of items before loaning
 LoanSchema.pre('save', function preSave(next) {
   logger.info('Loan second pre-save hook started');
@@ -157,7 +199,7 @@ LoanSchema.methods.extractItemIds = function extractIds() {
   return objectToArrayOfObjects(counts);
 };
 LoanSchema.methods.ensureAvailability = function ensureAvailability(itemCounts, next) {
-  logger.info('Ensuring item availablities');
+  logger.info('Ensuring item availabilities');
 
   // Ensure that there is enough items to loan
   async.eachSeries(itemCounts, ensureItemAvailability, (error) => {
@@ -177,7 +219,10 @@ LoanSchema.methods.pushIdsToItemsArray = function pushIds() {
   self.items = [];
 
   for (let i = 0; i < copyItems.length; i += 1) {
-    self.items.push({item: copyItems[i].item});
+    self.items.push({
+      item: copyItems[i].item,
+      resource: copyItems[i].resource
+    });
   }
 };
 

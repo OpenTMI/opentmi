@@ -32,7 +32,8 @@ describe('controllers/resources.js', function () {
     const req = newRequest({}, {Resource: '123'});
     const res = newResponse();
     const resource = {a: 1};
-    sinon.stub(controller._model, 'findOne').resolves(resource);
+    sinon.stub(controller._model, 'findOne').returns(controller._model);
+    sinon.stub(controller._model, 'populate').resolves(resource);
     return controller.modelParam(req, res, next)
       .then(() => {
         expect(next.called).to.be.true;

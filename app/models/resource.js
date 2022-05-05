@@ -4,10 +4,11 @@ const _ = require('lodash');
 const QueryPlugin = require('mongoose-query');
 
 // application modules
+const logger = require('../tools/logger');
 const ResourceAllocationPlugin = require('./plugins/resource-allocator');
 const validators = require('../tools/validators');
 // Implementation
-const {tagsValidator, appsValidator} = validators;
+const {tagsValidator, appsValidator, metaValidator} = validators;
 const {Schema} = mongoose;
 const {Types} = Schema;
 const {ObjectId} = Types;
@@ -32,6 +33,7 @@ const ResourceSchema = new Schema({
     model: {type: String},
     ref: {type: ObjectId, ref: 'Item'}
   },
+  barcode: {type: String, unique: true, sparse: true},
   status: {
     value: {
       type: String,
@@ -94,11 +96,6 @@ const ResourceSchema = new Schema({
     },
     group: {
       type: String,
-      enum: [
-        'global',
-        'department',
-        'unknown'
-      ],
       default: 'unknown'
     },
     automation: {
@@ -133,6 +130,9 @@ const ResourceSchema = new Schema({
     postcode: {type: String},
     room: {type: String, default: 'unknown'},
     subRoom: {type: String},
+    rack: {type: String},
+    bed: {type: String},
+    slot: {type: String},
     geo: {type: [Number], index: '2d'}
   },
   tags: {
@@ -152,7 +152,10 @@ const ResourceSchema = new Schema({
       index: true,
       unique: true,
       sparse: true,
-      required: () => (_.findIndex(['dut', 'instrument'], this.type) >= 0)
+      required: function () {
+        const typesWhenRequired = ['dut', 'instrument'];
+        return _.includes(this.type, typesWhenRequired);
+      }
     }, // ue PSN
     imei: {type: String, match: [/[\d]{15}/, 'Invalid IMEI ({VALUE})']},
     hwid: {type: String},
@@ -160,7 +163,14 @@ const ResourceSchema = new Schema({
       type: {type: String, required: true, enum: ['wlan', 'bluetooth', 'modem']},
       sn: {type: String},
       mac: {type: String}
-    }]
+    }],
+    meta_data: {
+      type: Types.Mixed,
+      validate: {
+        validator: metaValidator,
+        message: '{VALUE} is not a valid meta_data configuration!'
+      }
+    }
   },
   installed: {
     os: {
@@ -175,6 +185,9 @@ const ResourceSchema = new Schema({
       }
     }
   },
+  shield: {
+    rf: {type: Boolean} // RF shielded resource
+  },
   /*
   configurations: {
     defaults: {
@@ -185,9 +198,6 @@ const ResourceSchema = new Schema({
         path: [{type: String}]
       }
     }
-  },
-  shield: {
-      rf: { type: Boolean }, // RF shield rack
   },
   app: [{
       type: {type: String, enum: ['application', 'plugin','library']},  // optional
@@ -230,6 +240,66 @@ ResourceSchema.plugin(ResourceAllocationPlugin);
  * - validations
  * - virtuals
  */
+async function ensureUniqueItems(list) {
+  const childs = new Set();
+  list.forEach(child =>
+    childs.add(child.toString())
+  );
+  if (childs.size !== list.length) {
+    throw new Error('there is duplicate childs');
+  }
+}
+ResourceSchema.path('childs').validate(function validate(items) {
+  return ensureUniqueItems(items);
+});
+
+async function linkItem(resource) {
+  const Item = mongoose.model('Item');
+  const item = await Item
+    .findOne({name: resource.item.model})
+    .exec();
+  if (!item) return;
+
+  // link item to resource object
+  resource.item.ref = item._id; // eslint-disable-line no-param-reassign
+
+  // link resource to item
+  if (!_.has(item.unique_resources, resource._id)) {
+    if (!item.unique_resources) item.unique_resources = [];
+    item.unique_resources.push(resource._id);
+    await item.save();
+  }
+}
+async function linkParent(doc) {
+  logger.debug(`linkParent(${doc._id}) childs: ${doc.childs}`);
+  const Resource = mongoose.model('Resource');
+  const parent = await Resource.findById(doc.parent, '_id').exec();
+  if (!parent) {
+    throw new Error('parent not found');
+  }
+
+  const updateOpts = {runValidators: true, useFindAndModify: true};
+  await Resource.findOneAndUpdate(
+    {_id: parent._id},
+    {$addToSet: {childs: doc}},
+    updateOpts);
+}
+async function preSave(next) {
+  try {
+    // Link related objects
+    await linkItem(this);
+    await ensureUniqueItems(this.childs);
+    if (this.parent) {
+      await linkParent(this);
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
+ResourceSchema.pre('save', preSave);
+
 
 /**
  * Methods
@@ -250,6 +320,7 @@ ResourceSchema.method({
     };
     loop(null, this);
   }
+
 });
 
 /**
