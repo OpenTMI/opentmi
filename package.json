@@ -95,7 +95,7 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "coveralls": "^3.0.9",
+    "coveralls": "^3.1.1",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-chai-expect": "^3.0.0",
