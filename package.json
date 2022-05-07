@@ -48,7 +48,7 @@
     "colors": "^1.4.0",
     "compression": "^1.7.4",
     "connect-busboy": "0.0.2",
-    "connect-mongo": "^3.2.0",
+    "connect-mongo": "^4.6.0",
     "cookie-parser": "^1.4.6",
     "cookie-session": "^1.4.0",
     "cors": "^2.8.5",
