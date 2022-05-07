@@ -28,7 +28,8 @@ const ResourceSchema = new Schema({
       'accessories',
       'computer',
       'room'
-    ]},
+    ]
+  },
   item: {
     model: {type: String},
     ref: {type: ObjectId, ref: 'Item'}
@@ -242,9 +243,7 @@ ResourceSchema.plugin(ResourceAllocationPlugin);
  */
 async function ensureUniqueItems(list) {
   const childs = new Set();
-  list.forEach(child =>
-    childs.add(child.toString())
-  );
+  list.forEach((child) => childs.add(child.toString()));
   if (childs.size !== list.length) {
     throw new Error('there is duplicate childs');
   }
@@ -282,7 +281,8 @@ async function linkParent(doc) {
   await Resource.findOneAndUpdate(
     {_id: parent._id},
     {$addToSet: {childs: doc}},
-    updateOpts);
+    updateOpts
+  );
 }
 async function preSave(next) {
   try {
@@ -299,7 +299,6 @@ async function preSave(next) {
 }
 
 ResourceSchema.pre('save', preSave);
-
 
 /**
  * Methods

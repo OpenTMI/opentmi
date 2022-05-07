@@ -3,7 +3,6 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const {MongoMemoryServer} = require('mongodb-memory-server');
 
-
 const logger = require('./tools/logger');
 const config = require('./tools/config');
 

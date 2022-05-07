@@ -2,9 +2,8 @@
 const express = require('express');
 
 // Application modules
-const SchemaController = require('./../controllers/schemas');
+const SchemaController = require('../controllers/schemas');
 const {requireAuth} = require('./middlewares/authorization');
-
 
 function Route(app) {
   const router = express.Router();

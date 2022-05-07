@@ -158,7 +158,6 @@ async function linkTestcase(result) {
   }
 }
 
-
 async function storeFile(file, i) {
   file.prepareDataForStorage(i);
 
@@ -166,7 +165,7 @@ async function storeFile(file, i) {
   if (fileProvider === 'mongodb') {
     file.keepInMongo(i);
     return Promise.resolve();
-  } else if (fileProvider) {
+  } if (fileProvider) {
     return file.storeInFiledb(filedb, i);
   }
   file.dumpData(i);

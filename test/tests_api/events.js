@@ -15,15 +15,13 @@ const {createUserToken, apiV0, testUserId} = require('./tools/helpers');
 // Setup
 logger.level = 'error';
 
-
 describe('Events', function () {
   let authString;
   let createdEvents = [];
   const api = `${apiV0}/events`;
-  const deleteEvent = eventId =>
-    superagent.del(`${api}/${eventId}`)
-      .set('authorization', authString)
-      .end();
+  const deleteEvent = (eventId) => superagent.del(`${api}/${eventId}`)
+    .set('authorization', authString)
+    .end();
 
   // Create fresh DB
   before(function () {
@@ -64,7 +62,7 @@ describe('Events', function () {
       .end();
   });
 
-  const createEvent = payload => superagent.post(api, payload)
+  const createEvent = (payload) => superagent.post(api, payload)
     .set('authorization', authString)
     .end()
     .then((response) => {
@@ -136,7 +134,7 @@ describe('Events', function () {
         return superagent.get(`${apiV0}/events?priority.level=info`)
           .set('authorization', authString)
           .end()
-          .then(response => response.body)
+          .then((response) => response.body)
           .then((body) => {
             expect(body.length).to.be.equal(1);
             return body[0];
@@ -170,11 +168,10 @@ describe('Events', function () {
             expect(body.msgid).to.be.equal(msgid);
           });
       };
-      const getEvents = id =>
-        superagent.get(`${apiV0}/resources/${id}/events`)
-          .set('authorization', authString)
-          .end()
-          .then(response => response.body);
+      const getEvents = (id) => superagent.get(`${apiV0}/resources/${id}/events`)
+        .set('authorization', authString)
+        .end()
+        .then((response) => response.body);
       return Promise.all([
         create('1995-12-17T00:00:00Z', 'ALLOCATED'),
         create('1995-12-17T00:00:01Z', 'RELEASED')
@@ -208,11 +205,10 @@ describe('Events', function () {
             expect(body.msgid).to.be.equal(msgid);
           });
       };
-      const getStatistics = () =>
-        superagent.get(`${apiV0}/resources/${resourceId}/statistics`)
-          .set('authorization', authString)
-          .end()
-          .then(response => response.body);
+      const getStatistics = () => superagent.get(`${apiV0}/resources/${resourceId}/statistics`)
+        .set('authorization', authString)
+        .end()
+        .then((response) => response.body);
       return Promise.all([
         create('1995-12-17T00:00:00Z', 'ALLOCATED'),
         create('1995-12-17T00:00:01Z', 'RELEASED')
@@ -245,11 +241,10 @@ describe('Events', function () {
             expect(body.msgid).to.be.equal(msgid);
           });
       };
-      const getUtilization = () =>
-        superagent.get(`${apiV0}/resources/${resourceId}/utilization`)
-          .set('authorization', authString)
-          .end()
-          .then(response => response.body);
+      const getUtilization = () => superagent.get(`${apiV0}/resources/${resourceId}/utilization`)
+        .set('authorization', authString)
+        .end()
+        .then((response) => response.body);
       return Promise.mapSeries([
         create('1995-12-17T00:00:00Z', 'ALLOCATED', '123'),
         create('1995-12-17T01:00:00Z', 'RELEASED', '123'),

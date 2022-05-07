@@ -75,7 +75,9 @@ describe('tools/eventBus', function () {
         clusterForwarded = true;
       };
 
-      eventbus.clusterEventHandler({id: 1}, {type: 'event', name: 'neim', meta: {key: 'value'}, data: ['dota']});
+      eventbus.clusterEventHandler({id: 1}, {
+        type: 'event', name: 'neim', meta: {key: 'value'}, data: ['dota']
+      });
 
       expect(locallyEmitted).to.equal(true, 'event should be emitted locally');
       expect(clusterForwarded).to.equal(true, 'event should be propagated to workers');
@@ -96,7 +98,9 @@ describe('tools/eventBus', function () {
         locallyEmitted = true;
       };
 
-      eventbus.clusterEventHandler({id: 1}, {type: 'event', name: 'neim', meta: {key: 'value'}, data: ['dota']});
+      eventbus.clusterEventHandler({id: 1}, {
+        type: 'event', name: 'neim', meta: {key: 'value'}, data: ['dota']
+      });
 
       expect(locallyEmitted).to.equal(true, 'event should be emitted locally');
       done();
@@ -125,11 +129,15 @@ describe('tools/eventBus', function () {
         clusterForwarded = true;
       };
 
-      eventbus.clusterEventHandler({id: 1}, {type: 'event', name: 'neim', meta: {key: 'value'}, data: ['dota']});
+      eventbus.clusterEventHandler({id: 1}, {
+        type: 'event', name: 'neim', meta: {key: 'value'}, data: ['dota']
+      });
 
       expect(locallyEmitted).to.equal(true, 'event should be emitted locally');
-      expect(clusterForwarded).to.equal(false,
-        'event should not be forwarded in worker processes, that makes little sense');
+      expect(clusterForwarded).to.equal(
+        false,
+        'event should not be forwarded in worker processes, that makes little sense'
+      );
 
       done();
     });

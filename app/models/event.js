@@ -5,7 +5,6 @@ const {Schema} = mongoose;
 const {Types} = Schema;
 const {ObjectId, Mixed} = Types;
 
-
 class MsgIds {
   static list() {
     return [
@@ -18,12 +17,19 @@ class MsgIds {
       MsgIds.FLASHED
     ];
   }
+
   static get ALLOCATED() { return 'ALLOCATED'; }
+
   static get RELEASED() { return 'RELEASED'; }
+
   static get ENTER_MAINTENANCE() { return 'ENTER_MAINTENANCE'; }
+
   static get EXIT_MAINTENANCE() { return 'EXIT_MAINTENANCE'; }
+
   static get CREATED() { return 'CREATED'; }
+
   static get DELETED() { return 'DELETED'; }
+
   static get FLASHED() { return 'FLASHED'; }
 }
 
@@ -40,13 +46,21 @@ class Priorities {
       Priorities.DEBUG
     ];
   }
+
   static get EMERG() { return 'emerg'; }
+
   static get ALERT() { return 'alert'; }
+
   static get CRIT() { return 'crit'; }
+
   static get ERR() { return 'err'; }
+
   static get WARNING() { return 'warning'; }
+
   static get NOTICE() { return 'notice'; }
+
   static get INFO() { return 'info'; }
+
   static get DEBUG() { return 'debug'; }
 }
 
@@ -65,15 +79,25 @@ class Facilities {
       Facilities.TESTCASE
     ];
   }
+
   static get AUTH() { return 'auth'; }
+
   static get CRON() { return 'cron'; }
+
   static get DAEMON() { return 'daemon'; }
+
   static get MAIL() { return 'mail'; }
+
   static get NEWS() { return 'news'; }
+
   static get SYSLOG() { return 'syslog'; }
+
   static get USER() { return 'user'; }
+
   static get RESULT() { return 'result'; }
+
   static get RESOURCE() { return 'resource'; }
+
   static get TESTCASE() { return 'testcase'; }
 }
 
@@ -88,22 +112,29 @@ const EventSchema = new Schema({
       ref: 'Resource',
       required: function () {
         return this.priority.facility === Facilities.RESOURCE;
-      }},
-    result: {type: Types.ObjectId,
+      }
+    },
+    result: {
+      type: Types.ObjectId,
       ref: 'Result',
       required: function () {
         return this.priority.facility === Facilities.RESULT;
-      }},
-    testcase: {type: ObjectId,
+      }
+    },
+    testcase: {
+      type: ObjectId,
       ref: 'Testcase',
       required: function () {
         return this.priority.facility === Facilities.TESTCASE;
-      }},
-    user: {type: ObjectId,
+      }
+    },
+    user: {
+      type: ObjectId,
       ref: 'User',
       required: function () {
         return this.priority.facility === Facilities.USER;
-      }}
+      }
+    }
   },
   priority: {
     level: {
@@ -134,7 +165,6 @@ EventSchema.index({msgid: 1, traceid: 1}, {
 
 // more speed for filterin e.g. flash failures
 EventSchema.index({msgid: 1, 'priority.level': 1, 'cre.time': 1});
-
 
 EventSchema.virtual('priorityStr')
   .get(function getPriority() {

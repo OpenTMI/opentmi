@@ -10,7 +10,6 @@ const logger = require('../logger');
 // Variables
 const exec = Promise.promisify(childProcess.exec);
 
-
 class Npm {
   constructor(execModule = exec) {
     this.exec = execModule;
@@ -26,9 +25,9 @@ class Npm {
     // uncomment above line to ignore stderr and pass everytime
     // cmd += ' 2>/dev/null || true';
     logger.silly('Reading npm packages');
-    const _options = Object.assign({maxBuffer: 1024 * 1024}, execOptions);
+    const _options = {maxBuffer: 1024 * 1024, ...execOptions};
     return this.exec(cmd, _options)
-      .then(stdout => JSON.parse(stdout))
+      .then((stdout) => JSON.parse(stdout))
       .catch((error) => {
         throw new Error(`npm list failed: ${error.message}`);
       });
@@ -44,9 +43,9 @@ class Npm {
     // uncomment above line to ignore stderr and pass everytime
     // cmd += ' 2>/dev/null || true';
     logger.silly('Reading npm packages');
-    const _options = Object.assign({maxBuffer: 1024 * 1024}, execOptions);
+    const _options = {maxBuffer: 1024 * 1024, ...execOptions};
     return this.exec(cmd, _options)
-      .then(stdout => JSON.parse(stdout))
+      .then((stdout) => JSON.parse(stdout))
       .catch((error) => {
         throw new Error(`npm version failed: ${error.message}`);
       });

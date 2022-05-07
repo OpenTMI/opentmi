@@ -10,12 +10,11 @@ const _ = require('lodash');
 
 // own modules
 // const eventBus = require('../tools/eventBus');
-const DefaultController = require('./');
+const DefaultController = require('.');
 const {Utilization} = require('../tools/utilization');
 const {MsgIds} = require('../models/event');
 const ResourceModel = require('../models/resource');
 const logger = require('../tools/logger');
-
 
 class EventsController extends DefaultController {
   constructor() {
@@ -36,6 +35,7 @@ class EventsController extends DefaultController {
       res.status(404).json({message: 'reference object not found'});
     }
   }
+
   statistics(req, res) {
     const find = {
       'ref.resource': req.Resource._id,
@@ -65,6 +65,7 @@ class EventsController extends DefaultController {
       })
       .on('end', () => res.json(utilization.summary));
   }
+
   utilization(req, res) {
     const find = {
       'ref.resource': req.Resource._id,
@@ -93,6 +94,7 @@ class EventsController extends DefaultController {
           });
       });
   }
+
   resolveResource(req, res, next) {
     const find = {$or: []};
     if (DefaultController.isObjectId(req.params.Resource)) {
@@ -117,11 +119,12 @@ class EventsController extends DefaultController {
         res.status(status).json({message: `${error}`});
       });
   }
+
   resourceEvents(req, res) {
     const filter = {'ref.resource': req.Resource._id};
     const query = _.defaults(filter, req.query);
 
-    return Promise.fromCallback(cb => this.Model.leanQuery(query, cb))
+    return Promise.fromCallback((cb) => this.Model.leanQuery(query, cb))
       .then((events) => { res.json(events); })
       .catch((error) => {
         logger.error(`resourceEvents failure: ${error}`);

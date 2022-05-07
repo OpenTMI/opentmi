@@ -9,7 +9,6 @@ const GitUpdater = require('../../../../app/tools/update/gitUpdater');
 // Variables
 let gitUpdater;
 
-
 describe('update/gitUpdater', function () {
   describe('exports', function () {
     it('should expose a class named GitUpdater', function (done) {
@@ -89,8 +88,11 @@ describe('update/gitUpdater', function () {
       });
 
       it('should call reset if not clean', function () {
-        gitUpdater = new GitUpdater(undefined, undefined,
-          () => { throw new Error('Nothing should be executed here!'); });
+        gitUpdater = new GitUpdater(
+          undefined,
+          undefined,
+          () => { throw new Error('Nothing should be executed here!'); }
+        );
 
         let cleanlinessChecked = false;
         gitUpdater._isClean = () => {
@@ -194,14 +196,13 @@ describe('update/gitUpdater', function () {
 
         gitUpdater._commitId = () => Promise.resolve({commitId: 'COMMIT_ID'});
 
-
         gitUpdater._tag = (commitId) => {
           expect(commitId).to.equal('COMMIT_ID');
           return Promise.resolve({tag: 'TAG'});
         };
 
-        Object.getPrototypeOf(Object.getPrototypeOf(gitUpdater)).version = () =>
-          Promise.resolve({superVersion: 'SUPER_VERSION'});
+        Object.getPrototypeOf(Object.getPrototypeOf(gitUpdater))
+          .version = () => Promise.resolve({superVersion: 'SUPER_VERSION'});
 
         return expect(gitUpdater.version()).to.eventually.deep.equal({
           commitId: 'COMMIT_ID',

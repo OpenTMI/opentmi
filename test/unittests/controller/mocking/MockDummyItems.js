@@ -22,5 +22,4 @@ const mockDummies = [{
   date: new Date('07.11.2017')
 }];
 
-
 module.exports = mockDummies;

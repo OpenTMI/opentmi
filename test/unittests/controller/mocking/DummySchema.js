@@ -17,10 +17,10 @@ const DummyItemSchema = new mongoose.Schema({
       'category3',
       'category4'
     ],
-    default: 'category1'},
+    default: 'category1'
+  },
   date: {type: Date}
 });
 DummyItemSchema.plugin(QueryPlugin);
-
 
 module.exports = DummyItemSchema;

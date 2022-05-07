@@ -1,4 +1,3 @@
-
 /*!
  * Module dependencies
  */
@@ -75,6 +74,7 @@ CampaignSchema.methods.findTestcases = function findTestcases(query, cb) {
       const x = parts[i].split('=');
       if (x.length === 2) {
         const q = {};
+        // eslint-disable-next-line prefer-destructuring
         q[x[0]] = x[1];
         _.extend(query, q);
       }

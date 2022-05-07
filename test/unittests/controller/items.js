@@ -5,13 +5,12 @@ const Promise = require('bluebird');
 
 // Local components
 const chai = require('../../chai');
-require('./../../../app/models/item.js');
-const ItemController = require('./../../../app/controllers/items.js');
+require('../../../app/models/item.js');
+const ItemController = require('../../../app/controllers/items.js');
 const MockResponse = require('./mocking/MockResponse.js');
 const mockItems = require('./mocking/MockItems.js');
 
-const {setup, reset, teardown} = require('./../../utils/mongomock');
-
+const {setup, reset, teardown} = require('../../utils/mongomock');
 
 // Test variables
 const {expect} = chai;
@@ -160,9 +159,13 @@ describe('controllers/items.js', function () {
   it('getImage', function () {
     // Mock error happening
     const validCase = new Promise((resolve) => {
-      const req = {Item: {fetchImageData: (cb) => {
-        cb({type: '*type_block', data: '*data_block'});
-      }}};
+      const req = {
+        Item: {
+          fetchImageData: (cb) => {
+            cb({type: '*type_block', data: '*data_block'});
+          }
+        }
+      };
       const res = new MockResponse();
       res.set = (key, value) => {
         expect(key).to.equal('Content-Type');
@@ -178,9 +181,13 @@ describe('controllers/items.js', function () {
 
     // Mock error happening
     const errorCase = new Promise((resolve) => {
-      const req = {Item: {fetchImageData: (cb) => {
-        cb(new Error('This is serious - test'));
-      }}};
+      const req = {
+        Item: {
+          fetchImageData: (cb) => {
+            cb(new Error('This is serious - test'));
+          }
+        }
+      };
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
         resolve();

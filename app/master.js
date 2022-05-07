@@ -15,7 +15,6 @@ const logger = require('./tools/logger');
 const eventBus = require('./tools/eventBus');
 const config = require('./tools/config');
 
-
 // Module variables
 const port = config.get('port');
 const listen = config.get('listen');
@@ -111,6 +110,7 @@ class Master {
     Master._server.listen(port, listen);
     return pending;
   }
+
   /**
    * Informs the client that workers need to be restarted and restarts workers
    * @param {object} meta - meta data linked to this event
@@ -177,7 +177,7 @@ class Master {
     stats.os = `${os.type()} ${os.release()}`;
     stats.osStats = {
       uptime: Math.floor(os.uptime()),
-      averageLoad: os.loadavg().map(n => n.toFixed(2)).join(' '),
+      averageLoad: os.loadavg().map((n) => n.toFixed(2)).join(' '),
       memoryUsageAtBoot,
       totalMem: os.totalmem(),
       currentMemoryUsage: (os.totalmem() - os.freemem())
@@ -252,7 +252,7 @@ class Master {
         reject(new Error('Should not exit before listening event.'));
       };
       const onRemoveWorker = () => {
-        _.remove(Master.workers, w => w === worker);
+        _.remove(Master.workers, (w) => w === worker);
       };
 
       const onListening = () => {
@@ -304,7 +304,7 @@ class Master {
     if (signal) {
       logger.warn(`Master process was killed by signal: ${signal}.`);
       return 2;
-    } else if (code !== 0) {
+    } if (code !== 0) {
       logger.warn(`Master process exited with error code: ${code}.`);
       return 1;
     }
@@ -323,7 +323,7 @@ class Master {
     if (signal) {
       logger.warn(`Worker#${worker.id} process was killed by signal: ${signal}.`);
       return 2;
-    } else if (code !== 0) {
+    } if (code !== 0) {
       logger.warn(`Worker#${worker.id} process exited with error code: ${code}.`);
       return 1;
     }
@@ -362,6 +362,7 @@ class Master {
     const dummyCb = () => {};
     return Master._onExit || dummyCb;
   }
+
   static set onExit(cb) {
     Master._onExit = cb;
   }
@@ -399,7 +400,7 @@ class Master {
   static killWorker(worker) {
     logger.debug(`Killing Worker#${worker.id}.`);
     worker.__closing = true; // eslint-disable-line no-param-reassign
-    const tryTerminate = signal => new Promise((resolve, reject) => {
+    const tryTerminate = (signal) => new Promise((resolve, reject) => {
       worker.once('exit', resolve);
       logger.silly(`Killing worker#${worker.id} with ${signal}`);
       try {

@@ -13,11 +13,11 @@ const uuid = require('uuid').v1;
 const cluster = require('cluster');
 const eventBus = require('../tools/eventBus');
 
-
 class ClusterController {
   constructor() {
     this._worker_id = cluster.worker.id;
   }
+
   get id() {
     return this._worker_id;
   }

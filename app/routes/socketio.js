@@ -41,7 +41,7 @@ function Route(app, io) {
 
   io.on('connection', (socket) => {
     const controller = new Controller(socket);
-    _.each(ioEvents, event => socket.on(event, controller[event].bind(controller)));
+    _.each(ioEvents, (event) => socket.on(event, controller[event].bind(controller)));
   });
   const resultNS = io.of('results');
   resultNS.use(authorize);

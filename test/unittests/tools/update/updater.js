@@ -115,8 +115,10 @@ describe('update/updater.js', function () {
         };
 
         const updatePromise = updater.update('TestRevision');
-        return expect(updatePromise).to.be.rejectedWith(Error,
-          /Update failed: error: FakeUpdateError[\s\S]*reverted back to version/)
+        return expect(updatePromise).to.be.rejectedWith(
+          Error,
+          /Update failed: error: FakeUpdateError[\s\S]*reverted back to version/
+        )
           .then(() => {
             expect(versionCalled).to.equal(true, 'version should be called in a failing update case');
             expect(updateCalled).to.equal(true, '_update should be called in a failing update case');
@@ -149,8 +151,10 @@ describe('update/updater.js', function () {
         };
 
         const updatePromise = updater.update('TestRevision');
-        return expect(updatePromise).to.be.rejectedWith(Error,
-          /Update failed: error: MockUpdateError[\s\S]*failed to revert back[\s\S]*revertError/)
+        return expect(updatePromise).to.be.rejectedWith(
+          Error,
+          /Update failed: error: MockUpdateError[\s\S]*failed to revert back[\s\S]*revertError/
+        )
           .then(() => {
             expect(versionCalled).to.equal(true, 'version should be called in a failing update case');
             expect(updateCalled).to.equal(true, '_update should be called in a failing update case');

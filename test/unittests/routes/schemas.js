@@ -10,7 +10,6 @@ const SchemaRoute = require('../../../app/routes/schemas');
 // Setup
 logger.level = 'error';
 
-
 describe('routes/schemas.js', function () {
   describe('Route', function () {
     it('should define a parameter handler for Collection parameter', function (done) {

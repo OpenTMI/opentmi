@@ -13,7 +13,6 @@ const checksum = require('../../tools/checksum.js');
 // Model variables
 const fileProvider = nconf.get('filedb');
 
-
 const FileSchema = new mongoose.Schema({
   // buffer limit 16MB when attached to document!
   name: {type: String, default: 'no-name'},

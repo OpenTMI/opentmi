@@ -22,7 +22,8 @@ describe('eventBus/local-event-bus.js', function () {
     beforeEach(function () {
       delete require.cache[pathToFile];
       localEventBus = require( // eslint-disable-line global-require
-        '../../../../app/tools/eventBus/local-event-bus');
+        '../../../../app/tools/eventBus/local-event-bus'
+      );
     });
 
     describe('emit', function () {

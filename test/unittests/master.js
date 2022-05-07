@@ -55,17 +55,23 @@ describe('app/master.js', function () {
     it('should listen for process and cluster events', function () {
       sinon.stub(Master, 'handleSIGINT').callsFake(() => Master.logMasterDeath());
       sinon.stub(Master, 'logMasterDeath').callsFake(() => {
-        expect(Master.handleSIGINT.calledOnce).to.equal(true,
-          'handleSIGINT should be called before logMasterDeath.');
+        expect(Master.handleSIGINT.calledOnce).to.equal(
+          true,
+          'handleSIGINT should be called before logMasterDeath.'
+        );
         cluster.emit('exit');
       });
       let workerExitResolve;
       const workerExit = new Promise((resolve) => { workerExitResolve = resolve; });
       sinon.stub(Master, 'handleWorkerExit').callsFake(() => {
-        expect(Master.handleSIGINT.calledOnce).to.equal(true,
-          'handleSIGINT should be called before handleWorkerExit.');
-        expect(Master.logMasterDeath.calledOnce).to.equal(true,
-          'logMasterDeath should be called before handleWorkerExit.');
+        expect(Master.handleSIGINT.calledOnce).to.equal(
+          true,
+          'handleSIGINT should be called before handleWorkerExit.'
+        );
+        expect(Master.logMasterDeath.calledOnce).to.equal(
+          true,
+          'logMasterDeath should be called before handleWorkerExit.'
+        );
         workerExitResolve();
       });
       const pending = Master.initialize().then(Master.handleSIGINT);
@@ -112,25 +118,35 @@ describe('app/master.js', function () {
       Master.createFileListener.returns('mockFileWatcher');
       Master.activateFileListener.callsFake((watcher) => {
         expect(watcher).to.equal('mockFileWatcher');
-        expect(Master.createFileListener.calledOnce).to.equal(true,
-          'should call createFileListener before listener activation');
+        expect(Master.createFileListener.calledOnce).to.equal(
+          true,
+          'should call createFileListener before listener activation'
+        );
       });
       return Master.initialize(true)
         .then(() => {
-          expect(Master.createFileListener.calledOnce).to.equal(true,
-            'listener should be created when auto-reload is true');
-          expect(Master.activateFileListener.calledOnce).to.equal(true,
-            'listener should be activated when auto-reload is true');
+          expect(Master.createFileListener.calledOnce).to.equal(
+            true,
+            'listener should be created when auto-reload is true'
+          );
+          expect(Master.activateFileListener.calledOnce).to.equal(
+            true,
+            'listener should be activated when auto-reload is true'
+          );
         });
     });
 
     it('should not call createFileListener and activateFileListener when auto-reload is false', function () {
       return Master.initialize()
         .then(() => {
-          expect(Master.createFileListener.calledOnce).to.equal(false,
-            'should not create file listener when autoReload is false');
-          expect(Master.activateFileListener.calledOnce).to.equal(false,
-            'should not activate file listener when autoReload is false');
+          expect(Master.createFileListener.calledOnce).to.equal(
+            false,
+            'should not create file listener when autoReload is false'
+          );
+          expect(Master.activateFileListener.calledOnce).to.equal(
+            false,
+            'should not activate file listener when autoReload is false'
+          );
         });
     });
 
@@ -323,15 +339,23 @@ describe('app/master.js', function () {
       cluster.workers = {1: worker1, 2: worker2, 3: worker3};
       return Master.handleSIGINT()
         .then(() => {
-          expect(killCalled1).to.equal(true,
-            'Kill function should be called for worker 1.');
-          expect(killCalled2).to.equal(true,
-            'Kill function should be called for worker 2.');
-          expect(killCalled3).to.equal(true,
-            'Kill function should be called for worker 3.');
+          expect(killCalled1).to.equal(
+            true,
+            'Kill function should be called for worker 1.'
+          );
+          expect(killCalled2).to.equal(
+            true,
+            'Kill function should be called for worker 2.'
+          );
+          expect(killCalled3).to.equal(
+            true,
+            'Kill function should be called for worker 3.'
+          );
 
-          expect(Master.onExit.calledOnce).to.equal(true,
-            'Should call process.exit at some point.');
+          expect(Master.onExit.calledOnce).to.equal(
+            true,
+            'Should call process.exit at some point.'
+          );
         });
     });
   });
@@ -370,7 +394,7 @@ describe('app/master.js', function () {
       return Promise.resolve();
     });
 
-    const shouldReject = promise => new Promise((resolve, reject) => {
+    const shouldReject = (promise) => new Promise((resolve, reject) => {
       promise
         .then(reject)
         .catch(resolve);

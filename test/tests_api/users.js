@@ -40,8 +40,8 @@ function encodeToken(payload = {}) {
   return jwtSimple.encode(data, nconf.get('webtoken'));
 }
 
-const createHeaderFromToken = token => `Bearer ${token}`;
-const createToken = user => createHeaderFromToken(encodeToken({_id: user._id}));
+const createHeaderFromToken = (token) => `Bearer ${token}`;
+const createToken = (user) => createHeaderFromToken(encodeToken({_id: user._id}));
 
 describe('Users', function () {
   let authString, adminAuthString, newUserId;
@@ -146,7 +146,7 @@ describe('Users', function () {
           resolve(res.body);
         });
     });
-    const removeUser = user => new Promise((resolve) => {
+    const removeUser = (user) => new Promise((resolve) => {
       superagent.delete(`${api}/users/${user._id}`)
         .set('authorization', adminAuthString)
         .end(function (error, res) {
@@ -231,7 +231,7 @@ describe('Users', function () {
 
     it('should allow to login', function () {
       return createUser({password: 'topsecret'})
-        .then(user => new Promise((resolve) => {
+        .then((user) => new Promise((resolve) => {
           createdUser = user;
           superagent.post(`${host}/auth/login`)
             .send({email: user.email, password: 'topsecret'})

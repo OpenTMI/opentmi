@@ -44,8 +44,10 @@ describe('eventBus/event.js', function () {
           const event = new Event(...brokenEventBody); // eslint-disable-line no-unused-vars
           done(new Error('This constructor should throw an error.'));
         } catch (error) {
-          expect(error).to.have.property('message',
-            'Invalid type of event: noEvent, expected one of: [message,event,log].');
+          expect(error).to.have.property(
+            'message',
+            'Invalid type of event: noEvent, expected one of: [message,event,log].'
+          );
           done();
         }
       });
@@ -60,8 +62,10 @@ describe('eventBus/event.js', function () {
           const event = new Event(...brokenEventBody); // eslint-disable-line no-unused-vars
           done(new Error('This constructor should throw an error.'));
         } catch (error) {
-          expect(error).to.have.property('message',
-            'Invalid type for meta: number, expected object.');
+          expect(error).to.have.property(
+            'message',
+            'Invalid type for meta: number, expected object.'
+          );
           done();
         }
       });
@@ -122,8 +126,10 @@ describe('eventBus/event.js', function () {
           const event = Event.fromObject(validObject); // eslint-disable-line no-unused-vars
           done();
         } catch (error) {
-          expect(error).to.have.property('message',
-            'Invalid type of event: noEvent, expected one of: [message,event,log].');
+          expect(error).to.have.property(
+            'message',
+            'Invalid type of event: noEvent, expected one of: [message,event,log].'
+          );
           done();
         }
       });
@@ -140,8 +146,10 @@ describe('eventBus/event.js', function () {
           const event = Event.fromObject(validObject); // eslint-disable-line no-unused-vars
           done();
         } catch (error) {
-          expect(error).to.have.property('message',
-            'Invalid type for meta: number, expected object.');
+          expect(error).to.have.property(
+            'message',
+            'Invalid type for meta: number, expected object.'
+          );
           done();
         }
       });

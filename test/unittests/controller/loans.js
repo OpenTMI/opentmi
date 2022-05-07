@@ -6,13 +6,13 @@ const Promise = require('bluebird');
 
 // Local components
 const chai = require('../../chai');
-const {setup, reset, teardown} = require('./../../utils/mongomock');
+const {setup, reset, teardown} = require('../../utils/mongomock');
 
-require('./../../../app/models/group.js');
-require('./../../../app/models/user.js');
-require('./../../../app/models/item.js');
-require('./../../../app/models/loan.js');
-const LoanController = require('./../../../app/controllers/loans.js');
+require('../../../app/models/group.js');
+require('../../../app/models/user.js');
+require('../../../app/models/item.js');
+require('../../../app/models/loan.js');
+const LoanController = require('../../../app/controllers/loans.js');
 
 // Mocking
 const mockItems = require('./mocking/MockItems.js');

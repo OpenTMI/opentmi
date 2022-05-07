@@ -10,7 +10,6 @@ const Npm = require('./npm');
 
 const exec = Promise.promisify(childProcess.exec);
 
-
 class GitUpdater extends Updater {
   constructor(cwd, env, execModule = exec) {
     super(cwd, env);
@@ -37,11 +36,11 @@ class GitUpdater extends Updater {
 
   version(deep = false) {
     const gitVersion = this._commitId()
-      .then(obj => this._tag(obj.commitId)
-        .then(tag => Object.assign({commitId: obj.commitId}, tag)));
+      .then((obj) => this._tag(obj.commitId)
+        .then((tag) => ({commitId: obj.commitId, ...tag})));
     return Promise
       .all([super.version(deep), gitVersion])
-      .then(versions => Object.assign({}, versions[0], versions[1]));
+      .then((versions) => ({...versions[0], ...versions[1]}));
   }
 
   _isClean() {
@@ -56,7 +55,7 @@ class GitUpdater extends Updater {
     const cmd = `git describe --exact-match --tags ${commitId}`;
     this.emit('status', cmd);
     return this.exec(cmd, this._options)
-      .then(line => ({tag: line.trim()}))
+      .then((line) => ({tag: line.trim()}))
       .catch(() => ({tag: undefined}));
   }
 
@@ -64,7 +63,7 @@ class GitUpdater extends Updater {
     const cmd = 'git rev-parse --verify HEAD';
     this.emit('status', cmd);
     return this.exec(cmd, this._options)
-      .then(line => ({commitId: line.trim()}))
+      .then((line) => ({commitId: line.trim()}))
       .catch((error) => {
         throw new Error(`git rev-parse failed: ${error.message}`);
       });

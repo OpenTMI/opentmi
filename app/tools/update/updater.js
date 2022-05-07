@@ -1,5 +1,5 @@
 // native modules
-const EventEmitter = require('events').EventEmitter;
+const {EventEmitter} = require('events');
 
 // 3rd party modules
 const _ = require('lodash');
@@ -16,7 +16,7 @@ class Updater extends EventEmitter {
 
     this._options = {
       cwd,
-      env: Object.assign({}, process.env, env)
+      env: {...process.env, ...env}
     };
 
     this._pending = Promise.resolve();
@@ -25,6 +25,7 @@ class Updater extends EventEmitter {
     });
     this.npm = new Npm();
   }
+
   update(revision) {
     if (this._pending.isPending()) {
       return Promise.reject(new Error('Cannot update, pending action exists.'));
@@ -78,7 +79,7 @@ class Updater extends EventEmitter {
     return Promise.all([
       this.npm.version(this._options),
       deep ? this.npm.list(this._options) : Promise.resolve({})])
-      .then(results => Object.assign({}, results[0], results[1]));
+      .then((results) => ({...results[0], ...results[1]}));
   }
 
   restart() {

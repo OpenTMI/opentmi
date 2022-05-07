@@ -13,14 +13,13 @@ require('../../models/group');
 // Middleware variables
 const TOKEN_SECRET = nconf.get('webtoken') || uuid.v1();
 
-
 function requireAdmin(req, res, next) {
   // this might not good idea to allow token to say if client is admin or not
   // what if token will expires after one month and admin credentials are already dropped..
   // @todo remove this eventually when tests generate token via API call..
   logger.silly(`[${req.method}] ${req.originalUrl}: req.decoded_token: ${JSON.stringify(req.decoded_token)}`);
-  if (_.get(req, 'decoded_token.group') === 'admins' ||
-    _.find(_.get(req, 'decoded_token.groups', []), g => g === 'admins')
+  if (_.get(req, 'decoded_token.group') === 'admins'
+    || _.find(_.get(req, 'decoded_token.groups', []), (g) => g === 'admins')
   ) {
     logger.debug('admin based on token..', req.user);
     next();
@@ -59,8 +58,8 @@ function createJWT(user) {
     .then((populatedUser) => {
       const payload = {
         _id: populatedUser._id,
-        groups: populatedUser.groups.map(g => g.name),
-        group: populatedUser.groups.find(g => g.name === 'admins') ? 'admins' : 'users',
+        groups: populatedUser.groups.map((g) => g.name),
+        group: populatedUser.groups.find((g) => g.name === 'admins') ? 'admins' : 'users',
         iat: moment().unix(),
         exp: moment().add(expDays, 'days').unix()
       };

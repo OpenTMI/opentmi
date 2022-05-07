@@ -65,7 +65,6 @@ function wrapValidator(schema, key) {
   };
 }
 
-
 module.exports.tagsValidator = wrapValidator(TAGS, 'tags');
 module.exports.appsValidator = wrapValidator(APPS, 'apps');
 module.exports.metaValidator = wrapValidator(META_DATA, 'meta_data');

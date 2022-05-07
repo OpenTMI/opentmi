@@ -19,7 +19,7 @@ class AdminController {
 
   version(req, resp) {
     this._updater.version(_.get(req.query, 'deep', false))
-      .then(version => resp.json(version))
+      .then((version) => resp.json(version))
       .catch((error) => {
         logger.warn(error);
         resp.status(500)

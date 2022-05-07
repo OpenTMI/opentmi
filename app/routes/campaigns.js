@@ -1,5 +1,5 @@
 const express = require('express');
-const CampaignsRouter = require('./../controllers/campaigns');
+const CampaignsRouter = require('../controllers/campaigns');
 
 function Route(app) {
   const router = express.Router();

@@ -119,7 +119,9 @@ const BuildSchema = new Schema({
   issues: [Issue],
   // build target device
   target: {
-    type: {type: String, enum: ['simulate', 'hardware'], default: 'hardware', required: true},
+    type: {
+      type: String, enum: ['simulate', 'hardware'], default: 'hardware', required: true
+    },
     os: {type: String, enum: ['win32', 'win64', 'unix32', 'unix64', 'mbedOS', 'unknown']},
     simulator: {
       bt: {type: String},
@@ -135,7 +137,6 @@ const BuildSchema = new Schema({
 });
 BuildSchema.set('toObject', {virtuals: true});
 // BuildSchema.set('toJSON', { virtuals: true });
-
 
 /**
  * Build plugin
@@ -155,7 +156,6 @@ BuildSchema.plugin(QueryPlugin); // install QueryPlugin
  else  respond(true);
  }, '{PATH} missing');
  */
-
 
 BuildSchema.pre('validate', function validate(next) {
   // Files property should be an array

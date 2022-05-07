@@ -1,15 +1,15 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('../../chai');
 const sinon = require('sinon');
 const _ = require('lodash');
+const chai = require('../../chai');
 
 // Local components
 const {setup, reset, teardown} = require('../../utils/mongomock');
-const Group = require('./../../../app/models/group.js').Model;
-const User = require('./../../../app/models/user.js').Model;
-const UsersController = require('./../../../app/controllers/users.js');
+const Group = require('../../../app/models/group.js').Model;
+const User = require('../../../app/models/user.js').Model;
+const UsersController = require('../../../app/controllers/users.js');
 const {newResponse, newRequest} = require('../helpers');
 
 // Test variables
@@ -311,8 +311,8 @@ describe('controllers/users', function () {
           const user = new User({name: 'dummy'});
           return user.save();
         })
-        .then(user => user.addToGroup('admins'))
-        .then(user => user.removeFromGroup('admins'));
+        .then((user) => user.addToGroup('admins'))
+        .then((user) => user.removeFromGroup('admins'));
     });
     it('do not duplicate users in same group', function () {
       const admins = new Group({name: 'admins'});
@@ -321,8 +321,8 @@ describe('controllers/users', function () {
           const user = new User({name: 'dummy'});
           return user.save();
         })
-        .then(user => user.addToGroup('admins'))
-        .then(user => user.addToGroup('admins'))
+        .then((user) => user.addToGroup('admins'))
+        .then((user) => user.addToGroup('admins'))
         .then((user) => {
           expect(user.groups.length).to.be.equal(1);
           return Group.findOne({name: 'admins'})
@@ -330,7 +330,7 @@ describe('controllers/users', function () {
               expect(group.users.length).to.be.equal(1);
             }).return(user);
         })
-        .then(user => user.removeFromGroup('admins'))
+        .then((user) => user.removeFromGroup('admins'))
         .then((user) => {
           expect(user.groups.length).to.be.equal(0);
           return Group.findOne({name: 'admins'})
@@ -346,7 +346,7 @@ describe('controllers/users', function () {
           const user = new User();
           return user.save();
         })
-        .then(user => user.removeFromGroup('admins'))
+        .then((user) => user.removeFromGroup('admins'))
         .reflect()
         .then((promise) => {
           expect(promise.isRejected()).to.be.true;
@@ -359,17 +359,17 @@ describe('controllers/users', function () {
           const user = new User({name: 'dummy'});
           return user.save();
         })
-        .then(user => user.isAdmin()
+        .then((user) => user.isAdmin()
           .then((yes) => {
             expect(yes).to.be.false;
           })
           .then(() => user.addToGroup('admins')))
-        .then(user => user.isAdmin()
+        .then((user) => user.isAdmin()
           .then((yes) => {
             expect(yes).to.be.true;
           })
           .then(() => user.removeFromGroup('admins')))
-        .then(user => user.isAdmin()
+        .then((user) => user.isAdmin()
           .then((yes) => {
             expect(yes).to.be.false;
           }));

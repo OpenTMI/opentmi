@@ -34,10 +34,10 @@ class Event {
   }
 
   static fromObject(jsonObject) {
-    const name = jsonObject.name;
-    const type = jsonObject.type;
-    const meta = jsonObject.meta;
-    const data = jsonObject.data;
+    const {name} = jsonObject;
+    const {type} = jsonObject;
+    const {meta} = jsonObject;
+    const {data} = jsonObject;
 
     return new Event(data, name, type, meta);
   }

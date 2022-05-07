@@ -2,11 +2,10 @@
 
 // Local components
 const chai = require('../../chai');
-const {setup, reset, teardown} = require('./../../utils/mongomock');
+const {setup, reset, teardown} = require('../../utils/mongomock');
 require('../../../app/models/event.js');
-const EventsController = require('./../../../app/controllers/events.js');
+const EventsController = require('../../../app/controllers/events.js');
 const {newResponse, newRequest} = require('../helpers');
-
 
 // Test variables
 const {expect} = chai;

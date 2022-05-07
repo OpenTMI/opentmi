@@ -1,6 +1,5 @@
 const http = require('http');
 
-
 const host = process.env.OPENTMI_HOST || 'localhost';
 const port = process.env.OPENTMI_PORT || '8000';
 

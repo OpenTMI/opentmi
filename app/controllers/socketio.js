@@ -80,24 +80,31 @@ class SocketIOController {
   get ipAddress() {
     return _.get(this._socket, 'request.connection.remoteAddress');
   }
+
   get lastActivity() {
     return this._lastActivity;
   }
+
   get decodedToken() {
     return this._socket.decoded_token;
   }
+
   get id() {
     return this.decodedToken._id;
   }
+
   get groups() {
     return _.get(this.decodedToken, 'groups', []);
   }
+
   belongToGroup(group) {
     return _.find(this.groups, {name: group}) !== -1;
   }
+
   user() {
     return User.findById(this.id).exec();
   }
+
   get isAdmin() {
     return this.belongToGroup('admins');
   }

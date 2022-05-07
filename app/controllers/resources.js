@@ -9,7 +9,7 @@ const logger = require('winston');
 const async = require('async');
 
 // own modules
-const DefaultController = require('./');
+const DefaultController = require('.');
 
 class ResourcesController extends DefaultController {
   constructor() { super('Resource'); }
@@ -108,6 +108,5 @@ class ResourcesController extends DefaultController {
     });
   }
 }
-
 
 module.exports = ResourcesController;

@@ -47,7 +47,7 @@ class MasterLogger {
         format.colorize(),
         format.timestamp(),
         format.metadata(),
-        format.printf(info => `${_.get(info, 'metadata.timestamp', '')} ${info.level}: ${info.message}`)
+        format.printf((info) => `${_.get(info, 'metadata.timestamp', '')} ${info.level}: ${info.message}`)
       )
     };
     this.logger = createLogger(options);
@@ -76,9 +76,11 @@ class MasterLogger {
           datePatter: 'yyyy-MM-dd_HH-mm',
           maxSize: '100m',
           maxFiles: '3d'
-        }));
+        })
+      );
     }
   }
+
   set level(level) {
     this.logger.level = level;
   }
@@ -94,6 +96,7 @@ class MasterLogger {
       console.error(data); // eslint-disable-line no-console
     }
   }
+
   log(level, ...args) {
     if (typeof level === 'object') {
       this.log(level.level, level.message, level.meta);
@@ -104,21 +107,27 @@ class MasterLogger {
     data[0] = `<Master> ${data[0]}`;
     this.logger.log(level, ...data);
   }
+
   error(...args) {
     this.log('error', ...args);
   }
+
   warn(...args) {
     this.log('warn', ...args);
   }
+
   info(...args) {
     this.log('info', ...args);
   }
+
   debug(...args) {
     this.log('debug', ...args);
   }
+
   verbose(...args) {
     this.log('verbose', ...args);
   }
+
   silly(...args) {
     this.log('silly', ...args);
   }
@@ -157,25 +166,30 @@ class WorkerLogger {
     }
     this._proxy(level, ...args);
   }
+
   error(...args) {
     this._proxy('error', ...args);
   }
+
   debug(...args) {
     this._proxy('debug', ...args);
   }
+
   info(...args) {
     this._proxy('info', ...args);
   }
+
   warn(...args) {
     this._proxy('warn', ...args);
   }
+
   silly(...args) {
     this._proxy('silly', ...args);
   }
+
   verbose(...args) {
     this._proxy('verbose', ...args);
   }
 }
-
 
 module.exports = cluster.isMaster ? new MasterLogger() : new WorkerLogger();

@@ -17,7 +17,7 @@ const logger = require('../tools/logger');
 mongoose.Promise = Promise;
 
 // own modules
-const DefaultController = require('./');
+const DefaultController = require('.');
 
 class ResultsController extends DefaultController {
   constructor() {
@@ -115,6 +115,5 @@ class ResultsController extends DefaultController {
     res.redirect(`/api/v0/duts/builds/${buildId}/files/${req.params.Index}/download`);
   }
 }
-
 
 module.exports = ResultsController;

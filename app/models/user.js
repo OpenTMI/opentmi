@@ -29,7 +29,9 @@ let User;
  */
 const UserSchema = new Schema({
   name: {type: String, required: true},
-  email: {type: String, unique: true, sparse: true, lowercase: true},
+  email: {
+    type: String, unique: true, sparse: true, lowercase: true
+  },
   password: {type: String, select: false},
 
   // for recovering
@@ -50,7 +52,6 @@ const UserSchema = new Schema({
   apikeys: [{type: ObjectId, ref: 'ApiKey'}],
   settings: {type: Mixed}
 });
-
 
 /**
  * Plugin
@@ -120,7 +121,7 @@ UserSchema.pre('remove', function preRemove(next) {
 });
 
 function requireGroup(groupName) {
-  return group => Promise.try(() => {
+  return (group) => Promise.try(() => {
     if (!group) {
       throw new Error(`group ${groupName} not found`);
     }
@@ -152,7 +153,7 @@ UserSchema.methods.isAdmin = function isAdmin() {
   return this
     .populate('groups')
     .then((populatedUser) => {
-      const admins = populatedUser.groups.find(g => g.name === 'admins');
+      const admins = populatedUser.groups.find((g) => g.name === 'admins');
       return !!admins;
     });
 };
@@ -186,8 +187,8 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
       let pending = Promise.resolve();
       logger.silly(`remove group ${group._id} from user ${this._id}`);
       const match = (idOrDoc, id) => _.get(idOrDoc, '_id', idOrDoc).equals(id);
-      const linkMissing = !_.find(this.groups, doc => match(doc, group._id));
-      const notBelong = !_.find(group.users, doc => match(doc, this._id));
+      const linkMissing = !_.find(this.groups, (doc) => match(doc, group._id));
+      const notBelong = !_.find(group.users, (doc) => match(doc, this._id));
       if (linkMissing && notBelong) {
         logger.debug('User does not belong to group');
         throw new Error(`User ${this.name} does not belong to group ${group.name}`);
@@ -195,12 +196,12 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
       if (linkMissing) {
         logger.warn('User did not have link to group even it should..');
       } else {
-        this.groups = _.filter(this.groups, doc => !match(doc, group._id));
+        this.groups = _.filter(this.groups, (doc) => !match(doc, group._id));
       }
       if (notBelong) {
         logger.warn('User had link to group even group does not include user');
       } else {
-        group.users = _.filter(group.users, doc => !match(doc, this._id)); // eslint-disable-line no-param-reassign
+        group.users = _.filter(group.users, (doc) => !match(doc, this._id)); // eslint-disable-line no-param-reassign
         pending = group.save();
       }
       return pending.then(() => this.save());
@@ -217,16 +218,15 @@ UserSchema.methods.removeFromGroup = function removeFromGroup(groupName) {
 UserSchema.methods.comparePassword = function comparePassword(password) {
   const compare = (user) => {
     invariant(user.password, 'User does not have local password');
-    return new Promise((resolve, reject) =>
-      bcrypt.compare(password, user.password, (error, match) => {
-        if (error) {
-          reject(error);
-        } else if (match) {
-          resolve(match);
-        } else {
-          reject(new Error('Password does not match'));
-        }
-      }));
+    return new Promise((resolve, reject) => bcrypt.compare(password, user.password, (error, match) => {
+      if (error) {
+        reject(error);
+      } else if (match) {
+        resolve(match);
+      } else {
+        reject(new Error('Password does not match'));
+      }
+    }));
   };
   if (this.password) {
     return compare(this);
@@ -300,7 +300,7 @@ UserSchema.static({
 
       logger.info(user);
       logger.info(doc);
-      next(error, _.map(doc.apikeys, key => key.key));
+      next(error, _.map(doc.apikeys, (key) => key.key));
 
       return undefined;
     });

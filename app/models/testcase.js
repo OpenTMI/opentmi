@@ -1,4 +1,3 @@
-
 /*!
  * Module dependencies
  */
@@ -14,7 +13,6 @@ const logger = require('../tools/logger');
 const {Schema} = mongoose;
 const {Types} = Schema;
 const {ObjectId, Mixed} = Types;
-
 
 const FileSchema = new Schema({
   filename: {type: String},
@@ -94,7 +92,8 @@ const TestCaseSchema = new Schema({
       type: String,
       enum: ['L1', 'L2', 'L3', 'unknown'],
       default: 'unknown',
-      title: 'Layer'},
+      title: 'Layer'
+    },
     sut: [ComponentSchema],
     components: [{type: String, title: 'Component'}],
     features: [{type: String, title: 'Feature'}],
@@ -111,7 +110,9 @@ const TestCaseSchema = new Schema({
   },
   execution: {
     skip: {
-      value: {type: Boolean, default: false, index: true, background: true},
+      value: {
+        type: Boolean, default: false, index: true, background: true
+      },
       reason: {type: String},
       time: {type: Date}
     },
@@ -163,7 +164,9 @@ const TestCaseSchema = new Schema({
       ]
     },
     automation: {
-      yes: {type: Boolean, default: false, index: true, background: true},
+      yes: {
+        type: Boolean, default: false, index: true, background: true
+      },
       system: {type: String}
     },
     field: {

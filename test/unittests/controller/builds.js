@@ -6,7 +6,6 @@ const Promise = require('bluebird');
 const {expect} = require('../../chai');
 const {setup, reset, teardown} = require('../../utils/mongomock');
 
-
 describe('controllers/builds.js', function () {
   let BuildsController;
   // Create fresh DB

@@ -8,7 +8,7 @@ const request = require('request');
 // 3rd party modules
 
 // own modules
-const DefaultController = require('./');
+const DefaultController = require('.');
 
 class TestcasesController extends DefaultController {
   constructor() { super('Testcase'); }
@@ -31,6 +31,5 @@ class TestcasesController extends DefaultController {
     }
   }
 }
-
 
 module.exports = TestcasesController;

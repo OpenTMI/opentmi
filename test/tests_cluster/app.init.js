@@ -17,7 +17,6 @@ logger.level = 'error';
 const api = helpers.apiV0;
 const {testUserId} = helpers;
 
-
 describe('Basic cluster tests', function () {
   let authString;
   // Create fresh DB

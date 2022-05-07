@@ -89,8 +89,8 @@ describe('Items', function () {
   });
 
   it('should return a list with a SINGLE item on /items?<name> GET', function (done) {
-    const description =
-    'Seeeduino Arch from Seeed Studio is an mbed enabled development board which combines some advantages '
+    const description = 'Seeeduino Arch from Seeed Studio is an mbed enabled development board '
+    + 'which combines some advantages '
     + 'of mbed and Arduino. Arch is based on NXP LPC11U24 with Arduino form factor and Grove connectors. '
     + 'Building a prototype is easy with lots of Shield and Grove modules.';
 
@@ -114,6 +114,7 @@ describe('Items', function () {
         expect(e).to.equal(null);
         expect(res.body).to.be.an('array');
         expect(res.body).to.have.lengthOf(1);
+        // eslint-disable-next-line prefer-destructuring
         res.body = res.body[0];
         expectResult(res, 200, expectedBody);
         done();
@@ -134,7 +135,7 @@ describe('Items', function () {
   });
 
   it('should not accept POST that has more available than in_stock', function (done) {
-    const body = Object.assign({}, validPostBody);
+    const body = {...validPostBody};
     body.available = body.in_stock + 1;
 
     superagent.post(`${api}/items`)
@@ -148,7 +149,7 @@ describe('Items', function () {
   });
 
   it('should not accept POST that has negative available', function (done) {
-    const body = Object.assign({}, validPostBody);
+    const body = {...validPostBody};
     body.available = -1;
 
     superagent.post(`${api}/items`)
@@ -162,7 +163,7 @@ describe('Items', function () {
   });
 
   it('should not accept POST that has negative available', function (done) {
-    const body = Object.assign({}, validPostBody);
+    const body = {...validPostBody};
     body.in_stock = -1;
 
     superagent.post(`${api}/items`)
@@ -176,7 +177,7 @@ describe('Items', function () {
   });
 
   it('should not accept positive available without in_stock', function (done) {
-    const body = Object.assign({}, validPostBody);
+    const body = {...validPostBody};
     delete body.in_stock;
 
     superagent.post(`${api}/items`)
@@ -191,7 +192,7 @@ describe('Items', function () {
 
   // POST item and save _id because it is used for PUT and DELETE tests
   it('should add a SINGLE item on /items POST', function (done) {
-    const body = Object.assign({}, validPostBody);
+    const body = {...validPostBody};
 
     superagent.post(`${api}/items`)
       .set('authorization', authString)
@@ -214,7 +215,7 @@ describe('Items', function () {
   });
 
   it('should not accept post that has a barcode that is already in the database', function (done) {
-    const body = Object.assign({}, validPostBody);
+    const body = {...validPostBody};
     body.barcode = '9876543210';
 
     superagent.post(`${api}/items`)
@@ -268,7 +269,7 @@ describe('Items', function () {
 
   it('should update a SINGLE item on /items/<id> PUT, with just available field', function (done) {
     const body = {available: 10};
-    const expectedBody = Object.assign({}, validPostBody);
+    const expectedBody = {...validPostBody};
     expectedBody.in_stock = 15;
     expectedBody.available = 10;
 
@@ -293,7 +294,7 @@ describe('Items', function () {
 
   it('should update a SINGLE item on /items/<id> PUT, with just in_stock field', function (done) {
     const body = {in_stock: 20};
-    const expectedBody = Object.assign({}, validPostBody);
+    const expectedBody = {...validPostBody};
     expectedBody.in_stock = 20;
     expectedBody.available = 15;
 
@@ -321,7 +322,7 @@ describe('Items', function () {
       available: 20,
       in_stock: 20
     };
-    const expectedBody = Object.assign({}, validPostBody);
+    const expectedBody = {...validPostBody};
     expectedBody.in_stock = 20;
     expectedBody.available = 20;
 

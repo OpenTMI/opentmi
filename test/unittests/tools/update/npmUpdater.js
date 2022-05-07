@@ -9,7 +9,6 @@ const NpmUpdater = require('../../../../app/tools/update/npmUpdater');
 // Variables
 let npmUpdater;
 
-
 describe('update/npmUpdater.js', function () {
   describe('exports', function () {
     it('should expose a class with name NpmUpdater', function (done) {

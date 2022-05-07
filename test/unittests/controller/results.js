@@ -14,7 +14,6 @@ const MockResponse = require('./mocking/MockResponse.js');
 const mockJunitXml = require('./mocking/MockJunitXmlTests.js');
 const {setup, reset, teardown} = require('../../utils/mongomock');
 
-
 // Test variables
 let controller = null;
 
@@ -44,7 +43,6 @@ describe('controllers/results.js', function () {
       return expect(stringPromise).to.eventually.equal('chunk1chunk2chunk3');
     });
   });
-
 
   describe('handleJunitXml', function () {
     it('should result in message created 2 results', function () {
@@ -118,10 +116,12 @@ describe('controllers/results.js', function () {
       let buildCalled = false;
       const req = {
         params: {Index: 90123},
-        Result: {getBuildRef() {
-          buildCalled = true;
-          return '5';
-        }}
+        Result: {
+          getBuildRef() {
+            buildCalled = true;
+            return '5';
+          }
+        }
       };
 
       let redirectCalled = false;

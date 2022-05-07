@@ -3,8 +3,7 @@ const express = require('express');
 
 // Local modules
 const {requireAuth} = require('./middlewares/authorization');
-const ItemController = require('./../controllers/items');
-
+const ItemController = require('../controllers/items');
 
 function Route(app) {
   const router = express.Router();

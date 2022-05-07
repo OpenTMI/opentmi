@@ -4,7 +4,6 @@ const nconf = require('nconf');
 // application
 const {ensureAdmin} = require('./middlewares/authorization');
 
-
 function get(req, res) {
   res.json(nconf.get());
 }

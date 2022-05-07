@@ -6,7 +6,7 @@
 const logger = require('../tools/logger');
 
 // own modules
-const DefaultController = require('./');
+const DefaultController = require('.');
 
 class ItemsController extends DefaultController {
   constructor() { super('Item'); }
@@ -63,6 +63,5 @@ class ItemsController extends DefaultController {
     });
   }
 }
-
 
 module.exports = ItemsController;

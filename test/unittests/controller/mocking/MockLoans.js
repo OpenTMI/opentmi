@@ -25,5 +25,4 @@ const mockLoans = [
   }
 ];
 
-
 module.exports = mockLoans;

@@ -3,8 +3,7 @@ const express = require('express');
 
 // Application modules
 const {requireAuth, ensureAdmin} = require('./middlewares/authorization');
-const LoanController = require('./../controllers/loans');
-
+const LoanController = require('../controllers/loans');
 
 function Route(app) {
   const router = express.Router();
