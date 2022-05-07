@@ -10,7 +10,6 @@ const logger = require('winston');
 
 // application modules
 const {apiV0, getTestUserToken} = require('./tools/helpers');
-const SchemaController = require('../../app/controllers/schemas');
 
 // Setup
 logger.level = 'error';
@@ -29,8 +28,8 @@ const getResource = resourceId => superagent.get(`${api}/resources/${resourceId}
   });
 
 function createResource({sn}) {
-  const body = { name: 'dev1', type: 'dut', hw: { sn } };
-  return superagent.post(`${api}/resources`).send(body)
+  const body = {name: 'dev1', type: 'dut', hw: {sn}};
+  return superagent.post(`${api}/resources`).send(body);
 }
 
 describe('Resource', function () {
@@ -40,8 +39,8 @@ describe('Resource', function () {
   before(function () {
     authString = getTestUserToken();
   });
-  beforeEach(async function() {
-    const {body} = await createResource({sn: 'SerialNumber' });
+  beforeEach(async function () {
+    const {body} = await createResource({sn: 'SerialNumber'});
     resourceId = body._id;
   });
   afterEach(async function () {
@@ -49,22 +48,18 @@ describe('Resource', function () {
     resourceId = null;
   });
 
-  it('add resource', function () {
-    return createResource({sn: 'SerialNumber2'})
-      .then(function (res) {
-        expect(res).to.be.a('Object');
-        if (res.status === 300) {
-          logger.warn('Seems that your DB is not clean!');
-          process.exit(1);
-        }
-        expect(res).to.have.property('status', 200);
-        expect(res.body).to.have.property('name');
-        expect(res.body).to.have.property('type');
-        expect(res.body).to.have.property('_id');
-        expect(res.body._id).to.be.an('string');
-        expect(res.body.name).to.equal('dev1');
-        expect(res.body.type).to.equal('dut');
-      });
+  it('add resource', async function () {
+    const res = await createResource({sn: 'SerialNumber2'})
+    expect(res).to.be.a('Object');
+    expect(res).to.have.property('status', 200);
+    expect(res.body).to.have.property('name');
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('_id');
+    expect(res.body._id).to.be.an('string');
+    expect(res.body.name).to.equal('dev1');
+    expect(res.body.type).to.equal('dut');
+
+    await superagent.del(`${api}/resources/${res.body._id}`);
   });
 
   it('get resource', function () {
