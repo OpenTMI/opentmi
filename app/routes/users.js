@@ -37,7 +37,15 @@ function Route(app) {
   User.isEmpty()
     .then((empty) => {
       if (empty) { return createDefaultAdmin(); }
-      return Promise.resolve();
+      return User
+        .find({name: 'admin'}).select('+password')
+        .then(([user]) => {
+          if (!user.password) {
+            logger.debug('Admin doesnt have password, set default one: "admin"');
+            user.password = 'admin';
+            return user.save();
+          }
+        });
     })
     .catch(error => logger.warn(error));
 
