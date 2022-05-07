@@ -6,7 +6,7 @@ const path = require('path');
 
 // Third party modules
 const _ = require('lodash');
-const uuidv4 = require('uuid/v4');
+const uuidv4 = require('uuid').v4;
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
 

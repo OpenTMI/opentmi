@@ -1,7 +1,7 @@
 const Validator = require('jsonschema').Validator;
 const async = require('async');
 const _ = require('lodash');
-const uuid = require('uuid');
+const uuid = require('uuid').v1;
 const logger = require('winston');
 
 /**

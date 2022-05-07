@@ -48,11 +48,14 @@ jobs:
     - name: api tests
       run: |
         MOCHA_FILE=junit/apitests.xml grunt apitests --silent
+    - name: cluster tests
+      run: |
         MOCHA_FILE=junit/clustertests.xml grunt clustertests --silent
     - name: lint
       run: |
         npm run lint
     - uses: actions/upload-artifact@v2.2.4
+      if: success() || failure()    # run this step even if previous step failed
       with:
         # Artifact name
         name: logs-${{ matrix.node-version }}

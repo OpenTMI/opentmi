@@ -7,7 +7,7 @@
 // 3rd party modules
 const Promise = require('bluebird');
 const _ = require('lodash');
-const uuid = require('uuid/v1');
+const uuid = require('uuid').v1;
 
 // own modules
 const cluster = require('cluster');
