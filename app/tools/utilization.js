@@ -3,12 +3,11 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const moment = require('moment');
 
-
 // application modules
 const logger = require('./logger');
 const {MsgIds, Priorities} = require('../models/event');
 
-const toSeconds = milliseconds => milliseconds / 1000;
+const toSeconds = (milliseconds) => milliseconds / 1000;
 
 const increase = (obj, path, count = 1) => {
   const newValue = _.get(obj, path) + count;
@@ -22,8 +21,7 @@ const decrease = (obj, path, count = 1) => {
   _.set(obj, path, newValue);
 };
 */
-const roundDate = date => moment(date).utc().format('YYYY-MM-DD');
-
+const roundDate = (date) => moment(date).utc().format('YYYY-MM-DD');
 
 class Utilization {
   constructor() {
@@ -55,6 +53,7 @@ class Utilization {
   get summary() {
     return this._accumulator;
   }
+
   push(event) {
     /**
      * Calculate statistics from events array
@@ -129,7 +128,7 @@ class Utilization {
         increase(this._accumulator, `dates.${dateStr}.flashed.failCount`);
       }
     }
-    return new Promise(resolve => process.nextTick(resolve, this));
+    return new Promise((resolve) => process.nextTick(resolve, this));
   }
 
   calculate() {
@@ -160,10 +159,11 @@ class Utilization {
       obj.allocations.utilization = utilization;
       utilization = (obj.maintenance.time / duration) * 100;
       obj.maintenance.utilization = utilization;
-      return new Promise(resolve => process.nextTick(() => resolve(accumulator)));
+      return new Promise((resolve) => process.nextTick(() => resolve(accumulator)));
     };
     return Promise.reduce(Object.keys(statistics.dates), reducer, statistics);
   }
+
   /*
   @todo handle day-over durations
   static spreadDates(summary) {
@@ -190,6 +190,7 @@ class Utilization {
     return Promise.each(data, utilization.push.bind(utilization))
       .then(() => utilization.summary);
   }
+
   static calcUtilization(data) {
     const utilization = new Utilization();
     return Promise.each(data, utilization.push.bind(utilization))

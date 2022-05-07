@@ -11,7 +11,7 @@ module.exports = {
         return res.status(401).send({message: error});
       }
 
-      return res.send(_.map(keys, key => key.key));
+      return res.send(_.map(keys, (key) => key.key));
     });
   },
   userKeys: (req, res) => {

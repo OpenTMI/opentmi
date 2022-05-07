@@ -7,10 +7,10 @@ const superagent = superagentPromise(require('superagent'), Promise);
 // app modules
 const config = require('../../../app/tools/config');
 
-
 function createToken(payload = {
   iat: moment().unix(),
-  exp: moment().add(2, 'h').unix()}, webtoken) {
+  exp: moment().add(2, 'h').unix()
+}, webtoken) {
   return jwtSimple.encode(payload, webtoken);
 }
 
@@ -49,14 +49,14 @@ function createUser({name, email, password}) {
     .send(body)
     .set('authorization', authString)
     .end()
-    .then(res => res.body);
+    .then((res) => res.body);
 }
 function deleteUser(userId) {
   const authString = getTestUserToken();
   return superagent.del(`${apiV0}/users/${userId}`)
     .set('authorization', authString)
     .end()
-    .then(res => res.body);
+    .then((res) => res.body);
 }
 
 module.exports = {

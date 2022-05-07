@@ -4,18 +4,17 @@
 
 // native modules
 
-
 // 3rd party modules
 const mime = require('mime');
 
 // own modules
-const DefaultController = require('./');
+const DefaultController = require('.');
 
 class BuildsController extends DefaultController {
   constructor() { super('Build'); }
 
   static indexParam(req, res, next, Index) {
-    if (!isNaN(Index)) {
+    if (!Number.isNaN(Index)) {
       req.Index = Number.parseInt(Index, 10);
       return next();
     }
@@ -52,6 +51,5 @@ class BuildsController extends DefaultController {
       });
   }
 }
-
 
 module.exports = BuildsController;

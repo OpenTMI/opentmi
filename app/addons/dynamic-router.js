@@ -16,7 +16,7 @@ class DynamicRouter {
    */
   router(req, res, next) {
     const resolveRoute = (router, reqParam, resParam, nextParam) => { router(reqParam, resParam, nextParam); };
-    const routers = this.addonRouters.map(addonRouter => resolveRoute.bind(this, addonRouter.router, req, res));
+    const routers = this.addonRouters.map((addonRouter) => resolveRoute.bind(this, addonRouter.router, req, res));
     async.waterfall(routers, next);
   }
 
@@ -36,6 +36,5 @@ class DynamicRouter {
     logger.warn(`Could not find and remove router for addon: ${addon.name}.`);
   }
 }
-
 
 module.exports = DynamicRouter;

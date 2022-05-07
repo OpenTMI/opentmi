@@ -6,7 +6,7 @@
 const logger = require('../tools/logger');
 
 // own modules
-const DefaultController = require('./');
+const DefaultController = require('.');
 
 class LoansController extends DefaultController {
   constructor() { super('Loan'); }
@@ -67,7 +67,7 @@ class LoansController extends DefaultController {
     delete req.body.items;
 
     // Change availability
-    req.Loan.modifyAvailability(countArray, err => next(err));
+    req.Loan.modifyAvailability(countArray, (err) => next(err));
     return undefined;
   }
 
@@ -84,6 +84,5 @@ class LoansController extends DefaultController {
       });
   }
 }
-
 
 module.exports = LoansController;

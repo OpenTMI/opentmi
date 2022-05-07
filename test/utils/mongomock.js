@@ -7,7 +7,6 @@ mongoose.Promise = Promise;
 let mongoServer;
 const opts = {useNewUrlParser: true}; // remove this option if you use mongoose 5 and above
 
-
 async function setup() {
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();

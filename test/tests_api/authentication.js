@@ -9,8 +9,9 @@ const logger = require('winston');
 
 // Setup
 logger.level = 'error';
-const {api, protocol, host, port, createUser, deleteUser} = require('./tools/helpers');
-
+const {
+  api, protocol, host, port, createUser, deleteUser
+} = require('./tools/helpers');
 
 describe('authentication', function () {
   describe('Local', function () {
@@ -57,7 +58,7 @@ describe('authentication', function () {
       const payload = {email, password};
       return superagent.post(`${api}/auth/login`, payload)
         .end()
-        .then(res => res.body)
+        .then((res) => res.body)
         .then((body) => {
           expect(body.token).to.be.an('string');
         });
@@ -66,7 +67,7 @@ describe('authentication', function () {
       const payload = {email: name, password};
       return superagent.post(`${api}/auth/login`, payload)
         .end()
-        .then(res => res.body)
+        .then((res) => res.body)
         .then((body) => {
           expect(body.token).to.be.an('string');
         });
@@ -75,7 +76,7 @@ describe('authentication', function () {
       it('success', function () {
         return superagent.get(`${protocol}://${name}:${password}@${host}:${port}/auth/me`)
           .end()
-          .then(res => res.body)
+          .then((res) => res.body)
           .then((body) => {
             expect(body._id).to.be.an('string');
             expect(body.__v).to.be.an('number');
@@ -114,7 +115,7 @@ describe('authentication', function () {
     it('logout', function () {
       return superagent.post(`${protocol}://${name}:${password}@${host}:${port}/auth/logout`)
         .end()
-        .then(res => res.body)
+        .then((res) => res.body)
         .then((body) => {
           expect(body).to.be.deep.equal({});
         });
@@ -124,7 +125,7 @@ describe('authentication', function () {
     it('get clientID', function () {
       return superagent.get(`${api}/auth/github/id`)
         .end()
-        .then(res => res.body)
+        .then((res) => res.body)
         .then((body) => {
           expect(body.clientID).to.be.equal('github-client-id');
         });
@@ -158,7 +159,7 @@ describe('authentication', function () {
     it('get clientID', function () {
       return superagent.get(`${api}/auth/google/id`)
         .end()
-        .then(res => res.body)
+        .then((res) => res.body)
         .then((body) => {
           expect(body.clientID).to.be.equal('google-client-id');
         });

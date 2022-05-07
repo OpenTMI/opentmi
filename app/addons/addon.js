@@ -14,7 +14,9 @@ const nconf = require('../tools/config');
 
 const exec = Promise.promisify(childProcess.exec, {multiArgs: true});
 
-const STATES = Object.freeze({introduce: 0, load: 1, register: 2, unregister: 3});
+const STATES = Object.freeze({
+  introduce: 0, load: 1, register: 2, unregister: 3
+});
 const PHASES = Object.freeze({inProgress: 0, done: 1, failed: 2});
 
 /**
@@ -54,8 +56,8 @@ class Addon {
    * @return {string} string representing current state
    */
   get Status() {
-    const state = Object.keys(STATES).find(key => STATES[key] === this._status.state);
-    const phase = Object.keys(PHASES).find(key => PHASES[key] === this._status.phase);
+    const state = Object.keys(STATES).find((key) => STATES[key] === this._status.state);
+    const phase = Object.keys(PHASES).find((key) => PHASES[key] === this._status.phase);
 
     return `${state}-${phase}`;
   }
@@ -71,8 +73,8 @@ class Addon {
    * @return {bool} current load status
    */
   get isLoaded() {
-    return ((this._status.state >= STATES.load) &&
-            (this._status.phase === PHASES.done));
+    return ((this._status.state >= STATES.load)
+            && (this._status.phase === PHASES.done));
   }
 
   /**
@@ -80,8 +82,8 @@ class Addon {
    * @return {bool} current register status
    */
   get isRegistered() {
-    return (this._status.state === STATES.register) &&
-           (this._status.phase === PHASES.done);
+    return (this._status.state === STATES.register)
+           && (this._status.phase === PHASES.done);
   }
 
   /**
@@ -219,7 +221,7 @@ class Addon {
 
     logger.debug(`[${this.name}] Unregistering addon.`);
     this._status = {state: STATES.unregister, phase: PHASES.inProgress};
-    return new Promise(resolve => resolve(this.instance.unregister()))
+    return new Promise((resolve) => resolve(this.instance.unregister()))
       .then(() => {
         // Remove this addon from the router list
         dynamicRouter.removeRouter(this);
@@ -299,7 +301,7 @@ class Addon {
     module.paths.push(path.join(addon.addonPath, 'node_modules'));
 
     const dependencyKeys = Object.keys(dependencies);
-    return Promise.all(dependencyKeys.map(dependency => Addon._checkDependency(addon, dependency)))
+    return Promise.all(dependencyKeys.map((dependency) => Addon._checkDependency(addon, dependency)))
       .then(() => module.paths.pop());
   }
 
@@ -310,7 +312,7 @@ class Addon {
    * @return {Promise} promise to try and resolve the dependency
    */
   static _checkDependency(addon, dependency) {
-    return new Promise(resolve => resolve(require.resolve(dependency)))
+    return new Promise((resolve) => resolve(require.resolve(dependency)))
       .catch((error) => {
         const errorMsg = `[${addon.name}] Could not resolve dependency.`;
         const meta = {
@@ -366,9 +368,9 @@ class Addon {
       return Promise.reject(editedError);
     });
   }
+
   static exec(...args) { return exec(...args); }
 }
-
 
 module.exports = {
   Addon,

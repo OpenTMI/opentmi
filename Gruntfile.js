@@ -65,18 +65,17 @@ function listAddons() {
   const root = 'app/addons';
 
   return fs.readdirSync(root)
-    .map(item => path.join(root, item)) // Map items to actual paths to those items
-    .filter(itemPath => fs.statSync(itemPath).isDirectory()); // Filter only directories
+    .map((item) => path.join(root, item)) // Map items to actual paths to those items
+    .filter((itemPath) => fs.statSync(itemPath).isDirectory()); // Filter only directories
 }
-
 
 function findAddonApiTests() {
   listAddons().forEach((addonPath) => {
     // Read addon items
     fs.readdirSync(addonPath)
-      .filter(item => item === 'apiTests') // Filter only items that are named apiTests
-      .map(item => path.join(addonPath, item)) // Map items to actual paths to those items
-      .filter(itemPath => fs.statSync(itemPath).isDirectory()) // filter only those paths that are directories
+      .filter((item) => item === 'apiTests') // Filter only items that are named apiTests
+      .map((item) => path.join(addonPath, item)) // Map items to actual paths to those items
+      .filter((itemPath) => fs.statSync(itemPath).isDirectory()) // filter only those paths that are directories
       .forEach((testPath) => {
         testFilesApi.push(path.join(testPath, '*.js'));
       });
@@ -110,6 +109,5 @@ function gruntSetup(grunt) {
     'clustertests'
   ]);
 }
-
 
 module.exports = gruntSetup;

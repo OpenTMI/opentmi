@@ -7,7 +7,6 @@ const superagent = superagentPromise(require('superagent'), Promise);
 const chai = require('chai');
 const logger = require('winston');
 
-
 // application modules
 const {apiV0, getTestUserToken} = require('./tools/helpers');
 
@@ -18,7 +17,7 @@ const api = apiV0;
 // Test variables
 const {expect} = chai;
 
-const getResource = resourceId => superagent.get(`${api}/resources/${resourceId}`)
+const getResource = (resourceId) => superagent.get(`${api}/resources/${resourceId}`)
   .type('json')
   .then(function (res) {
     if (res.status !== 200) {
@@ -94,7 +93,7 @@ describe('Resource', function () {
   });
   it('update resource with valid version key', function () {
     const body = {'status.value': 'storage'};
-    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}`)
+    const doUpdate = (resource) => superagent.put(`${api}/resources/${resourceId}`)
       .send(_.defaults({__v: resource.__v}, body))
       .then((res) => {
         expect(res).to.be.a('Object');
@@ -109,7 +108,7 @@ describe('Resource', function () {
   });
   it('update resource with valid version key', function () {
     const body = {'status.value': 'broken'};
-    const doUpdate = resource => superagent.put(`${api}/resources/${resourceId}`)
+    const doUpdate = (resource) => superagent.put(`${api}/resources/${resourceId}`)
       .send(_.defaults({__v: resource.__v - 1}, body))
       .then(() => {
         throw new Error('Should not pass');
@@ -122,7 +121,7 @@ describe('Resource', function () {
   });
   it('update resource with invalid resource id', function () {
     const body = {'status.value': 'broken'};
-    const doUpdate = resource => superagent.put(`${api}/resources/1234567ee135fe6b99dccb43`)
+    const doUpdate = (resource) => superagent.put(`${api}/resources/1234567ee135fe6b99dccb43`)
       .send(_.defaults({__v: resource.__v}, body))
       .then(() => {
         throw new Error('Should not pass');

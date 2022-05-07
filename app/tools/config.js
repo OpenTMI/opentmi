@@ -70,7 +70,6 @@ const args = {
   parseValues: true
 };
 
-
 const defaultFile = path.resolve(__dirname, '../config.defaults.json');
 const defaults = JSON.parse(fs.readFileSync(defaultFile));
 defaults.db = getDefaultDb();

@@ -12,13 +12,13 @@ const Promise = require('bluebird');
 const config = require('../tools/config');
 const Emailer = require('./emailer');
 const logger = require('../tools/logger');
-const DefaultController = require('./');
-
+const DefaultController = require('.');
 
 class UsersController extends DefaultController {
   constructor() {
     super('User');
   }
+
   create(req, res) {
     return this._create(req.body)
       .then((item) => {
@@ -29,6 +29,7 @@ class UsersController extends DefaultController {
         res.status(400).json({error: error.message});
       });
   }
+
   deleteSettings(req, res) { // eslint-disable-line class-methods-use-this
     const namespace = req.params.Namespace;
     const doc = {$unset: {}};
@@ -41,8 +42,9 @@ class UsersController extends DefaultController {
           res.status(404).json({error: resp.message});
         }
       })
-      .catch(error => res.status(500).json({error: error.message}));
+      .catch((error) => res.status(500).json({error: error.message}));
   }
+
   getSettings(req, res) { // eslint-disable-line class-methods-use-this
     return Promise.try(() => {
       const namespace = req.params.Namespace;
@@ -57,6 +59,7 @@ class UsersController extends DefaultController {
       }
     });
   }
+
   updateSettings(req, res) { // eslint-disable-line class-methods-use-this
     const namespace = req.params.Namespace;
     const doc = {};
@@ -68,12 +71,13 @@ class UsersController extends DefaultController {
         }
         res.json(req.body);
       })
-      .catch(error => res.status(500).json({error: `${error}`}));
+      .catch((error) => res.status(500).json({error: `${error}`}));
   }
+
   forgotPassword(req, res) {
     return Promise
       .try(() => {
-        const email = req.body.email;
+        const {email} = req.body;
         if (!email) {
           const error = new Error('missing email address');
           error.code = 400;
@@ -81,7 +85,7 @@ class UsersController extends DefaultController {
         }
         return email;
       })
-      .then(email => this.Model.findOne({email}))
+      .then((email) => this.Model.findOne({email}))
       .then((theUser) => {
         const user = theUser;
         if (!user) {
@@ -100,6 +104,7 @@ class UsersController extends DefaultController {
       .then(() => res.status(200).json({message: 'password reset token is sent to you'}))
       .catch(UsersController._restCatch.bind(res));
   }
+
   static _notifyPasswordToken(user) {
     const token = user.resetPasswordToken;
     const subject = 'OpenTMI Password Change';
@@ -108,20 +113,22 @@ class UsersController extends DefaultController {
     const text = UsersController._tokenEmail(link, user.email, token);
     return Emailer.send({to: user.email, subject, text});
   }
+
   static _tokenEmail(link, email, token) {
-    return 'You requested a password reset for your OpenTMI account.' +
-             'In case this request was not initiated by you, you can safely ignore it.\n\n' +
-             'Your account:\n' +
-             `Email address: ${email}\n` +
-             'To reset your password, please click on the link below:\n' +
-             `${link}\n` +
-             `Or using token: ${token}`;
+    return 'You requested a password reset for your OpenTMI account.'
+             + 'In case this request was not initiated by you, you can safely ignore it.\n\n'
+             + 'Your account:\n'
+             + `Email address: ${email}\n`
+             + 'To reset your password, please click on the link below:\n'
+             + `${link}\n`
+             + `Or using token: ${token}`;
   }
+
   changePassword(req, res) {
     return Promise
       .try(() => {
-        if (!_.has(req, 'body.password') ||
-            !_.has(req, 'body.token')) {
+        if (!_.has(req, 'body.password')
+            || !_.has(req, 'body.token')) {
           const error = new Error('Missing token or new password');
           error.code = 400;
           throw error;
@@ -148,6 +155,7 @@ class UsersController extends DefaultController {
       })
       .catch(UsersController._restCatch.bind(res));
   }
+
   static _restCatch(error) {
     const body = {message: error.message};
     if (process.env.NODE_ENV !== 'production') {

@@ -1,9 +1,9 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Local components
-const {setup, reset, teardown} = require('./../../utils/mongomock');
+const {setup, reset, teardown} = require('../../utils/mongomock');
 require('../../../app/models/group.js');
-const GroupsController = require('./../../../app/controllers/groups.js');
+const GroupsController = require('../../../app/controllers/groups.js');
 const chai = require('../../chai');
 
 // Test variables

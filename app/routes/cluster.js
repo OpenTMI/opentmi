@@ -6,9 +6,8 @@ const express = require('express');
 
 // Local modules
 const {requireAuth, requireAdmin} = require('./middlewares/authorization');
-const ClusterController = require('./../controllers/clusters');
-const {notClustered} = require('./../controllers/common');
-
+const ClusterController = require('../controllers/clusters');
+const {notClustered} = require('../controllers/common');
 
 function Route(app) {
   const router = express.Router();

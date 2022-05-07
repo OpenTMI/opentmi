@@ -7,11 +7,10 @@
 // 3rd party modules
 
 // own modules
-const DefaultController = require('./');
+const DefaultController = require('.');
 
 class CampaignsController extends DefaultController {
   constructor() { super('Campaign'); }
 }
-
 
 module.exports = CampaignsController;

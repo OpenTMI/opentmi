@@ -17,7 +17,6 @@ const config = require('./tools/config');
 const eventBus = require('./tools/eventBus');
 const DB = require('./db');
 
-
 if (config.get('help') || config.get('h')) {
   config.stores.argv.showHelp();
   process.exit(0);
@@ -38,7 +37,6 @@ const server = Server(app);
 const io = SocketIO(server);
 
 const emailer = new Emailer(config.get('smtp'));
-
 
 // Initialize database connection
 DB.initialize()

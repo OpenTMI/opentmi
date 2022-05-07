@@ -11,4 +11,3 @@ module.exports.newResponse = () => {
   return res;
 };
 module.exports.newRequest = (body = {}, params = {}, query = {}) => ({body, params, query});
-

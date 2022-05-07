@@ -2,7 +2,7 @@
 const express = require('express');
 const _ = require('lodash');
 // application modules
-const ResultController = require('./../controllers/results');
+const ResultController = require('../controllers/results');
 const eventBus = require('../tools/eventBus');
 
 function Route(app) {

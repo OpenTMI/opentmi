@@ -7,7 +7,6 @@ const QueryPlugin = require('mongoose-query');
 const logger = require('../tools/logger');
 const {IsEmpty} = require('./plugins/isempty');
 
-
 /* Implementation */
 const {Schema} = mongoose;
 const {Types} = Schema;
@@ -21,7 +20,9 @@ const GroupSchema = new Schema({
   users: [{type: ObjectId, ref: 'User'}],
   priority: {
     // max priority, 0=highest
-    max: {type: Number, default: 3, min: 0, max: 5}
+    max: {
+      type: Number, default: 3, min: 0, max: 5
+    }
   },
   description: {type: String}
 });

@@ -5,8 +5,8 @@ const {expect} = require('../../chai');
 
 // Local components
 const {setup, reset, teardown} = require('../../utils/mongomock');
-require('./../../../app/models/testcase.js');
-const TestcasesController = require('./../../../app/controllers/testcases.js');
+require('../../../app/models/testcase.js');
+const TestcasesController = require('../../../app/controllers/testcases.js');
 
 // Test variables
 let controller = null;

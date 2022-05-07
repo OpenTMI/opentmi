@@ -7,7 +7,6 @@ const {expect} = require('chai');
 const Updater = require('../../../../app/tools/update/updater');
 const Update = require('../../../../app/tools/update');
 
-
 describe('update/index.js', function () {
   describe('exports', function () {
     it('should export valid GitUpdater class', function (done) {

@@ -27,10 +27,10 @@ function register(app, io, file) {
 
 function registerRoutes(app, io) {
   logger.info('Register Routers...');
-  const filter = file => file.match(/\.js$/) && !file.match(/^(index|error)\.js$/);
+  const filter = (file) => file.match(/\.js$/) && !file.match(/^(index|error)\.js$/);
   return readdir(__dirname)
-    .then(files => _.filter(files, filter))
-    .then(files => Promise.each(files, file => register(app, io, file)));
+    .then((files) => _.filter(files, filter))
+    .then((files) => Promise.each(files, (file) => register(app, io, file)));
 }
 
 module.exports = {

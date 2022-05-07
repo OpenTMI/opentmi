@@ -31,12 +31,13 @@ describe('update/npm.js', function () {
       it('should execute list a command with specified options', function () {
         npm = new Npm((command, options) => {
           expect(command).to.equal('npm list --json --depth=0 --prod');
-          expect(options).to.deep.equal(Object.assign({}, {maxBuffer: 1024 * 1024}, execOptions));
+          expect(options).to.deep.equal({maxBuffer: 1024 * 1024, ...execOptions});
           return Promise.resolve('{"key1":"value1","key2":"value2"}');
         });
 
         return expect(npm.list(execOptions, true)).to.eventually.deep.equal(
-          {key1: 'value1', key2: 'value2'});
+          {key1: 'value1', key2: 'value2'}
+        );
       });
 
       it('should be rejected when execute fails', function () {
@@ -49,12 +50,13 @@ describe('update/npm.js', function () {
       it('should execute version a command with specified options', function () {
         npm = new Npm((command, options) => {
           expect(command).to.equal('npm version --json');
-          expect(options).to.deep.equal(Object.assign({}, {maxBuffer: 1024 * 1024}, execOptions));
+          expect(options).to.deep.equal({maxBuffer: 1024 * 1024, ...execOptions});
           return Promise.resolve('{"key1":"value1","key2":"value2"}');
         });
 
         return expect(npm.version(execOptions)).to.eventually.deep.equal(
-          {key1: 'value1', key2: 'value2'});
+          {key1: 'value1', key2: 'value2'}
+        );
       });
 
       it('should be rejected when execute fails', function () {

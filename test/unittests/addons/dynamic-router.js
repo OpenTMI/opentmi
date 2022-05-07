@@ -47,7 +47,7 @@ describe('dynamic-router.js', function () {
 
       expect(dynamicRouter.addonRouters.length).to.equal(4);
 
-      const removedRouter = dynamicRouter.addonRouters.find(addonRouter => addonRouter.addon.name === 'mockAddon 2');
+      const removedRouter = dynamicRouter.addonRouters.find((addonRouter) => addonRouter.addon.name === 'mockAddon 2');
       expect(removedRouter).to.not.exist; // eslint-disable-line no-unused-expressions
 
       done();

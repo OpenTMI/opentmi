@@ -59,9 +59,8 @@ function objectToArrayOfObjects(obj) {
 
 // Makes sure the provided date is valid
 function isValidDate(date) {
-  return date !== 'Invalid Date' && !isNaN(date);
+  return date !== 'Invalid Date' && !Number.isNaN(date);
 }
-
 
 const LoanItemSchema = new Schema({
   item: {type: ObjectId, ref: 'Item', required: true},
@@ -70,7 +69,8 @@ const LoanItemSchema = new Schema({
     validate: {
       validator: isValidDate,
       message: '{VALUE} cannot be parsed to a date.'
-    }},
+    }
+  },
   resource: {type: ObjectId, ref: 'Resource'}
 });
 
@@ -110,7 +110,6 @@ LoanSchema.pre('save', function preSave(next) {
   next();
 });
 
-
 // ensure resource is loaned only once
 async function ensureResourceExists(item) {
   if (!item.resource) {
@@ -132,10 +131,14 @@ async function ensureResourceExists(item) {
   }
 
   // exists, check it's not loaned already
-  const loans = await Loan.find({items: {$elemMatch: {
-    resource: res._id,
-    return_date: {$exists: false}
-  }}}).exec();
+  const loans = await Loan.find({
+    items: {
+      $elemMatch: {
+        resource: res._id,
+        return_date: {$exists: false}
+      }
+    }
+  }).exec();
   if (loans.length > 0) {
     throw new Error(`resource ${res.name} already loaned!`);
   }
@@ -150,7 +153,6 @@ LoanSchema.pre('save', async function preSave() {
     throw error;
   }
 });
-
 
 // Takes care of decreasing availability of items before loaning
 LoanSchema.pre('save', function preSave(next) {
@@ -191,8 +193,8 @@ LoanSchema.methods.extractItemIds = function extractIds() {
   // Get item counts
   const counts = {};
   for (let i = 0; i < this.items.length; i += 1) {
-    counts[this.items[i].item] = !counts[this.items[i].item] ?
-      -1 : counts[this.items[i].item] - 1; // negative because we are
+    counts[this.items[i].item] = !counts[this.items[i].item]
+      ? -1 : counts[this.items[i].item] - 1; // negative because we are
   }
 
   // Convert counts to array of objects
@@ -270,7 +272,8 @@ LoanSchema.methods.countReturns = function countReturns(deltaItems) {
       id: key,
       index: counts[key].index,
       date: counts[key].date,
-      count: counts[key].count});
+      count: counts[key].count
+    });
   });
 
   return arrayCounts;
@@ -294,8 +297,8 @@ LoanSchema.methods.countUnreturnedItems = function countUnreturnedItems() {
     // Skip if return date has been defined
     if (!self.items[i].return_date) {
       // Increase count by one
-      counts[self.items[i].item] = !counts[self.items[i].item] ?
-        1 : counts[self.items[i].item] + 1;
+      counts[self.items[i].item] = !counts[self.items[i].item]
+        ? 1 : counts[self.items[i].item] + 1;
     }
   }
 

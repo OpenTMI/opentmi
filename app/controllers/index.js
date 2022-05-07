@@ -22,13 +22,14 @@ class DefaultController extends EventEmitter {
   }
 
   static isObjectId(str) {
-    const ObjectId = mongoose.Types.ObjectId;
+    const {ObjectId} = mongoose.Types;
     return ObjectId.isValid(str);
   }
 
   _getModelParamQuery(req) {
     return {_id: req.params[this.modelName]};
   }
+
   modelParam(req, res, next) {
     // Find from db
     logger.silly(`Register model middleware for ${this.modelName}`);
@@ -100,6 +101,7 @@ class DefaultController extends EventEmitter {
       }
     });
   }
+
   create(req, res) {
     const editedReq = req;
     return this._create(editedReq.body)
@@ -116,6 +118,7 @@ class DefaultController extends EventEmitter {
         }
       });
   }
+
   _create(data) {
     const item = new this._model(data);
     return item.save();
@@ -191,6 +194,5 @@ class DefaultController extends EventEmitter {
     return isEmpty(this._model, next);
   }
 }
-
 
 module.exports = DefaultController;

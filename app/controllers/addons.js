@@ -17,7 +17,7 @@ class AddonController {
    * @param {Object} res - response object from express
    */
   static listAddons(req, res) {
-    const addonList = AddonManager.addons.map(addon => addon.toJson);
+    const addonList = AddonManager.addons.map((addon) => addon.toJson);
     res.status(200).json(addonList);
   }
 
@@ -66,7 +66,7 @@ class AddonController {
         removeResult.error = error.message;
         return removeResult;
       })
-      .then(result => res.status(200).json(result));
+      .then((result) => res.status(200).json(result));
   }
 
   /**
@@ -98,9 +98,8 @@ class AddonController {
       return Promise.resolve(actionResult);
     });
 
-    return Promise.all(actionPromises).then(results => res.status(200).json(results));
+    return Promise.all(actionPromises).then((results) => res.status(200).json(results));
   }
 }
-
 
 module.exports = AddonController;

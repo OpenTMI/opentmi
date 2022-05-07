@@ -10,7 +10,6 @@ const PassportStrategies = require('./passport');
 
 const User = mongoose.model('User');
 
-
 class AuthenticationController {
   constructor() {
     PassportStrategies.createStrategies();
@@ -25,6 +24,7 @@ class AuthenticationController {
       next();
     }
   }
+
   // Simple route middleware to ensure user is authenticated.
   //   Use this route middleware on any resource that needs to be protected.  If
   //   the request is authenticated (typically via a persistent login session),
@@ -33,12 +33,15 @@ class AuthenticationController {
   static ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) { next(); } else { res.redirect('/login'); }
   }
+
   static loginRequiredResponse(req, res) {
     res.status(404).json({error: 'login required'});
   }
+
   static apiKeyRequiredResponse(req, res) {
     res.status(404).json({error: 'apikey required'});
   }
+
   static loginFail(error, req, res, next) { // eslint-disable-line no-unused-vars
     const message = _.get(error, 'message', `${error}`);
     logger.debug(`login failed: ${message}`);
@@ -49,8 +52,9 @@ class AuthenticationController {
     // If this function gets called, authentication was successful.
     // req.user` contains the authenticated user.
     createJWT(req.user)
-      .then(token => res.json({token}));
+      .then((token) => res.json({token}));
   }
+
   // GET /api/me
   getme(req, res) { // eslint-disable-line class-methods-use-this
     User.findById(req.user._id, (error, user) => {
@@ -79,6 +83,7 @@ class AuthenticationController {
       return undefined;
     });
   }
+
   // POST /auth/signup
   signup(req, res) { // eslint-disable-line class-methods-use-this
     User.findOne({email: req.body.email}, (error, user) => {
@@ -96,12 +101,13 @@ class AuthenticationController {
           res.status(500).send({message: saveError.message});
         }
         createJWT(result)
-          .then(token => res.json({token}));
+          .then((token) => res.json({token}));
       });
 
       return undefined;
     });
   }
+
   //
   logout(req, res) { // eslint-disable-line class-methods-use-this
     // rest authentication is stored only in token -
@@ -150,6 +156,7 @@ class AuthenticationController {
       }
     };
   }
+
   static GetScope(service) {
     switch (service) {
       case ('github'):

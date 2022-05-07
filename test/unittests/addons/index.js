@@ -122,8 +122,10 @@ describe('addons/index.js', function () {
       return Object.getPrototypeOf(AddonManager).constructor._recursiveLoad(addons)
         .then(() => {
           expect(loadCalled).to.equal(addons.length, 'load should be called as many times as there are addons.');
-          expect(instanceCalled).to.equal(addons.length,
-            'create instance should be called as many times as there are addons.');
+          expect(instanceCalled).to.equal(
+            addons.length,
+            'create instance should be called as many times as there are addons.'
+          );
           return Promise.resolve();
         });
     });
@@ -153,8 +155,10 @@ describe('addons/index.js', function () {
       return Object.getPrototypeOf(AddonManager).constructor._recursiveLoad(addons)
         .then(() => {
           expect(loadCalled).to.equal(addons.length, 'load should be called as many times as there are addons.');
-          expect(instanceCalled).to.equal(addons.length,
-            'create instance should be called as many times as there are addons.');
+          expect(instanceCalled).to.equal(
+            addons.length,
+            'create instance should be called as many times as there are addons.'
+          );
           return Promise.resolve();
         });
     });
@@ -168,7 +172,7 @@ describe('addons/index.js', function () {
         expect(addonArray.length).to.equal(AddonManager.addons.length);
 
         Object.keys(addonMockFiles).forEach((addonName) => {
-          expect(addonArray.find(addon => addon.name === addonName)).to.exist;
+          expect(addonArray.find((addon) => addon.name === addonName)).to.exist;
         });
 
         return Promise.resolve('finished');
@@ -182,9 +186,11 @@ describe('addons/index.js', function () {
 
   describe('registerAddons', function () {
     it('registerAddons - valid addons', function () {
-      AddonManager.app = {use: (router) => {
-        expect(router).to.be.a('Function');
-      }};
+      AddonManager.app = {
+        use: (router) => {
+          expect(router).to.be.a('Function');
+        }
+      };
 
       const addons = [
         {register: () => Promise.resolve(), isLoaded: true},
@@ -238,7 +244,8 @@ describe('addons/index.js', function () {
     it('registerAddon - valid addon', function () {
       const addon = {
         name: 'mock addon',
-        register: () => Promise.resolve('registered')};
+        register: () => Promise.resolve('registered')
+      };
       return expect(AddonManager.registerAddon(addon)).to.eventually.equal('registered');
     });
   });

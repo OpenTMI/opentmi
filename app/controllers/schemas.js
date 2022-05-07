@@ -21,7 +21,7 @@ class SchemasController {
     this.schemaNames = Object.keys(this.models);
     this.schemas = {};
     this.schemaNames.forEach((collection) => {
-      const schema = this.models[collection].schema;
+      const {schema} = this.models[collection];
       this.schemas[collection] = {
         schema: schema.jsonSchema(),
         properties: Object.keys(this.models[collection].schema.obj)
@@ -73,6 +73,5 @@ class SchemasController {
     res.status(200).json(responsePackage);
   }
 }
-
 
 module.exports = SchemasController;

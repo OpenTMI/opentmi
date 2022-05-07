@@ -31,7 +31,7 @@ passport.serializeUser((userDoc, done) => {
   doc.loggedIn = true;
   doc.lastVisited = new Date();
   doc.save()
-    .then(user => done(null, user))
+    .then((user) => done(null, user))
     .catch(done);
 });
 
@@ -66,6 +66,7 @@ class PassportStrategies {
       PassportStrategies.GoogleStrategy(google);
     }
   }
+
   static JWTStrategy() {
     // JWT
     const jwtStrategy = new JWTStrategy(
@@ -92,6 +93,7 @@ class PassportStrategies {
     );
     passport.use(jwtStrategy);
   }
+
   static LocalStrategy() {
     logger.info('Create local strategy');
     const localStrategy = new LocalStrategy(
@@ -112,7 +114,7 @@ class PassportStrategies {
             invariant(user, 'Invalid email and/or password');
             return user;
           })
-          .then(user => user.comparePassword(password).return(user))
+          .then((user) => user.comparePassword(password).return(user))
           .then((user) => {
             done(null, user);
           })
@@ -121,6 +123,7 @@ class PassportStrategies {
     );
     passport.use(localStrategy);
   }
+
   static HttpStrategy() {
     passport.use(new HttpStrategy((userid, password, done) => {
       const req = {name: userid};
@@ -132,7 +135,7 @@ class PassportStrategies {
           invariant(user, 'Invalid email and/or password');
           return user;
         })
-        .then(user => user.comparePassword(password).return(user))
+        .then((user) => user.comparePassword(password).return(user))
         .then((user) => {
           done(null, user);
         })
@@ -145,7 +148,7 @@ class PassportStrategies {
 
   static _GithubStrategyHelper(oauth2, accessToken, profile, next) {
     logger.debug(`Profile: ${JSON.stringify(profile)}`);
-    const emails = _.map(profile.emails, obj => ({email: obj.value}));
+    const emails = _.map(profile.emails, (obj) => ({email: obj.value}));
     Github.checkOrganization(oauth2, accessToken)
       .then(() => Github.checkAdmin(oauth2, accessToken))
       .then((isAdmin) => {
@@ -164,11 +167,12 @@ class PassportStrategies {
             user.email = _.get(profile, 'emails.0.value'); // eslint-disable-line no-param-reassign
             return user;
           })
-          .then(user => Github.updateUsersGroup(user, group).return(user))
-          .then(user => next(null, user));
+          .then((user) => Github.updateUsersGroup(user, group).return(user))
+          .then((user) => next(null, user));
       })
       .catch(next);
   }
+
   static GitHubStrategy({clientID, clientSecret, callbackURL}) {
     logger.info('Create github strategy');
     const strategy = new GitHubStrategy(
@@ -184,6 +188,7 @@ class PassportStrategies {
     );
     passport.use(strategy);
   }
+
   static GitHubTokenStrategy({clientID, clientSecret}) {
     logger.info('Create github token strategy');
     const strategy = new GitHubTokenStrategy(
@@ -195,6 +200,7 @@ class PassportStrategies {
     );
     passport.use(strategy);
   }
+
   static GoogleStrategy({clientID, clientSecret, callbackURL}) {
     const googleStrategy = new GoogleStrategy(
       {clientID, clientSecret, callbackURL},

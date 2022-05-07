@@ -1,8 +1,8 @@
 // Third party moduls
 const mongoose = require('mongoose');
 const _ = require('lodash');
-const logger = require('../tools/logger');
 const express = require('express');
+const logger = require('../tools/logger');
 
 // Application modules
 const GroupController = require('../controllers/groups');
@@ -37,14 +37,14 @@ function Route(app) {
         (new Group({name: 'users', users: []})).save();
       }
     })
-    .catch(error => logger.error(error));
+    .catch((error) => logger.error(error));
 
   Group.getUsers('admins', (error, users) => {
     if (error) {
       logger.error(error);
       return;
     }
-    const admins = _.map(users, user => user.name || user.displayName || user.email);
+    const admins = _.map(users, (user) => user.name || user.displayName || user.email);
     logger.info(`Admin Users: ${admins.join(',')}`);
   });
 }

@@ -78,11 +78,13 @@ class AddonManager {
    */
   static _recursiveLoad(addonArray, app, server, io, eventBus) {
     logger.info('Loading addons...');
-    return addonArray.reduce((acc, addon) => acc
-      .then(() => addon.loadModule())
-      .then(() => addon.createInstance(app, server, io, eventBus))
-      .catch(error => AddonManager._moduleLoadError(addon, 'Addon load failed.', error)),
-    Promise.resolve());
+    return addonArray.reduce(
+      (acc, addon) => acc
+        .then(() => addon.loadModule())
+        .then(() => addon.createInstance(app, server, io, eventBus))
+        .catch((error) => AddonManager._moduleLoadError(addon, 'Addon load failed.', error)),
+      Promise.resolve()
+    );
   }
 
   /**
@@ -101,7 +103,7 @@ class AddonManager {
     logger.debug(`Loading addons from path: ${addonPath}, required prefix: "${prefix}"`);
     // Iterate through all directory files in the addons folder
     const addonNames = fs.readdirSync(addonPath).filter(isAddon);
-    this.addons = addonNames.map(name => new Addon(name, true, addonPath));
+    this.addons = addonNames.map((name) => new Addon(name, true, addonPath));
     return AddonManager._recursiveLoad(this.addons, this.app, this.server, this.io, this.eventBus);
   }
 
@@ -114,9 +116,9 @@ class AddonManager {
 
     // Promise to register all addons
     const registerPromises = this.addons
-      .filter(addon => addon.isLoaded)
-      .map(addon => addon.register(this.app, this.dynamicRouter)
-        .catch(error => AddonManager._moduleLoadError(addon, 'Addon register failed.', error)));
+      .filter((addon) => addon.isLoaded)
+      .map((addon) => addon.register(this.app, this.dynamicRouter)
+        .catch((error) => AddonManager._moduleLoadError(addon, 'Addon register failed.', error)));
 
     return Promise.all(registerPromises)
       .then((results) => {
@@ -131,7 +133,7 @@ class AddonManager {
    * @return {Addon|undefined} either the addon or undefined
    */
   findAddon(name) {
-    return this.addons.find(addon => addon.name === name);
+    return this.addons.find((addon) => addon.name === name);
   }
 
   /**
@@ -140,7 +142,7 @@ class AddonManager {
    * @return {integer} index of an addon or -1
    */
   findAddonIndex(targetAddon) {
-    return this.addons.findIndex(addon => addon.name === targetAddon.name);
+    return this.addons.findIndex((addon) => addon.name === targetAddon.name);
   }
 
   /**
@@ -177,12 +179,13 @@ class AddonManager {
         logger.info(`Removing addon: [${addon.name}].`);
         this.addons.splice(index, 1);
         return Promise.resolve();
-      } else if (addon.isBusy || addon.isRegistered) {
+      } if (addon.isBusy || addon.isRegistered) {
         // Something is in progress, better not remove
         const error = 'Should not remove addon, either busy or registered.';
         const meta = {
           status: addon.Status,
-          solution: 'Unregister addon, wait for the addon to finish, or just use force remove.'};
+          solution: 'Unregister addon, wait for the addon to finish, or just use force remove.'
+        };
         return Promise.reject(new Error(global.createErrorMessage(error, meta)));
       }
 
@@ -195,6 +198,5 @@ class AddonManager {
     return Promise.reject(new Error(global.createErrorMessage(error, meta)));
   }
 }
-
 
 module.exports = new AddonManager();

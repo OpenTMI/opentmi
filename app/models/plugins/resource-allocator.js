@@ -1,4 +1,4 @@
-const Validator = require('jsonschema').Validator;
+const {Validator} = require('jsonschema');
 const async = require('async');
 const _ = require('lodash');
 const uuid = require('uuid').v1;

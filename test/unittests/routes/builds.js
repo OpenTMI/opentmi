@@ -11,7 +11,6 @@ const SchemaRoute = require('../../../app/routes/builds');
 // Setup
 logger.level = 'error';
 
-
 describe('routes/builds.js', function () {
   describe('Route', function () {
     it('should define a parameter handler for Build parameter', function (done) {
@@ -38,8 +37,12 @@ describe('routes/builds.js', function () {
 
           expect(router.stack[1]).to.have.property('route');
           expect(router.stack[1].route).to.have.property('path', '/api/v0/duts/builds/:Build.:format?');
-          expect(router.stack[1].route).to.have.deep.property('methods',
-            {_all: true, delete: true, get: true, put: true});
+          expect(router.stack[1].route).to.have.deep.property(
+            'methods',
+            {
+              _all: true, delete: true, get: true, put: true
+            }
+          );
 
           expect(router.stack[2]).to.have.property('route');
           expect(router.stack[2].route).to.have.property('path', '/api/v0/duts/builds/:Build/files/:Index/download');

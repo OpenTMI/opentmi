@@ -11,7 +11,6 @@ const User = mongoose.model('User');
 
 const userApiUrl = 'https://api.github.com/user';
 
-
 class Github {
   static createUserFromGithubProfile(profile) {
     logger.silly(`create new user from github profile: ${profile.username}`);
@@ -23,6 +22,7 @@ class Github {
     newUser.email = profile._json.email;
     return newUser.save();
   }
+
   // Ensure the user belongs to the required organization.
   static checkOrganization(oauth2, accessToken) {
     logger.debug('fetching list of organizations user belongs to.');
@@ -92,8 +92,7 @@ class Github {
         const {adminTeam, organization} = nconf.get('github');
 
         // Attempt to find the correct admin team from list of teams the user belongs to
-        const isAdmin = _.find(teams, team =>
-          (team.name === adminTeam && team.organization.login === organization));
+        const isAdmin = _.find(teams, (team) => (team.name === adminTeam && team.organization.login === organization));
         logger.verbose(`user ${isAdmin ? 'belongs' : 'does not belong'} to admin team: ${adminTeam}`);
         return !!isAdmin;
       });
@@ -111,7 +110,7 @@ class Github {
           }
           return user.save();
         });
-    } else if (groupname === 'admins') {
+    } if (groupname === 'admins') {
       logger.info(`adding user: ${user._id} to admins.`);
       return user.addToGroup(groupname);
     }

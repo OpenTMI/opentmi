@@ -64,7 +64,7 @@ describe('Basic socketio tests', function () {
 
   it('connection works', function () {
     return ioConnect(token)
-      .then(io => ioDisconnect((io)));
+      .then((io) => ioDisconnect((io)));
   });
   it('connection denied when invalid token', function () {
     return assert.isRejected(ioConnect('invalid_token'), /jwt malformed/);
@@ -100,18 +100,18 @@ describe('Basic socketio tests', function () {
           resolve();
         });
       });
-      const join = new Promise(resolve => io.emit('join', {room: 'logs'}, (error) => {
+      const join = new Promise((resolve) => io.emit('join', {room: 'logs'}, (error) => {
         expect(error).to.be.undefined;
         resolve();
       }));
       return Promise.all([log, join]);
     });
     it('leave(logs)', function () {
-      const join = new Promise(resolve => io.emit('join', {room: 'logs'}, (error) => {
+      const join = new Promise((resolve) => io.emit('join', {room: 'logs'}, (error) => {
         expect(error).to.be.undefined;
         resolve();
       }));
-      const leave = () => new Promise(resolve => io.emit('leave', {room: 'logs'}, (error) => {
+      const leave = () => new Promise((resolve) => io.emit('leave', {room: 'logs'}, (error) => {
         expect(error).to.be.undefined;
         resolve();
       }));

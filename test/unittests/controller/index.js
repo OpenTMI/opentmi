@@ -7,12 +7,12 @@ const Promise = require('bluebird');
 
 // Local components
 const chai = require('../../chai');
-const DefaultController = require('./../../../app/controllers/index.js');
+const DefaultController = require('../../../app/controllers/index.js');
 const MockResponse = require('./mocking/MockResponse.js');
 const DummySchema = require('./mocking/DummySchema.js');
 const mockDummies = require('./mocking/MockDummyItems.js');
 
-const {setup, reset, teardown} = require('./../../utils/mongomock');
+const {setup, reset, teardown} = require('../../utils/mongomock');
 
 mongoose.model('DummyItem', DummySchema);
 
@@ -211,7 +211,9 @@ describe('controllers/index.js', function () {
           _.assign(
             {},
             mockDummies[0],
-            _.pick(mockDataCopy, ['text_freeform'])));
+            _.pick(mockDataCopy, ['text_freeform'])
+          )
+        );
         resolve();
       }, (value) => {
         expect(value).to.not.be.oneOf([400]);

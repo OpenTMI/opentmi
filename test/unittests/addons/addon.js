@@ -97,7 +97,7 @@ describe('addon.js', function () {
 
   describe('loadModule', function () {
     it('loadModule - correct state, no errors', function () {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       addonPrototype.constructor._loadAddonModule = () => Promise.resolve('module');
       return addon.loadModule()
@@ -114,7 +114,7 @@ describe('addon.js', function () {
 
   describe('createInstance', function () {
     it('createInstance - correct state, no errors', function () {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       addon.Module = function (app, server, socketIO) {
         this.app = app;
@@ -143,7 +143,7 @@ describe('addon.js', function () {
 
   describe('register', function () {
     it('register - valid register sequence', function () {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       addon._status = {state: STATES.load, phase: PHASES.done};
       addon.Module = {disabled: false};
@@ -173,7 +173,7 @@ describe('addon.js', function () {
 
   describe('_registerRouter', function () {
     it('_registerRouter - instance has router', function (done) {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       addon.instance = {router: 'router'};
 
@@ -188,14 +188,16 @@ describe('addon.js', function () {
 
   describe('_registerStaticPath', function () {
     it('_registerStaticPath - has static path', function (done) {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       addon.instance = {staticPath: {prefix: 'path_prefix', folder: 'static_path'}};
 
-      const app = {use: (pPrefix, pFolder) => {
-        expect(pPrefix).to.equal('path_prefix');
-        expect(pFolder).to.be.a('Function');
-      }};
+      const app = {
+        use: (pPrefix, pFolder) => {
+          expect(pPrefix).to.equal('path_prefix');
+          expect(pFolder).to.be.a('Function');
+        }
+      };
 
       addon._registerStaticPath(app);
       delete global.createErrorMessage;
@@ -205,7 +207,7 @@ describe('addon.js', function () {
 
   describe('unregister', function () {
     it('unregister - ', function () {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       addon._status = {state: STATES.register, phase: STATES.done};
       addon.instance = {unregister: () => Promise.resolve()};
@@ -228,10 +230,11 @@ describe('addon.js', function () {
 
   describe('_loadAddonModule', function () {
     it('_loadAddonModule', function () {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       addonPrototype.constructor._requirePackageFile = () => Promise.resolve(
-        {description: 'desc', version: 'version', repository: 'repo'});
+        {description: 'desc', version: 'version', repository: 'repo'}
+      );
 
       let installCalled = false;
       addonPrototype.constructor._installDependencies = () => {
@@ -290,7 +293,7 @@ describe('addon.js', function () {
   });
 
   describe('_checkDependency', function () {
-    global.createErrorMessage = error => Promise.reject(error);
+    global.createErrorMessage = (error) => Promise.reject(error);
 
     it('_checkDependency - valid dependency', function () {
       const dependency = 'fs';
@@ -303,7 +306,7 @@ describe('addon.js', function () {
 
   describe('_requirePackageFile', function () {
     it('_requirePackageFile', function () {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       return addonPrototype.constructor._requirePackageFile(addon)
         .then((pPackage) => {
@@ -315,7 +318,7 @@ describe('addon.js', function () {
 
   describe('_requireModule', function () {
     it('_requireModule', function () {
-      global.createErrorMessage = error => Promise.reject(error);
+      global.createErrorMessage = (error) => Promise.reject(error);
 
       return addonPrototype.constructor._requireModule(addon)
         .then((pModule) => {

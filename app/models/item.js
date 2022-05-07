@@ -12,15 +12,18 @@ const {Types} = Schema;
 const {ObjectId} = Types;
 const request = Request.defaults({encoding: null});
 
-
 const ItemSchema = new Schema({
   barcode: {type: String, unique: true, sparse: true},
   name: {type: String, required: true, unique: true},
   image_src: {type: String},
   text_description: {type: String},
   external_reference: {type: String},
-  in_stock: {type: Number, required: true, default: 0, min: 0}, // total amount of SKUs
-  available: {type: Number, required: true, default: 0, min: 0}, // in_stock - loaned
+  in_stock: {
+    type: Number, required: true, default: 0, min: 0
+  }, // total amount of SKUs
+  available: {
+    type: Number, required: true, default: 0, min: 0
+  }, // in_stock - loaned
   unique_resources: [{type: ObjectId, ref: 'Resource'}],
   date_created: {type: Date},
   category: {

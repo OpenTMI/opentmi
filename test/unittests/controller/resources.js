@@ -7,11 +7,10 @@ const Promise = require('bluebird');
 
 // Local components
 const {setup, reset, teardown} = require('../../utils/mongomock');
-require('./../../../app/models/resource.js');
-const ResourceController = require('./../../../app/controllers/resources.js');
+require('../../../app/models/resource.js');
+const ResourceController = require('../../../app/controllers/resources.js');
 const MockResponse = require('./mocking/MockResponse.js');
 const {newResponse, newRequest} = require('../helpers');
-
 
 // Test variables
 const {expect} = chai;
@@ -58,10 +57,12 @@ describe('controllers/resources.js', function () {
       params: {Resource: 'redirect_target'}
     };
 
-    const res = {redirect: (value) => {
-      redirected = true;
-      expect(value).to.equal('/api/v0/resources/redirect_target');
-    }};
+    const res = {
+      redirect: (value) => {
+        redirected = true;
+        expect(value).to.equal('/api/v0/resources/redirect_target');
+      }
+    };
 
     ResourceController.setDeviceBuild(req, res);
 
@@ -73,9 +74,13 @@ describe('controllers/resources.js', function () {
   it('solveRoute', function () {
     // solveRoute returns with error
     const errorPromise = new Promise((resolve) => {
-      const req = {Resource: {solveRoute: (cb) => {
-        cb(new Error('Could not solve route!'));
-      }}};
+      const req = {
+        Resource: {
+          solveRoute: (cb) => {
+            cb(new Error('Could not solve route!'));
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
@@ -89,9 +94,13 @@ describe('controllers/resources.js', function () {
 
     // solveRoute returns a path
     const validPathPromise = new Promise((resolve) => {
-      const req = {Resource: {solveRoute: (cb) => {
-        cb(undefined, 'valid route');
-      }}};
+      const req = {
+        Resource: {
+          solveRoute: (cb) => {
+            cb(undefined, 'valid route');
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.not.have.property('error');
@@ -114,10 +123,13 @@ describe('controllers/resources.js', function () {
     const errorPromise = new Promise((resolve, reject) => {
       const req = {
         params: {Alloc: 'allocation id'},
-        Resource: {find: (query, cb) => {
-          expect(query).to.have.property('status.allocId', 'allocation id');
-          cb(new Error('Could not find anything'));
-        }}};
+        Resource: {
+          find: (query, cb) => {
+            expect(query).to.have.property('status.allocId', 'allocation id');
+            cb(new Error('Could not find anything'));
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
@@ -133,10 +145,13 @@ describe('controllers/resources.js', function () {
     const noErrorWithResultsPromise = new Promise((resolve) => {
       const req = {
         params: {Alloc: 'allocation id'},
-        Resource: {find: (query, cb) => {
-          expect(query).to.have.property('status.allocId', 'allocation id');
-          cb(undefined, ['result1', 'result2', 'result3']);
-        }}};
+        Resource: {
+          find: (query, cb) => {
+            expect(query).to.have.property('status.allocId', 'allocation id');
+            cb(undefined, ['result1', 'result2', 'result3']);
+          }
+        }
+      };
 
       const res = {};
 
@@ -151,10 +166,13 @@ describe('controllers/resources.js', function () {
     const noErrorAndNoResultsPromise = new Promise((resolve, reject) => {
       const req = {
         params: {Alloc: 'allocation id'},
-        Resource: {find: (query, cb) => {
-          expect(query).to.have.property('status.allocId', 'allocation id');
-          cb(undefined, []);
-        }}};
+        Resource: {
+          find: (query, cb) => {
+            expect(query).to.have.property('status.allocId', 'allocation id');
+            cb(undefined, []);
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error', 'not found');
@@ -163,8 +181,11 @@ describe('controllers/resources.js', function () {
         expect(value).to.equal(404);
       });
 
-      ResourceController.paramAlloc(req, res,
-        reject.bind(this, 'next should not be called when no documents are found'));
+      ResourceController.paramAlloc(
+        req,
+        res,
+        reject.bind(this, 'next should not be called when no documents are found')
+      );
     });
 
     // Resolve all promises
@@ -210,9 +231,13 @@ describe('controllers/resources.js', function () {
   it('alloc', function () {
     // Allocate returns error
     const errorPromise = new Promise((resolve) => {
-      const req = {Resource: {alloc: (cb) => {
-        cb(new Error('Cannot allocate this resource'));
-      }}};
+      const req = {
+        Resource: {
+          alloc: (cb) => {
+            cb(new Error('Cannot allocate this resource'));
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
@@ -226,10 +251,14 @@ describe('controllers/resources.js', function () {
 
     // Allocate is successful
     const successPromise = new Promise((resolve) => {
-      const req = {Resource: {alloc: (cb) => {
-        req.allocated = 'allocation';
-        cb(undefined, 'document');
-      }}};
+      const req = {
+        Resource: {
+          alloc: (cb) => {
+            req.allocated = 'allocation';
+            cb(undefined, 'document');
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.equal('allocation');
@@ -249,9 +278,13 @@ describe('controllers/resources.js', function () {
   it('release', function () {
     // Release returns error
     const errorPromise = new Promise((resolve) => {
-      const req = {Resource: {release: (cb) => {
-        cb(new Error('Cannot release this resource'));
-      }}};
+      const req = {
+        Resource: {
+          release: (cb) => {
+            cb(new Error('Cannot release this resource'));
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
@@ -265,10 +298,14 @@ describe('controllers/resources.js', function () {
 
     // Release is successful
     const successPromise = new Promise((resolve) => {
-      const req = {Resource: {release: (cb) => {
-        req.allocated = 'releasation';
-        cb(undefined, 'document');
-      }}};
+      const req = {
+        Resource: {
+          release: (cb) => {
+            req.allocated = 'releasation';
+            cb(undefined, 'document');
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.equal('releasation');
@@ -288,9 +325,13 @@ describe('controllers/resources.js', function () {
   it('allocMultiple', function () {
     // allocateResources returns error
     const errorPromise = new Promise((resolve) => {
-      const req = {Resource: {allocateResources: (body, cb) => {
-        cb(new Error('Cannot allocate these resources'));
-      }}};
+      const req = {
+        Resource: {
+          allocateResources: (body, cb) => {
+            cb(new Error('Cannot allocate these resources'));
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.have.property('error');
@@ -304,9 +345,13 @@ describe('controllers/resources.js', function () {
 
     // allocateResources is successful
     const successPromise = new Promise((resolve) => {
-      const req = {Resource: {allocateResources: (body, cb) => {
-        cb(undefined, 'allocated_stuff');
-      }}};
+      const req = {
+        Resource: {
+          allocateResources: (body, cb) => {
+            cb(undefined, 'allocated_stuff');
+          }
+        }
+      };
 
       const res = new MockResponse((value) => {
         expect(value).to.equal('allocated_stuff');

@@ -45,7 +45,6 @@ describe('controllers/schemas.js', function () {
     });
   });
 
-
   describe('get', function () {
     const schemaNames = ['name1', 'name2', 'name3', 'name4'];
 
@@ -64,7 +63,6 @@ describe('controllers/schemas.js', function () {
       controller.get(undefined, res);
     });
   });
-
 
   describe('find', function () {
     const collection = 'aCollection';

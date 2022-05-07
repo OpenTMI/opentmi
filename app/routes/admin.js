@@ -6,9 +6,8 @@ const express = require('express');
 
 // Application modules
 const {ensureAdmin, requireAuth, requireAdmin} = require('./middlewares/authorization');
-const AdminController = require('./../controllers/admin');
-const {notClustered} = require('./../controllers/common');
-
+const AdminController = require('../controllers/admin');
+const {notClustered} = require('../controllers/common');
 
 function Route(app) {
   const router = express.Router();

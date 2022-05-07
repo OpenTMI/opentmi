@@ -5,9 +5,8 @@ const chai = require('chai');
 
 // Local components
 const {setup, reset, teardown} = require('../../utils/mongomock');
-require('./../../../app/models/campaign.js');
-const CampaignController = require('./../../../app/controllers/campaigns.js');
-
+require('../../../app/models/campaign.js');
+const CampaignController = require('../../../app/controllers/campaigns.js');
 
 // Test variables
 const {expect} = chai;

@@ -10,7 +10,7 @@ const models = {};
 
 function refreshIndexes() {
   logger.info(`Ensuring models (${Object.keys(models).length}) indexes...`);
-  const ensureModelIndexes = Model => Model.createIndexes()
+  const ensureModelIndexes = (Model) => Model.createIndexes()
     .catch((err) => {
       logger.error(`Index error: ${err.message}`);
       logger.info('Seems that your DB indexes causes conflicts, ');
@@ -32,9 +32,9 @@ function refreshIndexes() {
 function registerModels() {
   logger.info('Registering models..');
   fs.readdirSync(__dirname).forEach((file) => {
-    if (file.match(/\.js$/) &&
-      !file.match(/^index\.js$/) &&
-      !file.match(/^\./)) {
+    if (file.match(/\.js$/)
+      && !file.match(/^index\.js$/)
+      && !file.match(/^\./)) {
       try {
         const filename = `${__dirname}/${file}`;
         logger.silly(`Reading: ${filename}.`);

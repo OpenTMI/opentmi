@@ -20,8 +20,8 @@ const Promise = require('bluebird');
 const MongoStore = require('connect-mongo')(session);
 const passport = require('passport');
 
-const logger = require('./tools/logger');
 const expressWinston = require('express-winston');
+const logger = require('./tools/logger');
 
 /* Project libraries */
 const config = require('./tools/config');

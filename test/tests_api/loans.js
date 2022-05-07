@@ -10,7 +10,6 @@ const logger = require('winston');
 const config = require('../../app/tools/config');
 const {createUserToken, apiV0} = require('./tools/helpers');
 
-
 // Setup
 logger.level = 'error';
 
