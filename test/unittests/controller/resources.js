@@ -1,11 +1,11 @@
 /* eslint-disable func-names, prefer-arrow-callback, no-unused-expressions */
 
 // Third party components
-const chai = require('chai');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 
 // Local components
+const chai = require('../../chai');
 const {setup, reset, teardown} = require('../../utils/mongomock');
 require('./../../../app/models/resource.js');
 const ResourceController = require('./../../../app/controllers/resources.js');
@@ -207,10 +207,10 @@ describe('controllers/resources.js', function () {
     ]);
   });
 
-  it('alloc', function () {
+  it('allocate', function () {
     // Allocate returns error
     const errorPromise = new Promise((resolve) => {
-      const req = {Resource: {alloc: (cb) => {
+      const req = {Resource: {allocate: (cb) => {
         cb(new Error('Cannot allocate this resource'));
       }}};
 
@@ -221,12 +221,12 @@ describe('controllers/resources.js', function () {
         expect(value).to.equal(500);
       });
 
-      ResourceController.alloc(req, res);
+      ResourceController.allocate(req, res);
     });
 
     // Allocate is successful
     const successPromise = new Promise((resolve) => {
-      const req = {Resource: {alloc: (cb) => {
+      const req = {Resource: {allocate: (cb) => {
         req.allocated = 'allocation';
         cb(undefined, 'document');
       }}};
@@ -236,7 +236,7 @@ describe('controllers/resources.js', function () {
         resolve();
       });
 
-      ResourceController.alloc(req, res);
+      ResourceController.allocate(req, res);
     });
 
     // Resolve all promises
