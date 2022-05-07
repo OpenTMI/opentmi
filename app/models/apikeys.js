@@ -3,7 +3,7 @@
  */
 const mongoose = require('mongoose');
 const QueryPlugin = require('mongoose-query');
-const uuidv4 = require('uuid/v4');
+const uuidv4 = require('uuid').v4;
 
 /* Implementation */
 const {Schema} = mongoose;
