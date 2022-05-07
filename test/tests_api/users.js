@@ -95,6 +95,7 @@ describe('Users', function () {
       .set('authorization', authString)
       .end(function (error, res) {
         expect(res.status).to.equal(200);
+        newUserId = null;
         done();
       });
   });
@@ -408,6 +409,7 @@ describe('Users', function () {
             expect(checkRes).to.be.a('Object');
             expect(checkError).to.not.equal(null);
             expect(checkRes.status).to.equal(404);
+            newUserId = null;
             done();
           });
       });
