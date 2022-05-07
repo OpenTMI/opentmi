@@ -151,7 +151,6 @@ UserSchema.methods.saltPassword = function saltPassword(password) {
 UserSchema.methods.isAdmin = function isAdmin() {
   return this
     .populate('groups')
-    .execPopulate()
     .then((populatedUser) => {
       const admins = populatedUser.groups.find(g => g.name === 'admins');
       return !!admins;

@@ -10,7 +10,7 @@ require('colors');
 const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const JunitXmlParser = require('junit-xml-parser').parser;
-const uuid = require('uuid/v1');
+const uuid = require('uuid').v1;
 const logger = require('../tools/logger');
 
 // Setup

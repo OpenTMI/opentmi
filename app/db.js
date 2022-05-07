@@ -16,8 +16,8 @@ let tearingDown = false;
 
 const initialize = async function () {
   if (dbUrl === 'inmemory') {
-    mongoServer = new MongoMemoryServer();
-    dbUrl = await mongoServer.getUri();
+    mongoServer = await MongoMemoryServer.create();
+    dbUrl = mongoServer.getUri();
     logger.info(`use inmemory db: ${dbUrl}`);
     config.set('db', dbUrl);
   }
@@ -28,12 +28,10 @@ const connect = async function () {
     logger: logger.info.bind(logger),
     promiseLibrary: Promise,
     useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true
+    useUnifiedTopology: true
   };
   const overwritable = {
     appname: 'opentmi',
-    validateOptions: true,
     loggerLevel: 'info'
   };
   const options = _.merge(overwritable, dbOptions, must);

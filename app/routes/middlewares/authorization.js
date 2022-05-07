@@ -56,7 +56,6 @@ function createJWT(user) {
   logger.info(`Auth middleware: creating JWT token (exp: ${expDays} days)`);
   return user
     .populate('groups')
-    .execPopulate()
     .then((populatedUser) => {
       const payload = {
         _id: populatedUser._id,

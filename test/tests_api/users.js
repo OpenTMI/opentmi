@@ -53,7 +53,7 @@ describe('Users', function () {
     done();
   });
 
-  it('should add a SINGLE user on /users POST', function (done) {
+  beforeEach('should add a SINGLE user on /users POST', function (done) {
     const body = {
       name: 'Test User',
       email: 'testuser@fakemail.se',
@@ -83,6 +83,19 @@ describe('Users', function () {
         expect(res.body).to.have.ownProperty('loggedIn');
         expect(res.body).to.have.ownProperty('lastVisited');
         expect(res.body).to.have.ownProperty('registered');
+        done();
+      });
+  });
+  afterEach(function (done) {
+    if (!newUserId) {
+      done();
+      return;
+    }
+    superagent.del(`${api}/users/${newUserId}`)
+      .set('authorization', authString)
+      .end(function (error, res) {
+        expect(res.status).to.equal(200);
+        newUserId = null;
         done();
       });
   });
@@ -148,7 +161,7 @@ describe('Users', function () {
       if (createdUser) {
         const user = createdUser;
         createdUser = undefined;
-        return removeUser(user);
+        return removeUser(user).catch(() => {});
       }
       return Promise.resolve();
     });
@@ -396,6 +409,7 @@ describe('Users', function () {
             expect(checkRes).to.be.a('Object');
             expect(checkError).to.not.equal(null);
             expect(checkRes.status).to.equal(404);
+            newUserId = null;
             done();
           });
       });
