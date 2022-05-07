@@ -64,7 +64,7 @@ class ResourcesController extends DefaultController {
     next();
   }
 
-  static alloc(req, res) {
+  static allocate(req, res) {
     req.Resource.allocate((error) => {
       if (error) {
         res.status(500).json({error: error});

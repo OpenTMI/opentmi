@@ -10,6 +10,7 @@ const logger = require('winston');
 
 // application modules
 const {apiV0, getTestUserToken} = require('./tools/helpers');
+const SchemaController = require('../../app/controllers/schemas');
 
 // Setup
 logger.level = 'error';
@@ -27,6 +28,11 @@ const getResource = resourceId => superagent.get(`${api}/resources/${resourceId}
     return res.body;
   });
 
+function createResource({sn}) {
+  const body = { name: 'dev1', type: 'dut', hw: { sn } };
+  return superagent.post(`${api}/resources`).send(body)
+}
+
 describe('Resource', function () {
   let resourceId;
 
@@ -34,19 +40,18 @@ describe('Resource', function () {
   before(function () {
     authString = getTestUserToken();
   });
+  beforeEach(async function() {
+    const {body} = await createResource({sn: 'SerialNumber' });
+    resourceId = body._id;
+  });
+  afterEach(async function () {
+    await superagent.del(`${api}/resources/${resourceId}`);
+    resourceId = null;
+  });
 
   it('add resource', function () {
-    const body = {
-      name: 'dev1',
-      type: 'dut',
-      hw: {
-        sn: 'SerialNumber'
-      }
-    };
-    return superagent.post(`${api}/resources`)
-      .send(body)
-      .end(function (error, res) {
-        expect(error).to.equal(null);
+    return createResource({sn: 'SerialNumber2'})
+      .then(function (res) {
         expect(res).to.be.a('Object');
         if (res.status === 300) {
           logger.warn('Seems that your DB is not clean!');
@@ -59,7 +64,6 @@ describe('Resource', function () {
         expect(res.body._id).to.be.an('string');
         expect(res.body.name).to.equal('dev1');
         expect(res.body.type).to.equal('dut');
-        resourceId = res.body._id;
       });
   });
 
@@ -133,8 +137,10 @@ describe('Resource', function () {
     return getResource(resourceId)
       .then(doUpdate);
   });
-  it('remove resource', function () {
-    return superagent.del(`${api}/resources/${resourceId}`)
+  it('remove resource', async function () {
+    const {body} = await createResource({sn: '1'})
+    const {_id} = body
+    return superagent.del(`${api}/resources/${_id}`)
       .end(function (error, res) {
         expect(error).to.equal(null);
         expect(res).to.be.a('Object');
@@ -142,27 +148,7 @@ describe('Resource', function () {
       });
   });
   describe('events', function () {
-    before(function () {
-      const body = {
-        name: 'dev1',
-        type: 'dut',
-        hw: {
-          sn: 'SerialNumber'
-        }
-      };
-      return superagent.post(`${api}/resources`)
-        .send(body)
-        .end(function (error, res) {
-          resourceId = res.body._id;
-        });
-    });
-    after(function () {
-      return superagent.del(`${api}/resources/${resourceId}`)
-        .end(function (error, res) {
-          expect(error).to.equal(null);
-          expect(res.status).to.be.equal(200);
-        });
-    });
+
     it('events', function () {
       return superagent
         .get(`${api}/resources/${resourceId}/events`)
@@ -190,6 +176,15 @@ describe('Resource', function () {
         .then((res) => {
           expect(res.status).to.be.equal(200);
         });
+    });
+  });
+  describe('allocation', function () {
+    it('allocate and release', async function () {
+      let url = `${api}/resources/${resourceId}/allocate`;
+      await superagent.put(url).send({});
+
+      url = `${api}/resources/${resourceId}/release`;
+      await superagent.put(url).send({});
     });
   });
 });
