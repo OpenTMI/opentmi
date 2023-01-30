@@ -105,7 +105,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react": "^7.18.3",
-    "grunt": "^1.5.2",
+    "grunt": "^1.6.0",
     "grunt-exec": "^3.0.0",
     "grunt-express-server": "^0.5.4",
     "grunt-simple-mocha": "^0.4.1",
