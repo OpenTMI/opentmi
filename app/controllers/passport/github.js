@@ -111,7 +111,8 @@ class Github {
           }
           return user.save();
         });
-    } else if (groupname === 'admins') {
+    }
+    if (groupname === 'admins') {
       logger.info(`adding user: ${user._id} to admins.`);
       return user.addToGroup(groupname);
     }
