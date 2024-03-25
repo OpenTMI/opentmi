@@ -15,7 +15,7 @@ class BuildsController extends DefaultController {
   constructor() { super('Build'); }
 
   static indexParam(req, res, next, Index) {
-    if (!Number.isNaN(Index)) {
+    if (Number.isInteger(Number(Index))) {
       req.Index = Number.parseInt(Index, 10);
       return next();
     }
