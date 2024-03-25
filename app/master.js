@@ -304,7 +304,8 @@ class Master {
     if (signal) {
       logger.warn(`Master process was killed by signal: ${signal}.`);
       return 2;
-    } else if (code !== 0) {
+    }
+    if (code !== 0) {
       logger.warn(`Master process exited with error code: ${code}.`);
       return 1;
     }
@@ -323,7 +324,8 @@ class Master {
     if (signal) {
       logger.warn(`Worker#${worker.id} process was killed by signal: ${signal}.`);
       return 2;
-    } else if (code !== 0) {
+    }
+    if (code !== 0) {
       logger.warn(`Worker#${worker.id} process exited with error code: ${code}.`);
       return 1;
     }

@@ -59,7 +59,7 @@ function objectToArrayOfObjects(obj) {
 
 // Makes sure the provided date is valid
 function isValidDate(date) {
-  return date !== 'Invalid Date' && !isNaN(date);
+  return date !== 'Invalid Date' && !Number.isNaN(date);
 }
 
 
