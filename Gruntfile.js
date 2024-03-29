@@ -17,7 +17,6 @@ const gruntConfig = {
   express: {
     single_server: {
       options: {
-        nodeArgs: ['--trace-warnings'],
         delay: 15000,
         script: 'app/index.js',
         node_env: 'test',
