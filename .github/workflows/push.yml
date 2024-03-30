@@ -47,7 +47,7 @@ jobs:
       run: sudo docker run -d -p 27017:27017 mongo:4.4.10-focal
     - name: api tests
       run: |
-        MOCHA_FILE=junit/apitests.xml NODE_OPTIONS=--trace-warnings grunt apitests --silent
+        MOCHA_FILE=junit/apitests.xml NODE_OPTIONS=--trace-warnings grunt apitests
     - name: cluster tests
       run: |
         MOCHA_FILE=junit/clustertests.xml grunt clustertests --silent
