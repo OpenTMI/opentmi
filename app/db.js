@@ -3,7 +3,6 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const {MongoMemoryServer} = require('mongodb-memory-server');
 
-
 const logger = require('./tools/logger');
 const config = require('./tools/config');
 
@@ -26,7 +25,6 @@ const initialize = async function () {
 const connect = async function () {
   const must = {
     logger: logger.info.bind(logger),
-    promiseLibrary: Promise,
     useNewUrlParser: true,
     useUnifiedTopology: true
   };
