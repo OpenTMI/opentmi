@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 
 // application modules
 const logger = require('./tools/logger');
-const express = require('./express');
+const express = require('./app');
 const Server = require('./server');
 const models = require('./models');
 const routes = require('./routes');

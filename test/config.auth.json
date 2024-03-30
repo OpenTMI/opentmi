@@ -7,7 +7,7 @@
   "db": "mongodb://localhost/opentmi_test",
   "filedb": "./data",
   "auto-reload": false,
-  "silent": true,
+  "silent": false,
   "autoInstallAddonDeps": false,
   "verbose": 1,
   "sslcertKey": "./sslcert/server.key",

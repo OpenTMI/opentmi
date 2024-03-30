@@ -32,6 +32,23 @@
         "one-var": ["error", { "initialized": "never" }],
         "one-var-declaration-per-line": ["error", "initializations"],
         "func-names": ["error", "as-needed"],
-        "object-shorthand": "off"
+        "object-shorthand": "off",
+        "function-paren-newline": "off",
+        "prefer-object-spread": "off",
+        "no-multiple-empty-lines": ["error", { "max": 3, "maxEOF": 2 }],
+        "implicit-arrow-linebreak": "off",
+        "function-call-argument-newline": "off",
+        "arrow-parens": "off",
+        "operator-linebreak": "off",
+        "import/extensions": "off",
+        "object-curly-newline": "off",
+        "import/no-useless-path-segments": "off",
+        "import/order": "off",
+        "no-promise-executor-return": "off",
+        "prefer-destructuring": "off",
+        "lines-between-class-members": "off",
+        "max-classes-per-file": "off",
+        "camelcase": "off",
+        "default-param-last": "off"
     }
 }
