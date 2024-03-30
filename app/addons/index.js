@@ -177,7 +177,8 @@ class AddonManager {
         logger.info(`Removing addon: [${addon.name}].`);
         this.addons.splice(index, 1);
         return Promise.resolve();
-      } else if (addon.isBusy || addon.isRegistered) {
+      }
+      if (addon.isBusy || addon.isRegistered) {
         // Something is in progress, better not remove
         const error = 'Should not remove addon, either busy or registered.';
         const meta = {
