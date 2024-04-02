@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:18-bullseye AS base
+FROM node:16-stretch AS base
 
 # ---- Dependencies ----
 FROM base AS dependencies
@@ -20,7 +20,6 @@ FROM base AS ui
 WORKDIR /app
 RUN git config --global url."https://github.com/".insteadOf git://github.com/ \
   && git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git . \
-  && apt update && apt install -y python2 \
   && npm ci \
   && NODE_ENV=production npm run build:prod \
   && rm -r node_modules
