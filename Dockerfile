@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:20-bullseye AS base
+FROM node:18-bullseye AS base
 
 # ---- Dependencies ----
 FROM base AS dependencies
