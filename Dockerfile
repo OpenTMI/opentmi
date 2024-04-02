@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:14-stretch AS base
+FROM node:20-stretch AS base
 
 # ---- Dependencies ----
 FROM base AS dependencies
@@ -25,7 +25,7 @@ RUN git config --global url."https://github.com/".insteadOf git://github.com/ \
   && rm -r node_modules
 
 # --- Release with Alpine ----
-FROM node:14-alpine AS release
+FROM node:20-alpine AS release
 WORKDIR /app
 RUN apk add --no-cache git
 # copy package.json
