@@ -4,7 +4,7 @@
   "port": 8000,
   "webtoken": "OpenTMI-toP-SeCRet-tOKEn",
   "webtokenExpirationDays": 5,
-  "db": "mongodb://localhost/opentmi",
+  "db": "mongodb://127.0.0.1/opentmi",
   "filedb": "./data",
   "auto-reload": false,
   "autoInstallAddonDeps": false,

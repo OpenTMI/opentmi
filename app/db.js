@@ -9,6 +9,7 @@ const config = require('./tools/config');
 let dbUrl = config.get('db');
 const dbOptions = config.get('mongo') || {};
 mongoose.Promise = Promise;
+mongoose.set('strictQuery', true);
 
 let mongoServer = null;
 let tearingDown = false;
@@ -24,13 +25,12 @@ const initialize = async function () {
 
 const connect = async function () {
   const must = {
-    logger: logger.info.bind(logger),
     useNewUrlParser: true,
     useUnifiedTopology: true
   };
   const overwritable = {
     appname: 'opentmi',
-    loggerLevel: 'info'
+    loggerLevel: 'info',
   };
   const options = _.merge(overwritable, dbOptions, must);
 

@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:14-stretch AS base
+FROM node:20-bullseye AS base
 
 # ---- Dependencies ----
 FROM base AS dependencies
@@ -16,7 +16,7 @@ WORKDIR /app
 COPY app ./app
 
 ## ---- UI ----
-FROM base AS ui
+FROM node:14-stretch AS ui
 WORKDIR /app
 RUN git config --global url."https://github.com/".insteadOf git://github.com/ \
   && git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git . \
@@ -25,7 +25,7 @@ RUN git config --global url."https://github.com/".insteadOf git://github.com/ \
   && rm -r node_modules
 
 # --- Release with Alpine ----
-FROM node:14-alpine AS release
+FROM node:20-alpine AS release
 WORKDIR /app
 RUN apk add --no-cache git
 # copy package.json

@@ -23,20 +23,20 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [14.x, 16.x, 18.x, 20.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [18.x, 20.x]
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - name: install mongodb tools
-      run: sudo apt-get install -y mongodb-org-shell
+    - name: Setup mongo tools
+      uses: boly38/action-mongo-tools@stable
     - name: install dependencies
       run: npm ci
     - name: run unit tests
@@ -65,6 +65,12 @@ jobs:
         # Artifact name
         name: coverage-report-${{ matrix.node-version }}
         path: coverage/lcov-report/**
+    - uses: actions/upload-artifact@v4
+      if: success() || failure()    # run this step even if previous step failed
+      with:
+        # Artifact name
+        name: npm-logs-${{ matrix.node-version }}
+        path: /home/runner/.npm/_logs
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: success() || failure()    # run this step even if previous step failed
