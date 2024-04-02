@@ -36,7 +36,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - name: install mongodb tools
-      run: sudo apt-get install -y mongodb-org-shell
+      run: sudo apt-get install -y mongodb-org
     - name: install dependencies
       run: npm ci
     - name: run unit tests
