@@ -20,6 +20,7 @@ FROM base AS ui
 WORKDIR /app
 RUN git config --global url."https://github.com/".insteadOf git://github.com/ \
   && git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git . \
+  && apt update && apt install python2 \
   && npm ci \
   && NODE_ENV=production npm run build:prod \
   && rm -r node_modules
