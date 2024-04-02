@@ -35,8 +35,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - name: install mongodb tools
-      run: sudo apt-get install -y mongodb-org
+    - name: Setup mongo tools
+      uses: boly38/action-mongo-tools@stable
     - name: install dependencies
       run: npm ci
     - name: run unit tests
