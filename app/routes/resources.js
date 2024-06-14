@@ -13,24 +13,14 @@ function Route(app) {
     .get(controller.find.bind(controller))
     .post(controller.create.bind(controller));
 
-  router.route('/api/v0/resources/allocation')
-    // .get( controller.list_allocs )
-    .put(ResourceController.allocMultiple);
-
-  // router.route('/api/v0/resources/allocation/:Alloc')
-  //  .get( controller.list_alloc_resources );
-
-  router.route('/api/v0/resources/allocation/:Alloc/release')
-    .put(ResourceController.releaseMultiple);
+  router.route('/api/v0/resources/:Resource/allocate')
+    .put(ResourceController.allocate);
 
   router.route('/api/v0/resources/:Resource.:format?')
     .all(controller.all.bind(controller))
     .get(controller.get.bind(controller))
     .put(controller.update.bind(controller))
     .delete(controller.remove.bind(controller));
-
-  router.route('/api/v0/resources/:Resource/alloc')
-    .put(ResourceController.alloc);
 
   router.route('/api/v0/resources/:Resource/release')
     .put(ResourceController.release);
@@ -40,6 +30,17 @@ function Route(app) {
 
   router.route('/api/v0/resources/:Resource/route')
     .get(ResourceController.solveRoute);
+
+  // allocations api
+  router.route('/api/v0/allocations')
+    // .get( controller.list_allocs )
+    .put(ResourceController.allocMultiple);
+
+  // router.route('/api/v0/allocations/:Alloc')
+  //  .get( controller.list_alloc_resources );
+
+  router.route('/api/v0/allocations/:Alloc/release')
+    .put(ResourceController.releaseMultiple);
 
   app.use(router);
 }
