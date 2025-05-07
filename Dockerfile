@@ -16,7 +16,7 @@ WORKDIR /app
 COPY app ./app
 
 ## ---- UI ----
-FROM base AS ui
+FROM node:14.1 AS ui
 WORKDIR /app
 RUN git config --global url."https://github.com/".insteadOf git://github.com/ \
   && git clone --depth=1 https://github.com/OpenTMI/opentmi-default-gui.git . \
