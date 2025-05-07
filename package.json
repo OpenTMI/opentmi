@@ -21,7 +21,7 @@
   "copyright": "Jussi Vatjus-Anttila <jussiva@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": ">10.0.0"
+    "node": ">18.0.0"
   },
   "scripts": {
     "start": "node app/index.js",
@@ -33,6 +33,7 @@
     "test-unit-ci": "npm run test-unit-lcov && npm run test-unit-json",
     "test-unit-json": "nyc mocha --recursive --reporter json --reporter-option output=report_unit.json test/unittests",
     "test-unit-lcov": "nyc --reporter lcov mocha --recursive test/unittests",
+    "test-unit-spec": "nyc mocha --recursive test/unittests",
     "test-api": "grunt",
     "lint": "node node_modules/eslint/bin/eslint .",
     "lint-fix": "node node_modules/eslint/bin/eslint . --fix",
@@ -66,7 +67,7 @@
     "method-override": "^3.0.0",
     "mime": "^2.6.0",
     "moment": "^2.29.3",
-    "mongodb-memory-server": "^8.4.2",
+    "mongodb-memory-server": "^10.1.4",
     "mongoose": "^6.2.9",
     "mongoose-query": "^0.8.0",
     "mongoose-schema-jsonschema": "^2.0.2",
